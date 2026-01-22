@@ -1,0 +1,374 @@
+---
+title: "Install the Affitor Tracking Script"
+description: "Learn how to add the Affitor tracking script to your website to automatically track affiliate referrals, clicks, and conversions."
+
+lastUpdated: 2026-01-22
+author: "Affitor Team"
+tags: ["tracking", "installation", "javascript", "integration"]
+relatedPages:
+  - "/advertisers/tracking/tracking-overview"
+  - "/advertisers/tracking/testing-integration"
+  - "/advertisers/checkout/overview"
+---
+
+# Install the Affitor Tracking Script
+
+**The tracking script is the heart of your affiliate program.** Once installed on your website, it automatically detects affiliate referrals, tracks customer journeys, and attributes sales to the correct partners.
+
+---
+
+## What You'll Learn
+
+- How to add the tracking script to your website
+- What the script does and how it works
+- Where to find your Program ID
+- How to verify the installation is working
+
+---
+
+## Prerequisites
+
+Before installing the tracking script, ensure you have:
+
+- ✅ Created your advertiser account
+- ✅ Set up your affiliate program
+- ✅ Connected your Stripe account
+- ✅ Access to your website's HTML (ability to edit the `<head>` section)
+
+<Aside type="note">
+💡 **New to web development?** Don't worry! This is a simple copy-and-paste operation. If you're using a website builder (WordPress, Shopify, Wix, etc.), check our platform-specific guides below.
+</Aside>
+
+---
+
+## Installation Steps
+
+### Step 1: Get Your Program ID
+
+Your Program ID is a unique identifier for your affiliate program. You can find it in two ways:
+
+**Option A: From Your Dashboard**
+1. Log in to your Affitor advertiser dashboard
+2. Navigate to **Settings > Integration**
+3. Copy your Program ID (it looks like `123` or `program-abc-456`)
+
+**Option B: From Program Details**
+1. Go to your **Program Overview** page
+2. Look for "Program ID" in the details section
+3. Copy the ID
+
+### Step 2: Add the Script to Your Website
+
+Copy the following code and paste it into your website's `<head>` section:
+
+```html
+<!-- Add this to your website's <head> section -->
+<script
+  src="https://affitor-platform.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="false"
+></script>
+```
+
+**Important:** Replace `YOUR_PROGRAM_ID` with your actual Program ID from Step 1.
+
+<Aside type="caution">
+⚠️ **Critical**: The script must be placed in the `<head>` section of your HTML, not in the `<body>`. This ensures it loads before any user interactions.
+</Aside>
+
+### Step 3: Enable Debug Mode (Optional)
+
+For testing purposes, you can enable debug mode to see tracking events in your browser console:
+
+```html
+<script
+  src="https://affitor-platform.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="true"
+></script>
+```
+
+<Aside type="tip">
+✅ **Best Practice**: Use `data-affitor-debug="true"` during testing, then switch to `"false"` in production to reduce console noise.
+</Aside>
+
+---
+
+## What This Script Does
+
+Once installed, the Affitor tracking script automatically:
+
+### 1. Detects Affiliate Referrals
+
+- ✅ Monitors URLs for referral parameters (e.g., `?ref=partner-code`)
+- ✅ Identifies which affiliate partner sent the visitor
+- ✅ Captures the referral timestamp
+
+### 2. Creates Visitor Tracking
+
+- ✅ Generates a unique visitor ID for each new user
+- ✅ Stores tracking data in browser cookies
+- ✅ Maintains attribution for 30 days
+
+### 3. Tracks Customer Journey
+
+- ✅ Monitors page views and interactions
+- ✅ Tracks the customer's path through your site
+- ✅ Preserves attribution even if the user closes their browser
+
+### 4. Attributes Sales Automatically
+
+- ✅ When a customer makes a purchase, the script sends tracking data with the payment
+- ✅ The system calculates commissions automatically
+- ✅ The correct partner gets credit for the sale
+
+---
+
+## Platform-Specific Guides
+
+### WordPress
+
+1. Install a "Header and Footer Scripts" plugin
+2. Go to **Settings > Header and Footer Scripts**
+3. Paste the tracking script in the "Header Scripts" section
+4. Save changes
+
+### Shopify
+
+1. Go to **Online Store > Themes**
+2. Click **Actions > Edit Code**
+3. Find `theme.liquid` in the Layout folder
+4. Paste the script just before the closing `</head>` tag
+5. Save changes
+
+### Wix
+
+1. Go to **Settings > Custom Code**
+2. Click **+ Add Custom Code**
+3. Paste the tracking script
+4. Set "Place Code in" to **Head**
+5. Apply to **All Pages**
+6. Save
+
+### Webflow
+
+1. Go to **Project Settings > Custom Code**
+2. Paste the script in the **Head Code** section
+3. Save and publish your site
+
+### Custom HTML Website
+
+1. Open your main HTML file (usually `index.html` or `header.html`)
+2. Find the `<head>` section
+3. Paste the tracking script before `</head>`
+4. Upload the file to your server
+
+---
+
+## Verifying Installation
+
+After installing the script, verify it's working correctly:
+
+### Method 1: Browser Console Check
+
+1. Open your website in a browser
+2. Open Developer Tools (F12 or Cmd+Option+I)
+3. Go to the **Console** tab
+4. Look for Affitor initialization messages:
+
+```
+[Affitor] Tracker initialized successfully
+[Affitor] Program ID: YOUR_PROGRAM_ID
+[Affitor] Debug mode: true
+```
+
+### Method 2: Network Tab Check
+
+1. Open Developer Tools (F12)
+2. Go to the **Network** tab
+3. Reload your website
+4. Look for a request to `affitor-tracker.js`
+5. Verify it loads with status code `200`
+
+### Method 3: Test with a Referral Link
+
+1. Create a test referral link: `https://yourwebsite.com/?ref=test-partner`
+2. Open the link in an incognito/private browser window
+3. Check the browser console for tracking events
+4. Verify that a cookie named `affitor_visitor_id` is set
+
+<Aside type="tip">
+✅ **All checks passed?** Your tracking script is installed correctly! You're ready to start tracking affiliate referrals.
+</Aside>
+
+---
+
+## Cookie Information
+
+The Affitor tracker uses browser cookies to maintain attribution:
+
+<table>
+  <thead>
+    <tr>
+      <th>Cookie Name</th>
+      <th>Purpose</th>
+      <th>Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>affitor_visitor_id</code></td>
+      <td>Unique visitor identifier</td>
+      <td>30 days</td>
+    </tr>
+    <tr>
+      <td><code>affitor_referral_code</code></td>
+      <td>Partner referral code</td>
+      <td>30 days</td>
+    </tr>
+    <tr>
+      <td><code>affitor_landing_page</code></td>
+      <td>Initial page visited</td>
+      <td>30 days</td>
+    </tr>
+  </tbody>
+</table>
+
+<Aside type="note">
+💡 **Privacy Note**: These cookies are essential for affiliate tracking and are covered under "Strictly Necessary" cookies in most privacy regulations. Ensure your privacy policy mentions affiliate tracking.
+</Aside>
+
+---
+
+## Common Issues & Troubleshooting
+
+<table>
+  <thead>
+    <tr>
+      <th>Issue</th>
+      <th>Cause</th>
+      <th>Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Script not loading</strong></td>
+      <td>Incorrect URL or blocked by ad blocker</td>
+      <td>Verify the script URL and disable ad blockers for testing</td>
+    </tr>
+    <tr>
+      <td><strong>No console messages</strong></td>
+      <td>Debug mode is off</td>
+      <td>Set <code>data-affitor-debug="true"</code></td>
+    </tr>
+    <tr>
+      <td><strong>Wrong Program ID error</strong></td>
+      <td>Incorrect Program ID</td>
+      <td>Double-check your Program ID in the dashboard</td>
+    </tr>
+    <tr>
+      <td><strong>Cookies not setting</strong></td>
+      <td>Browser privacy settings</td>
+      <td>Test in incognito mode; check for cookie consent issues</td>
+    </tr>
+    <tr>
+      <td><strong>Script loads but doesn't track</strong></td>
+      <td>Script placed in wrong location</td>
+      <td>Ensure it's in <code>&lt;head&gt;</code>, not <code>&lt;body&gt;</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Advanced Configuration
+
+### Custom Referral Parameter
+
+By default, the tracker looks for `?ref=` in URLs. To use a custom parameter:
+
+```html
+<script
+  src="https://affitor-platform.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-ref-param="affiliate"
+></script>
+```
+
+Now the tracker will respond to `?affiliate=partner-code` instead.
+
+### Multiple Programs
+
+If you run multiple programs, install a separate script for each:
+
+```html
+<!-- Program 1 -->
+<script
+  src="https://affitor-platform.com/js/affitor-tracker.js"
+  data-affitor-program-id="PROGRAM_1_ID"
+></script>
+
+<!-- Program 2 -->
+<script
+  src="https://affitor-platform.com/js/affitor-tracker.js"
+  data-affitor-program-id="PROGRAM_2_ID"
+></script>
+```
+
+---
+
+## Next Steps
+
+<div class="next-steps-grid">
+
+**Configure Checkout:**
+- [Checkout Integration Overview](/advertisers/checkout/overview) - Choose your payment method
+- [Test Your Integration](/advertisers/tracking/testing-integration) - Verify everything works
+
+**Learn More:**
+- [How Tracking Works](/advertisers/tracking/tracking-overview) - Deep dive into the tracking system
+- [Customer Journey Tracking](/advertisers/tracking/customer-journey) - Understand the full flow
+
+**Troubleshooting:**
+- [Tracking Troubleshooting Guide](/advertisers/tracking/troubleshooting) - Fix common issues
+- [Contact Support](/support/contact) - Get help from our team
+
+</div>
+
+---
+
+## Frequently Asked Questions
+
+<details>
+<summary>Does the tracking script slow down my website?</summary>
+
+No, the script is lightweight (~15KB) and loads asynchronously, so it doesn't block page rendering or affect your website's performance.
+
+</details>
+
+<details>
+<summary>Is the tracking script GDPR compliant?</summary>
+
+The tracking script uses cookies necessary for affiliate functionality. You should mention affiliate tracking in your privacy policy. Consider using a cookie consent banner if required in your jurisdiction.
+
+</details>
+
+<details>
+<summary>Can I use the script on multiple domains?</summary>
+
+Yes, the same tracking script works across multiple domains. The attribution will work as long as the customer completes the purchase on a domain where the script is installed.
+
+</details>
+
+<details>
+<summary>What if a customer blocks cookies?</summary>
+
+If cookies are blocked, the tracking will not work for that specific user. However, this affects a small percentage of users (less than 5% typically).
+
+</details>
+
+---
+
+Was this page helpful? 👍 👎
+
+*Last updated: January 22, 2026*

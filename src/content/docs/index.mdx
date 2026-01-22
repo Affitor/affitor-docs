@@ -1,40 +1,53 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: Affitor Documentation
+description: Complete guide to the Affitor affiliate management platform
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: Your complete guide to building and scaling affiliate programs with Affitor
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get Started
+      link: /getting-started/what-is-affitor/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+      variant: primary
+    - text: For Advertisers
+      link: /advertisers/quickstart/create-account/
+      icon: rocket
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Quick Navigation
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+	<Card title="📚 Getting Started" icon="open-book">
+		New to Affitor? Learn what Affitor is, how it works, and our pricing model.
+
+		[Start here →](/getting-started/what-is-affitor/)
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="🏢 For Advertisers" icon="rocket">
+		Set up your affiliate program, track performance, and manage partners.
+
+		[View guides →](/advertisers/quickstart/create-account/)
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="🔧 Tracking & Integration" icon="setting">
+		Implement tracking for clicks, signups, and payments with Stripe.
+
+		[Learn more →](/advertisers/tracking/introduction/)
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="❓ FAQ & Support" icon="information">
+		Find answers to common questions or get in touch with our team.
+
+		[Get help →](/faq/)
 	</Card>
 </CardGrid>
+
+## Popular Topics
+
+- [What is Affitor?](/getting-started/what-is-affitor/) - Platform overview and key concepts
+- [Create Your Account](/advertisers/quickstart/create-account/) - Get started as an advertiser
+- [Tracking Overview](/advertisers/tracking/tracking-overview/) - Understand how tracking works
+- [Pricing & Performance Model](/getting-started/pricing-performance-model/) - Learn about our pricing
+
+## Need Help?
+
+Can't find what you're looking for? [Contact our support team](/support/contact/) or check the [system status](/support/status/).
