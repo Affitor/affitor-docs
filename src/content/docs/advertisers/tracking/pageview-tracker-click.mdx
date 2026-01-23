@@ -164,16 +164,6 @@ https://yoursite.com/pricing?ref=PARTNER123
 
 The tracker detects any URL with `?ref=` and captures the partner code.
 
-### Short Links
-
-Partners can also use Affitor short links:
-
-```
-https://affitor.com/r/abc123
-```
-
-These redirect to your site with the `?ref=` parameter automatically added.
-
 ---
 
 ## Verifying Installation
@@ -194,14 +184,8 @@ Enable debug mode to see tracking events in your browser console:
 
 1. Open your browser's Developer Tools (F12)
 2. Go to the **Console** tab
-3. Visit your site with `?ref=TEST123`
-4. Look for **Affitor debug messages**
-
-### Check Cookies
-
-1. Open Developer Tools → **Application** → **Cookies**
-2. Look for `partner_code` and `customer_code`
-3. Values should be set after visiting with `?ref=`
+3. Visit your site
+4. Look for **[Affitor Tracker] Affitor tracker initialized with options: {debug: true, programId: "YOUR_PROGRAM_ID"}**
 
 ### Dashboard Verification
 
