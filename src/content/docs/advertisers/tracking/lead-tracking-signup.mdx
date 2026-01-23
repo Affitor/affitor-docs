@@ -1,22 +1,252 @@
 ---
-title: "Lead Tracking (Signup)"
-description: "Track user signups and attribute them to affiliate partners."
-lastUpdated: 2026-01-22
+title: Lead Tracking (Signup)
+description: Track signups and form submissions from affiliate traffic
 ---
 
-:::note[Coming Soon]
-This page is currently under development. The content will be available soon.
-:::
+Lead tracking captures when referred visitors sign up or submit forms. This lets you see which partners drive qualified leads—not just clicks.
 
-Implement signup tracking to attribute new user registrations to affiliate partners.
+---
 
-## What You'll Learn
+## What It Does
 
-- Signup event tracking
-- Lead attribution
-- API integration
-- Testing lead tracking
+When a visitor signs up on your site, you call `window.affitor.trackLead()`. This:
 
-## Coming Soon
+1. Captures the lead event with email
+2. Links it to the stored `partner_code` from the click
+3. Creates an attribution record in Affitor
 
-This guide is currently being written. Check back soon for detailed instructions on implementing signup tracking.
+Partners can then see: Clicks → **Signups** → Sales
+
+---
+
+## Prerequisites
+
+Before implementing lead tracking:
+
+- [x] Pageview tracker installed ([guide](/advertisers/tracking/pageview-tracker-click/))
+- [x] Visitor arrived via affiliate link (has `partner_code` cookie)
+
+---
+
+## Basic Implementation
+
+After your signup form submits successfully, call:
+
+```javascript
+window.affitor.trackLead({
+  email: 'user@example.com'
+});
+```
+
+That's the minimum. Email is required; everything else is optional.
+
+---
+
+## Full Implementation
+
+Include additional data for better analytics:
+
+```javascript
+window.affitor.trackLead({
+  email: 'user@example.com',        // Required
+  name: 'John Doe',                 // Optional
+  phone: '+1234567890',             // Optional
+  additional_data: {
+    signup_method: 'email',         // How they signed up
+    user_id: 'user_123',            // Your internal user ID
+    plan: 'free_trial',             // Plan they selected
+    source: 'pricing_page'          // Where they signed up
+  }
+});
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `email` | string | Yes | User's email address |
+| `name` | string | No | User's full name |
+| `phone` | string | No | User's phone number |
+| `additional_data` | object | No | Any extra data you want to track |
+
+---
+
+## Integration Examples
+
+### Standard Form
+
+```javascript
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('email').value;
+  const name = document.getElementById('name').value;
+  
+  // Your signup logic
+  const result = await createAccount(email, name);
+  
+  if (result.success) {
+    // Track the lead
+    window.affitor.trackLead({
+      email: email,
+      name: name,
+      additional_data: {
+        user_id: result.userId,
+        signup_method: 'form'
+      }
+    });
+    
+    // Redirect to dashboard or next step
+    window.location.href = '/welcome';
+  }
+});
+```
+
+### React
+
+```tsx
+function SignupForm() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    // Your signup logic
+    const result = await api.createAccount({
+      email: formData.get('email'),
+      name: formData.get('name')
+    });
+    
+    if (result.success) {
+      // Track the lead
+      window.affitor?.trackLead({
+        email: formData.get('email'),
+        name: formData.get('name'),
+        additional_data: {
+          user_id: result.userId
+        }
+      });
+      
+      router.push('/welcome');
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="email" type="email" required />
+      <input name="name" type="text" />
+      <button type="submit">Sign Up</button>
+    </form>
+  );
+}
+```
+
+### Google/OAuth Signup
+
+```javascript
+// After OAuth callback
+async function handleOAuthCallback(user) {
+  // User authenticated via Google/GitHub/etc.
+  
+  // Track the lead
+  window.affitor?.trackLead({
+    email: user.email,
+    name: user.name,
+    additional_data: {
+      signup_method: 'google',
+      user_id: user.id
+    }
+  });
+  
+  // Continue to dashboard
+  window.location.href = '/dashboard';
+}
+```
+
+---
+
+## When to Call trackLead()
+
+Call `trackLead()` **after** the signup is confirmed successful:
+
+| Scenario | When to track |
+|----------|---------------|
+| Form signup | After form validation passes and account is created |
+| OAuth signup | After OAuth callback, user authenticated |
+| Email verification | After signup, not after verification (track intent) |
+| Free trial | When trial starts |
+| Waitlist | When added to waitlist |
+
+**Don't track:**
+- Failed signups
+- Duplicate signups
+- Bot submissions
+
+---
+
+## Checking for Affitor
+
+The tracker might not be loaded if:
+- Visitor has ad blocker
+- Script failed to load
+- Visitor didn't come from affiliate link
+
+Always check before calling:
+
+```javascript
+if (window.affitor) {
+  window.affitor.trackLead({ email: email });
+}
+
+// Or use optional chaining
+window.affitor?.trackLead({ email: email });
+```
+
+---
+
+## Verifying Lead Tracking
+
+### Test Mode
+
+1. Enable debug mode in pageview tracker
+2. Complete a test signup
+3. Check browser console for Affitor messages
+
+### Dashboard Verification
+
+1. Visit your site with `?ref=TEST123`
+2. Complete signup flow
+3. Go to Affitor dashboard → **Integration Status**
+4. Lead tracking should show **"Connected"**
+
+---
+
+## Troubleshooting
+
+### trackLead() Not Working
+
+**Check:**
+- `window.affitor` exists (pageview tracker loaded)
+- Email parameter is provided
+- No JavaScript errors in console
+
+### Lead Not Attributed to Partner
+
+**Check:**
+- Visitor has `partner_code` cookie
+- Visitor came via affiliate link before signing up
+- Attribution window hasn't expired (60 days default)
+
+### Duplicate Leads
+
+**Prevent by:**
+- Only calling `trackLead()` once per signup
+- Checking signup success before tracking
+- Using your internal `user_id` to dedupe
+
+---
+
+## Next Steps
+
+Lead tracking is set up. Now capture sales:
+
+**[Set Up Payment Tracking →](/advertisers/tracking/payment-tracking-stripe/)**

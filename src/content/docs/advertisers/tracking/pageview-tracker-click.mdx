@@ -1,22 +1,243 @@
 ---
-title: "Pageview Tracker (Click Tracking)"
-description: "Implement click tracking to capture affiliate referrals."
-lastUpdated: 2026-01-22
+title: Pageview Tracker
+description: Track clicks from affiliate links with a single script tag
 ---
 
-:::note[Coming Soon]
-This page is currently under development. The content will be available soon.
-:::
+The pageview tracker captures when visitors arrive via affiliate links. This is the foundation of Affitor tracking.
 
-Learn how to implement click tracking to capture when users click on affiliate links.
+---
 
-## What You'll Learn
+## What It Does
 
-- Click tracking implementation
-- Tracker installation
-- URL parameter handling
-- Testing click tracking
+When someone clicks a partner's affiliate link (`https://yoursite.com?ref=PARTNER123`), the tracker:
 
-## Coming Soon
+1. Detects the `?ref=` parameter
+2. Stores `partner_code` in a cookie
+3. Generates a unique `customer_code`
+4. Sends a click event to Affitor
 
-This guide is currently being written. Check back soon for detailed instructions on implementing click tracking.
+All subsequent events (signups, purchases) are linked via these cookies.
+
+---
+
+## Installation
+
+Add this script tag to your website's `<head>` section:
+
+```html
+<script 
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="false">
+</script>
+```
+
+That's it. The script handles everything automatically.
+
+---
+
+## Configuration
+
+| Attribute | Required | Description |
+|-----------|----------|-------------|
+| `src` | Yes | Affitor tracker script URL |
+| `data-affitor-program-id` | Yes | Your program ID (from dashboard) |
+| `data-affitor-debug` | No | Set "true" for test mode |
+
+### Finding Your Program ID
+
+1. Go to your Affitor dashboard
+2. Navigate to **Settings → Integration**
+3. Copy your **Program ID**
+
+---
+
+## Where to Add the Script
+
+Add the script to **every page** where affiliate traffic might land.
+
+**Recommended:** Add to your site's global `<head>` so it loads on all pages.
+
+### Examples:
+
+#### HTML:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Site</title>
+  <script 
+    src="https://api.affitor.com/js/affitor-tracker.js"
+    data-affitor-program-id="YOUR_PROGRAM_ID"
+    data-affitor-debug="false">
+  </script>
+</head>
+<body>
+  <!-- Your content -->
+</body>
+</html>
+```
+
+#### Next.js (Pages Router):
+
+```tsx
+// pages/_document.tsx
+import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html>
+      <Head>
+        <script 
+          src="https://api.affitor.com/js/affitor-tracker.js"
+          data-affitor-program-id="YOUR_PROGRAM_ID"
+          data-affitor-debug="false"
+        />
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
+}
+```
+
+#### Next.js (App Router):
+
+```tsx
+// app/layout.tsx
+import Script from 'next/script'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <head>
+        <Script 
+          src="https://api.affitor.com/js/affitor-tracker.js"
+          data-affitor-program-id="YOUR_PROGRAM_ID"
+          data-affitor-debug="false"
+          strategy="afterInteractive"
+        />
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+#### React (Create React App):
+
+```html
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <script 
+    src="https://api.affitor.com/js/affitor-tracker.js"
+    data-affitor-program-id="YOUR_PROGRAM_ID"
+    data-affitor-debug="false">
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
+```
+
+---
+
+## How Affiliate Links Work
+
+Partners receive links in this format:
+
+```
+https://yoursite.com?ref=PARTNER123
+```
+
+Or with a landing page:
+
+```
+https://yoursite.com/pricing?ref=PARTNER123
+```
+
+The tracker detects any URL with `?ref=` and captures the partner code.
+
+### Short Links
+
+Partners can also use Affitor short links:
+
+```
+https://affitor.com/r/abc123
+```
+
+These redirect to your site with the `?ref=` parameter automatically added.
+
+---
+
+## Verifying Installation
+
+### Test Mode
+
+Enable debug mode to see tracking events in your browser console:
+
+```html
+<script 
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="true">
+</script>
+```
+
+**Then:**
+
+1. Open your browser's Developer Tools (F12)
+2. Go to the **Console** tab
+3. Visit your site with `?ref=TEST123`
+4. Look for **Affitor debug messages**
+
+### Check Cookies
+
+1. Open Developer Tools → **Application** → **Cookies**
+2. Look for `partner_code` and `customer_code`
+3. Values should be set after visiting with `?ref=`
+
+### Dashboard Verification
+
+1. Visit your site with a test referral link
+2. Go to Affitor dashboard → **Integration Status**
+3. Pageview tracker should show **"Connected"**
+
+---
+
+## Troubleshooting
+
+### Script Not Loading
+
+**Symptoms:** No cookies set, no console messages in debug mode
+
+**Check:**
+- Script URL is correct
+- No Content Security Policy blocking the script
+- Script is in `<head>`, not `<body>`
+
+### Cookies Not Set
+
+**Symptoms:** Script loads but cookies are missing
+
+**Check:**
+- URL has `?ref=` parameter
+- Site is served over **HTTPS** (required for secure cookies)
+- No browser extensions blocking cookies
+
+### Events Not Appearing in Dashboard
+
+**Symptoms:** Cookies set but no events in Affitor
+
+**Check:**
+- Program ID is correct
+- Backend API is reachable
+- Check browser **Network** tab for failed requests
+
+---

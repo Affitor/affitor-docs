@@ -46,7 +46,7 @@ export default defineConfig({
 							label: 'Tracking',
 							collapsed: false,
 							items: [
-								{ label: 'Introduction', slug: 'advertisers/tracking/introduction' },
+								// { label: 'Introduction', slug: 'advertisers/tracking/introduction' },
 								{ label: 'Tracking Overview', slug: 'advertisers/tracking/tracking-overview' },
 								{ label: 'Pageview Tracker (Click)', slug: 'advertisers/tracking/pageview-tracker-click' },
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
@@ -55,13 +55,13 @@ export default defineConfig({
 								{ label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
-						{
-							label: 'Managing Partners',
-							items: [
-								{ label: 'Approve & Reject', slug: 'advertisers/managing-partners/approve-reject' },
-							],
-						},
-						{ label: 'Best Practices', slug: 'advertisers/best-practices' },
+						// {
+						// 	label: 'Managing Partners',
+						// 	items: [
+						// 		{ label: 'Approve & Reject', slug: 'advertisers/managing-partners/approve-reject' },
+						// 	],
+						// },
+						// { label: 'Best Practices', slug: 'advertisers/best-practices' },
 					],
 				},
 				{
@@ -72,7 +72,7 @@ export default defineConfig({
 					label: '📞 Support',
 					items: [
 						{ label: 'Contact Us', slug: 'support/contact' },
-						{ label: 'System Status', slug: 'support/status' },
+						// { label: 'System Status', slug: 'support/status' },
 					],
 				},
 			],

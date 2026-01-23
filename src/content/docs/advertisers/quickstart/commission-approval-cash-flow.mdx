@@ -1,22 +1,223 @@
 ---
-title: "Commission Approval & Cash Flow"
-description: "Manage commission approvals and understand cash flow for affiliate payouts."
-lastUpdated: 2026-01-22
+title: Commission Approval & Cash Flow
+description: Understand how commissions are validated, approved, and paid out
 ---
 
-:::note[Coming Soon]
-This page is currently under development. The content will be available soon.
-:::
+# Commission Approval & Cash Flow
 
-Learn how to manage commission approvals and understand the cash flow process for affiliate payouts.
+This guide explains how money flows through Affitor—from customer purchase to partner payout.
 
-## What You'll Learn
+---
 
-- Commission approval process
-- Cash flow management
-- Payment schedules
-- Financial reconciliation
+## Payment Integration Methods
 
-## Coming Soon
+How you receive payments and how partners get paid depends on your checkout integration.
 
-This guide is currently being written. Check back soon for detailed instructions on commission approval and cash flow management.
+| Method | Stripe Account | How it works |
+|--------|----------------|--------------|
+| **Affitor Pay** | Affitor's Stripe | Affitor hosts checkout, collects payment, pays you after deducting commission + fee |
+| **Bill Flow** | Your Stripe | You collect 100%, Affitor invoices you for commission + fee later |
+| **Split Pay (Coming Soon)** | Your Stripe | Customer pays via your checkout, funds split automatically at payment (coming soon) |
+
+---
+
+## Affitor Pay Flow
+
+*For advertisers without Stripe. Affitor handles everything.*
+
+```
+Customer → Affitor checkout → Affitor collects 100%
+→ Validate & approve → Deduct commission + fee → Pay advertiser
+```
+
+**Step by step:**
+
+1. **Customer purchases** through Affitor-hosted checkout page
+2. **Affitor collects** 100% of payment
+3. **Transaction validated** (attribution, no duplicate, within window)
+4. **You review** in dashboard (or auto-approve)
+5. **Hold period** (7-21 days, configurable)
+6. **If no refund:** Affitor deducts commission + platform fee, pays you the rest
+7. **Partner commission** moves to Withdrawable balance
+
+**Best for:** Fast setup, no Stripe account needed.
+
+![Affitor Pay Flow](/images/affitor-pay-flow.png)
+
+---
+
+## Bill Flow
+
+*You collect everything, Affitor invoices later.*
+
+```
+Customer → Your checkout → You receive 100%
+→ Affitor tracks & validates → You approve
+→ Affitor invoices you → You pay → Partner payout
+```
+
+**Step by step:**
+
+1. **Customer purchases** through your existing checkout
+2. **You receive 100%** of payment via your Stripe
+3. **Affitor tracks** and validates the transaction
+4. **You review** in dashboard and approve
+5. **Affitor sends weekly invoice** for: Partner commission + Platform fee (3.5%)
+6. **You pay invoice**
+7. **Hold period** (7-21 days)
+8. **If no refund:** Commission moves to Partner's Withdrawable balance
+9. **Partner withdraws** or keeps balance
+
+**Best for:** Keep existing checkout flow, pay commission later.
+
+![Bill Flow](/images/bill-flow.png)
+
+---
+
+## Split Pay Flow (Coming Soon)
+
+*Funds split instantly at checkout via your Stripe.*
+
+**Why Split Pay:**
+- **Zero manual work** – Funds split automatically, no invoices to manage
+- **No extra fees** – Affitor doesn't charge for auto-payout
+- **Real-time accuracy** – No reconciliation or manual calculations
+- **Instant partner visibility** – Partners see earnings immediately
+- **Cash flow clarity** – You always know your net revenue upfront
+
+```
+Customer → Your checkout → Stripe splits automatically
+→ You receive net amount → Affitor receives commission + fee
+→ Validate & approve → Hold period → Partner payout
+```
+
+![Split Pay Flow - Coming Soon](/images/split-pay-flow.png)
+
+---
+
+## Transaction Validation
+
+Every transaction is validated before commission is calculated:
+
+| Check | What Affitor verifies |
+|-------|----------------------|
+| **Valid attribution** | Affiliate link was used |
+| **No duplicate** | Customer not already attributed to another partner |
+| **Within attribution window** | Purchase within 60 days of click |
+| **Matching amount** | Payment matches expected value |
+
+If validation fails, the transaction is flagged for your review.
+
+---
+
+## Approval Process
+
+You control which transactions become payable commissions.
+
+### Auto-Approve
+
+Transactions approved automatically after validation passes.
+
+- Faster processing
+- Less manual work
+- Best for: High-volume, low-risk products
+
+### Manual Review
+
+You review each transaction before approval.
+
+- Full control
+- Catch issues early
+- Best for: High-ticket items, new programs
+
+**From your dashboard:**
+
+1. Go to Transactions
+2. Review pending items
+3. Click **Approve** or **Reject**
+
+### Rejection Reasons
+
+- Customer requested refund
+- Fraudulent activity detected
+- Partner policy violation
+- Invalid or test transaction
+
+Rejected transactions don't generate commission.
+
+---
+
+## Hold Period
+
+Commissions are held before becoming withdrawable to protect against refunds.
+
+| Hold Period | Use case |
+|-------------|----------|
+| **7 days** | Low-risk products, established partners |
+| **14 days** | Standard SaaS subscriptions |
+| **21 days** | High-ticket items, refund-prone products |
+
+**During hold period:**
+- Commission shows as "Pending" in partner dashboard
+- Customer refund → Commission cancelled automatically
+- No refund → Commission moves to "Withdrawable"
+
+---
+
+## Partner Payouts
+
+Once commission clears hold period:
+
+1. **Commission becomes Withdrawable** in partner's Affitor balance
+2. **Partner chooses:**
+   - Withdraw to bank/payment method
+   - Keep balance in Affitor
+
+**Payout frequency:** Bi-weekly (every 2 weeks)
+
+Affitor handles all partner payouts. You don't manage individual transfers.
+
+---
+
+## Example: Complete Flow
+
+**Setup:** 30% commission, Bill Flow, 14-day hold
+
+| Day | Event | Amount |
+|-----|-------|--------|
+| 0 | Customer clicks affiliate link | — |
+| 5 | Customer purchases $100/month subscription | — |
+| 5 | You receive $100 via your Stripe | $100 |
+| 5 | Transaction appears in your dashboard | — |
+| 6 | You approve transaction | — |
+| 12 | Affitor sends weekly invoice: $33.50 | — |
+| 13 | You pay invoice | -$33.50 |
+| 6-20 | Hold period (14 days) | — |
+| 20 | Hold ends, no refund | — |
+| 20 | $30 commission → Partner's Withdrawable balance | $30 |
+| 28 | Bi-weekly payout: Partner receives $30 | $30 |
+
+---
+
+## Fees Summary
+
+For each affiliate-generated sale, Affitor charges 3.5% platform fee only on affiliate-generated revenue. No monthly fees, no setup costs.
+
+[→ See full pricing details](/pricing)
+
+---
+
+## Refund Handling
+
+| When refund happens | What happens to commission |
+|---------------------|---------------------------|
+| During hold period | Commission cancelled automatically |
+| After hold period, before payout | Commission reversed from partner balance |
+| After payout | Deducted from partner's next payout |
+
+---
+
+## What's Next
+
+- **[Payouts](/guides/payouts)** – Payout schedules, methods, and minimum thresholds
+- **[View Performance](/guides/view-performance)** – Monitor transactions and revenue

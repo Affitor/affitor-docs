@@ -1,22 +1,246 @@
 ---
-title: "Testing Your Integration"
-description: "Test your tracking implementation to ensure accurate attribution."
-lastUpdated: 2026-01-22
+title: Testing Integration
+description: Verify your Affitor tracking works end-to-end
 ---
 
-:::note[Coming Soon]
-This page is currently under development. The content will be available soon.
-:::
+# Testing Integration
 
-Learn how to test your tracking integration to ensure everything works correctly.
+Before going live, test your integration to ensure tracking works correctly.
 
-## What You'll Learn
+---
 
-- Testing strategies
-- Test mode setup
-- Debugging tools
-- Common issues and solutions
+## Enable Test Mode
 
-## Coming Soon
+Add `data-affitor-debug="true"` to your tracker script:
 
-This guide is currently being written. Check back soon for testing and debugging guidance.
+```html
+<script 
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="true">
+</script>
+```
+
+**Test mode:**
+- Logs all tracking events to browser console
+- Events still sent to Affitor (marked as test)
+- Visible in dashboard under test events
+
+---
+
+## Test Checklist
+
+### 1. Pageview Tracking (Click)
+
+**Steps:**
+1. Open browser Developer Tools (F12) → Console
+2. Visit: `https://yoursite.com?ref=TEST123`
+3. Look for Affitor debug messages
+
+**Expected console output:**
+
+```
+[Affitor] Detected ref parameter: TEST123
+[Affitor] Setting partner_code cookie: TEST123
+[Affitor] Generated customer_code: cust_abc123
+[Affitor] Click event tracked
+```
+
+**Verify cookies:**
+- Developer Tools → Application → Cookies
+- Check for `partner_code = TEST123`
+- Check for `customer_code = some value`
+
+**Dashboard check:**
+- Go to Affitor → Integration Status
+- Pageview tracker: ✅ Connected
+
+### 2. Lead Tracking (Signup)
+
+**Steps:**
+1. With cookies set (from step 1), complete your signup flow
+2. Check console for lead event
+
+**Expected console output:**
+
+```
+[Affitor] trackLead called with: { email: 'test@example.com' }
+[Affitor] Lead event tracked
+```
+
+**Dashboard check:**
+- Go to Affitor → Integration Status
+- Referrals tracker: ✅ Connected
+
+### 3. Payment Tracking (Sale)
+
+**Steps:**
+1. Use Stripe test mode (test card: `4242 4242 4242 4242`)
+2. Complete a test purchase
+3. Check Stripe Dashboard → Webhooks for delivery status
+
+**Verify metadata (Stripe Dashboard):**
+- Go to Payments → find test payment
+- Click to view details
+- Check metadata contains:
+  - `partner_code: TEST123`
+  - `customer_code: cust_abc123`
+  - `program_id: YOUR_PROGRAM_ID`
+
+**Dashboard check:**
+- Go to Affitor → Transactions
+- Test conversion should appear
+- Integration Status → Payments tracker: ✅ Connected
+
+---
+
+## Test API Endpoint
+
+Programmatically verify integration:
+
+```http
+POST https://api.affitor.com/api/tracking/test
+Content-Type: application/json
+
+{
+  "program_id": "YOUR_PROGRAM_ID",
+  "step_id": "pageview"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Test event received",
+  "testEvent": {
+    "id": "evt_123",
+    "event_type": "test",
+    "timestamp": "2026-01-21T12:00:00Z"
+  }
+}
+```
+
+---
+
+## Integration Status Dashboard
+
+Check all three integrations at once:
+
+1. Go to Affitor Dashboard
+2. Navigate to Settings → Integration
+3. View status for each tracker:
+
+| Tracker | Status | Meaning |
+|---------|--------|---------|
+| Pageview | ✅ Connected | Script installed, receiving clicks |
+| Referrals | ✅ Connected | Receiving lead events |
+| Payments | ✅ Connected | Webhook configured, receiving sales |
+
+| Tracker | Status | Meaning |
+|---------|--------|---------|
+| Pageview | ⏳ Pending | Script not detected yet |
+| Referrals | ⏳ Pending | No lead events received |
+| Payments | ⏳ Pending | No payment events received |
+
+---
+
+## Common Test Scenarios
+
+### Scenario 1: Full Flow Test
+
+1. Open incognito window (fresh cookies)
+2. Visit `yoursite.com?ref=TEST123`
+3. Sign up with test email
+4. Purchase with Stripe test card
+5. Check dashboard for: 1 click → 1 signup → 1 conversion
+
+### Scenario 2: Returning Visitor
+
+1. Visit `yoursite.com?ref=PARTNER_A`
+2. Leave site
+3. Return directly to `yoursite.com` (no ref)
+4. Purchase
+
+**Expected:** Attributed to `PARTNER_A` (cookie persists)
+
+### Scenario 3: Partner Override
+
+1. Visit `yoursite.com?ref=PARTNER_A`
+2. Later visit `yoursite.com?ref=PARTNER_B`
+3. Purchase
+
+**Expected:** Attributed to `PARTNER_B` (last click wins)
+
+### Scenario 4: Expired Attribution
+
+1. Visit `yoursite.com?ref=PARTNER_A`
+2. Wait 61+ days (or manually clear cookies)
+3. Purchase
+
+**Expected:** No attribution (outside 60-day window)
+
+---
+
+## Troubleshooting Test Issues
+
+### Console Shows No Affitor Messages
+
+**Check:**
+- `data-affitor-debug="true"` is set
+- Script URL is correct
+- No ad blockers/privacy extensions
+
+### Cookies Not Setting
+
+**Check:**
+- URL has `?ref=` parameter
+- Site uses HTTPS
+- No Content Security Policy blocking
+
+### Webhook Not Firing
+
+**Check:**
+- Stripe webhook endpoint configured
+- Correct events selected
+- Endpoint URL is correct (`https://api.affitor.com/api/stripe/webhooks`)
+
+### Test Event Not in Dashboard
+
+**Check:**
+- Program ID is correct
+- Backend API is reachable
+- Check Network tab for failed requests
+
+---
+
+## Going Live
+
+Once all tests pass:
+
+1. **Remove test mode:**
+   ```html
+   data-affitor-debug="true"
+   ```
+
+2. Switch Stripe to live mode (if using test mode)
+
+3. Verify one real transaction before announcing to partners
+
+4. Monitor dashboard for first few days
+
+---
+
+## Support
+
+If tests fail after checking troubleshooting steps:
+
+- Screenshot console errors
+- Note which step fails
+- Contact support@affitor.com
+
+**Include:**
+- Program ID
+- Browser and version
+- Steps to reproduce

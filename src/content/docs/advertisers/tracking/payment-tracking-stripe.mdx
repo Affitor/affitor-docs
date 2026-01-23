@@ -1,22 +1,291 @@
 ---
-title: "Payment Tracking (Stripe)"
-description: "Integrate Stripe webhooks to track payments and trigger commissions."
-lastUpdated: 2026-01-22
+title: Payment Tracking (Stripe)
+description: Track sales and calculate commissions via Stripe integration
 ---
 
-:::note[Coming Soon]
-This page is currently under development. The content will be available soon.
+Payment tracking captures completed purchases and triggers commission calculation. This is where partners actually earn money.
+
+---
+
+## Integration Methods
+
+Choose based on your setup:
+
+| Method | How it works | Best for |
+|--------|--------------|----------|
+| **[Affitor Pay](#affitor-pay)** | Redirect to Affitor checkout | Fastest setup, no Stripe changes |
+| **[Bill Flow](#bill-flow)** | Add metadata to your Stripe checkout | Existing Stripe integration |
+
+**Coming Soon:** Split Pay – Automatic fund splitting via Stripe Connect
+
+---
+
+## Affitor Pay
+
+Redirect affiliate-referred customers to Affitor's hosted checkout. Affitor handles payment collection and tracking automatically.
+
+### Implementation
+
+```javascript
+// When customer clicks "Buy" or "Subscribe"
+window.affitor.redirectToCheckout({
+  price: 99.99,
+  currency: 'USD',
+  product_name: 'Pro Plan'
+});
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `price` | number | Yes | Product price |
+| `currency` | string | No | Currency code (default: USD) |
+| `product_name` | string | No | Product name for checkout |
+
+### How It Works
+
+1. Customer clicks buy → `redirectToCheckout()` called
+2. Affitor creates Stripe Checkout session with tracking metadata
+3. Customer completes payment on Affitor-hosted page
+4. Webhook fires → conversion tracked → commission calculated
+5. You receive payment minus commission and platform fee
+
+**Pros:** Zero Stripe configuration needed  
+**Cons:** Customers see Affitor checkout, not your branded checkout
+
+---
+
+## Bill Flow
+
+Add Affitor metadata to your existing Stripe Checkout sessions. You collect payment normally; Affitor tracks via webhooks and invoices you weekly.
+
+### Implementation
+
+Include these metadata fields when creating Stripe Checkout:
+
+#### One-Time Payment:
+
+```javascript
+const session = await stripe.checkout.sessions.create({
+  line_items: [{
+    price: 'price_xxx',
+    quantity: 1,
+  }],
+  mode: 'payment',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  
+  // ✅ REQUIRED: Affitor tracking metadata
+  metadata: {
+    partner_code: getPartnerCode(),    // From cookie
+    customer_code: getCustomerCode(),  // From cookie
+    program_id: 'YOUR_PROGRAM_ID'
+  }
+});
+```
+
+#### Subscription:
+
+```javascript
+const session = await stripe.checkout.sessions.create({
+  line_items: [{
+    price: 'price_xxx',
+    quantity: 1,
+  }],
+  mode: 'subscription',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  
+  // ✅ REQUIRED: Session metadata (first payment)
+  metadata: {
+    partner_code: getPartnerCode(),
+    customer_code: getCustomerCode(),
+    program_id: 'YOUR_PROGRAM_ID'
+  },
+  
+  // ✅ REQUIRED: Subscription metadata (recurring payments)
+  subscription_data: {
+    metadata: {
+      partner_code: getPartnerCode(),
+      customer_code: getCustomerCode(),
+      program_id: 'YOUR_PROGRAM_ID'
+    }
+  }
+});
+```
+
+### Getting Cookie Values
+
+```javascript
+// Helper functions to get Affitor cookies
+function getPartnerCode() {
+  return getCookie('partner_code') || null;
+}
+
+function getCustomerCode() {
+  return getCookie('customer_code') || null;
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+```
+
+### Server-Side (Node.js)
+
+```javascript
+// Parse cookies from request
+function getAffitorCookies(req) {
+  const cookies = req.headers.cookie || '';
+  const parsed = {};
+  
+  cookies.split(';').forEach(cookie => {
+    const [name, value] = cookie.trim().split('=');
+    parsed[name] = value;
+  });
+  
+  return {
+    partner_code: parsed.partner_code || null,
+    customer_code: parsed.customer_code || null
+  };
+}
+
+// In your checkout endpoint
+app.post('/api/create-checkout', async (req, res) => {
+  const { partner_code, customer_code } = getAffitorCookies(req);
+  
+  const session = await stripe.checkout.sessions.create({
+    // ... your config
+    metadata: {
+      partner_code,
+      customer_code,
+      program_id: process.env.AFFITOR_PROGRAM_ID
+    }
+  });
+  
+  res.json({ url: session.url });
+});
+```
+
+### Webhook Setup
+
+Affitor receives Stripe webhooks to track payments. Configure in Stripe Dashboard:
+
+1. Go to **Developers → Webhooks**
+2. Add endpoint: `https://api.affitor.com/api/stripe/webhooks`
+3. Select events:
+   - `checkout.session.completed`
+   - `payment_intent.succeeded`
+   - `invoice.payment_succeeded`
+4. Copy webhook signing secret (Affitor team will configure)
+
+:::note
+Contact Affitor support to complete webhook setup. We need your Stripe webhook signing secret.
 :::
 
-Connect Stripe to Affitor to automatically track payments and trigger commission calculations.
+### How It Works
 
-## What You'll Learn
+1. Customer clicks buy → your checkout with Affitor metadata
+2. Customer completes payment via your Stripe
+3. Stripe webhook fires → Affitor receives event
+4. Affitor reads metadata → attributes to partner
+5. Commission calculated → Affitor invoices you weekly
+6. You and Affitor manually review via dashboard + Stripe data
 
-- Stripe webhook integration
-- Payment event handling
-- Commission calculation triggers
-- Testing payment tracking
+**Pros:** Use your existing checkout, full branding control  
+**Cons:** Requires metadata setup, weekly invoice payment
 
-## Coming Soon
+---
 
-This guide is currently being written. Check back soon for detailed instructions on Stripe payment tracking.
+## Metadata Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partner_code` | string | Yes | Partner's referral code (from cookie) |
+| `customer_code` | string | Yes | Visitor tracking ID (from cookie) |
+| `program_id` | string | Yes | Your Affitor program ID |
+
+:::caution
+Missing metadata = no attribution. Always verify cookies exist before creating checkout.
+:::
+
+### Handling Missing Cookies
+
+```javascript
+const partnerCode = getPartnerCode();
+const customerCode = getCustomerCode();
+
+// Only include metadata if cookies exist
+const metadata = {};
+if (partnerCode && customerCode) {
+  metadata.partner_code = partnerCode;
+  metadata.customer_code = customerCode;
+  metadata.program_id = 'YOUR_PROGRAM_ID';
+}
+
+const session = await stripe.checkout.sessions.create({
+  // ... config
+  metadata: Object.keys(metadata).length > 0 ? metadata : undefined
+});
+```
+
+---
+
+## Verifying Payment Tracking
+
+### Test a Purchase
+
+1. Visit your site with `?ref=TEST123`
+2. Complete a test purchase (use Stripe test mode)
+3. Check Affitor dashboard → **Transactions**
+4. Verify conversion appears with correct partner
+
+### Check Webhook Delivery
+
+1. Go to Stripe Dashboard → **Developers → Webhooks**
+2. Find Affitor endpoint
+3. Check recent deliveries for success/failure
+
+### Integration Status
+
+1. Go to Affitor dashboard → **Settings → Integration**
+2. Payment tracking should show **"Connected"**
+
+---
+
+## Troubleshooting
+
+### Conversion Not Tracked
+
+**Check:**
+- Metadata included in Stripe session
+- Webhook endpoint configured correctly
+- Webhook events selected (`checkout.session.completed`)
+- Cookies exist before checkout creation
+
+### Wrong Partner Attributed
+
+**Check:**
+- `partner_code` cookie value matches expected partner
+- Customer clicked partner's link before purchasing
+- No cookie overwrites between click and purchase
+
+### Subscription Renewals Not Tracked
+
+**Check:**
+- `subscription_data.metadata` included (not just session metadata)
+- `invoice.payment_succeeded` webhook event selected
+- Partner within commission duration window
+
+---
+
+## Next Steps
+
+Payment tracking is set up. See the complete flow:
+
+- **[View Payment Flow →](/advertisers/tracking/payment-flow/)**
+- **[Test Your Integration →](/advertisers/tracking/testing-integration/)**
