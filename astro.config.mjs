@@ -10,8 +10,8 @@ export default defineConfig({
 			title: 'Affitor Documentation',
 			description: 'Complete guide to the Affitor affiliate management platform',
 			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
-				{ icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
+				// { icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
+				// { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
 			],
 			editLink: {
 				baseUrl: 'https://github.com/affitor/affiliate-docs/edit/main/',

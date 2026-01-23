@@ -3,8 +3,6 @@ title: Commission Approval & Cash Flow
 description: Understand how commissions are validated, approved, and paid out
 ---
 
-# Commission Approval & Cash Flow
-
 This guide explains how money flows through Affitor—from customer purchase to partner payout.
 
 ---
@@ -25,11 +23,7 @@ How you receive payments and how partners get paid depends on your checkout inte
 
 *For advertisers without Stripe. Affitor handles everything.*
 
-```
-Customer → Affitor checkout → Affitor collects 100%
-→ Validate & approve → Deduct commission + fee → Pay advertiser
-```
-
+![Affitor Pay Flow](/images/affitor-pay-flow.png)
 **Step by step:**
 
 1. **Customer purchases** through Affitor-hosted checkout page
@@ -42,19 +36,11 @@ Customer → Affitor checkout → Affitor collects 100%
 
 **Best for:** Fast setup, no Stripe account needed.
 
-![Affitor Pay Flow](/images/affitor-pay-flow.png)
-
 ---
 
 ## Bill Flow
 
 *You collect everything, Affitor invoices later.*
-
-```
-Customer → Your checkout → You receive 100%
-→ Affitor tracks & validates → You approve
-→ Affitor invoices you → You pay → Partner payout
-```
 
 **Step by step:**
 
@@ -84,12 +70,6 @@ Customer → Your checkout → You receive 100%
 - **Real-time accuracy** – No reconciliation or manual calculations
 - **Instant partner visibility** – Partners see earnings immediately
 - **Cash flow clarity** – You always know your net revenue upfront
-
-```
-Customer → Your checkout → Stripe splits automatically
-→ You receive net amount → Affitor receives commission + fee
-→ Validate & approve → Hold period → Partner payout
-```
 
 ![Split Pay Flow - Coming Soon](/images/split-pay-flow.png)
 
