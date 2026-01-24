@@ -15,7 +15,7 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 ```html
 <script 
-  src="https://api.affitor.com/js/affitor-tracker.js"
+  src="https://affitor-cms.vanilla-ott.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">
 </script>
@@ -99,7 +99,7 @@ Add `data-affitor-debug="true"` to your tracker script:
 Programmatically verify integration:
 
 ```http
-POST https://api.affitor.com/api/tracking/test
+POST https://affitor-cms.vanilla-ott.com/api/tracking/test
 Content-Type: application/json
 
 {
@@ -204,7 +204,7 @@ Check all three integrations at once:
 **Check:**
 - Stripe webhook endpoint configured
 - Correct events selected
-- Endpoint URL is correct (`https://api.affitor.com/api/stripe/webhooks`)
+- Endpoint URL is correct (`https://affitor-cms.vanilla-ott.com/api/stripe/webhooks`)
 
 ### Test Event Not in Dashboard
 

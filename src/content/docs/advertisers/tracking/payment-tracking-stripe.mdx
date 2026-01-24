@@ -176,7 +176,7 @@ app.post('/api/create-checkout', async (req, res) => {
 Affitor receives Stripe webhooks to track payments. Configure in Stripe Dashboard:
 
 1. Go to **Developers → Webhooks**
-2. Add endpoint: `https://api.affitor.com/api/stripe/webhooks`
+2. Add endpoint: `https://affitor-cms.vanilla-ott.com/api/stripe/webhooks`
 3. Select events:
    - `checkout.session.completed`
    - `payment_intent.succeeded`
