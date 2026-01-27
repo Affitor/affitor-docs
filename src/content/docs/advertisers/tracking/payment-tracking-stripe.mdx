@@ -170,23 +170,6 @@ app.post('/api/create-checkout', async (req, res) => {
   res.json({ url: session.url });
 });
 ```
-
-### Webhook Setup
-
-Affitor receives Stripe webhooks to track payments. Configure in Stripe Dashboard:
-
-1. Go to **Developers → Webhooks**
-2. Add endpoint: `https://affitor-cms.vanilla-ott.com/api/stripe/webhooks`
-3. Select events:
-   - `checkout.session.completed`
-   - `payment_intent.succeeded`
-   - `invoice.payment_succeeded`
-4. Copy webhook signing secret (Affitor team will configure)
-
-:::note
-Contact Affitor support to complete webhook setup. We need your Stripe webhook signing secret.
-:::
-
 ### How It Works
 
 1. Customer clicks buy → your checkout with Affitor metadata
