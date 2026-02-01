@@ -34,11 +34,14 @@ After your signup form submits successfully, call:
 
 ```javascript
 window.affitor.trackLead({
-  email: 'user@example.com'
+  email: 'user@example.com',
+  user_id: 'user_123'  // Your internal user ID - REQUIRED
 });
 ```
 
-That's the minimum. Email is required; everything else is optional.
+:::caution[Required for Payment Tracking]
+The `user_id` parameter is **required** for payment attribution to work. This must be your internal user identifier that you'll also pass in Stripe checkout metadata. Without it, purchases cannot be linked to affiliate partners.
+:::
 
 ---
 
@@ -49,13 +52,13 @@ Include additional data for better analytics:
 ```javascript
 window.affitor.trackLead({
   email: 'user@example.com',        // Required
+  user_id: 'user_123',              // Required - YOUR internal user ID
   name: 'John Doe',                 // Optional
   phone: '+1234567890',             // Optional
   additional_data: {
-    signup_method: 'email',         // How they signed up
-    user_id: 'user_123',            // Your internal user ID
-    plan: 'free_trial',             // Plan they selected
-    source: 'pricing_page'          // Where they signed up
+    signup_method: 'email',         // Optional - How they signed up
+    plan: 'free_trial',             // Optional - Plan they selected
+    source: 'pricing_page'          // Optional - Where they signed up
   }
 });
 ```
@@ -65,6 +68,7 @@ window.affitor.trackLead({
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `email` | string | Yes | User's email address |
+| `user_id` | string | **Yes** | **Your internal user ID - required for payment attribution** |
 | `name` | string | No | User's full name |
 | `phone` | string | No | User's phone number |
 | `additional_data` | object | No | Any extra data you want to track |
@@ -86,12 +90,12 @@ document.getElementById('signup-form').addEventListener('submit', async function
   const result = await createAccount(email, name);
   
   if (result.success) {
-    // Track the lead
+    // Track the lead with user_id (REQUIRED)
     window.affitor.trackLead({
       email: email,
+      user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
       name: name,
       additional_data: {
-        user_id: result.userId,
         signup_method: 'form'
       }
     });
@@ -117,12 +121,13 @@ function SignupForm() {
     });
     
     if (result.success) {
-      // Track the lead
+      // Track the lead with user_id (REQUIRED)
       window.affitor?.trackLead({
         email: formData.get('email'),
+        user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
         name: formData.get('name'),
         additional_data: {
-          user_id: result.userId
+          signup_method: 'react_form'
         }
       });
       
@@ -147,13 +152,13 @@ function SignupForm() {
 async function handleOAuthCallback(user) {
   // User authenticated via Google/GitHub/etc.
   
-  // Track the lead
+  // Track the lead with user_id (REQUIRED)
   window.affitor?.trackLead({
     email: user.email,
+    user_id: user.id,  // ✅ REQUIRED: Your internal user ID
     name: user.name,
     additional_data: {
-      signup_method: 'google',
-      user_id: user.id
+      signup_method: 'google'
     }
   });
   

@@ -67,6 +67,16 @@ Include these metadata fields when creating Stripe Checkout:
 #### One-Time Payment:
 
 ```javascript
+// Helper to read Affitor cookies
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+const customerCode = getCookie('customer_code');
+
 const session = await stripe.checkout.sessions.create({
   line_items: [{
     price: 'price_xxx',
@@ -76,10 +86,10 @@ const session = await stripe.checkout.sessions.create({
   success_url: 'https://yoursite.com/success',
   cancel_url: 'https://yoursite.com/cancel',
   
-  // ✅ REQUIRED: Affitor tracking metadata
+  // ✅ REQUIRED: All three tracking fields
   metadata: {
-    partner_code: getPartnerCode(),    // From cookie
-    customer_code: getCustomerCode(),  // From cookie
+    customer_code: customerCode,
+    user_id: currentUser.id,
     program_id: 'YOUR_PROGRAM_ID'
   }
 });
@@ -88,6 +98,16 @@ const session = await stripe.checkout.sessions.create({
 #### Subscription:
 
 ```javascript
+// Helper to read Affitor cookies
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+const customerCode = getCookie('customer_code');
+
 const session = await stripe.checkout.sessions.create({
   line_items: [{
     price: 'price_xxx',
@@ -99,70 +119,46 @@ const session = await stripe.checkout.sessions.create({
   
   // ✅ REQUIRED: Session metadata (first payment)
   metadata: {
-    partner_code: getPartnerCode(),
-    customer_code: getCustomerCode(),
+    customer_code: customerCode,
+    user_id: currentUser.id,
     program_id: 'YOUR_PROGRAM_ID'
   },
   
   // ✅ REQUIRED: Subscription metadata (recurring payments)
   subscription_data: {
     metadata: {
-      partner_code: getPartnerCode(),
-      customer_code: getCustomerCode(),
+      customer_code: customerCode,
+      user_id: currentUser.id,
       program_id: 'YOUR_PROGRAM_ID'
     }
   }
 });
 ```
 
-### Getting Cookie Values
+### Server-Side Example (Node.js)
 
 ```javascript
-// Helper functions to get Affitor cookies
-function getPartnerCode() {
-  return getCookie('partner_code') || null;
-}
-
-function getCustomerCode() {
-  return getCookie('customer_code') || null;
-}
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-}
-```
-
-### Server-Side (Node.js)
-
-```javascript
-// Parse cookies from request
-function getAffitorCookies(req) {
-  const cookies = req.headers.cookie || '';
-  const parsed = {};
-  
-  cookies.split(';').forEach(cookie => {
-    const [name, value] = cookie.trim().split('=');
-    parsed[name] = value;
-  });
-  
-  return {
-    partner_code: parsed.partner_code || null,
-    customer_code: parsed.customer_code || null
-  };
-}
-
 // In your checkout endpoint
 app.post('/api/create-checkout', async (req, res) => {
-  const { partner_code, customer_code } = getAffitorCookies(req);
+  // Extract customer_code from cookies (sent in request headers)
+  const cookies = req.headers.cookie || '';
+  const customerCode = cookies.split('; ')
+    .find(row => row.startsWith('customer_code='))
+    ?.split('=')[1];
+  
+  // Get user from your authentication system
+  const userId = req.user.id;
   
   const session = await stripe.checkout.sessions.create({
-    // ... your config
+    line_items: [{ price: 'price_xxx', quantity: 1 }],
+    mode: 'payment',
+    success_url: 'https://yoursite.com/success',
+    cancel_url: 'https://yoursite.com/cancel',
+    
+    // ✅ REQUIRED: All three tracking fields
     metadata: {
-      partner_code,
-      customer_code,
+      customer_code: customerCode,
+      user_id: userId,
       program_id: process.env.AFFITOR_PROGRAM_ID
     }
   });
@@ -170,16 +166,21 @@ app.post('/api/create-checkout', async (req, res) => {
   res.json({ url: session.url });
 });
 ```
+
+:::tip[Required Tracking Fields]
+Include all three fields (`customer_code`, `user_id`, `program_id`) in Stripe metadata for reliable payment attribution. The backend uses multiple lookup methods to ensure tracking works even if cookies are blocked.
+:::
 ### How It Works
 
-1. Customer clicks buy → your checkout with Affitor metadata
-2. Customer completes payment via your Stripe
-3. Stripe webhook fires → Affitor receives event
-4. Affitor reads metadata → attributes to partner
-5. Commission calculated → Affitor invoices you weekly
-6. You and Affitor manually review via dashboard + Stripe data
+1. Customer clicks affiliate link → tracked with internal cookies
+2. Customer signs up → calls `trackLead({ user_id })` with your internal user ID
+3. Customer clicks buy → your checkout with `user_id` in metadata
+4. Customer completes payment via your Stripe
+5. Stripe webhook fires → Affitor receives event
+6. Affitor looks up customer-partner using `user_id` → attributes to partner
+7. Commission calculated → Affitor invoices you weekly
 
-**Pros:** Use your existing checkout, full branding control  
+**Pros:** Simple integration, use your existing checkout, no cookie reading required  
 **Cons:** Requires metadata setup, weekly invoice payment
 
 ---
@@ -188,33 +189,27 @@ app.post('/api/create-checkout', async (req, res) => {
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `partner_code` | string | Yes | Partner's referral code (from cookie) |
-| `customer_code` | string | Yes | Visitor tracking ID (from cookie) |
-| `program_id` | string | Yes | Your Affitor program ID |
+| `customer_code` | string | **Yes** | Customer identifier from Affitor cookie (set automatically when user clicks affiliate link) |
+| `user_id` | string | **Yes** | Your internal user ID (must match the value from `trackLead()`) |
+| `program_id` | string | **Yes** | Your Affitor program ID |
 
-:::caution
-Missing metadata = no attribution. Always verify cookies exist before creating checkout.
+**All three fields are required for reliable payment attribution.**
+
+:::caution[Required Metadata Fields]
+All three metadata fields must be included:
+- `customer_code` - Read from Affitor cookie (primary lookup method)
+- `user_id` - Your internal user ID (fallback lookup + validation)
+- `program_id` - Your Affitor program ID (program identification)
+
+Without these fields, the purchase cannot be attributed to the affiliate partner.
 :::
 
-### Handling Missing Cookies
+### Important Notes
 
-```javascript
-const partnerCode = getPartnerCode();
-const customerCode = getCustomerCode();
-
-// Only include metadata if cookies exist
-const metadata = {};
-if (partnerCode && customerCode) {
-  metadata.partner_code = partnerCode;
-  metadata.customer_code = customerCode;
-  metadata.program_id = 'YOUR_PROGRAM_ID';
-}
-
-const session = await stripe.checkout.sessions.create({
-  // ... config
-  metadata: Object.keys(metadata).length > 0 ? metadata : undefined
-});
-```
+- **Customer Code:** Set automatically by Affitor tracker when user clicks affiliate link. Read from cookie using the helper function.
+- **User ID Must Match:** The `user_id` must exactly match the value you passed during `trackLead()`.
+- **Program ID:** Find your program ID in the Affitor dashboard under Settings.
+- **Hybrid Attribution:** Backend tries `customer_code` first (primary), falls back to `user_id` if cookies are blocked.
 
 ---
 
@@ -245,24 +240,36 @@ const session = await stripe.checkout.sessions.create({
 ### Conversion Not Tracked
 
 **Check:**
-- Metadata included in Stripe session
+- All three required fields included in Stripe metadata:
+  - `customer_code` (from Affitor cookie)
+  - `user_id` (your internal user ID)
+  - `program_id` (your Affitor program ID)
+- Cookie reading function working correctly
+- Cookies not blocked by browser (check browser console)
+- `user_id` matches the value used in `trackLead()` during signup
 - Webhook endpoint configured correctly
 - Webhook events selected (`checkout.session.completed`)
-- Cookies exist before checkout creation
+- User signed up via affiliate link (customer-partner record exists)
 
 ### Wrong Partner Attributed
 
 **Check:**
-- `partner_code` cookie value matches expected partner
-- Customer clicked partner's link before purchasing
-- No cookie overwrites between click and purchase
+- Customer clicked partner's link before signing up
+- `trackLead()` was called during signup with correct `user_id`
+- Customer-partner relationship exists in database
+- `customer_code` in metadata matches the cookie value
+- `user_id` in Stripe metadata exactly matches signup `user_id`
 
 ### Subscription Renewals Not Tracked
 
 **Check:**
-- `subscription_data.metadata` included (not just session metadata)
+- `subscription_data.metadata` includes all three fields:
+  - `customer_code`
+  - `user_id`
+  - `program_id`
 - `invoice.payment_succeeded` webhook event selected
 - Partner within commission duration window
+- Original checkout has customer-partner relationship
 
 ---
 

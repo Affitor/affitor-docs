@@ -38,17 +38,21 @@ Customer explores your site. Cookies persist for 60 days.
 
 **Attribution window:** 60 days from first click.     
 
-### 4. Customer Signs Up (Optional)
+### 4. Customer Signs Up
 
 Customer creates an account.
 
 **Your code calls:**
 ```javascript
-window.affitor.trackLead({ email: 'customer@example.com' });
+window.affitor.trackLead({ 
+  email: 'customer@example.com',
+  user_id: 'user_123'  // Your internal user ID - REQUIRED
+});
 ```
 
 **What happens:**
-- Lead event linked to partner via `customer_code`
+- Lead event linked to partner via cookies
+- **`user_id` saved to customer-partner relationship**
 - Partner sees: 1 click → 1 signup
 
 ### 5. Customer Purchases
@@ -59,9 +63,7 @@ Customer completes payment via Stripe.
 
 ```javascript
 metadata: {
-  partner_code: 'PARTNER123',
-  customer_code: 'cust_xyz',
-  program_id: 'YOUR_PROGRAM_ID'
+  user_id: currentUser.id  // Your internal user ID (same as trackLead)
 }
 ```
 
@@ -71,7 +73,9 @@ Stripe sends `checkout.session.completed` to Affitor.
 
 **What happens:**
 - Affitor receives payment confirmation
-- Reads metadata → identifies partner
+- Reads `user_id` from metadata
+- Looks up customer-partner relationship using `user_id`
+- Extracts partner, customer, and program information
 - Creates conversion record
 
 ### 7. Commission Calculated
