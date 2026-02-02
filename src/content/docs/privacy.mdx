@@ -1,0 +1,537 @@
+---
+title: Privacy & Data Protection
+description: Privacy policy and data protection practices for the Affitor affiliate tracking platform
+---
+
+# Privacy & Data Protection
+
+**Last Updated:** February 2, 2026  
+**Compliance Standards:** GDPR, CCPA
+
+---
+
+## Overview
+
+Affitor is committed to protecting the privacy and security of personal data. This document outlines our privacy practices, data handling policies, and compliance with GDPR (General Data Protection Regulation) and CCPA (California Consumer Privacy Act).
+
+---
+
+## What Data We Collect
+
+### Event Tracking Data
+
+When users visit advertiser websites through affiliate links, we collect:
+
+- **Attribution Data:** Customer codes, partner codes, referral link information
+- **Geographic Data:** Country, region, city (derived from IP address)
+- **Browser Data:** User agent, screen resolution, viewport size, language, timezone
+- **Session Data:** Page URL, page title, referrer URL, session ID
+
+**What we DO NOT collect:**
+- ❌ IP addresses (converted to geolocation immediately)
+- ❌ Full email addresses (only hashed and masked versions)
+- ❌ Customer names
+- ❌ Phone numbers
+- ❌ Payment method details
+- ❌ Shipping addresses
+
+### Customer Data (Lead Events)
+
+When customers sign up or make purchases:
+
+- **Email Hash:** SHA256 hash for matching/deduplication (one-way, irreversible)
+- **Email Masked:** Partially masked email for display (e.g., `j***@gmail.com`)
+- **Customer Code:** Unique identifier for tracking
+- **User ID:** If customer is registered on advertiser's platform
+
+### Commission & Payment Data
+
+For affiliate commission calculations:
+
+- **Purchase Amount:** Transaction value in USD/EUR/VND
+- **Currency:** Transaction currency
+- **Stripe Session ID:** Checkout session identifier
+- **Commission Amount:** Calculated affiliate earnings
+- **Payment Status:** Commission payment status
+
+---
+
+## Events Without Attribution
+
+**Critical Privacy Rule:** We only store events that have valid affiliate attribution.
+
+Events without valid attribution (missing customer_code or invalid referral link) are **rejected and not stored**. This ensures:
+
+- ✅ Data minimization principle (GDPR Article 5)
+- ✅ Purpose limitation - data collected only for affiliate tracking
+- ✅ No collection of non-affiliate user behavior
+
+### Attribution Validation
+
+All events must pass validation before storage:
+
+**Click Events:**
+- ✅ Referral link must exist and be active
+- ✅ Referral link must belong to an active partner program
+
+**Lead/Conversion Events:**
+- ✅ Customer code must exist in database
+- ✅ Customer must have associated referral link
+- ✅ Referral link must be active
+
+---
+
+## Email Handling Standard
+
+### How We Protect Email Addresses
+
+1. **Hashing (SHA256):**
+   - One-way cryptographic hash
+   - Used for email matching and deduplication
+   - Cannot be reversed to retrieve original email
+   - Example: `john@example.com` → `973dfe463ec857...` (64 characters)
+
+2. **Masking:**
+   - Partial obfuscation for display
+   - Partners see masked version only
+   - Example: `john@example.com` → `j***@example.com`
+
+3. **No Plaintext Storage:**
+   - Original email addresses are never stored
+   - Received from Stripe webhooks, immediately hashed/masked
+   - Plaintext discarded after processing
+
+### Email Search & Matching
+
+Partners can search customers by:
+- ✅ Customer code (full or partial match)
+- ✅ Masked email (partial match)
+- ✅ Exact email (hashed and compared)
+
+Partners **cannot:**
+- ❌ Browse all customer emails
+- ❌ Export plaintext email lists
+- ❌ Access emails from other partners' customers
+
+---
+
+## IP Address & Geolocation
+
+### Privacy-First Approach
+
+**IP addresses are never stored.** Instead, we immediately convert them to geographic data:
+
+```typescript
+// IP address received
+const ipAddress = "8.8.8.8";
+
+// Immediately converted to geolocation
+const geo = await ipToGeo(ipAddress);
+// { country: "US", region: "California", city: "Mountain View" }
+
+// Only geolocation stored, IP discarded
+await createTrackingEvent({
+  geo_country: geo.country,
+  geo_region: geo.region,
+  geo_city: geo.city
+  // ip_address: NOT STORED
+});
+```
+
+### Geolocation Service
+
+- **Provider:** ip-api.com (free tier: 45 requests/minute)
+- **Caching:** 24-hour in-memory cache to reduce API calls
+- **Fallback:** Returns null values for localhost/invalid IPs
+- **Upgrade Option:** MaxMind GeoIP2 for production at scale
+
+---
+
+## Webhook Payload Storage
+
+### Safe Metadata Only
+
+When processing Stripe webhooks, we store **only essential metadata**:
+
+**Stored:**
+- ✅ Event type (e.g., `checkout.session.completed`)
+- ✅ Event ID (Stripe event identifier)
+- ✅ Timestamp
+- ✅ Object type and ID (e.g., `checkout_session`, `cs_123...`)
+- ✅ Routing decision (which service handled it)
+
+**NOT Stored:**
+- ❌ Full webhook payload
+- ❌ Customer email/name/phone from payload
+- ❌ Payment method details
+- ❌ Billing/shipping addresses
+
+For debugging, use **Stripe Dashboard** to view full webhook details.
+
+---
+
+## Logging & Monitoring
+
+### PII-Safe Logging
+
+Application logs automatically redact sensitive fields:
+
+```typescript
+// Unsafe logging (OLD)
+console.log({ email: "user@example.com", name: "John" });
+// Output: { email: "user@example.com", name: "John" } ❌
+
+// Safe logging (NEW)
+safeLogger.info({ email: "user@example.com", name: "John" });
+// Output: { email: "[REDACTED]", name: "[REDACTED]" } ✅
+```
+
+**Auto-Redacted Fields:**
+- `email`, `customer_email`, `customerEmail`
+- `name`, `customer_name`, `customerName`
+- `phone`, `customer_phone`, `customerPhone`
+- `ip_address`, `ipAddress`
+- `address`, `street`, `postal_code`, `ssn`
+
+---
+
+## Data Retention Policy
+
+### What We Keep
+
+**Indefinitely (Business Records):**
+- Attribution data (customer codes, referral links)
+- Commission records (amounts, dates, status)
+- Geographic analytics (country/region/city)
+- Purchase history (amounts, currency, dates)
+
+**Time-Limited:**
+- Session data: 90 days
+- Event tracking logs: 180 days
+- Webhook metadata: 365 days
+
+### What We Delete
+
+**Automatically Removed:**
+- IP addresses: Never stored (converted to geo immediately)
+- Plaintext emails: Never stored (hashed/masked immediately)
+- Customer names: Never stored
+- Phone numbers: Never stored
+
+---
+
+## Data Ownership Model
+
+### Three-Party Relationship
+
+1. **Advertiser (Data Controller):**
+   - Owns customer relationship
+   - Controls customer data via Stripe Connect account
+   - Responsible for customer consent and privacy notices
+
+2. **Affitor (Data Processor):**
+   - Processes attribution and commission data on behalf of advertiser
+   - Stores only hashed/masked customer identifiers
+   - Cannot access full customer PII
+
+3. **Affiliate Partner (Sub-Processor):**
+   - Receives commission for referred customers
+   - Sees only masked customer data
+   - Cannot access customer PII
+
+### Access to Customer Data
+
+| Data Type | Advertiser | Affitor | Partner |
+|-----------|-----------|---------|---------|
+| Full Email | ✅ (via Stripe) | ❌ | ❌ |
+| Email Hash | ✅ | ✅ | ❌ |
+| Email Masked | ✅ | ✅ | ✅ |
+| Customer Name | ✅ (via Stripe) | ❌ | ❌ |
+| Purchase Amount | ✅ | ✅ | ✅ |
+| Commission Amount | ✅ | ✅ | ✅ |
+
+---
+
+## Security Measures
+
+### Data Protection
+
+**In Transit:**
+- ✅ TLS 1.3 encryption for all API requests
+- ✅ HTTPS only (HTTP redirects to HTTPS)
+- ✅ Secure WebSocket connections (WSS)
+
+**At Rest:**
+- ✅ Database encryption (AWS RDS encryption)
+- ✅ One-way hashing for emails (SHA256)
+- ✅ Environment variable encryption (AWS Secrets Manager)
+
+**Access Control:**
+- ✅ Role-based access control (RBAC)
+- ✅ JWT token authentication
+- ✅ API key rotation
+- ✅ Multi-factor authentication (MFA) for admin access
+
+### Subprocessors
+
+Third-party services with data access:
+
+- **Stripe:** Payment processing, customer data (PCI DSS compliant)
+- **AWS:** Infrastructure hosting (SOC 2, ISO 27001 certified)
+- **ip-api.com:** Geolocation service (no data storage)
+
+---
+
+## User Rights (GDPR/CCPA)
+
+### Right to Access
+
+Customers can request:
+- What data we have about them
+- How their data is being used
+- Who has access to their data
+
+**How to Request:** Contact advertiser's support team (data controller)
+
+### Right to Rectification
+
+Customers can request correction of inaccurate data.
+
+**How to Request:** Contact advertiser's support team
+
+### Right to Erasure ("Right to be Forgotten")
+
+Customers can request deletion of their data.
+
+**What Gets Deleted:**
+- ✅ Email hash and masked email
+- ✅ Customer code linkage
+- ✅ Event tracking records
+
+**What Remains (Legal Obligation):**
+- ✅ Commission records (tax/accounting requirements)
+- ✅ Anonymized analytics (no customer linkage)
+
+**How to Request:** Contact advertiser's support team
+
+### Right to Data Portability
+
+Customers can request their data in machine-readable format (JSON/CSV).
+
+**How to Request:** Contact advertiser's support team
+
+### Right to Object
+
+Customers can object to:
+- Marketing communications
+- Affiliate tracking (via cookie opt-out)
+- Automated decision-making
+
+---
+
+## Cookies & Tracking
+
+### Attribution Cookies
+
+**Cookie Name:** `affiliate_data`  
+**Purpose:** Track customer attribution to affiliate partners  
+**Duration:** 30 days  
+**Type:** First-party cookie
+
+**Data Stored:**
+```json
+{
+  "customer_code": "cust_123_1234567890",
+  "partner_code": "partner_abc",
+  "affiliate_url": "https://example.com?ref=abc123",
+  "timestamp": "2026-02-02T12:00:00Z"
+}
+```
+
+### Cookie Consent
+
+**Required Actions:**
+- Advertisers must display cookie consent banner
+- Must explain affiliate tracking purpose
+- Must allow users to opt-out
+- Must respect "Do Not Track" signals
+
+**Example Cookie Consent:**
+> "We use cookies to track affiliate referrals and award commissions to our partners. By continuing to use this site, you consent to our cookie policy."
+
+---
+
+## International Data Transfers
+
+### Data Storage Locations
+
+- **Primary Region:** US-East-1 (Virginia, USA)
+- **Backup Region:** US-West-2 (Oregon, USA)
+- **CDN:** Global (CloudFront)
+
+### GDPR Compliance
+
+For transfers of EU citizen data to the US:
+- ✅ Standard Contractual Clauses (SCCs) with AWS
+- ✅ Adequacy decisions for supported regions
+- ✅ Data Processing Agreements (DPAs) available
+
+---
+
+## Data Breach Notification
+
+### Our Commitment
+
+In the event of a data breach:
+
+**Within 72 Hours:**
+- Notify supervisory authority (if GDPR applies)
+- Assess scope and impact
+- Contain and remediate breach
+
+**Notification to Affected Users:**
+- If high risk to rights and freedoms
+- Clear description of breach
+- Likely consequences
+- Measures taken to address breach
+- Contact point for more information
+
+**Contact for Breach Reports:** privacy@affitor.com
+
+---
+
+## Children's Privacy
+
+Affitor does not knowingly collect data from children under 16 (or 13 under COPPA).
+
+If we discover we have collected data from a child:
+- ✅ Immediately delete all associated data
+- ✅ Notify advertiser (data controller)
+- ✅ Block future tracking for that identifier
+
+---
+
+## Changes to This Policy
+
+We may update this privacy policy to reflect:
+- Changes in data practices
+- New features or services
+- Legal/regulatory requirements
+
+**Notification of Changes:**
+- Policy version and "Last Updated" date displayed
+- Material changes announced via email
+- 30-day notice before changes take effect
+
+---
+
+## Contact Information
+
+### Privacy Team
+
+**Email:** privacy@affitor.com  
+**Address:** Affitor Inc., [Address]  
+**Phone:** [Phone Number]
+
+### Data Protection Officer (DPO)
+
+**Email:** dpo@affitor.com
+
+### Supervisory Authority
+
+For EU residents:
+[Your local data protection authority contact information]
+
+---
+
+## Advertiser Responsibilities
+
+As an advertiser using Affitor:
+
+**You Must:**
+1. ✅ Display privacy notice to customers
+2. ✅ Obtain consent for affiliate tracking cookies
+3. ✅ Include Affitor in your privacy policy
+4. ✅ Honor customer data rights requests
+5. ✅ Notify Affitor of any data breaches
+
+**We Provide:**
+- ✅ Data Processing Agreement (DPA) template
+- ✅ Privacy policy language for your site
+- ✅ Cookie consent implementation guide
+- ✅ GDPR/CCPA compliance documentation
+
+---
+
+## Partner Responsibilities
+
+As an affiliate partner using Affitor:
+
+**You Must:**
+1. ✅ Not attempt to de-anonymize customer data
+2. ✅ Not share masked email addresses publicly
+3. ✅ Not scrape or export customer lists
+4. ✅ Comply with data protection laws in your jurisdiction
+
+**We Enforce:**
+- ✅ Rate limiting on API requests
+- ✅ Access logs and anomaly detection
+- ✅ Automatic account suspension for violations
+
+---
+
+## Compliance Checklist
+
+### GDPR Compliance ✅
+
+- ✅ Lawful basis for processing (legitimate interest)
+- ✅ Data minimization (only necessary data)
+- ✅ Purpose limitation (affiliate tracking only)
+- ✅ Storage limitation (retention policy)
+- ✅ Integrity and confidentiality (encryption)
+- ✅ Accountability (DPO, audits, documentation)
+
+### CCPA Compliance ✅
+
+- ✅ Right to know what data is collected
+- ✅ Right to delete personal information
+- ✅ Right to opt-out of sale (N/A - we don't sell data)
+- ✅ Right to non-discrimination
+- ✅ Privacy policy disclosure
+
+---
+
+## Frequently Asked Questions
+
+### Why don't you store email addresses?
+
+Email addresses are personally identifiable information (PII). By storing only hashed and masked versions, we:
+- Reduce privacy risk
+- Minimize data breach impact
+- Comply with data minimization principles
+
+### Can partners see customer emails?
+
+No. Partners see only masked emails (e.g., `j***@gmail.com`). Full customer details are available only to advertisers via their Stripe Connect account.
+
+### How do you match customers without storing emails?
+
+We use SHA256 hashes. When a customer checks out, we hash their email and match it against existing hashes in our database.
+
+### What if I need to contact a customer?
+
+Advertisers have access to full customer details via Stripe Connect. Partners should contact the advertiser to relay messages to customers.
+
+### Do you comply with GDPR?
+
+Yes. We follow GDPR principles including data minimization, purpose limitation, and user rights. We have a Data Protection Officer and provide Data Processing Agreements.
+
+### How do I delete my customer data?
+
+Contact the advertiser whose program you signed up for. As the data controller, they will submit a deletion request to us.
+
+---
+
+**Document Version:** 2.0 (Privacy Compliance Implementation)  
+**Effective Date:** February 2, 2026  
+**Next Review:** August 2, 2026
