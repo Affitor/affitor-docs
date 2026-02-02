@@ -216,27 +216,6 @@ Enable debug mode to see tracking events in your browser console:
 [Affitor Tracker]    - Site not served over HTTPS (required for secure cookies)
 ```
 
-### Testing with Affiliate Link
-
-To test the full tracking flow:
-
-1. Visit your site with a test referral parameter: `https://yoursite.com?ref=TEST123`
-2. With debug mode enabled, you should see:
-
-```
-[Affitor Tracker] Detected ?ref= in URL: https://yoursite.com?ref=TEST123 ref: TEST123
-[Affitor Tracker] No customer_code found, tracking click...
-[Affitor Tracker] Tracking click for affiliate URL: https://yoursite.com?ref=TEST123
-[Affitor Tracker] Click tracked successfully, codes saved: {customerCode: "cust_..."}
-[Affitor Tracker] Cookie set: {name: "customer_code", value: "cust_...", expires: ...}
-[Affitor Tracker] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
-```
-
-3. Check **Application → Cookies** in DevTools to verify:
-   - `customer_code` cookie is set (value starts with `cust_`)
-   - `affiliate_url` cookie is set (contains the full URL with `?ref=TEST123`)
-   - Both cookies expire 60 days from now
-
 ### Dashboard Verification
 
 1. Visit your site
