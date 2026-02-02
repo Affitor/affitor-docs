@@ -32,7 +32,7 @@ graph LR
     
     A -.->|Unique ?ref= URL| A1[Unique link]
     B -.->|Cookie set| B1[Click tracked]
-    C -.->|30 day cookie| C1[Cookie persists]
+    C -.->|60 day cookie| C1[Cookie persists]
     D -.->|trackLead called| D1[Lead tracked]
     E -.->|Stripe metadata| E1[Sale tracked]
 ```
@@ -42,10 +42,10 @@ graph LR
 
 1. **Partner gets unique link**: `https://yoursite.com?ref=PARTNER123`
 2. **Customer clicks**: Affitor script detects `?ref=` parameter
-3. **Cookie stored**: `partner_code` and `customer_code` saved (30-day lifetime)
+3. **Cookie stored**: `customer_code` saved (60-days lifetime)
 4. **Customer browses**: Cookie persists across sessions
-5. **Customer signs up**: You call `trackLead()` → linked to partner
-6. **Customer purchases**: Stripe metadata captures sale → commission created
+5. **Customer signs up**: You call `trackLead()` with `user_id` → linked to customer
+6. **Customer purchases**: Stripe metadata with `user_id` captures sale → commission created
 
 ---
 
@@ -70,16 +70,17 @@ Most advertisers complete all three in under 30 minutes.
 Affitor uses **last-click attribution** with cookie-based tracking.
 
 When a customer clicks an affiliate link:
-1. Partner code stored in cookie
-2. Cookie lasts 60 days
-3. Attribution window is 60 days from first click
-4. Any purchase within window credits that partner
+1. `customer_code` created and stored in cookie
+2. Customer-partner relationship created in database
+3. Cookie lasts 60 days
+4. Attribution window is 60 days from first click
+5. Any purchase within window credits that partner
 
 ### Multiple Clicks
 
 If a customer clicks Partner A's link, then later clicks Partner B's link:
 - **Partner B gets credit** (last-click wins)
-- Cookie is overwritten with new partner code
+- Cookie is overwritten with new customer code
 
 ---
 
@@ -89,8 +90,7 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 
 | Data | Source | Purpose |
 |------|--------|---------|
-| `partner_code` | From `?ref=` parameter | Identify which partner |
-| `customer_code` | Auto-generated | Link events together |
+| `customer_code` | Auto-generated on first click | Identify visitor & link events together |
 | `program_id` | Your program ID | Route to correct program |
 | Timestamp | Automatic | When event occurred |
 | User agent | Browser | Analytics |
@@ -100,7 +100,6 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 
 | Cookie | Value | Lifetime |
 |--------|-------|----------|
-| `partner_code` | Partner's referral code | 60 days |
 | `customer_code` | Unique visitor ID | 60 days |
 
 Cookies are set automatically by the tracker script. No action required.

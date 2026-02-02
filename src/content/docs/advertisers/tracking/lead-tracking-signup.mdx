@@ -11,8 +11,8 @@ Lead tracking captures when referred visitors sign up or submit forms. This lets
 
 When a visitor signs up on your site, you call `window.affitor.trackLead()`. This:
 
-1. Captures the lead event with email
-2. Links it to the stored `partner_code` from the click
+1. Captures the lead event
+2. Links it to the stored `customer_code` from the click
 3. Creates an attribution record in Affitor
 
 Partners can then see: Clicks → **Signups** → Sales
@@ -24,7 +24,7 @@ Partners can then see: Clicks → **Signups** → Sales
 Before implementing lead tracking:
 
 - [x] Pageview tracker installed ([guide](/advertisers/tracking/pageview-tracker-click/))
-- [x] Visitor arrived via affiliate link (has `partner_code` cookie)
+- [x] Visitor arrived via affiliate link (has `customer_code` cookie)
 
 ---
 
@@ -237,7 +237,6 @@ window.affitor?.trackLead({ email: email });
 ### Lead Not Attributed to Partner
 
 **Check:**
-- Visitor has `partner_code` cookie
 - Visitor came via affiliate link before signing up
 - Attribution window hasn't expired (60 days default)
 

@@ -41,14 +41,13 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 ```
 [Affitor] Detected ref parameter: TEST123
-[Affitor] Setting partner_code cookie: TEST123
 [Affitor] Generated customer_code: cust_abc123
+[Affitor] Customer-partner relationship created
 [Affitor] Click event tracked
 ```
 
 **Verify cookies:**
 - Developer Tools → Application → Cookies
-- Check for `partner_code = TEST123`
 - Check for `customer_code = some value`
 
 **Dashboard check:**
@@ -83,8 +82,8 @@ Add `data-affitor-debug="true"` to your tracker script:
 - Go to Payments → find test payment
 - Click to view details
 - Check metadata contains:
-  - `partner_code: TEST123`
-  - `customer_code: cust_abc123`
+  - `user_id: your_user_id`
+  - `customer_code: customer_code_from_cookie`
   - `program_id: YOUR_PROGRAM_ID`
 
 **Dashboard check:**
@@ -163,7 +162,7 @@ Check all three integrations at once:
 3. Return directly to `yoursite.com` (no ref)
 4. Purchase
 
-**Expected:** Attributed to `PARTNER_A` (cookie persists)
+**Expected:** Attributed to `PARTNER_A` (customer-partner relationship persists)
 
 ### Scenario 3: Partner Override
 
@@ -171,12 +170,12 @@ Check all three integrations at once:
 2. Later visit `yoursite.com?ref=PARTNER_B`
 3. Purchase
 
-**Expected:** Attributed to `PARTNER_B` (last click wins)
+**Expected:** Attributed to `PARTNER_B` (last click wins - relationship updated)
 
 ### Scenario 4: Expired Attribution
 
 1. Visit `yoursite.com?ref=PARTNER_A`
-2. Wait 61+ days (or manually clear cookies)
+2. Wait 61+ days
 3. Purchase
 
 **Expected:** No attribution (outside 60-day window)
@@ -197,7 +196,8 @@ Check all three integrations at once:
 **Check:**
 - URL has `?ref=` parameter
 - Site uses HTTPS
-- No Content Security Policy blocking
+- No Content Security Policy blocking cookies
+- No browser extensions blocking cookies
 
 ### Webhook Not Firing
 

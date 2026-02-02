@@ -27,7 +27,8 @@ Customer clicks the link and lands on your site.
 
 **What happens:**
 - Affitor tracker detects `?ref=PARTNER123`
-- Sets cookies: `partner_code`, `customer_code`
+- Generates unique `customer_code` and stores in cookie
+- Creates customer-partner relationship in database
 - Click event recorded
 
 ### 3. Customer Browses
@@ -73,7 +74,7 @@ Stripe sends `checkout.session.completed` to Affitor.
 - Affitor receives payment confirmation
 - Reads `user_id` from metadata
 - Looks up customer-partner relationship using `user_id`
-- Extracts partner, customer, and program information
+- Verifies attribution is within 60-day window
 - Creates conversion record
 
 ### 7. Commission Calculated

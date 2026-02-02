@@ -12,11 +12,12 @@ The pageview tracker captures when visitors arrive via affiliate links. This is 
 When someone clicks a partner's affiliate link (`https://yoursite.com?ref=PARTNER123`), the tracker:
 
 1. Detects the `?ref=` parameter
-2. Stores `partner_code` in a cookie
-3. Generates a unique `customer_code`
-4. Sends a click event to Affitor
+2. Request to Affitor backend to get a unique `customer_code`
+3. Stores `customer_code` in a cookie
+4. Creates customer-partner relationship in database
+5. Sends a click event to Affitor
 
-All subsequent events (signups, purchases) are linked via these cookies.
+All subsequent events (signups, purchases) are linked via `customer_code` and `user_id`.
 
 ---
 
