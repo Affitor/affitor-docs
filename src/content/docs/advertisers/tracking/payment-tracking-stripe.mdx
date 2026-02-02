@@ -215,23 +215,11 @@ Without these fields, the purchase cannot be attributed to the affiliate partner
 
 ## Verifying Payment Tracking
 
-### Test a Purchase
+### Dashboard Verification
 
-1. Visit your site with `?ref=TEST123`
-2. Complete a test purchase (use Stripe test mode)
-3. Check Affitor dashboard → **Transactions**
-4. Verify conversion appears with correct partner
-
-### Check Webhook Delivery
-
-1. Go to Stripe Dashboard → **Developers → Webhooks**
-2. Find Affitor endpoint
-3. Check recent deliveries for success/failure
-
-### Integration Status
-
-1. Go to Affitor dashboard → **Settings → Integration**
-2. Payment tracking should show **"Connected"**
+1. Go to Affitor dashboard → **Settings → Payments Tracker**
+2. Stripe Connect Integration should show **"Connected"** after you've completed a connect
+3. Payments Tracker should show a blue checkmark
 
 ---
 

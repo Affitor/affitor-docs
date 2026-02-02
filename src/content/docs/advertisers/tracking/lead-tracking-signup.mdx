@@ -11,11 +11,14 @@ Lead tracking captures when referred visitors sign up or submit forms. This lets
 
 When a visitor signs up on your site, you call `window.affitor.trackLead()`. This:
 
-1. Captures the lead event
-2. Links it to the stored `customer_code` from the click
-3. Creates an attribution record in Affitor
+1. Validates that `user_id` is provided (critical for payment tracking)
+2. Links the lead event to the stored `customer_code` from the click
+3. Sends lead data to Affitor API for processing
+4. Updates the customer-partner relationship status to "lead"
 
 Partners can then see: Clicks → **Signups** → Sales
+
+**Note:** In debug mode, calling `trackLead()` sends a test event instead of a real lead event. This helps verify your integration without creating actual lead records.
 
 ---
 
@@ -24,7 +27,10 @@ Partners can then see: Clicks → **Signups** → Sales
 Before implementing lead tracking:
 
 - [x] Pageview tracker installed ([guide](/advertisers/tracking/pageview-tracker-click/))
-- [x] Visitor arrived via affiliate link (has `customer_code` cookie)
+- [x] Visitor arrived via affiliate link and has been tracked (creates `customer_code` in database)
+- [x] `customer_code` cookie exists in browser (set automatically by pageview tracker)
+
+**Important:** The lead event requires the `customer_code` cookie to link the signup to the affiliate partner. If this cookie is missing or the customer wasn't tracked via an affiliate link, the lead tracking will fail silently (no error, but lead won't be attributed).
 
 ---
 
@@ -67,11 +73,16 @@ window.affitor.trackLead({
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `email` | string | Yes | User's email address |
-| `user_id` | string | **Yes** | **Your internal user ID - required for payment attribution** |
-| `name` | string | No | User's full name |
-| `phone` | string | No | User's phone number |
-| `additional_data` | object | No | Any extra data you want to track |
+| `email` | string | Recommended | User's email address (hashed for privacy before storage) |
+| `user_id` | string | **Required** | **Your internal user ID - critical for payment attribution** |
+| `name` | string | No | User's full name (**NOT stored** - discarded per privacy policy) |
+| `phone` | string | No | User's phone number (**NOT stored** - discarded per privacy policy) |
+| `additional_data` | object | No | Any extra data you want to track (stored as-is) |
+
+**Privacy Notes:**
+- `email` is hashed (SHA-256) and masked before storage - the original email is never stored
+- `name` and `phone` are **intentionally discarded** by the backend and never stored
+- Only `email_hash`, `email_masked`, and `user_id` are persisted in the database
 
 ---
 
@@ -212,16 +223,46 @@ window.affitor?.trackLead({ email: email });
 
 ### Test Mode
 
-1. Enable debug mode in pageview tracker
-2. Complete a test signup
-3. Check browser console for Affitor messages
+When debug mode is enabled in the pageview tracker:
+
+```html
+<script 
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="true">
+</script>
+```
+
+**What happens when you call `trackLead()` in debug mode:**
+
+1. The tracker sends a **test event** instead of a real lead event
+2. No actual lead record is created in the database
+3. Console shows validation messages for `user_id`
+4. You'll see these console messages:
+
+**With `user_id` provided:**
+```
+[Affitor Tracker] ✅ Affitor: user_id detected - user_123
+[Affitor Tracker] trackTest() called true
+[Affitor Tracker] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
+```
+
+**Without `user_id`:**
+```
+[Affitor Tracker] ❌ Affitor: user_id is REQUIRED for trackLead() - payment attribution will not work without it!
+[Affitor Tracker]    Please include user_id in your trackLead call:
+[Affitor Tracker]    window.affitor.trackLead({ email: "user@example.com", user_id: "user_123", ... })
+[Affitor Tracker] trackTest() called true
+```
+
+**Important:** In debug mode, `trackLead()` always sends a test event and returns immediately without calling the real API. This prevents accidental test leads in your database.
 
 ### Dashboard Verification
 
-1. Visit your site with `?ref=TEST123`
-2. Complete signup flow
-3. Go to Affitor dashboard → **Integration Status**
-4. Lead tracking should show **"Connected"**
+1. Visit your site
+2. Go to Affitor dashboard → **Setting** -> **Referrals Tracker**
+3. Click on **Test Lead Tracking**
+4. Referrals Tracker should show **"Connected"** with a blue checkmark
 
 ---
 
@@ -231,21 +272,49 @@ window.affitor?.trackLead({ email: email });
 
 **Check:**
 - `window.affitor` exists (pageview tracker loaded)
-- Email parameter is provided
+- `customer_code` cookie exists (visitor came via affiliate link)
 - No JavaScript errors in console
+- Not in debug mode (debug mode sends test events only)
 
 ### Lead Not Attributed to Partner
 
 **Check:**
-- Visitor came via affiliate link before signing up
+- Visitor came via affiliate link (`?ref=PARTNER123`) **before** signing up
+- `customer_code` cookie exists and matches a tracked click in the database
 - Attribution window hasn't expired (60 days default)
+- Affiliate customer record exists in database (created during click tracking)
+
+**Common issue:** If the visitor's first page load didn't include `?ref=`, no customer record was created, so the lead cannot be attributed even if cookies exist.
+
+### user_id Warning Appears
+
+**This is expected behavior** when `user_id` is missing:
+
+```
+❌ Affitor: user_id is REQUIRED for trackLead() - payment attribution will not work without it!
+```
+
+**Solutions:**
+- Always include `user_id` in your `trackLead()` call
+- `user_id` should be your internal user identifier (from your database)
+- The same `user_id` must be used in Stripe checkout metadata
+
+**Note:** The lead is still tracked even without `user_id`, but payment attribution will fail later.
 
 ### Duplicate Leads
 
 **Prevent by:**
 - Only calling `trackLead()` once per signup
 - Checking signup success before tracking
-- Using your internal `user_id` to dedupe
+- Backend automatically handles duplicate lead tracking (updates existing customer instead of creating new lead)
+
+### Lead Tracked But Not Showing in Dashboard
+
+**Check:**
+- Lead event was successfully sent (check browser Network tab)
+- Customer-partner relationship exists in database
+- Lead status updated to "lead" (was previously "click")
+- Dashboard filters aren't hiding the lead
 
 ---
 

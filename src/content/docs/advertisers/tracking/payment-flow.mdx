@@ -62,6 +62,8 @@ Customer completes payment via Stripe.
 
 ```javascript
 metadata: {
+  program_id: 'YOUR_PROGRAM_ID',
+  customer_code: 'cust_xyz',
   user_id: currentUser.id  // Your internal user ID (same as trackLead)
 }
 ```
@@ -73,9 +75,11 @@ Stripe sends `checkout.session.completed` to Affitor.
 **What happens:**
 - Affitor receives payment confirmation
 - Reads `user_id` from metadata
-- Looks up customer-partner relationship using `user_id`
+- Reads `program_id` from metadata
+- Reads `customer_code` from metadata
+- Looks up customer-partner relationship using `user_id`, `program_id` and `customer_code`
 - Verifies attribution is within 60-day window
-- Creates conversion record
+- Creates commission record
 
 ### 7. Commission Calculated
 
@@ -93,7 +97,6 @@ Affitor checks:
 
 | Check | Validation |
 |-------|------------|
-| Valid attribution | Partner code exists, within window |
 | No duplicate | Customer not already attributed |
 | Matching program | Program ID is valid |
 

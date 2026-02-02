@@ -186,13 +186,63 @@ Enable debug mode to see tracking events in your browser console:
 1. Open your browser's Developer Tools (F12)
 2. Go to the **Console** tab
 3. Visit your site
-4. Look for **[Affitor Tracker] Affitor tracker initialized with options: `{debug: true, programId: "YOUR_PROGRAM_ID"}`**
+4. You should see the following console messages:
+
+```
+[Affitor Tracker] Affitor tracker initialized with options: {debug: true}
+[Affitor Tracker] Using advertiser ID: YOUR_PROGRAM_ID
+[Affitor Tracker] 🔍 Verifying cookie functionality...
+[Affitor Tracker] 📝 Writing test cookies: {customer_code: "test_customer_...", affiliate_url: "..."}
+[Affitor Tracker] Cookie set: {name: "customer_code", value: "test_customer_...", expires: ...}
+[Affitor Tracker] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
+[Affitor Tracker] 📖 Reading test cookies back: {customer_code: "test_customer_...", affiliate_url: "..."}
+[Affitor Tracker] ✅ Cookie verification PASSED - All cookies working correctly!
+[Affitor Tracker] trackTest() called true
+[Affitor Tracker] Sending test event to verify tracking: {customerCode: null, hasAttribution: false, eventType: "test"}
+```
+
+**If cookies are blocked**, you'll see:
+
+```
+[Affitor Tracker] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
+[Affitor Tracker]    customer_code cookie issue:
+[Affitor Tracker]    - Expected: test_customer_...
+[Affitor Tracker]    - Got: null/undefined
+[Affitor Tracker]    Possible causes:
+[Affitor Tracker]    - Browser privacy settings blocking cookies
+[Affitor Tracker]    - Safari Intelligent Tracking Prevention (ITP)
+[Affitor Tracker]    - Third-party cookie restrictions
+[Affitor Tracker]    - Browser extensions (ad blockers, privacy tools)
+[Affitor Tracker]    - Site not served over HTTPS (required for secure cookies)
+```
+
+### Testing with Affiliate Link
+
+To test the full tracking flow:
+
+1. Visit your site with a test referral parameter: `https://yoursite.com?ref=TEST123`
+2. With debug mode enabled, you should see:
+
+```
+[Affitor Tracker] Detected ?ref= in URL: https://yoursite.com?ref=TEST123 ref: TEST123
+[Affitor Tracker] No customer_code found, tracking click...
+[Affitor Tracker] Tracking click for affiliate URL: https://yoursite.com?ref=TEST123
+[Affitor Tracker] Click tracked successfully, codes saved: {customerCode: "cust_..."}
+[Affitor Tracker] Cookie set: {name: "customer_code", value: "cust_...", expires: ...}
+[Affitor Tracker] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
+```
+
+3. Check **Application → Cookies** in DevTools to verify:
+   - `customer_code` cookie is set (value starts with `cust_`)
+   - `affiliate_url` cookie is set (contains the full URL with `?ref=TEST123`)
+   - Both cookies expire 60 days from now
 
 ### Dashboard Verification
 
-1. Visit your site with a test referral link
-2. Go to Affitor dashboard → **Integration Status**
-3. Pageview tracker should show **"Connected"**
+1. Visit your site
+2. Go to Affitor dashboard → **Setting** -> **Pageview Tracker**
+3. Click on **Test Click Tracking**
+4. Pageview tracker should show a blue checkmark
 
 ---
 
@@ -212,7 +262,6 @@ Enable debug mode to see tracking events in your browser console:
 **Symptoms:** Script loads but cookies are missing
 
 **Check:**
-- URL has `?ref=` parameter
 - Site is served over **HTTPS** (required for secure cookies)
 - No browser extensions blocking cookies
 
@@ -222,7 +271,6 @@ Enable debug mode to see tracking events in your browser console:
 
 **Check:**
 - Program ID is correct
-- Backend API is reachable
 - Check browser **Network** tab for failed requests
 
 ---
