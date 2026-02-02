@@ -52,7 +52,7 @@ export default defineConfig({
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
 								{ label: 'Payment Tracking (Stripe)', slug: 'advertisers/tracking/payment-tracking-stripe' },
 								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },
-								{ label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
+								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
 						// {
