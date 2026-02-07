@@ -51,8 +51,7 @@ export default defineConfig({
 								{ label: 'Pageview Tracker (Click)', slug: 'advertisers/tracking/pageview-tracker-click' },
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
 								{ label: 'Payment Tracking (Stripe)', slug: 'advertisers/tracking/payment-tracking-stripe' },
-								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },
-								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
+								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },							{ label: '🔒 Privacy & Data Protection', slug: 'privacy', badge: { text: 'Legal', variant: 'note' } },								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
 						// {
