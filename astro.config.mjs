@@ -9,6 +9,11 @@ export default defineConfig({
 		starlight({
 			title: 'Affitor Documentation',
 			description: 'Complete guide to the Affitor affiliate management platform',
+			logo: {
+				src: './src/assets/affitor-logo.svg',
+				replacesTitle: false,
+			},
+			favicon: '/favicon.svg',
 			social: [
 				// { icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
 				// { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
@@ -51,7 +56,7 @@ export default defineConfig({
 								{ label: 'Pageview Tracker (Click)', slug: 'advertisers/tracking/pageview-tracker-click' },
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
 								{ label: 'Payment Tracking (Stripe)', slug: 'advertisers/tracking/payment-tracking-stripe' },
-								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },							{ label: '🔒 Privacy & Data Protection', slug: 'privacy', badge: { text: 'Legal', variant: 'note' } },								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
+								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' }, { label: '🔒 Privacy & Data Protection', slug: 'privacy', badge: { text: 'Legal', variant: 'note' } },								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
 						// {
