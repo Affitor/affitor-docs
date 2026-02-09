@@ -1,0 +1,278 @@
+/* Affitor Docs — Custom Theme (Mintlify-inspired) */
+
+/* ===== Color Palette ===== */
+:root {
+  /* Brand: Mint green accent (matching Mintlify style) */
+  --sl-color-accent-low: #d1fae5;
+  --sl-color-accent: #10b981;
+  --sl-color-accent-high: #065f46;
+
+  /* Text */
+  --sl-color-white: #0f172a;
+  --sl-color-gray-1: #334155;
+  --sl-color-gray-2: #64748b;
+  --sl-color-gray-3: #94a3b8;
+  --sl-color-gray-4: #cbd5e1;
+  --sl-color-gray-5: #e2e8f0;
+  --sl-color-gray-6: #f1f5f9;
+  --sl-color-gray-7: #f8fafc;
+  --sl-color-black: #ffffff;
+
+  /* Typography */
+  --sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Spacing */
+  --sl-content-width: 48rem;
+  --sl-sidebar-width: 17rem;
+}
+
+/* Dark mode */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #064e3b;
+  --sl-color-accent: #34d399;
+  --sl-color-accent-high: #d1fae5;
+
+  --sl-color-white: #f1f5f9;
+  --sl-color-gray-1: #cbd5e1;
+  --sl-color-gray-2: #94a3b8;
+  --sl-color-gray-3: #64748b;
+  --sl-color-gray-4: #475569;
+  --sl-color-gray-5: #334155;
+  --sl-color-gray-6: #1e293b;
+  --sl-color-gray-7: #0f172a;
+  --sl-color-black: #020617;
+}
+
+/* ===== Global Typography ===== */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Header ===== */
+header.header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Site title */
+.site-title {
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+}
+
+/* ===== Sidebar ===== */
+nav.sidebar .top-level > li > details > summary,
+nav.sidebar .top-level > li > a {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--sl-color-gray-2);
+}
+
+nav.sidebar a[aria-current='page'] {
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-accent-high);
+  border-radius: 0.375rem;
+  font-weight: 600;
+}
+
+nav.sidebar a:hover {
+  color: var(--sl-color-accent);
+}
+
+/* ===== Cards ===== */
+.sl-card {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sl-card:hover {
+  border-color: var(--sl-color-accent);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+}
+
+.sl-card .card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* Card grid: 2 columns on larger screens */
+.sl-card-grid {
+  gap: 1rem;
+}
+
+/* ===== Content Area ===== */
+.sl-markdown-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.sl-markdown-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+}
+
+.sl-markdown-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+/* Links in content */
+.sl-markdown-content a:not(.card-title a) {
+  color: var(--sl-color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sl-markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* Code blocks */
+.sl-markdown-content pre {
+  border-radius: 0.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+/* Inline code */
+.sl-markdown-content :not(pre) > code {
+  background: var(--sl-color-gray-6);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+/* Tables */
+.sl-markdown-content table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-gray-5);
+  width: 100%;
+}
+
+.sl-markdown-content th {
+  background: var(--sl-color-gray-6);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+}
+
+.sl-markdown-content td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+}
+
+/* ===== Asides (callouts) ===== */
+.starlight-aside {
+  border-radius: 0.5rem;
+  border-left-width: 3px;
+}
+
+/* ===== "On this page" (right sidebar TOC) ===== */
+starlight-toc a {
+  font-size: 0.825rem;
+  transition: color 0.15s ease;
+}
+
+starlight-toc a:hover {
+  color: var(--sl-color-accent);
+}
+
+/* ===== Splash/Hero page ===== */
+.hero {
+  padding-block: 3rem;
+}
+
+.hero .tagline {
+  font-size: 1.15rem;
+  color: var(--sl-color-gray-2);
+  max-width: 36rem;
+}
+
+/* Hero action buttons */
+.hero .action.primary {
+  background: var(--sl-color-accent);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  padding: 0.65rem 1.5rem;
+  transition: background 0.2s ease;
+}
+
+.hero .action.primary:hover {
+  background: #059669;
+}
+
+.hero .action:not(.primary) {
+  border-radius: 0.5rem;
+  font-weight: 600;
+  padding: 0.65rem 1.5rem;
+}
+
+/* ===== Search ===== */
+.search-input {
+  border-radius: 0.5rem;
+}
+
+/* ===== Dashboard CTA button in header ===== */
+.dashboard-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--sl-color-accent);
+  color: white !important;
+  padding: 0.4rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.dashboard-cta:hover {
+  background: #059669;
+}
+
+.dashboard-cta svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===== Breadcrumb styling ===== */
+nav[aria-label='Breadcrumb'] {
+  font-size: 0.825rem;
+}
+
+/* ===== Footer area ===== */
+.sl-markdown-content hr {
+  border-color: var(--sl-color-gray-5);
+  margin-block: 2rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 50rem) {
+  .hero {
+    padding-block: 2rem;
+  }
+
+  .hero .tagline {
+    font-size: 1rem;
+  }
+
+  .dashboard-cta {
+    display: none;
+  }
+}
