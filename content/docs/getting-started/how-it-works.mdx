@@ -1,6 +1,6 @@
 ---
 title: "How Affitor Works"
-description: "See how Affitor tracks referrals from click to payout — in 7 simple steps."
+description: "See how Affitor tracks referrals from click to payout in 7 steps."
 
 ---
 
@@ -31,10 +31,41 @@ Affitor calculates the commission based on your program rules. The commission en
 ### 7. Partner gets paid
 After the hold period, approved commissions are paid out to partners via Stripe Connect.
 
+## How the parties connect
+
+```
+┌──────────────┐          ┌──────────────┐
+│  Advertiser  │──runs────│   Program    │
+│  (SaaS co.)  │  program │  on Affitor  │
+└──────────────┘          └──────┬───────┘
+                                 │
+                           joins program
+                                 │
+                          ┌──────┴───────┐
+                          │   Partner    │
+                          │ (affiliate)  │
+                          └──────┬───────┘
+                                 │
+                          promotes product
+                                 │
+                          ┌──────┴───────┐
+                          │   Customer   │
+                          │  buys via    │
+                          │  partner link│
+                          └──────┬───────┘
+                                 │
+              ┌──────────────────┴──────────────────┐
+              │             Affitor                  │
+              │  tracks click → lead → payment       │
+              │  calculates commission               │
+              │  pays partner via Stripe Connect     │
+              └─────────────────────────────────────┘
+```
+
 ## Key points
 
-**No code changes required** — Connect Stripe, and tracking works automatically.
+**No code changes required.** Connect Stripe, and tracking works automatically.
 
-**60-day attribution window** — Partners get credit for conversions within 60 days of the initial click.
+**60-day attribution window.** Partners get credit for conversions within 60 days of the initial click.
 
-**Real-time dashboard** — Both you and your partners see performance data as it happens.
+**Real-time dashboard.** Both you and your partners see performance data as it happens.

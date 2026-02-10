@@ -27,7 +27,7 @@ export function GET() {
     const category = getCategoryFromUrl(page.url);
     if (!groupMap.has(category)) groupMap.set(category, []);
     groupMap.get(category)!.push({
-      title: page.data.title,
+      title: page.data.title ?? '',
       description: page.data.description || '',
       url: page.url,
     });

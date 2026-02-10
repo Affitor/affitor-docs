@@ -3,9 +3,7 @@ title: Tracking Overview
 description: How Affitor tracks referrals from click to sale
 ---
 
-Affitor tracking captures the complete customer journey—from the first click on an affiliate link to the final purchase.
-
----
+Affitor tracking captures the complete customer journey, from the first click on an affiliate link to the final purchase.
 
 ## How Tracking Works
 
@@ -19,35 +17,16 @@ When a partner shares their affiliate link, Affitor tracks three key events:
 
 Each event is linked together using tracking cookies, so you always know which partner drove which sale.
 
----
-
 ## The Tracking Flow
 
-```mermaid
-graph LR
-    A[Partner Shares Link] --> B[Customer Clicks]
-    B --> C[Visits Site]
-    C --> D[Signs Up]
-    D --> E[Purchases]
-    
-    A -.->|Unique ?ref= URL| A1[Unique link]
-    B -.->|Cookie set| B1[Click tracked]
-    C -.->|60 day cookie| C1[Cookie persists]
-    D -.->|trackLead called| D1[Lead tracked]
-    E -.->|Stripe metadata| E1[Sale tracked]
-```
-
-
-**Step by step:**
+![Tracking Lifecycle](/images/tracking-lifecycle.png)
 
 1. **Partner gets unique link**: `https://yoursite.com?ref=PARTNER123`
 2. **Customer clicks**: Affitor script detects `?ref=` parameter
-3. **Cookie stored**: `customer_code` saved (60-days lifetime)
+3. **Cookie stored**: `customer_code` saved (60-day lifetime)
 4. **Customer browses**: Cookie persists across sessions
-5. **Customer signs up**: You call `trackLead()` with `user_id` → linked to customer
-6. **Customer purchases**: Stripe metadata with `user_id` captures sale → commission created
-
----
+5. **Customer signs up**: You call `trackLead()` with `user_id`, linking the lead to the cookie
+6. **Customer purchases**: Stripe metadata with `user_id` captures the sale and creates a commission
 
 ## What You Need to Implement
 
@@ -55,13 +34,11 @@ Three integrations connect your site to Affitor:
 
 | Integration | Purpose | Difficulty |
 |-------------|---------|------------|
-| [Pageview Tracker](/advertisers/tracking/pageview-tracker-click) | Track clicks from affiliate links | Easy – one script tag |
-| [Lead Tracking](/advertisers/tracking/lead-tracking-signup) | Track signups and registrations | Easy – one function call |
-| [Payment Tracking](/advertisers/tracking/payment-tracking-stripe) | Track sales via Stripe | Medium – metadata setup |
+| [Pageview Tracker](/advertisers/tracking/pageview-tracker-click) | Track clicks from affiliate links | Easy: one script tag |
+| [Lead Tracking](/advertisers/tracking/lead-tracking-signup) | Track signups and registrations | Easy: one function call |
+| [Payment Tracking](/advertisers/tracking/payment-tracking-stripe) | Track sales via Stripe | Medium: metadata setup |
 
 Most advertisers complete all three in under 30 minutes.
-
----
 
 ## Attribution
 
@@ -82,15 +59,13 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 - **Partner B gets credit** (last-click wins)
 - Cookie is overwritten with new customer code
 
----
-
 ## Tracking Data
 
 ### What Affitor Captures
 
 | Data | Source | Purpose |
 |------|--------|---------|
-| `customer_code` | Auto-generated on first click | Identify visitor & link events together |
+| `customer_code` | Auto-generated on first click | Identify visitor and link events together |
 | `program_id` | Your program ID | Route to correct program |
 | Timestamp | Automatic | When event occurred |
 | User agent | Browser | Analytics |
@@ -104,7 +79,23 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 
 Cookies are set automatically by the tracker script. No action required.
 
----
+## What Data Does Affitor Collect?
+
+| Data type | What's stored | Retention |
+|-----------|---------------|-----------|
+| **Cookie** | `customer_code` (unique visitor ID) | 60 days |
+| **Lead data** | `user_id`, hashed email (`email_hash`, `email_masked`) | Program lifetime |
+| **Lead data (discarded)** | Name, phone number | **Not stored** |
+| **Payment data** | Transaction amount, `user_id`, `customer_code` via Stripe metadata | Program lifetime |
+| **Click data** | Timestamp, user agent, IP address (fraud detection only) | Program lifetime |
+
+Key points:
+
+- **First-party cookies only.** No third-party cookies, no cross-site tracking.
+- **Email is hashed.** Original email is never stored. Only SHA-256 hash and masked version are persisted.
+- **Name and phone are discarded.** Even if passed to `trackLead()`, the backend drops them.
+- **Payment data comes from Stripe metadata.** Affitor never sees credit card numbers or billing details.
+- **No ad network sharing.** Tracking data is used exclusively for affiliate attribution.
 
 ## Privacy & Compliance
 
@@ -122,4 +113,3 @@ Affitor doesn't:
 - Use third-party cookies
 - Share data with ad networks
 - Track users across other sites
-

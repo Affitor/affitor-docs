@@ -1,14 +1,15 @@
 import { source } from '@/lib/source';
 import { createSearchAPI } from 'fumadocs-core/search/server';
+import type { StructuredData } from 'fumadocs-core/mdx-plugins';
 
 export const { GET } = createSearchAPI('advanced', {
   indexes: source.getPages().map((page) => ({
-    title: page.data.title,
-    description: page.data.description,
+    title: page.data.title ?? '',
+    description: page.data.description ?? '',
     url: page.url,
     id: page.url,
     structuredData:
-      (page.data as Record<string, unknown>).structuredData ?? {
+      ((page.data as Record<string, unknown>).structuredData as StructuredData) ?? {
         headings: [],
         contents: [],
       },
