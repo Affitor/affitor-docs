@@ -1,0 +1,13 @@
+{
+  "title": "Quickstart",
+  "defaultOpen": true,
+  "pages": [
+    "create-account",
+    "setup-program",
+    "define-commission",
+    "partner-approval-quality-control",
+    "view-performance",
+    "commission-approval-cash-flow",
+    "payouts"
+  ]
+}

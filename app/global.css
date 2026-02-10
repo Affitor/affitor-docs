@@ -1,0 +1,726 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* =========================================
+   xAI / Mintlify-inspired monochrome theme
+   Color reference: docs.x.ai
+   ========================================= */
+
+:root {
+  --fd-layout-width: 1400px;
+
+  --color-fd-primary: #171717;
+  --color-fd-primary-foreground: #fafafa;
+
+  --color-fd-background: #ffffff;
+  --color-fd-foreground: #171717;
+  --color-fd-muted: #f4f4f5;
+  --color-fd-muted-foreground: #71717a;
+  --color-fd-card: #fafafa;
+  --color-fd-card-foreground: #171717;
+  --color-fd-border: #e4e4e7;
+  --color-fd-secondary: #f4f4f5;
+  --color-fd-secondary-foreground: #171717;
+  --color-fd-accent: #f4f4f5;
+  --color-fd-accent-foreground: #171717;
+  --color-fd-ring: #a1a1aa;
+}
+
+.dark {
+  /* Final polish — warmer dark, better contrast hierarchy */
+  --color-fd-primary: #fafafa;
+  --color-fd-primary-foreground: #18181b;
+
+  --color-fd-background: #18181b;              /* zinc-900, softer than pure black */
+  --color-fd-foreground: #d4d4d8;              /* zinc-300 body text — NOT white */
+  --color-fd-muted: #1a1a1c;
+  --color-fd-muted-foreground: #71717a;        /* zinc-500 */
+  --color-fd-card: #1a1a1c;
+  --color-fd-card-foreground: #d4d4d8;
+  --color-fd-border: #27272a;                  /* zinc-800 — visible but subtle */
+  --color-fd-secondary: #27272a;
+  --color-fd-secondary-foreground: #d4d4d8;
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: #d4d4d8;
+  --color-fd-ring: #3f3f46;                    /* zinc-700 */
+}
+
+/* =========================================
+   Typography
+   ========================================= */
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
+}
+
+.prose {
+  max-width: 68ch !important;
+  font-size: 0.935rem !important;
+  line-height: 1.7 !important;
+  color: var(--color-fd-foreground);
+}
+
+.prose p {
+  margin-top: 1.25em !important;
+  margin-bottom: 1.25em !important;
+}
+
+/* ---- Headings: bright in dark mode ---- */
+.prose h1 {
+  font-weight: 700 !important;
+  font-size: 1.65rem !important;
+  letter-spacing: -0.025em;
+  margin-top: 0 !important;
+  margin-bottom: 1rem !important;
+  line-height: 1.3 !important;
+}
+
+.prose h2 {
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+  letter-spacing: -0.02em;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-top: 2em !important;
+  margin-bottom: 0.5em !important;
+  line-height: 1.35 !important;
+}
+
+.prose h3 {
+  font-weight: 600 !important;
+  font-size: 1.05rem !important;
+  margin-top: 2em !important;
+  margin-bottom: 0.5em !important;
+  line-height: 1.4 !important;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3 {
+  color: #fafafa !important;
+}
+
+/* Page title (DocsTitle h1) — near-white in dark */
+.dark h1 {
+  color: #fafafa !important;
+}
+
+/* Ensure body text stays muted in dark mode — NOT same brightness as headings */
+.dark .prose p,
+.dark .prose li,
+.dark .prose td,
+.dark .prose dd {
+  color: #d4d4d8 !important;
+}
+
+/* ---- Horizontal rules ---- */
+.prose hr {
+  border: none !important;
+  height: 1px !important;
+  background: transparent !important;
+  margin: 2.5em 0 !important;
+}
+
+/* ---- Lists ---- */
+.prose ul,
+.prose ol {
+  margin-top: 0.75em !important;
+  margin-bottom: 1.25em !important;
+  padding-left: 1.25em !important;
+}
+
+.prose li {
+  margin-top: 0.4em !important;
+  margin-bottom: 0.4em !important;
+  line-height: 1.65 !important;
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+}
+
+.prose ul > li::marker {
+  color: var(--color-fd-muted-foreground);
+}
+
+.prose ol > li::marker {
+  color: var(--color-fd-muted-foreground);
+  font-size: 0.9em;
+}
+
+/* Bold text: bright in dark mode */
+.prose strong {
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+}
+
+.dark .prose strong {
+  color: #fafafa !important;
+}
+
+/* ---- Links ---- */
+.prose a {
+  color: var(--color-fd-foreground) !important;
+  text-decoration: underline !important;
+  text-decoration-color: var(--color-fd-border) !important;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px !important;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.dark .prose a {
+  text-decoration-color: #3a3a3c !important;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-fd-foreground) !important;
+}
+
+/* ---- Tables ---- */
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+  margin-top: 1.25em !important;
+  margin-bottom: 1.5em !important;
+}
+
+.prose thead {
+  border-bottom: 1px solid var(--color-fd-border);
+}
+
+.prose th {
+  font-weight: 500 !important;
+  font-size: 0.8rem !important;
+  text-transform: none !important;
+  color: var(--color-fd-muted-foreground) !important;
+  padding: 0.6rem 0.75rem !important;
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+.prose td {
+  padding: 0.6rem 0.75rem !important;
+  border-bottom: 1px solid var(--color-fd-border);
+  vertical-align: top;
+}
+
+.prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.prose td strong {
+  font-weight: 500;
+}
+
+/* ---- Code blocks ---- */
+pre {
+  background: var(--color-fd-muted) !important;
+  border: 1px solid var(--color-fd-border) !important;
+  border-radius: 6px !important;
+  font-size: 0.84rem !important;
+  line-height: 1.6 !important;
+  margin-top: 1.25em !important;
+  margin-bottom: 1.25em !important;
+}
+
+.dark pre {
+  background: #1a1a1c !important;
+  border-color: #27272a !important;  /* zinc-800 */
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  background: var(--color-fd-muted) !important;
+  border: none !important;
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-weight: 400;
+}
+
+/* ---- Blockquotes / Callouts ---- */
+.prose blockquote {
+  border-left: 2px solid var(--color-fd-border) !important;
+  padding-left: 1.25em !important;
+  margin-left: 0 !important;
+  margin-top: 1.25em !important;
+  margin-bottom: 1.25em !important;
+  color: var(--color-fd-muted-foreground);
+  font-size: 0.9rem !important;
+}
+
+.prose blockquote strong {
+  color: var(--color-fd-foreground);
+}
+
+[data-callout] {
+  border: 1px solid var(--color-fd-border) !important;
+  border-radius: 6px !important;
+  background: var(--color-fd-muted) !important;
+  padding: 0.875rem 1rem !important;
+  margin: 1.25em 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+[data-callout] [data-callout-title] {
+  font-weight: 500 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  margin-bottom: 0.35rem !important;
+  opacity: 0.65;
+}
+
+/* ---- Details/Summary ---- */
+.prose details {
+  border: 1px solid var(--color-fd-border);
+  border-radius: 6px;
+  padding: 0;
+  margin: 0.75em 0;
+  overflow: hidden;
+}
+
+.prose details + details {
+  margin-top: -1px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.prose details:has(+ details) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.prose summary {
+  padding: 0.75em 1em;
+  font-size: 0.875rem;
+  font-weight: 450;
+  cursor: pointer;
+  color: var(--color-fd-foreground);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: background 150ms ease;
+}
+
+.prose summary:hover {
+  background: var(--color-fd-muted);
+}
+
+.prose summary::before {
+  content: '›';
+  font-size: 1.1em;
+  color: var(--color-fd-muted-foreground);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+  width: 1em;
+  text-align: center;
+}
+
+.prose details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.prose summary::-webkit-details-marker {
+  display: none;
+}
+
+.prose details > :not(summary) {
+  padding: 0 1em;
+}
+
+.prose details > p:last-child {
+  padding-bottom: 0.75em;
+}
+
+/* =========================================
+   Sidebar
+   ========================================= */
+
+[data-fd-sidebar] {
+  border-right: 1px solid var(--color-fd-border) !important;
+}
+
+.dark [data-fd-sidebar] {
+  background: #141416 !important;  /* slightly darker than content #18181b */
+}
+
+/* Sidebar width: 256px */
+[data-fd-sidebar] {
+  --fd-sidebar-width: 256px;
+}
+
+[data-fd-sidebar] nav {
+  position: relative;
+}
+
+/* Custom scrollbar */
+[data-fd-sidebar]::-webkit-scrollbar {
+  width: 4px;
+}
+
+[data-fd-sidebar]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-fd-sidebar]::-webkit-scrollbar-thumb {
+  background: #3a3a3c;
+  border-radius: 2px;
+}
+
+/* Sidebar links */
+[data-fd-sidebar] a {
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 0.835rem !important;
+  cursor: pointer;
+  color: var(--color-fd-muted-foreground) !important;
+  background: transparent !important;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.dark [data-fd-sidebar] a {
+  color: #a1a1aa !important;
+}
+
+/* Hover: visible feedback */
+[data-fd-sidebar] a:hover {
+  color: var(--color-fd-foreground) !important;
+  background: var(--color-fd-accent) !important;
+}
+
+.dark [data-fd-sidebar] a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Active link */
+[data-fd-sidebar] a[data-active='true'] {
+  color: var(--color-fd-foreground) !important;
+  font-weight: 500 !important;
+  position: relative;
+}
+
+.dark [data-fd-sidebar] a[data-active='true'] {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-fd-sidebar] a[data-active='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 16px;
+  background: var(--color-fd-foreground);
+  border-radius: 1px;
+}
+
+.dark [data-fd-sidebar] a[data-active='true']::before {
+  background: #fafafa;
+}
+
+/* Section group labels — uppercase, small, muted */
+/* Collapsible folder buttons */
+[data-fd-sidebar] [role='group'] > [role='button'],
+[data-fd-sidebar] [data-fd-collapsible] > button {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--color-fd-muted-foreground) !important;
+  padding-left: 12px !important;
+}
+
+.dark [data-fd-sidebar] [role='group'] > [role='button'],
+.dark [data-fd-sidebar] [data-fd-collapsible] > button {
+  color: #9ca3af !important;
+}
+
+/* Separator labels ("Advertiser Guide", "Resources") — <p> rendered by SidebarSeparator */
+[data-fd-sidebar] p.inline-flex,
+[data-fd-sidebar] p.mt-6 {
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--color-fd-muted-foreground) !important;
+}
+
+.dark [data-fd-sidebar] p.inline-flex,
+.dark [data-fd-sidebar] p.mt-6 {
+  color: #9ca3af !important;
+}
+
+/* Collapsible chevrons */
+[data-fd-sidebar] [data-fd-collapsible] > button svg {
+  opacity: 0.4;
+  width: 12px;
+  height: 12px;
+  transition: transform 200ms ease;
+}
+
+/* =========================================
+   Header
+   ========================================= */
+
+/* Task 3: Navbar as distinct control bar */
+[data-fd-nav] {
+  height: 56px;
+  border-bottom: 1px solid var(--color-fd-border) !important;
+  backdrop-filter: blur(12px) !important;
+  background: var(--color-fd-background) !important;
+}
+
+.dark [data-fd-nav] {
+  background: #0f0f10 !important;  /* darker than content area */
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* =========================================
+   TOC (right sidebar) with scroll spy
+   ========================================= */
+
+[data-fd-toc] a {
+  font-size: 0.78rem !important;
+  color: var(--color-fd-muted-foreground) !important;
+  line-height: 1.5 !important;
+  transition: color 150ms ease;
+}
+
+.dark [data-fd-toc] a {
+  color: #71717a !important;
+}
+
+[data-fd-toc] a[data-active='true'] {
+  color: var(--color-fd-foreground) !important;
+  font-weight: 500;
+}
+
+.dark [data-fd-toc] a[data-active='true'] {
+  color: #ffffff !important;
+}
+
+/* =========================================
+   Breadcrumbs
+   ========================================= */
+
+nav[aria-label='breadcrumb'] {
+  font-size: 0.8rem;
+}
+
+nav[aria-label='breadcrumb'] a,
+nav[aria-label='breadcrumb'] span {
+  color: var(--color-fd-muted-foreground);
+}
+
+.dark nav[aria-label='breadcrumb'] a,
+.dark nav[aria-label='breadcrumb'] span {
+  color: #71717a;
+}
+
+nav[aria-label='breadcrumb'] a:hover {
+  color: var(--color-fd-foreground);
+}
+
+/* =========================================
+   Footer prev/next navigation
+   ========================================= */
+
+[data-fd-footer] a {
+  border: 1px solid var(--color-fd-border) !important;
+  border-radius: 8px !important;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+[data-fd-footer] a:hover {
+  border-color: var(--color-fd-muted-foreground) !important;
+}
+
+.dark [data-fd-footer] a:hover {
+  border-color: #3a3a3c !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* =========================================
+   Search dialog styling
+   ========================================= */
+
+/* Backdrop */
+[data-fd-search] [data-fd-overlay],
+[vaul-overlay] {
+  backdrop-filter: blur(4px) !important;
+}
+
+.dark [data-fd-search] [data-fd-overlay],
+.dark [vaul-overlay] {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Dialog container */
+[data-fd-search] [role='dialog'] {
+  border-radius: 12px !important;
+  border: 1px solid var(--color-fd-border) !important;
+  max-width: 720px !important;
+}
+
+.dark [data-fd-search] [role='dialog'] {
+  background: #1a1a1c !important;
+  border-color: #2a2a2c !important;
+}
+
+/* Search input */
+[data-fd-search] input {
+  font-size: 0.9rem !important;
+}
+
+.dark [data-fd-search] input {
+  color: #ffffff !important;
+}
+
+.dark [data-fd-search] input::placeholder {
+  color: #71717a !important;
+}
+
+/* Search results */
+.dark [data-fd-search] [role='option'] {
+  border-radius: 6px;
+}
+
+.dark [data-fd-search] [role='option']:hover,
+.dark [data-fd-search] [role='option'][data-active='true'] {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* =========================================
+   Task 4: Theme toggle — show only active icon
+   ========================================= */
+
+/* In dark mode: hide Sun (first child), show Moon (second child) */
+.dark [data-theme-toggle] svg:first-child {
+  display: none !important;
+}
+
+/* In light mode: show Sun (first child), hide Moon (second child) */
+:root:not(.dark) [data-theme-toggle] svg:nth-child(2) {
+  display: none !important;
+}
+
+/* Single icon: remove pill shape, simplify */
+[data-theme-toggle] {
+  border: none !important;
+  padding: 6px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+}
+
+[data-theme-toggle]:hover {
+  background: var(--color-fd-accent) !important;
+}
+
+[data-theme-toggle] svg {
+  width: 16px !important;
+  height: 16px !important;
+  color: var(--color-fd-muted-foreground) !important;
+}
+
+[data-theme-toggle]:hover svg {
+  color: var(--color-fd-foreground) !important;
+}
+
+/* =========================================
+   Task 5: Search trigger — more prominent
+   ========================================= */
+
+button[data-search-full] {
+  min-width: 200px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--color-fd-border) !important;
+}
+
+.dark button[data-search-full] {
+  background: #27272a !important;
+  border-color: #3f3f46 !important;
+}
+
+.dark button[data-search-full]:hover {
+  border-color: #52525b !important;
+}
+
+button[data-search] {
+  border-radius: 8px !important;
+}
+
+/* =========================================
+   Task 6: TOC heading + footer links
+   ========================================= */
+
+/* TOC "On this page" heading */
+[data-fd-toc] > div > p:first-child,
+[data-fd-toc] h3 {
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 600 !important;
+  color: var(--color-fd-muted-foreground) !important;
+}
+
+.dark [data-fd-toc] > div > p:first-child,
+.dark [data-fd-toc] h3 {
+  color: #9ca3af !important;
+}
+
+/* TOC footer links */
+.toc-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-fd-border);
+}
+
+.toc-footer-links a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-fd-muted-foreground);
+  text-decoration: none;
+  transition: color 150ms ease;
+  cursor: pointer;
+}
+
+.toc-footer-links a:hover {
+  color: var(--color-fd-foreground);
+}
+
+/* =========================================
+   Global polish
+   ========================================= */
+
+/* Remove all shadows */
+* {
+  --tw-shadow: none !important;
+}
+
+/* Page transition */
+main {
+  animation: fd-fade-in 0.15s ease-out;
+}
+
+@keyframes fd-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

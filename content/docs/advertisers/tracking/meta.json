@@ -1,0 +1,12 @@
+{
+  "title": "Tracking & Integration",
+  "defaultOpen": true,
+  "pages": [
+    "tracking-overview",
+    "pageview-tracker-click",
+    "lead-tracking-signup",
+    "payment-tracking-stripe",
+    "payment-flow",
+    "testing-integration"
+  ]
+}
