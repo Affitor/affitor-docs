@@ -185,6 +185,81 @@ Include all three fields (`customer_code`, `user_id`, `program_id`) in Stripe me
 
 ---
 
+## Attribution Lookup Strategy
+
+When Affitor receives a payment webhook from Stripe, it uses a **4-step fallback mechanism** to find the customer-partner relationship and attribute the sale correctly.
+
+### The Lookup Flow
+
+```
+Payment Event Received (Stripe webhook)
+         ↓
+Step 1: Lookup by customer_code (from cookie)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No (cookies deleted)
+         ↓
+Step 2: Lookup by email
+         ↓
+    Found? ──Yes──→ ✅ Link + Update stripe_customer_id
+         │          📍 Last-click attribution calculated from here
+         │          (CPL/CPS tracking from lead/signup event)
+         ↓
+        No
+         ↓
+Step 3: Lookup by stripe_customer_id (returning customer)
+        OR email_hash (from Stripe email)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No
+         ↓
+Step 4: Lookup by advertiser_user_id (if provided)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No
+         ↓
+❌ No attribution found (organic sale)
+   → Payment NOT tracked (discarded)
+```
+
+### Why Multiple Lookup Steps?
+
+| Scenario | Lookup Method | Example |
+|----------|---------------|---------|
+| Normal flow | `customer_code` (Step 1) | Customer has cookies intact |
+| Cookies cleared | `email` (Step 2) | Customer cleared browser data |
+| Returning customer | `stripe_customer_id` (Step 3) | Customer made previous purchase |
+| Cross-device | `email_hash` (Step 3) | Customer clicked on mobile, bought on desktop |
+| Custom tracking | `advertiser_user_id` (Step 4) | You provided custom user ID |
+
+### What Affitor Receives from Stripe
+
+When the webhook fires, Affitor extracts:
+
+- Payment confirmation
+- `program_id` from metadata
+- `customer_code` from metadata (if available)
+- `user_id` from metadata (if available)
+- Customer email from Stripe
+- `stripe_customer_id` from Stripe
+
+### After Successful Lookup
+
+Once a customer-partner relationship is found:
+
+1. Verifies attribution is within 60-day window
+2. Creates commission record
+3. Updates `stripe_customer_id` if not already set (Step 2)
+
+### Organic Sales
+
+If no attribution is found after all 4 steps, the payment is considered an **organic sale** and is **NOT tracked** (discarded). This ensures only affiliate-referred sales generate commissions.
+
+---
+
 ## Metadata Reference
 
 | Field | Type | Required | Description |
