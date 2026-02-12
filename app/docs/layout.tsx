@@ -9,7 +9,8 @@ export default function Layout({ children }: { children: ReactNode }) {
       tree={source.pageTree}
       nav={{
         title: (
-          <span className="text-sm font-medium tracking-tight text-fd-foreground">
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium tracking-tight text-fd-foreground">
+            <img src="/logo-icon.svg" alt="Affitor" className="size-5" />
             Affitor
           </span>
         ),
