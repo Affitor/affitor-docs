@@ -28,11 +28,12 @@ Redirect affiliate-referred customers to Affitor's hosted checkout. Affitor hand
 
 ```javascript
 // When customer clicks "Buy" or "Subscribe"
-window.affitor.redirectToCheckout({
+window.affitorQueue = window.affitorQueue || [];
+window.affitorQueue.push(['redirectToCheckout', {
   price: 99.99,
   currency: 'USD',
   product_name: 'Pro Plan'
-});
+}]);
 ```
 
 ### Parameters
