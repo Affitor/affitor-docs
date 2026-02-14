@@ -26,14 +26,32 @@ Redirect affiliate-referred customers to Affitor's hosted checkout. Affitor hand
 
 ### Implementation
 
-```javascript
+**npm SDK (Recommended):**
+
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
 // When customer clicks "Buy" or "Subscribe"
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['redirectToCheckout', {
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+affitor?.redirectToCheckout({
   price: 99.99,
   currency: 'USD',
   product_name: 'Pro Plan'
-}]);
+});
+```
+
+**Script tag:**
+
+```javascript
+// When customer clicks "Buy" or "Subscribe"
+var checkoutData = { price: 99.99, currency: 'USD', product_name: 'Pro Plan' };
+
+if (window.affitor) {
+  window.affitor.redirectToCheckout(checkoutData);
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['redirectToCheckout', checkoutData]);
+}
 ```
 
 ### Parameters
