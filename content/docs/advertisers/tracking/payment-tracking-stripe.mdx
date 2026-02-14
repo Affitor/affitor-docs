@@ -1,9 +1,11 @@
 ---
-title: Payment Tracking (Stripe)
+title: Payments Tracker (Sale Tracking)
 description: Track sales and calculate commissions via Stripe integration
 ---
 
-Payment tracking captures completed purchases and triggers commission calculation. This is where partners actually earn money.
+Payment tracking captures completed purchases and triggers commission calculation. This is Step 3 of 3 in Affitor tracking (Click → Lead → **Sale**) — where partners actually earn money.
+
+**Prerequisites:** [Click Tracking](/advertisers/tracking/pageview-tracker-click) and [Lead Tracking](/advertisers/tracking/lead-tracking-signup) must be set up first.
 
 ---
 
@@ -13,10 +15,8 @@ Choose based on your setup:
 
 | Method | How it works | Best for |
 |--------|--------------|----------|
-| **[Affitor Pay](#affitor-pay)** | Redirect to Affitor checkout | Fastest setup, no Stripe changes |
+| **[Affitor Pay](#affitor-pay)** | Redirect referred customers to Affitor checkout | Fastest setup, no Stripe changes |
 | **[Bill Flow](#bill-flow)** | Add metadata to your Stripe checkout | Existing Stripe integration |
-
-**Coming Soon:** Split Pay – Automatic fund splitting via Stripe Connect
 
 ---
 
@@ -24,25 +24,48 @@ Choose based on your setup:
 
 Redirect affiliate-referred customers to Affitor's hosted checkout. Affitor handles payment collection and tracking automatically.
 
+:::tip[Program ID]
+When you copy code from your Affitor dashboard (**Settings → Tracking**), your Program ID is pre-filled. If copying from these docs, replace `YOUR_PROGRAM_ID` with your ID from Settings.
+:::
+
 ### Implementation
 
 ```javascript
-// When customer clicks "Buy" or "Subscribe"
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['redirectToCheckout', {
-  price: 99.99,
-  currency: 'USD',
-  product_name: 'Pro Plan'
-}]);
+// Check if customer was referred by an affiliate
+if (window.affitor && window.affitor.partnerCode) {
+  // Customer WAS referred - use Affitor checkout
+  window.affitor.redirectToCheckout({
+    affiliateProgramId: YOUR_PROGRAM_ID,   // REQUIRED: your Program ID
+    amount: 299.99,                         // REQUIRED: purchase amount
+    checkoutType: 'subscription',           // Optional: 'payment' or 'subscription'
+    subscriptionInterval: 'monthly',        // Optional: 'monthly' or 'annual'
+    productId: 'prod_ABC123',               // Optional: Stripe product ID
+    priceId: 'price_ABC123'                 // Optional: Stripe price ID
+  });
+} else {
+  // Customer was NOT referred - use your own checkout
+  handleYourOwnCheckout({
+    amount: 299.99,
+    productId: 'prod_ABC123'
+  });
+}
 ```
+
+:::caution[Conditional Checkout]
+Only use Affitor Pay for customers who arrived via an affiliate link. Check `window.affitor.partnerCode` to determine if the customer was referred. Direct (organic) customers should use your normal checkout flow.
+:::
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `price` | number | Yes | Product price |
-| `currency` | string | No | Currency code (default: USD) |
-| `product_name` | string | No | Product name for checkout |
+| `affiliateProgramId` | number | Yes | Your Affitor Program ID |
+| `amount` | number | Yes | Purchase amount (must match priceId value if provided) |
+| `checkoutType` | string | No | `'payment'` or `'subscription'` (default: `'payment'`) |
+| `subscriptionInterval` | string | No | `'monthly'` or `'annual'` (for subscriptions) |
+| `productId` | string | No | Stripe product ID |
+| `priceId` | string | No | Stripe price ID |
+| `returnUrl` | string | No | Custom return URL after checkout |
 
 ### How It Works
 
@@ -52,8 +75,8 @@ window.affitorQueue.push(['redirectToCheckout', {
 4. Webhook fires → conversion tracked → commission calculated
 5. You receive payment minus commission and platform fee
 
-**Pros:** Zero Stripe configuration needed  
-**Cons:** Customers see Affitor checkout, not your branded checkout
+**Pros:** Zero Stripe configuration needed
+**Cons:** By design, only referred customers use Affitor checkout — organic customers use your normal flow
 
 ---
 
@@ -61,42 +84,15 @@ window.affitorQueue.push(['redirectToCheckout', {
 
 Add Affitor metadata to your existing Stripe Checkout sessions. You collect payment normally; Affitor tracks via webhooks and invoices you weekly.
 
-### Implementation
+:::tip[Debug Mode]
+Enable debug mode in your Click Tracking script by setting `data-affitor-debug="true"`. See [Click Tracking → Test Mode](/advertisers/tracking/pageview-tracker-click#test-mode) for details.
+:::
 
-Include these metadata fields when creating Stripe Checkout:
+### Option A: Client-Side (Quick Start)
 
-#### One-Time Payment:
+Good for testing and simple setups. Reads tracking cookies on the client and passes them to your checkout endpoint.
 
-```javascript
-// Helper to read Affitor cookies
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-}
-
-const customerCode = getCookie('customer_code');
-
-const session = await stripe.checkout.sessions.create({
-  line_items: [{
-    price: 'price_xxx',
-    quantity: 1,
-  }],
-  mode: 'payment',
-  success_url: 'https://yoursite.com/success',
-  cancel_url: 'https://yoursite.com/cancel',
-  
-  // ✅ REQUIRED: All three tracking fields
-  metadata: {
-    customer_code: customerCode,
-    user_id: currentUser.id,
-    program_id: 'YOUR_PROGRAM_ID'
-  }
-});
-```
-
-#### Subscription:
+#### One-Time Payment
 
 ```javascript
 // Helper to read Affitor cookies
@@ -109,61 +105,116 @@ function getCookie(name) {
 
 const customerCode = getCookie('customer_code');
 
-const session = await stripe.checkout.sessions.create({
-  line_items: [{
-    price: 'price_xxx',
-    quantity: 1,
-  }],
-  mode: 'subscription',
-  success_url: 'https://yoursite.com/success',
-  cancel_url: 'https://yoursite.com/cancel',
-  
-  // ✅ REQUIRED: Session metadata (first payment)
-  metadata: {
+// Pass tracking data to your checkout endpoint
+const response = await fetch('/api/create-checkout', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    priceId: 'price_xxx',
+    mode: 'payment',
+    // REQUIRED: tracking fields
     customer_code: customerCode,
-    user_id: currentUser.id,
-    program_id: 'YOUR_PROGRAM_ID'
-  },
-  
-  // ✅ REQUIRED: Subscription metadata (recurring payments)
-  subscription_data: {
-    metadata: {
-      customer_code: customerCode,
-      user_id: currentUser.id,
-      program_id: 'YOUR_PROGRAM_ID'
-    }
-  }
+    user_id: currentUser.id,             // REQUIRED: your internal user ID
+    program_id: 'YOUR_PROGRAM_ID'        // REQUIRED: your Program ID
+  })
 });
+
+const { url } = await response.json();
+window.location.href = url;
 ```
 
-### Server-Side Example (Node.js)
+#### Subscription
 
 ```javascript
-// In your checkout endpoint
+const customerCode = getCookie('customer_code');
+
+const response = await fetch('/api/create-checkout', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    priceId: 'price_xxx',
+    mode: 'subscription',
+    // REQUIRED: tracking fields
+    customer_code: customerCode,
+    user_id: currentUser.id,             // REQUIRED: your internal user ID
+    program_id: 'YOUR_PROGRAM_ID'        // REQUIRED: your Program ID
+  })
+});
+
+const { url } = await response.json();
+window.location.href = url;
+```
+
+### Option B: Server-Side (Recommended for Production)
+
+Most enterprise SaaS use this approach. More secure — keeps tracking logic on your server.
+
+#### One-Time Payment
+
+```javascript
+// In your checkout API endpoint (Node.js example)
 app.post('/api/create-checkout', async (req, res) => {
   // Extract customer_code from cookies (sent in request headers)
   const cookies = req.headers.cookie || '';
   const customerCode = cookies.split('; ')
     .find(row => row.startsWith('customer_code='))
     ?.split('=')[1];
-  
+
   // Get user from your authentication system
   const userId = req.user.id;
-  
+
   const session = await stripe.checkout.sessions.create({
     line_items: [{ price: 'price_xxx', quantity: 1 }],
     mode: 'payment',
     success_url: 'https://yoursite.com/success',
     cancel_url: 'https://yoursite.com/cancel',
-    
-    // ✅ REQUIRED: All three tracking fields
+
+    // REQUIRED: All three tracking fields
     metadata: {
       customer_code: customerCode,
       user_id: userId,
       program_id: process.env.AFFITOR_PROGRAM_ID
     }
   });
-  
+
+  res.json({ url: session.url });
+});
+```
+
+#### Subscription
+
+```javascript
+app.post('/api/create-checkout', async (req, res) => {
+  const cookies = req.headers.cookie || '';
+  const customerCode = cookies.split('; ')
+    .find(row => row.startsWith('customer_code='))
+    ?.split('=')[1];
+
+  const userId = req.user.id;
+
+  const session = await stripe.checkout.sessions.create({
+    line_items: [{ price: 'price_xxx', quantity: 1 }],
+    mode: 'subscription',
+    success_url: 'https://yoursite.com/success',
+    cancel_url: 'https://yoursite.com/cancel',
+
+    // REQUIRED: Session metadata (first payment)
+    metadata: {
+      customer_code: customerCode,
+      user_id: userId,
+      program_id: process.env.AFFITOR_PROGRAM_ID
+    },
+
+    // REQUIRED: Subscription metadata (recurring payments)
+    subscription_data: {
+      metadata: {
+        customer_code: customerCode,
+        user_id: userId,
+        program_id: process.env.AFFITOR_PROGRAM_ID
+      }
+    }
+  });
+
   res.json({ url: session.url });
 });
 ```
@@ -171,6 +222,7 @@ app.post('/api/create-checkout', async (req, res) => {
 :::tip[Required Tracking Fields]
 Include all three fields (`customer_code`, `user_id`, `program_id`) in Stripe metadata for reliable payment attribution. The backend uses multiple lookup methods to ensure tracking works even if cookies are blocked.
 :::
+
 ### How It Works
 
 1. Customer clicks affiliate link → tracked with internal cookies
@@ -181,83 +233,8 @@ Include all three fields (`customer_code`, `user_id`, `program_id`) in Stripe me
 6. Affitor looks up customer-partner using `user_id` → attributes to partner
 7. Commission calculated → Affitor invoices you weekly
 
-**Pros:** Simple integration, use your existing checkout, no cookie reading required  
+**Pros:** Simple integration, use your existing checkout, no cookie reading required
 **Cons:** Requires metadata setup, weekly invoice payment
-
----
-
-## Attribution Lookup Strategy
-
-When Affitor receives a payment webhook from Stripe, it uses a **4-step fallback mechanism** to find the customer-partner relationship and attribute the sale correctly.
-
-### The Lookup Flow
-
-```
-Payment Event Received (Stripe webhook)
-         ↓
-Step 1: Lookup by customer_code (from cookie)
-         ↓
-    Found? ──Yes──→ ✅ Link to attribution
-         ↓
-        No (cookies deleted)
-         ↓
-Step 2: Lookup by email
-         ↓
-    Found? ──Yes──→ ✅ Link + Update stripe_customer_id
-         │          📍 Last-click attribution calculated from here
-         │          (CPL/CPS tracking from lead/signup event)
-         ↓
-        No
-         ↓
-Step 3: Lookup by stripe_customer_id (returning customer)
-        OR email_hash (from Stripe email)
-         ↓
-    Found? ──Yes──→ ✅ Link to attribution
-         ↓
-        No
-         ↓
-Step 4: Lookup by advertiser_user_id (if provided)
-         ↓
-    Found? ──Yes──→ ✅ Link to attribution
-         ↓
-        No
-         ↓
-❌ No attribution found (organic sale)
-   → Payment NOT tracked (discarded)
-```
-
-### Why Multiple Lookup Steps?
-
-| Scenario | Lookup Method | Example |
-|----------|---------------|---------|
-| Normal flow | `customer_code` (Step 1) | Customer has cookies intact |
-| Cookies cleared | `email` (Step 2) | Customer cleared browser data |
-| Returning customer | `stripe_customer_id` (Step 3) | Customer made previous purchase |
-| Cross-device | `email_hash` (Step 3) | Customer clicked on mobile, bought on desktop |
-| Custom tracking | `advertiser_user_id` (Step 4) | You provided custom user ID |
-
-### What Affitor Receives from Stripe
-
-When the webhook fires, Affitor extracts:
-
-- Payment confirmation
-- `program_id` from metadata
-- `customer_code` from metadata (if available)
-- `user_id` from metadata (if available)
-- Customer email from Stripe
-- `stripe_customer_id` from Stripe
-
-### After Successful Lookup
-
-Once a customer-partner relationship is found:
-
-1. Verifies attribution is within 60-day window
-2. Creates commission record
-3. Updates `stripe_customer_id` if not already set (Step 2)
-
-### Organic Sales
-
-If no attribution is found after all 4 steps, the payment is considered an **organic sale** and is **NOT tracked** (discarded). This ensures only affiliate-referred sales generate commissions.
 
 ---
 
@@ -335,3 +312,81 @@ Without these fields, the purchase cannot be attributed to the affiliate partner
 - Partner within commission duration window
 - Original checkout has customer-partner relationship
 
+---
+
+## Advanced: Attribution Lookup Strategy
+
+When Affitor receives a payment webhook from Stripe, it uses a **4-step fallback mechanism** to find the customer-partner relationship and attribute the sale correctly.
+
+### The Lookup Flow
+
+```
+Payment Event Received (Stripe webhook)
+         ↓
+Step 1: Lookup by customer_code (from cookie)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No (cookies deleted)
+         ↓
+Step 2: Lookup by email
+         ↓
+    Found? ──Yes──→ ✅ Link + Update stripe_customer_id
+         │          📍 Last-click attribution calculated from here
+         │          (CPL/CPS tracking from lead/signup event)
+         ↓
+        No
+         ↓
+Step 3: Lookup by stripe_customer_id (returning customer)
+        OR email_hash (from Stripe email)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No
+         ↓
+Step 4: Lookup by advertiser_user_id (if provided)
+         ↓
+    Found? ──Yes──→ ✅ Link to attribution
+         ↓
+        No
+         ↓
+❌ No attribution found (organic sale)
+   → Payment NOT tracked (discarded)
+```
+
+### Why Multiple Lookup Steps?
+
+| Scenario | Lookup Method | Example |
+|----------|---------------|---------|
+| Normal flow | `customer_code` (Step 1) | Customer has cookies intact |
+| Cookies cleared | `email` (Step 2) | Customer cleared browser data |
+| Returning customer | `stripe_customer_id` (Step 3) | Customer made previous purchase |
+| Cross-device | `email_hash` (Step 3) | Customer clicked on mobile, bought on desktop |
+| Custom tracking | `advertiser_user_id` (Step 4) | You provided custom user ID |
+
+### What Affitor Receives from Stripe
+
+When the webhook fires, Affitor extracts:
+
+- Payment confirmation
+- `program_id` from metadata
+- `customer_code` from metadata (if available)
+- `user_id` from metadata (if available)
+- Customer email from Stripe
+- `stripe_customer_id` from Stripe
+
+### After Successful Lookup
+
+Once a customer-partner relationship is found:
+
+1. Verifies attribution is within 60-day window
+2. Creates commission record
+3. Updates `stripe_customer_id` if not already set (Step 2)
+
+### Organic Sales
+
+If no attribution is found after all 4 steps, the payment is considered an **organic sale** and is **NOT tracked** (discarded). This ensures only affiliate-referred sales generate commissions.
+
+---
+
+**Setup Complete!** [Next: Share your program with partners →](/advertisers/quickstart/partner-approval-quality-control)

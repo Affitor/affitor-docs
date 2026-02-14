@@ -3,7 +3,9 @@ title: Pageview Tracker
 description: Track clicks from affiliate links with a single script tag
 ---
 
-The pageview tracker captures when visitors arrive via affiliate links. This is the foundation of Affitor tracking.
+The Pageview Tracker captures when visitors arrive via affiliate links. This is Step 1 of 3 in Affitor tracking (Click → Lead → Sale) and the foundation that all other tracking depends on.
+
+**Prerequisite:** An active Affitor program with a Program ID (found in **Settings → Integration**).
 
 ---
 
@@ -12,8 +14,8 @@ The pageview tracker captures when visitors arrive via affiliate links. This is 
 When someone clicks a partner's affiliate link (`https://yoursite.com?ref=PARTNER123`), the tracker:
 
 1. Detects the `?ref=` parameter
-2. Request to Affitor backend to get a unique `customer_code`
-3. Stores `customer_code` in a cookie
+2. Requests Affitor backend for a unique `customer_code`
+3. Stores `customer_code` in a cookie (60-day lifetime)
 4. Creates customer-partner relationship in database
 5. Sends a click event to Affitor
 
@@ -26,30 +28,18 @@ All subsequent events (signups, purchases) are linked via `customer_code` and `u
 Add this script tag to your website's `<head>` section:
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="false">
 </script>
 ```
 
+:::tip[Program ID]
+When you copy code from your Affitor dashboard (**Settings → Tracking**), your Program ID is pre-filled. If copying from these docs, replace `YOUR_PROGRAM_ID` with your ID from Settings.
+:::
+
 That's it. The script handles everything automatically.
-
----
-
-## Configuration
-
-| Attribute | Required | Description |
-|-----------|----------|-------------|
-| `src` | Yes | Affitor tracker script URL |
-| `data-affitor-program-id` | Yes | Your program ID (from dashboard) |
-| `data-affitor-debug` | No | Set "true" for test mode |
-
-### Finding Your Program ID
-
-1. Go to your Affitor dashboard
-2. Navigate to **Settings → Integration**
-3. Copy your **Program ID**
 
 ---
 
@@ -59,16 +49,18 @@ Add the script to **every page** where affiliate traffic might land.
 
 **Recommended:** Add to your site's global `<head>` so it loads on all pages.
 
-### Examples:
+---
 
-#### HTML:
+## Framework Examples
+
+### HTML
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
   <title>Your Site</title>
-  <script 
+  <script
     src="https://api.affitor.com/js/affitor-tracker.js"
     data-affitor-program-id="YOUR_PROGRAM_ID"
     data-affitor-debug="false">
@@ -80,7 +72,7 @@ Add the script to **every page** where affiliate traffic might land.
 </html>
 ```
 
-#### Next.js (Pages Router):
+### Next.js (Pages Router)
 
 ```tsx
 // pages/_document.tsx
@@ -90,11 +82,11 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        <script 
+        <script
           src="https://api.affitor.com/js/affitor-tracker.js"
           data-affitor-program-id="YOUR_PROGRAM_ID"
           data-affitor-debug="false"
-        />
+        ></script>
       </Head>
       <body>
         <Main />
@@ -105,7 +97,7 @@ export default function Document() {
 }
 ```
 
-#### Next.js (App Router):
+### Next.js (App Router)
 
 ```tsx
 // app/layout.tsx
@@ -114,28 +106,32 @@ import Script from 'next/script'
 export default function RootLayout({ children }) {
   return (
     <html>
-      <head>
-        <Script 
+      <body>
+        {children}
+        <Script
           src="https://api.affitor.com/js/affitor-tracker.js"
           data-affitor-program-id="YOUR_PROGRAM_ID"
           data-affitor-debug="false"
           strategy="afterInteractive"
         />
-      </head>
-      <body>{children}</body>
+      </body>
     </html>
   )
 }
 ```
 
-#### React (Create React App):
+:::caution[App Router: Script Placement]
+The `<Script>` component with `strategy="afterInteractive"` must be inside `<body>`, not `<head>`. It is a React component that needs to be in the component tree to function correctly. Placing it in `<head>` causes hydration errors or the script not loading.
+:::
+
+### React (Create React App)
 
 ```html
 <!-- public/index.html -->
 <!DOCTYPE html>
 <html>
 <head>
-  <script 
+  <script
     src="https://api.affitor.com/js/affitor-tracker.js"
     data-affitor-program-id="YOUR_PROGRAM_ID"
     data-affitor-debug="false">
@@ -146,6 +142,16 @@ export default function RootLayout({ children }) {
 </body>
 </html>
 ```
+
+---
+
+## Configuration
+
+| Attribute | Required | Description |
+|-----------|----------|-------------|
+| `src` | Yes | Affitor tracker script URL |
+| `data-affitor-program-id` | Yes | Your Program ID (from **Settings → Integration**) |
+| `data-affitor-debug` | No | Set `"true"` for test mode (default: `"false"`) |
 
 ---
 
@@ -169,12 +175,22 @@ The tracker detects any URL with `?ref=` and captures the partner code.
 
 ## Verifying Installation
 
+### Quick Test
+
+Visit your site with a test affiliate parameter to verify the full flow:
+
+```
+https://yoursite.com?ref=TEST123
+```
+
+Open Developer Tools (F12) → **Application** → **Cookies** and confirm `customer_code` is set.
+
 ### Test Mode
 
 Enable debug mode to see tracking events in your browser console:
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">
@@ -185,7 +201,7 @@ Enable debug mode to see tracking events in your browser console:
 
 1. Open your browser's Developer Tools (F12)
 2. Go to the **Console** tab
-3. Visit your site
+3. Visit your site with `?ref=TEST123`
 4. You should see the following console messages:
 
 ```
@@ -219,7 +235,7 @@ Enable debug mode to see tracking events in your browser console:
 ### Dashboard Verification
 
 1. Visit your site
-2. Go to Affitor dashboard → **Setting** -> **Pageview Tracker**
+2. Go to Affitor dashboard → **Setting** → **Pageview Tracker**
 3. Click on **Test Click Tracking**
 4. Pageview tracker should show a blue checkmark
 
@@ -234,7 +250,7 @@ Enable debug mode to see tracking events in your browser console:
 **Check:**
 - Script URL is correct
 - No Content Security Policy blocking the script
-- Script is in `<head>`, not `<body>`
+- Script is in `<head>`, not `<body>` (except Next.js App Router which uses `<body>`)
 
 ### Cookies Not Set
 
@@ -253,3 +269,5 @@ Enable debug mode to see tracking events in your browser console:
 - Check browser **Network** tab for failed requests
 
 ---
+
+**Next:** [Set up Lead Tracking →](/advertisers/tracking/lead-tracking-signup)

@@ -1,9 +1,11 @@
 ---
-title: Lead Tracking (Signup)
+title: Referrals Tracker (Lead Tracking)
 description: Track signups and form submissions from affiliate traffic
 ---
 
-Lead tracking captures when referred visitors sign up or submit forms. This lets you see which partners drive qualified leads, not just clicks.
+Lead tracking captures when referred visitors sign up or register on your site. This is Step 2 of 3 in Affitor tracking (Click → **Lead** → Sale). Partners with CPL (cost-per-lead) commission models earn when leads are tracked.
+
+**Prerequisite:** Click Tracking script must be installed first. [See Click Tracking setup →](/advertisers/tracking/pageview-tracker-click)
 
 ---
 
@@ -26,7 +28,7 @@ Partners can then see: Clicks → **Signups** → Sales
 
 Before implementing lead tracking:
 
-- [x] Pageview tracker installed ([guide](/advertisers/tracking/pageview-tracker-click/))
+- [x] Pageview tracker installed ([guide](/advertisers/tracking/pageview-tracker-click))
 - [x] Visitor arrived via affiliate link and has been tracked (creates `customer_code` in database)
 - [x] `customer_code` cookie exists in browser (set automatically by pageview tracker)
 
@@ -41,10 +43,14 @@ After your signup form submits successfully, call:
 ```javascript
 window.affitorQueue = window.affitorQueue || [];
 window.affitorQueue.push(['trackLead', {
-  email: 'user@example.com',
-  user_id: 'user_123'  // Your internal user ID - REQUIRED
+  email: 'user@example.com',     // REQUIRED: user email (hashed before storage)
+  user_id: 'user_123'            // REQUIRED: your internal user ID
 }]);
 ```
+
+:::tip[Program ID]
+When you copy code from your Affitor dashboard (**Settings → Tracking**), your Program ID is pre-filled. If copying from these docs, replace `YOUR_PROGRAM_ID` with your ID from Settings.
+:::
 
 :::caution[Required for Payment Tracking]
 The `user_id` parameter is **required** for payment attribution to work. This must be your internal user identifier that you'll also pass in Stripe checkout metadata. Without it, purchases cannot be linked to affiliate partners.
@@ -59,14 +65,14 @@ Include additional data for better analytics:
 ```javascript
 window.affitorQueue = window.affitorQueue || [];
 window.affitorQueue.push(['trackLead', {
-  email: 'user@example.com',        // Required
-  user_id: 'user_123',              // Required - YOUR internal user ID
-  name: 'John Doe',                 // Optional
-  phone: '+1234567890',             // Optional
+  email: 'user@example.com',        // REQUIRED: user email (hashed before storage)
+  user_id: 'user_123',              // REQUIRED: your internal user ID
+  name: 'John Doe',                 // Optional: discarded per privacy policy
+  phone: '+1234567890',             // Optional: discarded per privacy policy
   additional_data: {
-    signup_method: 'email',         // Optional - How they signed up
-    plan: 'free_trial',             // Optional - Plan they selected
-    source: 'pricing_page'          // Optional - Where they signed up
+    signup_method: 'email',          // Optional: how they signed up
+    form_type: 'registration',       // Optional: form type
+    source: 'pricing_page'           // Optional: where they signed up
   }
 }]);
 ```
@@ -75,8 +81,8 @@ window.affitorQueue.push(['trackLead', {
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `email` | string | Recommended | User's email address (hashed for privacy before storage) |
-| `user_id` | string | **Required** | **Your internal user ID - critical for payment attribution** |
+| `email` | string | **Required** | User's email address (required for CPL partner tracking, hashed before storage) |
+| `user_id` | string | **Required** | Your internal user ID - critical for payment attribution |
 | `name` | string | No | User's full name (**NOT stored** - discarded per privacy policy) |
 | `phone` | string | No | User's phone number (**NOT stored** - discarded per privacy policy) |
 | `additional_data` | object | No | Any extra data you want to track (stored as-is) |
@@ -103,14 +109,15 @@ document.getElementById('signup-form').addEventListener('submit', async function
   const result = await createAccount(email, name);
 
   if (result.success) {
-    // Track the lead with user_id (REQUIRED)
+    // Track the lead
     window.affitorQueue = window.affitorQueue || [];
     window.affitorQueue.push(['trackLead', {
-      email: email,
-      user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
-      name: name,
+      email: email,              // REQUIRED: user email
+      user_id: result.userId,    // REQUIRED: your internal user ID
+      name: name,                // Optional: discarded by backend
       additional_data: {
-        signup_method: 'form'
+        signup_method: 'form',
+        form_type: 'registration'
       }
     }]);
 
@@ -135,14 +142,15 @@ function SignupForm() {
     });
 
     if (result.success) {
-      // Track the lead with user_id (REQUIRED)
+      // Track the lead
       (window as any).affitorQueue = (window as any).affitorQueue || [];
       (window as any).affitorQueue.push(['trackLead', {
-        email: formData.get('email'),
-        user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
-        name: formData.get('name'),
+        email: formData.get('email'),    // REQUIRED: user email
+        user_id: result.userId,          // REQUIRED: your internal user ID
+        name: formData.get('name'),      // Optional: discarded by backend
         additional_data: {
-          signup_method: 'react_form'
+          signup_method: 'react_form',
+          form_type: 'registration'
         }
       }]);
 
@@ -167,20 +175,39 @@ function SignupForm() {
 async function handleOAuthCallback(user) {
   // User authenticated via Google/GitHub/etc.
 
-  // Track the lead with user_id (REQUIRED)
+  // Track the lead
   window.affitorQueue = window.affitorQueue || [];
   window.affitorQueue.push(['trackLead', {
-    email: user.email,
-    user_id: user.id,  // ✅ REQUIRED: Your internal user ID
-    name: user.name,
+    email: user.email,       // REQUIRED: user email
+    user_id: user.id,        // REQUIRED: your internal user ID
+    name: user.name,         // Optional: discarded by backend
     additional_data: {
-      signup_method: 'google'
+      signup_method: 'google',
+      form_type: 'oauth'
     }
   }]);
 
   // Continue to dashboard
   window.location.href = '/dashboard';
 }
+```
+
+### Tracking Plan Selection
+
+If you want to track which plan users select during signup:
+
+```javascript
+window.affitorQueue = window.affitorQueue || [];
+window.affitorQueue.push(['trackLead', {
+  email: user.email,           // REQUIRED: user email
+  user_id: user.id,            // REQUIRED: your internal user ID
+  additional_data: {
+    signup_method: 'email',
+    form_type: 'registration',
+    source: 'pricing_page',
+    plan: 'free_trial'          // Optional: plan they selected
+  }
+}]);
 ```
 
 ---
@@ -226,10 +253,14 @@ Do **not** use `window.affitor?.trackLead()` directly — it silently fails if t
 
 ### Test Mode
 
+:::tip[Debug Mode]
+Enable debug mode in your Click Tracking script by setting `data-affitor-debug="true"`. See [Click Tracking → Test Mode](/advertisers/tracking/pageview-tracker-click#test-mode) for details.
+:::
+
 When debug mode is enabled in the pageview tracker:
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">
@@ -263,7 +294,7 @@ When debug mode is enabled in the pageview tracker:
 ### Dashboard Verification
 
 1. Visit your site
-2. Go to Affitor dashboard → **Setting** -> **Referrals Tracker**
+2. Go to Affitor dashboard → **Setting** → **Referrals Tracker**
 3. Click on **Test Lead Tracking**
 4. Referrals Tracker should show **"Connected"** with a blue checkmark
 
@@ -319,3 +350,6 @@ When debug mode is enabled in the pageview tracker:
 - Lead status updated to "lead" (was previously "click")
 - Dashboard filters aren't hiding the lead
 
+---
+
+**Next:** [Set up Sale Tracking →](/advertisers/tracking/payment-tracking-stripe)
