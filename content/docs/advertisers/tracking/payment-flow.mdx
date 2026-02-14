@@ -43,10 +43,11 @@ Customer creates an account.
 
 **Your code calls:**
 ```javascript
-window.affitor.trackLead({ 
+window.affitorQueue = window.affitorQueue || [];
+window.affitorQueue.push(['trackLead', {
   email: 'customer@example.com',
   user_id: 'user_123'  // Your internal user ID - REQUIRED
-});
+}]);
 ```
 
 **What happens:**
