@@ -10,10 +10,30 @@ Before going live, test your integration to ensure tracking works correctly.
 
 ## Enable Test Mode
 
+### npm SDK
+
+Pass `debug: true` when loading the tracker:
+
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
+```
+
+Or with the React provider:
+
+```tsx
+<AffitorProvider programId="YOUR_PROGRAM_ID" debug>
+  {children}
+</AffitorProvider>
+```
+
+### Script Tag
+
 Add `data-affitor-debug="true"` to your tracker script:
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">
@@ -219,9 +239,8 @@ Check all three integrations at once:
 Once all tests pass:
 
 1. **Remove test mode:**
-   ```html
-   data-affitor-debug="true"
-   ```
+   - npm SDK: Remove `debug` prop or set `debug={false}`
+   - Script tag: Set `data-affitor-debug="false"`
 
 2. Switch Stripe to live mode (if using test mode)
 

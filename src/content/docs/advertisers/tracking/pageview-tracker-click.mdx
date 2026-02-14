@@ -1,6 +1,6 @@
 ---
 title: Pageview Tracker
-description: Track clicks from affiliate links with a single script tag
+description: Track clicks from affiliate links with the npm SDK or a script tag
 ---
 
 The pageview tracker captures when visitors arrive via affiliate links. This is the foundation of Affitor tracking.
@@ -21,12 +21,93 @@ All subsequent events (signups, purchases) are linked via `customer_code` and `u
 
 ---
 
-## Installation
+## Choose Your Installation Method
 
-Add this script tag to your website's `<head>` section:
+| Method | Best for | Benefits |
+|--------|----------|----------|
+| **[npm SDK](#npm-sdk-recommended)** | React, Next.js, Vue, any JS/TS app | TypeScript types, Promise-based, no race conditions |
+| **[Script Tag](#script-tag)** | Static HTML, WordPress, no-build sites | Zero dependencies, copy-paste setup |
+
+---
+
+## npm SDK (Recommended)
+
+Install the official SDK package:
+
+```bash
+npm install @affitor/tracker
+```
+
+### React / Next.js (App Router)
+
+Wrap your app with `AffitorProvider` — the tracker loads automatically:
+
+```tsx
+// app/layout.tsx (or your root layout)
+import { AffitorProvider } from '@affitor/tracker/react';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AffitorProvider programId="YOUR_PROGRAM_ID">
+          {children}
+        </AffitorProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### React / Next.js (Pages Router)
+
+```tsx
+// pages/_app.tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+
+export default function App({ Component, pageProps }) {
+  return (
+    <AffitorProvider programId="YOUR_PROGRAM_ID">
+      <Component {...pageProps} />
+    </AffitorProvider>
+  );
+}
+```
+
+### Any JavaScript / TypeScript App
+
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
+// Load once — returns a singleton Promise
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+```
+
+### SDK Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `programId` | `string \| number` | — | **Required.** Your program ID (from dashboard) |
+| `env` | `'production' \| 'uat' \| 'local'` | `'production'` | Environment preset |
+| `debug` | `boolean` | `false` | Enable debug mode (verbose console logs) |
+| `scriptUrl` | `string` | — | Custom script URL (overrides `env`) |
+
+```ts
+// Local development with debug
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { env: 'local', debug: true });
+
+// UAT environment
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { env: 'uat' });
+```
+
+---
+
+## Script Tag
+
+For static HTML sites or platforms without a build step, add this script tag to your website's `<head>` section:
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="false">
@@ -35,9 +116,7 @@ Add this script tag to your website's `<head>` section:
 
 That's it. The script handles everything automatically.
 
----
-
-## Configuration
+### Configuration
 
 | Attribute | Required | Description |
 |-----------|----------|-------------|
@@ -45,21 +124,7 @@ That's it. The script handles everything automatically.
 | `data-affitor-program-id` | Yes | Your program ID (from dashboard) |
 | `data-affitor-debug` | No | Set "true" for test mode |
 
-### Finding Your Program ID
-
-1. Go to your Affitor dashboard
-2. Navigate to **Settings → Integration**
-3. Copy your **Program ID**
-
----
-
-## Where to Add the Script
-
-Add the script to **every page** where affiliate traffic might land.
-
-**Recommended:** Add to your site's global `<head>` so it loads on all pages.
-
-### Examples:
+### Examples
 
 #### HTML:
 
@@ -68,7 +133,7 @@ Add the script to **every page** where affiliate traffic might land.
 <html>
 <head>
   <title>Your Site</title>
-  <script 
+  <script
     src="https://api.affitor.com/js/affitor-tracker.js"
     data-affitor-program-id="YOUR_PROGRAM_ID"
     data-affitor-debug="false">
@@ -80,54 +145,6 @@ Add the script to **every page** where affiliate traffic might land.
 </html>
 ```
 
-#### Next.js (Pages Router):
-
-```tsx
-// pages/_document.tsx
-import { Html, Head, Main, NextScript } from 'next/document'
-
-export default function Document() {
-  return (
-    <Html>
-      <Head>
-        <script 
-          src="https://api.affitor.com/js/affitor-tracker.js"
-          data-affitor-program-id="YOUR_PROGRAM_ID"
-          data-affitor-debug="false"
-        />
-      </Head>
-      <body>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  )
-}
-```
-
-#### Next.js (App Router):
-
-```tsx
-// app/layout.tsx
-import Script from 'next/script'
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <head>
-        <Script 
-          src="https://api.affitor.com/js/affitor-tracker.js"
-          data-affitor-program-id="YOUR_PROGRAM_ID"
-          data-affitor-debug="false"
-          strategy="afterInteractive"
-        />
-      </head>
-      <body>{children}</body>
-    </html>
-  )
-}
-```
-
 #### React (Create React App):
 
 ```html
@@ -135,7 +152,7 @@ export default function RootLayout({ children }) {
 <!DOCTYPE html>
 <html>
 <head>
-  <script 
+  <script
     src="https://api.affitor.com/js/affitor-tracker.js"
     data-affitor-program-id="YOUR_PROGRAM_ID"
     data-affitor-debug="false">
@@ -146,6 +163,14 @@ export default function RootLayout({ children }) {
 </body>
 </html>
 ```
+
+---
+
+## Finding Your Program ID
+
+1. Go to your Affitor dashboard
+2. Navigate to **Settings → Integration**
+3. Copy your **Program ID**
 
 ---
 
@@ -173,8 +198,20 @@ The tracker detects any URL with `?ref=` and captures the partner code.
 
 Enable debug mode to see tracking events in your browser console:
 
+**npm SDK:**
+
+```tsx
+// Pass debug: true to AffitorProvider or loadAffitor
+<AffitorProvider programId="YOUR_PROGRAM_ID" debug>
+
+// or
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
+```
+
+**Script tag:**
+
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">

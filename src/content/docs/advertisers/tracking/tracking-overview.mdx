@@ -55,11 +55,20 @@ Three integrations connect your site to Affitor:
 
 | Integration | Purpose | Difficulty |
 |-------------|---------|------------|
-| [Pageview Tracker](/advertisers/tracking/pageview-tracker-click) | Track clicks from affiliate links | Easy – one script tag |
+| [Pageview Tracker](/advertisers/tracking/pageview-tracker-click) | Track clicks from affiliate links | Easy – npm install or one script tag |
 | [Lead Tracking](/advertisers/tracking/lead-tracking-signup) | Track signups and registrations | Easy – one function call |
 | [Payment Tracking](/advertisers/tracking/payment-tracking-stripe) | Track sales via Stripe | Medium – metadata setup |
 
 Most advertisers complete all three in under 30 minutes.
+
+### Choose Your Integration Method
+
+| Method | Install | Best for |
+|--------|---------|----------|
+| **npm SDK** (`@affitor/tracker`) | `npm install @affitor/tracker` | React, Next.js, Vue, any JS/TS app |
+| **Script tag** | Copy-paste `<script>` tag | Static HTML, WordPress, no-build sites |
+
+Both methods provide the same tracking functionality. The npm SDK adds TypeScript types, Promise-based loading, and React hooks.
 
 ---
 

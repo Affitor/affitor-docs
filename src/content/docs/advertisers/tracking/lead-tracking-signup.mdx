@@ -9,7 +9,7 @@ Lead tracking captures when referred visitors sign up or submit forms. This lets
 
 ## What It Does
 
-When a visitor signs up on your site, you queue a `trackLead` call via `window.affitorQueue`. This:
+When a visitor signs up on your site, you call `trackLead()` to record the lead. This:
 
 1. Validates that `user_id` is provided (critical for payment tracking)
 2. Links the lead event to the stored `customer_code` from the click
@@ -36,14 +36,35 @@ Before implementing lead tracking:
 
 ## Basic Implementation
 
-After your signup form submits successfully, call:
+After your signup form submits successfully, call `trackLead()`.
 
-```javascript
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['trackLead', {
+### npm SDK (Recommended)
+
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
+// Awaits script load — guaranteed to fire
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+affitor?.trackLead({
   email: 'user@example.com',
   user_id: 'user_123'  // Your internal user ID - REQUIRED
-}]);
+});
+```
+
+### Script Tag
+
+```javascript
+var leadData = {
+  email: 'user@example.com',
+  user_id: 'user_123'  // Your internal user ID - REQUIRED
+};
+
+if (window.affitor) {
+  window.affitor.trackLead(leadData);
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['trackLead', leadData]);
+}
 ```
 
 :::caution[Required for Payment Tracking]
@@ -56,9 +77,27 @@ The `user_id` parameter is **required** for payment attribution to work. This mu
 
 Include additional data for better analytics:
 
+### npm SDK
+
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+affitor?.trackLead({
+  email: 'user@example.com',        // Required
+  user_id: 'user_123',              // Required - YOUR internal user ID
+  additional_data: {
+    signup_method: 'email',         // Optional - How they signed up
+    plan: 'free_trial',             // Optional - Plan they selected
+    source: 'pricing_page'          // Optional - Where they signed up
+  }
+});
+```
+
+### Script Tag
+
 ```javascript
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['trackLead', {
+var leadData = {
   email: 'user@example.com',        // Required
   user_id: 'user_123',              // Required - YOUR internal user ID
   name: 'John Doe',                 // Optional
@@ -68,7 +107,14 @@ window.affitorQueue.push(['trackLead', {
     plan: 'free_trial',             // Optional - Plan they selected
     source: 'pricing_page'          // Optional - Where they signed up
   }
-}]);
+};
+
+if (window.affitor) {
+  window.affitor.trackLead(leadData);
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['trackLead', leadData]);
+}
 ```
 
 ### Parameters
@@ -90,39 +136,11 @@ window.affitorQueue.push(['trackLead', {
 
 ## Integration Examples
 
-### Standard Form
-
-```javascript
-document.getElementById('signup-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const email = document.getElementById('email').value;
-  const name = document.getElementById('name').value;
-
-  // Your signup logic
-  const result = await createAccount(email, name);
-
-  if (result.success) {
-    // Track the lead with user_id (REQUIRED)
-    window.affitorQueue = window.affitorQueue || [];
-    window.affitorQueue.push(['trackLead', {
-      email: email,
-      user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
-      name: name,
-      additional_data: {
-        signup_method: 'form'
-      }
-    }]);
-
-    // Redirect to dashboard or next step
-    window.location.href = '/welcome';
-  }
-});
-```
-
-### React
+### React / Next.js (npm SDK)
 
 ```tsx
+import { loadAffitor } from '@affitor/tracker';
+
 function SignupForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -135,16 +153,15 @@ function SignupForm() {
     });
 
     if (result.success) {
-      // Track the lead with user_id (REQUIRED)
-      (window as any).affitorQueue = (window as any).affitorQueue || [];
-      (window as any).affitorQueue.push(['trackLead', {
-        email: formData.get('email'),
+      // ✅ Awaits script load — guaranteed to fire
+      const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+      affitor?.trackLead({
+        email: formData.get('email') as string,
         user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
-        name: formData.get('name'),
         additional_data: {
           signup_method: 'react_form'
         }
-      }]);
+      });
 
       router.push('/welcome');
     }
@@ -160,27 +177,59 @@ function SignupForm() {
 }
 ```
 
-### Google/OAuth Signup
+### Google/OAuth Signup (npm SDK)
 
-```javascript
-// After OAuth callback
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
 async function handleOAuthCallback(user) {
   // User authenticated via Google/GitHub/etc.
 
-  // Track the lead with user_id (REQUIRED)
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['trackLead', {
+  // ✅ Awaits script load — guaranteed to fire
+  const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+  affitor?.trackLead({
     email: user.email,
     user_id: user.id,  // ✅ REQUIRED: Your internal user ID
-    name: user.name,
     additional_data: {
       signup_method: 'google'
     }
-  }]);
+  });
 
-  // Continue to dashboard
   window.location.href = '/dashboard';
 }
+```
+
+### Standard Form (Script Tag)
+
+```javascript
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  var email = document.getElementById('email').value;
+  var name = document.getElementById('name').value;
+
+  // Your signup logic
+  var result = await createAccount(email, name);
+
+  if (result.success) {
+    // Track the lead with user_id (REQUIRED)
+    var leadData = {
+      email: email,
+      user_id: result.userId,  // ✅ REQUIRED: Your internal user ID
+      name: name,
+      additional_data: { signup_method: 'form' }
+    };
+
+    if (window.affitor) {
+      window.affitor.trackLead(leadData);
+    } else {
+      window.affitorQueue = window.affitorQueue || [];
+      window.affitorQueue.push(['trackLead', leadData]);
+    }
+
+    window.location.href = '/welcome';
+  }
+});
 ```
 
 ---
@@ -204,20 +253,37 @@ Call `trackLead()` **after** the signup is confirmed successful:
 
 ---
 
-## Why Use the Queue Pattern
+## npm SDK vs Script Tag
 
-The tracker script loads asynchronously. If your code runs before the script finishes loading, `window.affitor` will be `undefined` and the call silently fails — even with optional chaining (`window.affitor?.trackLead()`). This is a common issue in OAuth callback flows where `trackLead` runs immediately after redirect.
+### npm SDK — `await loadAffitor()` (Recommended)
 
-The queue pattern (`window.affitorQueue`) solves this by buffering commands. When the SDK loads, it automatically flushes the queue and executes all pending calls. This works reliably whether the SDK loads before or after your code runs.
+The npm SDK solves all timing issues with a Promise-based API. `loadAffitor()` returns a singleton Promise that resolves once the tracker script is loaded. No race conditions, no queue management, full TypeScript support.
 
-```javascript
-// Always works — before or after SDK loads
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['trackLead', { email: email, user_id: userId }]);
+```ts
+import { loadAffitor } from '@affitor/tracker';
+
+// Always works — awaits script load automatically
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
+affitor?.trackLead({ email, user_id: userId });
 ```
 
-:::note
-Do **not** use `window.affitor?.trackLead()` directly — it silently fails if the SDK hasn't loaded yet. Always use the queue pattern above.
+### Script Tag — Check `window.affitor` First
+
+If you're using the script tag approach, always check if `window.affitor` exists first. If it does, call the method directly. If not, use the queue as a fallback for the case where the script hasn't loaded yet.
+
+```javascript
+var leadData = { email: email, user_id: userId };
+
+if (window.affitor) {
+  window.affitor.trackLead(leadData);
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['trackLead', leadData]);
+}
+```
+
+:::caution[Don't use the queue alone]
+Do **not** use `window.affitorQueue.push()` without first checking `window.affitor`. If the tracker script has already loaded before any queue was created, the queue's `push()` override won't be active and commands will never be processed.
 :::
 
 ---
@@ -226,10 +292,16 @@ Do **not** use `window.affitor?.trackLead()` directly — it silently fails if t
 
 ### Test Mode
 
-When debug mode is enabled in the pageview tracker:
+Enable debug mode in the pageview tracker:
 
+**npm SDK:**
+```ts
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
+```
+
+**Script tag:**
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="true">

@@ -68,19 +68,34 @@ Three code integrations connect Affitor to your website and checkout.
 
 Tracks when visitors arrive via affiliate links.
 
-**Add to your website's `<head>` section:**
+**npm SDK (React, Next.js, any JS/TS app):**
+
+```bash
+npm install @affitor/tracker
+```
+
+```tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+
+// Wrap your app
+<AffitorProvider programId="YOUR_PROGRAM_ID">
+  {children}
+</AffitorProvider>
+```
+
+**Script tag (HTML, WordPress, no-build sites):**
 
 ```html
-<script 
+<script
   src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   data-affitor-debug="false">
 </script>
 ```
-        
-Set `data-affitor-debug="true"` during testing to see tracking events in your browser console.
 
-→ [Full guide](#)
+Set `debug={true}` (SDK) or `data-affitor-debug="true"` (script tag) during testing to see tracking events in your browser console.
+
+→ [Full guide](/advertisers/tracking/pageview-tracker-click)
 
 ### Referrals Tracker (Signup/Lead)
 
