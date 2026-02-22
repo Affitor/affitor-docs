@@ -288,6 +288,221 @@ Do **not** use `window.affitorQueue.push()` without first checking `window.affit
 
 ---
 
+## Server-Side API
+
+If you process signups on your backend server, you can track leads directly via the REST API instead of using client-side JavaScript. This is ideal for server-rendered apps or when you want to avoid any client-side tracking code on your signup page.
+
+### When to Use
+
+| Client-side (`trackLead()`) | Server-side API |
+|---|---|
+| Simple integration | No JS required on signup page |
+| Requires affitor-tracker.js | Works in any server language |
+| Cookie read by browser JS | Cookie read by your server |
+| Best for SPAs / client-rendered apps | Best for server-rendered apps |
+
+Both approaches use `customer_code` for attribution. The client-side `trackLead()` reads the cookie automatically; the server-side API requires your server to read the cookie value and pass it explicitly.
+
+### Authentication
+
+```
+Authorization: Bearer affitor_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Find your API token in the dashboard under **Settings → Referrals Tracker → Server-Side API**.
+
+### How It Works
+
+```
+1. User visits your landing page with ?ref=partner123
+2. Affitor client-side tracker fires → sets affitor_customer cookie
+3. User fills out your signup form and submits
+4. Your frontend reads cookie for affitor_customer → sends value to your server
+5. Your server calls the Affitor API with customer_code
+6. Lead is attributed to the correct affiliate partner
+```
+
+### API Request
+
+```
+POST https://api.affitor.com/api/tracking/lead
+Authorization: Bearer affitor_xxxxxx
+Content-Type: application/json
+
+{
+  "customer_code": "cust_42_1234567890",  // REQUIRED — from affitor_customer cookie
+  "user_id": "usr_abc123",                 // REQUIRED
+  "email": "user@example.com"              // optional
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Lead tracked successfully",
+  "customer_code": "cust_42_1234567890"
+}
+```
+
+### Code Examples
+
+#### Node.js (Express)
+
+```ts
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+
+  // 1. Create user in your database
+  const newUser = await createUser({ email, password });
+
+  // 2. Read the affitor_customer cookie (set by client-side tracker)
+  const customerCode = req.cookies.affitor_customer;
+
+  // 3. Track lead via Affitor API (only if customer came via affiliate link)
+  if (customerCode) {
+    await fetch('https://api.affitor.com/api/tracking/lead', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.AFFITOR_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customer_code: customerCode,
+        user_id: newUser.id,
+        email: newUser.email,
+      }),
+    });
+  }
+
+  res.json({ success: true });
+});
+```
+
+#### Python (Flask)
+
+```python
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+
+    # 1. Create user in your database
+    new_user = create_user(data['email'], data['password'])
+
+    # 2. Read the affitor_customer cookie
+    customer_code = request.cookies.get('affitor_customer')
+
+    # 3. Track lead via Affitor API
+    if customer_code:
+        requests.post(
+            'https://api.affitor.com/api/tracking/lead',
+            headers={
+                'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'customer_code': customer_code,
+                'user_id': str(new_user.id),
+                'email': new_user.email,
+            },
+        )
+
+    return jsonify({'success': True})
+```
+
+#### PHP (Laravel)
+
+```php
+public function signup(Request $request) {
+    // 1. Create user in your database
+    $user = User::create([
+        'email' => $request->email,
+        'password' => bcrypt($request->password),
+    ]);
+
+    // 2. Read the affitor_customer cookie
+    $customerCode = $request->cookie('affitor_customer');
+
+    // 3. Track lead via Affitor API
+    if ($customerCode) {
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('AFFITOR_API_TOKEN'),
+        ])->post('https://api.affitor.com/api/tracking/lead', [
+            'customer_code' => $customerCode,
+            'user_id' => (string) $user->id,
+            'email' => $user->email,
+        ]);
+    }
+
+    return response()->json(['success' => true]);
+}
+```
+
+#### Ruby (Rails)
+
+```ruby
+def signup
+  # 1. Create user in your database
+  user = User.create!(email: params[:email], password: params[:password])
+
+  # 2. Read the affitor_customer cookie
+  customer_code = cookies[:affitor_customer]
+
+  # 3. Track lead via Affitor API
+  if customer_code.present?
+    uri = URI('https://api.affitor.com/api/tracking/lead')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    req = Net::HTTP::Post.new(uri, {
+      'Authorization' => "Bearer #{ENV['AFFITOR_API_TOKEN']}",
+      'Content-Type' => 'application/json',
+    })
+    req.body = {
+      customer_code: customer_code,
+      user_id: user.id.to_s,
+      email: user.email,
+    }.to_json
+
+    http.request(req)
+  end
+
+  render json: { success: true }
+end
+```
+
+### Testing Your Integration
+
+To verify your API token and integration work correctly, add `"test_mode": true` to the `additional_data` field:
+
+```json
+{
+  "additional_data": {
+    "test_mode": true
+  }
+}
+```
+
+In test mode:
+- `customer_code` and `user_id` are **not required**
+- No real lead record is created
+- A test event is recorded that the dashboard can verify
+
+After sending a test request, go to **Settings → Referrals Tracker** and click **Test Lead Tracking** to confirm the event was received. Remove `test_mode` when you go to production.
+
+### Error Responses
+
+| Status | Meaning |
+|---|---|
+| `401` | Missing or invalid API token |
+| `403` | Program is not active |
+| `400` | Missing `customer_code` or `user_id` |
+| `404` | Customer not found or not in this program |
+| `500` | Internal server error |
+
+---
+
 ## Verifying Lead Tracking
 
 ### Test Mode
