@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.affitor.com/sitemap-index.xml
+Llms-Txt: https://docs.affitor.com/llms.txt

@@ -1,11 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://docs.affitor.com',
 	integrations: [
+		sitemap(),
 		starlight({
 			title: 'Affitor Documentation',
 			description: 'Complete guide to the Affitor affiliate management platform',
