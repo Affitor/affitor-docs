@@ -11,6 +11,7 @@ export default defineConfig({
 		starlight({
 			title: 'Affitor Documentation',
 			description: 'Complete guide to the Affitor affiliate management platform',
+			customCss: ['./src/styles/custom.css'],
 			logo: {
 				src: './src/assets/affitor-logo.svg',
 				replacesTitle: false,
@@ -20,12 +21,9 @@ export default defineConfig({
 				// { icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
 				// { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
 			],
-			editLink: {
-				baseUrl: 'https://github.com/affitor/affiliate-docs/edit/main/',
-			},
 			sidebar: [
 				{
-					label: '📚 Getting Started',
+					label: 'Getting Started',
 					items: [
 						{ label: 'What is Affitor?', slug: 'getting-started/what-is-affitor' },
 						{ label: 'How It Works', slug: 'getting-started/how-it-works' },
@@ -34,7 +32,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: '🏢 For Advertisers',
+					label: 'For Advertisers',
 					items: [
 						{
 							label: 'Quickstart',
@@ -71,11 +69,11 @@ export default defineConfig({
 					],
 				},
 				{
-					label: '❓ FAQ',
+					label: 'FAQ',
 					link: '/faq/',
 				},
 				{
-					label: '📞 Support',
+					label: 'Support',
 					items: [
 						{ label: 'Contact Us', slug: 'support/contact' },
 						// { label: 'System Status', slug: 'support/status' },
