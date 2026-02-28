@@ -16,7 +16,7 @@ export default defineConfig({
 				src: './src/assets/affitor-logo.svg',
 				replacesTitle: false,
 			},
-			favicon: '/favicon.svg',
+			favicon: '/favicon-v2.svg',
 			social: [
 				// { icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
 				// { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
