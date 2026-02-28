@@ -1,0 +1,59 @@
+/* Enterprise-style asides — Stripe/Mercury inspired */
+
+/* Base: remove heavy bg, use thin left border */
+.starlight-aside {
+	background-color: transparent !important;
+	border-inline-start: 2px solid var(--sl-color-asides-border);
+	border-radius: 0;
+	padding: 0.75rem 1rem;
+	margin: 1.5rem 0;
+}
+
+/* Title: smaller, uppercase label */
+.starlight-aside__title {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	gap: 0.375rem;
+	margin-bottom: 0.25rem;
+}
+
+/* Icon: smaller, match title size */
+.starlight-aside__icon {
+	font-size: 1em;
+	width: 1em;
+	height: 1em;
+}
+
+/* Content: normal text, subtle */
+.starlight-aside__content {
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--sl-color-gray-2);
+}
+
+.starlight-aside__content p {
+	margin: 0;
+}
+
+/* Type-specific border colors — muted palette */
+.starlight-aside--note {
+	--sl-color-asides-border: var(--sl-color-blue);
+	--sl-color-asides-text-accent: var(--sl-color-blue-high);
+}
+
+.starlight-aside--tip {
+	--sl-color-asides-border: var(--sl-color-purple);
+	--sl-color-asides-text-accent: var(--sl-color-purple-high);
+}
+
+.starlight-aside--caution {
+	--sl-color-asides-border: var(--sl-color-orange);
+	--sl-color-asides-text-accent: var(--sl-color-orange-high);
+}
+
+.starlight-aside--danger {
+	--sl-color-asides-border: var(--sl-color-red);
+	--sl-color-asides-text-accent: var(--sl-color-red-high);
+}
