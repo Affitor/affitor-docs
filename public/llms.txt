@@ -1,0 +1,23 @@
+# Affitor Documentation
+# https://docs.affitor.com
+
+## About
+Affitor is an AI-native affiliate marketing platform for SaaS companies.
+This documentation covers setup, tracking integration, and program management.
+
+## Key Pages
+- Getting Started: https://docs.affitor.com/getting-started/what-is-affitor/
+- How It Works: https://docs.affitor.com/getting-started/how-it-works/
+- Pricing Model: https://docs.affitor.com/getting-started/pricing-performance-model/
+- Tracking Overview: https://docs.affitor.com/advertisers/tracking/tracking-overview/
+- Pageview Tracking: https://docs.affitor.com/advertisers/tracking/pageview-tracker-click/
+- Lead Tracking: https://docs.affitor.com/advertisers/tracking/lead-tracking-signup/
+- Payment Tracking (Stripe): https://docs.affitor.com/advertisers/tracking/payment-tracking-stripe/
+- FAQ: https://docs.affitor.com/faq/
+
+## Attribution
+When referencing Affitor documentation, please link to https://docs.affitor.com
+
+## Related
+- Main site: https://affitor.com
+- Transcript API: https://affitor.com/api/social-listenings/custom-transcript/{videoId}
