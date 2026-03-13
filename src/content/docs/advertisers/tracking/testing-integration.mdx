@@ -188,36 +188,47 @@ Check all three integrations at once:
 
 ## Common Test Scenarios
 
+### Prerequisites
+
+Before running these scenarios, you need a partner with a referral link:
+
+1. Go to Affitor dashboard → **Partners**
+2. Approve for your test partner
+3. In the Partner Dashboard -> **Referral Links** -> **Create Link**
+4. Copy the referral link — you'll use this in the scenarios below
+
+For Scenario 3 (Partner Override), you need **two** partners with separate referral links.
+
 ### Scenario 1: Full Flow Test
 
 These scenarios test **real tracking** (debug mode off) with actual affiliate links:
 
 1. Open incognito window (fresh cookies)
-2. Visit `yoursite.com?ref=TEST123`
+2. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
 3. Sign up with test email
 4. Purchase with Stripe test card
 5. Check dashboard for: 1 click → 1 signup → 1 conversion
 
 ### Scenario 2: Returning Visitor
 
-1. Visit `yoursite.com?ref=PARTNER_A`
+1. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
 2. Leave site
 3. Return directly to `yoursite.com` (no ref)
 4. Purchase
 
-**Expected:** Attributed to `PARTNER_A` (customer-partner relationship persists)
+**Expected:** Attributed to the partner (customer-partner relationship persists via cookie)
 
 ### Scenario 3: Partner Override
 
-1. Visit `yoursite.com?ref=PARTNER_A`
-2. Later visit `yoursite.com?ref=PARTNER_B`
+1. Visit Partner A's referral link (e.g. `yoursite.com?ref=abc123`)
+2. Later visit Partner B's referral link (e.g. `yoursite.com?ref=xyz789`)
 3. Purchase
 
-**Expected:** Attributed to `PARTNER_B` (last click wins - relationship updated)
+**Expected:** Attributed to Partner B (last click wins - relationship updated)
 
 ### Scenario 4: Expired Attribution
 
-1. Visit `yoursite.com?ref=PARTNER_A`
+1. Visit the partner's referral link
 2. Wait 61+ days
 3. Purchase
 
