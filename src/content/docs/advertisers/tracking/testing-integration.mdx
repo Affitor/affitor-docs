@@ -58,21 +58,20 @@ Add `data-affitor-debug="true"` to your tracker script:
 **Expected console output:**
 
 ```
-[Affitor Tracker] Affitor tracker initialized with options: {debug: true}
-[Affitor Tracker] Using advertiser ID: YOUR_PROGRAM_ID
-[Affitor Tracker] 🔍 Verifying cookie functionality...
-[Affitor Tracker] 📝 Writing test cookies: {customer_code: "test_customer_...", affiliate_url: "..."}
-[Affitor Tracker] Cookie set: {name: "customer_code", value: "test_customer_...", expires: ...}
-[Affitor Tracker] 📖 Reading test cookies back: {customer_code: "test_customer_...", affiliate_url: "..."}
-[Affitor Tracker] ✅ Cookie verification PASSED - All cookies working correctly!
-[Affitor Tracker] trackTest() called true
-[Affitor Tracker] Sending test event to verify tracking: {customerCode: null, hasAttribution: false, eventType: "test"}
+[Affitor] Affitor tracker v2 initialized: {debug: true}
+[Affitor] Using program ID: YOUR_PROGRAM_ID
+[Affitor] Verifying cookie functionality...
+[Affitor] Cookie set: {name: "affitor_test_cookie", value: "test_...", expires: ...}
+[Affitor] Cookie verification PASSED
+[Affitor] trackTest() called true
+[Affitor] Sending test click event: {affiliate_url: ..., page_url: "...", ...}
 ```
 
 **If cookies are blocked**, you'll see:
 
 ```
-[Affitor Tracker] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
+[Affitor] Cookie verification FAILED - cookies may be blocked
+[Affitor]   Possible causes: browser privacy settings, ITP, extensions
 ```
 
 :::caution[Do not use ?ref= in test mode]
@@ -88,24 +87,22 @@ Do **not** add `?ref=TEST123` to the URL when testing. Click tracking (`trackCli
 
 **Steps:**
 1. With cookies set (from step 1), complete your signup flow
-2. Ensure you pass `user_id` in your `trackLead()` call (required for payment attribution)
+2. Ensure you pass `customerKey` in your `signup()` call (required for payment attribution)
 3. Check console for lead event
 
 **Expected console output:**
 
-With `user_id` provided:
 ```
-[Affitor Tracker] ✅ Affitor: user_id detected - user_123
-[Affitor Tracker] trackTest() called true
-[Affitor Tracker] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
-```
-
-Without `user_id`:
-```
-[Affitor Tracker] ❌ Affitor: user_id is REQUIRED for trackLead() - payment attribution will not work without it!
+[Affitor] trackTest() called true
+[Affitor] Sending test lead event: {click_id: ..., customer_key: "your_customer_key", session_id: "...", ...}
+[Affitor] Test lead event sent successfully {...}
 ```
 
-**Note:** In debug mode, `trackLead()` sends a test event only — no actual lead record is created.
+**Note:** In debug mode, `signup()` sends a test event only — no actual lead record is created. If `customerKey` is missing, you'll see:
+
+```
+[Affitor] signup() requires customerKey as first argument
+```
 
 **Dashboard check:**
 - Go to Affitor dashboard → **Settings → Referrals Tracker**
