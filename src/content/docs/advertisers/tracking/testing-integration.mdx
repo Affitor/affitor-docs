@@ -59,14 +59,14 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 ```
 [Affitor] Detected ref parameter: TEST123
-[Affitor] Generated customer_code: cust_abc123
+[Affitor] Generated click_id: cust_abc123
 [Affitor] Customer-partner relationship created
 [Affitor] Click event tracked
 ```
 
 **Verify cookies:**
 - Developer Tools → Application → Cookies
-- Check for `customer_code = some value`
+- Check for `affitor_click_id = some value`
 
 **Dashboard check:**
 - Go to Affitor → Integration Status
@@ -81,7 +81,7 @@ Add `data-affitor-debug="true"` to your tracker script:
 **Expected console output:**
 
 ```
-[Affitor] trackLead called with: { email: 'test@example.com' }
+[Affitor] signup called with: { customerKey: 'test_user_123', email: 'test@example.com' }
 [Affitor] Lead event tracked
 ```
 
@@ -100,8 +100,8 @@ Add `data-affitor-debug="true"` to your tracker script:
 - Go to Payments → find test payment
 - Click to view details
 - Check metadata contains:
-  - `user_id: your_user_id`
-  - `customer_code: customer_code_from_cookie`
+  - `customer_key: your_customer_key`
+  - `affitor_click_id: click_id_from_cookie`
   - `program_id: YOUR_PROGRAM_ID`
 
 **Dashboard check:**

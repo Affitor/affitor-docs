@@ -9,7 +9,7 @@ Get affiliate tracking live in three steps. Each step builds on the previous one
 
 ## Step 1 — Install the Script
 
-Add the Affitor script to every page of your site. It auto-detects affiliate links (`?ref=` parameter) and stores the `customer_code` in a cookie for later attribution.
+Add the Affitor script to every page of your site. It auto-detects affiliate links (`?ref=` parameter) and stores the `click_id` in a cookie for later attribution.
 
 ```html
 <script>
@@ -29,33 +29,26 @@ Replace `YOUR_PROGRAM_ID` with your program ID from the dashboard.
 **What this does:**
 
 - Detects `?ref=PARTNER_CODE` in the URL
-- Stores a `customer_code` in a first-party cookie (60-day window)
+- Stores a `click_id` in a first-party cookie (60-day window)
 - Fires a `pageview` event to Affitor — partners can see their click counts
 
 **Verify:** Open your browser console. You should see:
 
 ```
 [Affitor] Tracker loaded — program: YOUR_PROGRAM_ID
-[Affitor] Attribution stored — customer_code: cust_...
+[Affitor] Attribution stored — click_id: cust_...
 ```
 
 ---
 
 ## Step 2 — Track Signups
 
-After a user successfully registers, call `trackLead()`. This links the signup to the affiliate who referred them.
+After a user successfully registers, call `signup()`. This links the signup to the affiliate who referred them.
 
 ```html
 <script>
 // Call this after your signup/registration succeeds
-window.affitor.trackLead({
-  email: 'user@example.com',   // Required: user's email
-  name: 'John Doe',            // Optional: full name
-  user_id: 'user_123',        // Recommended: your internal user ID
-  additional_data: {
-    signup_method: 'email',    // Optional: how they signed up
-  }
-});
+await window.affitor.signup('user_123', 'user@example.com');
 </script>
 ```
 
@@ -63,32 +56,24 @@ window.affitor.trackLead({
 
 ```html
 <script>
-document.getElementById('signup-form').addEventListener('submit', function(e) {
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   var email = document.getElementById('email').value;
-  var name  = document.getElementById('name').value;
 
   // Run your own signup logic first, then on success:
-  window.affitor.trackLead({
-    email: email,
-    name: name,
-    user_id: currentUser.id,   // Pass your internal ID here
-    additional_data: {
-      signup_method: 'form',
-    }
-  });
+  await window.affitor.signup(currentUser.id, email);
 });
 </script>
 ```
 
 :::note
-`user_id` is strongly recommended. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
+`customerKey` (first argument) is required. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
 :::
 
 **What this does:**
 
-- Validates the stored `customer_code` cookie
+- Validates the stored `affitor_click_id` cookie
 - Creates a lead record linked to the referring partner
 - Partners can now see: Clicks → **Signups**
 
@@ -111,7 +96,7 @@ const session = await stripe.checkout.sessions.create({
   cancel_url:  'https://yoursite.com/cancel',
   metadata: {
     partner_code:  'PARTNER_ABC123',   // from cookie: affitor_partner_code
-    customer_code: 'cust_xyz789',      // from cookie: affitor_customer_code
+    affitor_click_id: 'cust_xyz789',      // from cookie: affitor_click_id
     program_id:    'YOUR_PROGRAM_ID',
   },
 });
@@ -139,7 +124,7 @@ window.affitor.trackConversion({
 
 **What this does:**
 
-- Matches the payment to the correct partner via `customer_code`
+- Matches the payment to the correct partner via `click_id`
 - Calculates commission based on your program tier
 - Partners can now see: Clicks → Signups → **Sales**
 
