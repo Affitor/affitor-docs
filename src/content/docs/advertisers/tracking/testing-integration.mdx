@@ -41,8 +41,8 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 **Test mode:**
 - Logs all tracking events to browser console
-- Events still sent to Affitor (marked as test)
-- Visible in dashboard under test events
+- Sends test events only — no real records created in database
+- Test events visible in dashboard for verification
 
 ---
 
@@ -52,42 +52,65 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 **Steps:**
 1. Open browser Developer Tools (F12) → Console
-2. Visit: `https://yoursite.com?ref=TEST123`
+2. Visit your site (no `?ref=` needed — the test event fires automatically in debug mode)
 3. Look for Affitor debug messages
 
 **Expected console output:**
 
 ```
-[Affitor] Detected ref parameter: TEST123
-[Affitor] Generated click_id: cust_abc123
-[Affitor] Customer-partner relationship created
-[Affitor] Click event tracked
+[Affitor Tracker] Affitor tracker initialized with options: {debug: true}
+[Affitor Tracker] Using advertiser ID: YOUR_PROGRAM_ID
+[Affitor Tracker] 🔍 Verifying cookie functionality...
+[Affitor Tracker] 📝 Writing test cookies: {customer_code: "test_customer_...", affiliate_url: "..."}
+[Affitor Tracker] Cookie set: {name: "customer_code", value: "test_customer_...", expires: ...}
+[Affitor Tracker] 📖 Reading test cookies back: {customer_code: "test_customer_...", affiliate_url: "..."}
+[Affitor Tracker] ✅ Cookie verification PASSED - All cookies working correctly!
+[Affitor Tracker] trackTest() called true
+[Affitor Tracker] Sending test event to verify tracking: {customerCode: null, hasAttribution: false, eventType: "test"}
 ```
 
-**Verify cookies:**
-- Developer Tools → Application → Cookies
-- Check for `affitor_click_id = some value`
+**If cookies are blocked**, you'll see:
+
+```
+[Affitor Tracker] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
+```
+
+:::caution[Do not use ?ref= in test mode]
+Do **not** add `?ref=TEST123` to the URL when testing. Click tracking (`trackClick()`) is not guarded by debug mode — it will create a **real** click record and set real cookies. The `trackTest()` event fires automatically and is sufficient for dashboard verification.
+:::
 
 **Dashboard check:**
-- Go to Affitor → Integration Status
-- Pageview tracker: ✅ Connected
+- Go to Affitor dashboard → **Settings → Pageview Tracker**
+- Click **Test Click Tracking**
+- Pageview tracker should show a blue checkmark
 
 ### 2. Lead Tracking (Signup)
 
 **Steps:**
 1. With cookies set (from step 1), complete your signup flow
-2. Check console for lead event
+2. Ensure you pass `user_id` in your `trackLead()` call (required for payment attribution)
+3. Check console for lead event
 
 **Expected console output:**
 
+With `user_id` provided:
 ```
-[Affitor] signup called with: { customerKey: 'test_user_123', email: 'test@example.com' }
-[Affitor] Lead event tracked
+[Affitor Tracker] ✅ Affitor: user_id detected - user_123
+[Affitor Tracker] trackTest() called true
+[Affitor Tracker] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
 ```
 
+Without `user_id`:
+```
+[Affitor Tracker] ❌ Affitor: user_id is REQUIRED for trackLead() - payment attribution will not work without it!
+```
+
+**Note:** In debug mode, `trackLead()` sends a test event only — no actual lead record is created.
+
 **Dashboard check:**
-- Go to Affitor → Integration Status
-- Referrals tracker: ✅ Connected
+- Go to Affitor dashboard → **Settings → Referrals Tracker**
+- Click **Test Lead Tracking**
+- Referrals tracker should show a blue checkmark
 
 ### 3. Payment Tracking (Sale)
 
@@ -100,14 +123,14 @@ Add `data-affitor-debug="true"` to your tracker script:
 - Go to Payments → find test payment
 - Click to view details
 - Check metadata contains:
-  - `customer_key: your_customer_key`
-  - `affitor_click_id: click_id_from_cookie`
+  - `customer_code: customer_code_from_cookie`
+  - `user_id: your_user_id` (must match the value from `trackLead()`)
   - `program_id: YOUR_PROGRAM_ID`
 
 **Dashboard check:**
-- Go to Affitor → Transactions
-- Test conversion should appear
-- Integration Status → Payments tracker: ✅ Connected
+- Go to Affitor dashboard → **Settings → Payments Tracker**
+- Stripe Connect Integration should show "Connected"
+- Payments tracker should show a blue checkmark
 
 ---
 
@@ -146,53 +169,66 @@ Content-Type: application/json
 Check all three integrations at once:
 
 1. Go to Affitor Dashboard
-2. Navigate to Settings → Integration
+2. Navigate to **Settings** → each tracker's settings page
 3. View status for each tracker:
 
 | Tracker | Status | Meaning |
 |---------|--------|---------|
-| Pageview | ✅ Connected | Script installed, receiving clicks |
-| Referrals | ✅ Connected | Receiving lead events |
-| Payments | ✅ Connected | Webhook configured, receiving sales |
+| Pageview | ✅ Connected | Script installed, receiving clicks (Settings → Pageview Tracker) |
+| Referrals | ✅ Connected | Receiving lead events (Settings → Referrals Tracker) |
+| Payments | ✅ Connected | Stripe Connect configured, receiving sales (Settings → Payments Tracker) |
 
 | Tracker | Status | Meaning |
 |---------|--------|---------|
 | Pageview | ⏳ Pending | Script not detected yet |
 | Referrals | ⏳ Pending | No lead events received |
-| Payments | ⏳ Pending | No payment events received |
+| Payments | ⏳ Pending | Stripe Connect not configured or no payment events received |
 
 ---
 
 ## Common Test Scenarios
 
+### Prerequisites
+
+Before running these scenarios, you need a partner with a referral link:
+
+1. Go to Affitor dashboard → **Partners**
+2. Approve for your test partner
+3. In the Partner Dashboard -> **Referral Links** -> **Create Link**
+4. Copy the referral link — you'll use this in the scenarios below
+
+For Scenario 3 (Partner Override), you need **two** partners with separate referral links.
+
 ### Scenario 1: Full Flow Test
 
+These scenarios test **real tracking** (debug mode off) with actual affiliate links:
+
 1. Open incognito window (fresh cookies)
-2. Visit `yoursite.com?ref=TEST123`
+2. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
 3. Sign up with test email
 4. Purchase with Stripe test card
 5. Check dashboard for: 1 click → 1 signup → 1 conversion
 
 ### Scenario 2: Returning Visitor
 
-1. Visit `yoursite.com?ref=PARTNER_A`
+1. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
 2. Leave site
 3. Return directly to `yoursite.com` (no ref)
 4. Purchase
 
-**Expected:** Attributed to `PARTNER_A` (customer-partner relationship persists)
+**Expected:** Attributed to the partner (customer-partner relationship persists via cookie)
 
 ### Scenario 3: Partner Override
 
-1. Visit `yoursite.com?ref=PARTNER_A`
-2. Later visit `yoursite.com?ref=PARTNER_B`
+1. Visit Partner A's referral link (e.g. `yoursite.com?ref=abc123`)
+2. Later visit Partner B's referral link (e.g. `yoursite.com?ref=xyz789`)
 3. Purchase
 
-**Expected:** Attributed to `PARTNER_B` (last click wins - relationship updated)
+**Expected:** Attributed to Partner B (last click wins - relationship updated)
 
 ### Scenario 4: Expired Attribution
 
-1. Visit `yoursite.com?ref=PARTNER_A`
+1. Visit the partner's referral link
 2. Wait 61+ days
 3. Purchase
 
@@ -220,9 +256,9 @@ Check all three integrations at once:
 ### Webhook Not Firing
 
 **Check:**
-- Stripe webhook endpoint configured
-- Correct events selected
-- Endpoint URL is correct (`https://api.affitor.com/api/stripe/webhooks`)
+- Stripe Connect integration is connected in Settings → Payments Tracker
+- Correct webhook events selected (`checkout.session.completed`, `invoice.payment_succeeded`)
+- All three metadata fields included in Stripe checkout (`customer_code`, `user_id`, `program_id`)
 
 ### Test Event Not in Dashboard
 
@@ -239,7 +275,7 @@ Once all tests pass:
 
 1. **Remove test mode:**
    - npm SDK: Remove `debug` prop or set `debug={false}`
-   - Script tag: Set `data-affitor-debug="false"`
+   - Script tag: Remove `data-affitor-debug` attribute or set to `"false"`
 
 2. Switch Stripe to live mode (if using test mode)
 
