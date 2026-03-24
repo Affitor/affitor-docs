@@ -51,12 +51,14 @@ export default defineConfig({
 							label: 'Tracking',
 							collapsed: false,
 							items: [
+								{ label: '3-Step Integration Guide', slug: 'advertisers/tracking/quickstart-integration' },
 								// { label: 'Introduction', slug: 'advertisers/tracking/introduction' },
 								{ label: 'Tracking Overview', slug: 'advertisers/tracking/tracking-overview' },
 								{ label: 'Pageview Tracker (Click)', slug: 'advertisers/tracking/pageview-tracker-click' },
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
 								{ label: 'Payment Tracking (Stripe)', slug: 'advertisers/tracking/payment-tracking-stripe' },
-								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
+								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },
+								{ label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
 						// {

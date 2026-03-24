@@ -27,7 +27,7 @@ Customer clicks the link and lands on your site.
 
 **What happens:**
 - Affitor tracker detects `?ref=PARTNER123`
-- Generates unique `customer_code` and stores in cookie
+- Generates unique `click_id` and stores in cookie
 - Creates customer-partner relationship in database
 - Click event recorded
 
@@ -43,16 +43,17 @@ Customer creates an account.
 
 **Your code calls:**
 ```javascript
-window.affitorQueue = window.affitorQueue || [];
-window.affitorQueue.push(['trackLead', {
-  email: 'customer@example.com',
-  user_id: 'user_123'  // Your internal user ID - REQUIRED
-}]);
+if (window.affitor) {
+  await window.affitor.signup('user_123', 'customer@example.com');
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['signup', 'user_123', 'customer@example.com']);
+}
 ```
 
 **What happens:**
 - Lead event linked to partner via cookies
-- **`user_id` saved to customer-partner relationship**
+- **`customerKey` saved to customer-partner relationship**
 - Partner sees: 1 click → 1 signup
 
 ### 5. Customer Purchases
@@ -64,8 +65,8 @@ Customer completes payment via Stripe.
 ```javascript
 metadata: {
   program_id: 'YOUR_PROGRAM_ID',
-  customer_code: 'cust_xyz',
-  user_id: currentUser.id  // Your internal user ID (same as trackLead)
+  affitor_click_id: 'cust_xyz',
+  customer_key: currentUser.id  // Your internal user ID (same as customerKey in signup)
 }
 ```
 
@@ -75,10 +76,10 @@ Stripe sends `checkout.session.completed` to Affitor.
 
 **What happens:**
 - Affitor receives payment confirmation
-- Reads `user_id` from metadata
+- Reads `customer_key` from metadata
 - Reads `program_id` from metadata
-- Reads `customer_code` from metadata
-- Looks up customer-partner relationship using `user_id`, `program_id` and `customer_code`
+- Reads `affitor_click_id` from metadata
+- Looks up customer-partner relationship using `customer_key`, `program_id` and `affitor_click_id`
 - Verifies attribution is within 60-day window
 - Creates commission record
 
@@ -121,22 +122,6 @@ After hold period clears:
 ---
 
 ## Flow by Payment Method
-
-### Affitor Pay
-
-```
-Customer → Affitor checkout → Affitor collects $100
-                                    ↓
-                            Stripe fees: -$3.20
-                            Commission (30%): -$30
-                            Platform fee (3.5%): -$3.50
-                                    ↓
-                            You receive: $63.30
-                                    ↓
-                            Hold period (14 days)
-                                    ↓
-                            Partner receives: $30
-```
 
 ### Bill Flow
 
