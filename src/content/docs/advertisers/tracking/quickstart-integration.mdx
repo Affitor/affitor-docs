@@ -9,7 +9,7 @@ Get affiliate tracking live in three steps. Each step builds on the previous one
 
 ## Step 1 — Install the Script
 
-Add the Affitor script to every page of your site. It auto-detects affiliate links (`?ref=` parameter) and stores the `click_id` in a cookie for later attribution.
+Add the Affitor script to every page of your site. It auto-detects affiliate links (`?aff=` parameter) and stores the `click_id` in a cookie for later attribution.
 
 ```html
 <script>
@@ -28,7 +28,7 @@ Replace `YOUR_PROGRAM_ID` with your program ID from the dashboard.
 
 **What this does:**
 
-- Detects `?ref=PARTNER_CODE` in the URL
+- Detects `?aff=PARTNER_CODE` in the URL
 - Stores a `click_id` in a first-party cookie (60-day window)
 - Fires a `pageview` event to Affitor — partners can see their click counts
 
@@ -103,24 +103,6 @@ const session = await stripe.checkout.sessions.create({
 ```
 
 Read the cookie values server-side or pass them from the frontend via a hidden form field.
-
-### Option B — Manual `trackConversion()`
-
-Use this if you are not using Stripe Checkout, or want to record sales from your own payment processor.
-
-```html
-<script>
-// Call this after payment confirmation
-window.affitor.trackConversion({
-  amount: 99.00,           // Required: sale amount
-  currency: 'USD',         // Optional: defaults to USD
-  order_id: 'ORDER_123',  // Optional: your order reference
-  additional_data: {
-    product_name: 'Premium Plan',
-  }
-});
-</script>
-```
 
 **What this does:**
 

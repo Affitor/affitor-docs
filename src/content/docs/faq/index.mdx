@@ -265,7 +265,7 @@ This means the dashboard hasn't received a pageview event from your site yet. Ru
 
 1. **Verify the script is loading** — Open DevTools → Network tab, filter by `affitor-tracker`. You should see a successful (200) request.
 2. **Check your Program ID** — The `data-affitor-program-id` (script tag) or `programId` (npm SDK) must match the ID shown in your dashboard Settings.
-3. **Visit with a `?ref=` parameter** — Pageview tracking activates when a visitor arrives via an affiliate link, e.g. `https://yoursite.com?ref=TEST123`.
+3. **Visit with a `?aff=` parameter** — Pageview tracking activates when a visitor arrives via an affiliate link, e.g. `https://yoursite.com?aff=TEST123`.
 4. **Disable ad blockers** — Some browser extensions (uBlock Origin, Privacy Badger) can block tracking scripts. Test in an incognito window with extensions disabled.
 5. **HTTPS is required** — Affitor cookies require a secure context. `http://localhost` works for development, but production must use HTTPS.
 6. **Check the browser console** — Enable debug mode (`data-affitor-debug="true"` or `debug` prop) and look for `[Affitor]` messages.
@@ -287,7 +287,7 @@ If you don't see any `[Affitor]` log messages in the browser console:
 
 If you check DevTools → Application → Cookies and don't see an `affitor_click_id` cookie:
 
-- **No `?ref=` parameter** — The cookie is only set when a visitor arrives via `?ref=PARTNER_CODE`.
+- **No `?aff=` parameter** — The cookie is only set when a visitor arrives via `?aff=PARTNER_CODE`.
 - **Not on HTTPS** — Cookies require a secure context in production. `http://localhost` is fine for development.
 - **Browser privacy settings** — Some browsers (Safari with ITP, Firefox with ETP) or extensions may block first-party cookies. Check your browser's privacy settings.
 - **CSP blocking** — Your Content Security Policy headers might be blocking cookie creation.

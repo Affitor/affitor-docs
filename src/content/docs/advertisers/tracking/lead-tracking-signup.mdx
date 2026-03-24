@@ -261,7 +261,7 @@ Find your API token in the dashboard under **Settings → Referrals Tracker → 
 ### How It Works
 
 ```
-1. User visits your landing page with ?ref=partner123
+1. User visits your landing page with ?aff=partner123
 2. Affitor client-side tracker fires → sets affitor_click_id cookie
 3. User fills out your signup form and submits
 4. Your frontend reads cookie for affitor_click_id → sends value to your server
@@ -516,12 +516,12 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 ### Lead Not Attributed to Partner
 
 **Check:**
-- Visitor came via affiliate link (`?ref=PARTNER123`) **before** signing up
+- Visitor came via affiliate link (`?aff=PARTNER123`) **before** signing up
 - `affitor_click_id` cookie exists and matches a tracked click in the database
 - Attribution window hasn't expired (60 days default)
 - Affiliate customer record exists in database (created during click tracking)
 
-**Common issue:** If the visitor's first page load didn't include `?ref=`, no customer record was created, so the lead cannot be attributed even if cookies exist.
+**Common issue:** If the visitor's first page load didn't include `?aff=`, no customer record was created, so the lead cannot be attributed even if cookies exist.
 
 ### customerKey Warning Appears
 

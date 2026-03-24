@@ -13,7 +13,7 @@ When a partner shares their affiliate link, Affitor tracks three key events:
 
 | Event | What it captures | When it fires |
 |-------|------------------|---------------|
-| **Click** | Visitor arrives via affiliate link | Page load with `?ref=` parameter |
+| **Click** | Visitor arrives via affiliate link | Page load with `?aff=` parameter |
 | **Signup** | Visitor registers or submits a form | Your signup form completion |
 | **Sale** | Customer completes purchase | Stripe payment success |
 
@@ -30,7 +30,7 @@ graph LR
     C --> D[Signs Up]
     D --> E[Purchases]
     
-    A -.->|Unique ?ref= URL| A1[Unique link]
+    A -.->|Unique ?aff= URL| A1[Unique link]
     B -.->|Cookie set| B1[Click tracked]
     C -.->|60 day cookie| C1[Cookie persists]
     D -.->|signup called| D1[Lead tracked]
@@ -40,8 +40,8 @@ graph LR
 
 **Step by step:**
 
-1. **Partner gets unique link**: `https://yoursite.com?ref=PARTNER123`
-2. **Customer clicks**: Affitor script detects `?ref=` parameter
+1. **Partner gets unique link**: `https://yoursite.com?aff=PARTNER123`
+2. **Customer clicks**: Affitor script detects `?aff=` parameter
 3. **Cookie stored**: `click_id` saved (60-days lifetime)
 4. **Customer browses**: Cookie persists across sessions
 5. **Customer signs up**: You call `signup(customerKey, email)` → linked to customer

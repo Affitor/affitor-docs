@@ -52,7 +52,7 @@ Add `data-affitor-debug="true"` to your tracker script:
 
 **Steps:**
 1. Open browser Developer Tools (F12) → Console
-2. Visit your site (no `?ref=` needed — the test event fires automatically in debug mode)
+2. Visit your site (no `?aff=` needed — the test event fires automatically in debug mode)
 3. Look for Affitor debug messages
 
 **Expected console output:**
@@ -74,8 +74,8 @@ Add `data-affitor-debug="true"` to your tracker script:
 [Affitor]   Possible causes: browser privacy settings, ITP, extensions
 ```
 
-:::caution[Do not use ?ref= in test mode]
-Do **not** add `?ref=TEST123` to the URL when testing. Click tracking (`trackClick()`) is not guarded by debug mode — it will create a **real** click record and set real cookies. The `trackTest()` event fires automatically and is sufficient for dashboard verification.
+:::caution[Do not use ?aff= in test mode]
+Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackClick()`) is not guarded by debug mode — it will create a **real** click record and set real cookies. The `trackTest()` event fires automatically and is sufficient for dashboard verification.
 :::
 
 **Dashboard check:**
@@ -201,14 +201,14 @@ For Scenario 3 (Partner Override), you need **two** partners with separate refer
 These scenarios test **real tracking** (debug mode off) with actual affiliate links:
 
 1. Open incognito window (fresh cookies)
-2. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
+2. Visit the partner's referral link (e.g. `yoursite.com?aff=abc123`)
 3. Sign up with test email
 4. Purchase with Stripe test card
 5. Check dashboard for: 1 click → 1 signup → 1 conversion
 
 ### Scenario 2: Returning Visitor
 
-1. Visit the partner's referral link (e.g. `yoursite.com?ref=abc123`)
+1. Visit the partner's referral link (e.g. `yoursite.com?aff=abc123`)
 2. Leave site
 3. Return directly to `yoursite.com` (no ref)
 4. Purchase
@@ -217,8 +217,8 @@ These scenarios test **real tracking** (debug mode off) with actual affiliate li
 
 ### Scenario 3: Partner Override
 
-1. Visit Partner A's referral link (e.g. `yoursite.com?ref=abc123`)
-2. Later visit Partner B's referral link (e.g. `yoursite.com?ref=xyz789`)
+1. Visit Partner A's referral link (e.g. `yoursite.com?aff=abc123`)
+2. Later visit Partner B's referral link (e.g. `yoursite.com?aff=xyz789`)
 3. Purchase
 
 **Expected:** Attributed to Partner B (last click wins - relationship updated)
@@ -245,7 +245,7 @@ These scenarios test **real tracking** (debug mode off) with actual affiliate li
 ### Cookies Not Setting
 
 **Check:**
-- URL has `?ref=` parameter
+- URL has `?aff=` parameter
 - Site uses HTTPS
 - No Content Security Policy blocking cookies
 - No browser extensions blocking cookies

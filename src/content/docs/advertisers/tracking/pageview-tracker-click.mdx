@@ -9,9 +9,9 @@ The pageview tracker captures when visitors arrive via affiliate links. This is 
 
 ## What It Does
 
-When someone clicks a partner's affiliate link (`https://yoursite.com?ref=PARTNER123`), the tracker:
+When someone clicks a partner's affiliate link (`https://yoursite.com?aff=PARTNER123`), the tracker:
 
-1. Detects the `?ref=` parameter
+1. Detects the `?aff=` parameter
 2. Request to Affitor backend to get a unique `click_id`
 3. Stores `click_id` in a cookie
 4. Creates customer-partner relationship in database
@@ -179,16 +179,16 @@ That's it. The script handles everything automatically.
 Partners receive links in this format:
 
 ```
-https://yoursite.com?ref=PARTNER123
+https://yoursite.com?aff=PARTNER123
 ```
 
 Or with a landing page:
 
 ```
-https://yoursite.com/pricing?ref=PARTNER123
+https://yoursite.com/pricing?aff=PARTNER123
 ```
 
-The tracker detects any URL with `?ref=` and captures the partner code.
+The tracker detects any URL with `?aff=` and captures the partner code.
 
 ---
 
