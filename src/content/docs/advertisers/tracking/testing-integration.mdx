@@ -120,8 +120,8 @@ Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackCli
 - Go to Payments → find test payment
 - Click to view details
 - Check metadata contains:
-  - `customer_code: customer_code_from_cookie`
-  - `user_id: your_user_id` (must match the value from `trackLead()`)
+  - `affitor_click_id: click_id_from_cookie`
+  - `affitor_customer_key: your_user_id` (must match the `customerKey` from `signup()`)
   - `program_id: YOUR_PROGRAM_ID`
 
 **Dashboard check:**
@@ -255,7 +255,7 @@ These scenarios test **real tracking** (debug mode off) with actual affiliate li
 **Check:**
 - Stripe Connect integration is connected in Settings → Payments Tracker
 - Correct webhook events selected (`checkout.session.completed`, `invoice.payment_succeeded`)
-- All three metadata fields included in Stripe checkout (`customer_code`, `user_id`, `program_id`)
+- All three metadata fields included in Stripe checkout (`affitor_click_id`, `affitor_customer_key`, `program_id`)
 
 ### Test Event Not in Dashboard
 

@@ -17,8 +17,8 @@ Add the Affitor script to every page of your site. It auto-detects affiliate lin
     var f = d.getElementsByTagName(s)[0],
         j = d.createElement(s);
     j.async = true;
-    j.src = 'https://cdn.affitor.com/tracker.js';
-    j.setAttribute('data-program-id', 'YOUR_PROGRAM_ID');
+    j.src = 'https://api.affitor.com/js/affitor-tracker.js';
+    j.setAttribute('data-affitor-program-id', 'YOUR_PROGRAM_ID');
     f.parentNode.insertBefore(j, f);
   })(window, document, 'script');
 </script>

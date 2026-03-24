@@ -279,7 +279,7 @@ If you don't see any `[Affitor]` log messages in the browser console:
 - **Debug mode not enabled** — Add `data-affitor-debug="true"` to the script tag, or pass `debug` as a prop to `<AffitorProvider>`, or pass `{ debug: true }` to `loadAffitor()`.
 - **Script not loaded** — Check DevTools → Network for the tracker script request. A 404 means the script URL is wrong. Make sure you're using the correct URL:
   - Production: `https://api.affitor.com/js/affitor-tracker.js`
-  - UAT/Staging: `https://uat-api.affitor.com/js/affitor-tracker-uat.js`
+  - UAT/Staging: `https://uat-affitor-cms.vanilla-ott.com/js/affitor-tracker-uat.js`
 - **Content Security Policy (CSP) blocking** — If your site has CSP headers, ensure they allow scripts from `api.affitor.com`.
 - **Ad blocker interference** — Test in a clean browser profile without extensions.
 
@@ -342,7 +342,7 @@ If tracking works on `localhost` but breaks in production:
   <script src="https://api.affitor.com/js/affitor-tracker.js" ...>
 
   <!-- NOT this in production -->
-  <script src="https://uat-api.affitor.com/js/affitor-tracker-uat.js" ...>
+  <script src="https://uat-affitor-cms.vanilla-ott.com/js/affitor-tracker-uat.js" ...>
   ```
 - **CSP headers** — Production environments often have stricter Content Security Policy headers. Ensure `api.affitor.com` is allowed in `script-src` and `connect-src` directives.
 - **HTTPS required** — Production must use HTTPS for cookies to work.

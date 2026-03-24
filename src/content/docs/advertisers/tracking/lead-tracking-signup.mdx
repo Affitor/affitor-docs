@@ -272,7 +272,7 @@ Find your API token in the dashboard under **Settings → Referrals Tracker → 
 ### API Request
 
 ```
-POST https://api.affitor.com/api/tracking/lead
+POST https://api.affitor.com/api/v1/track/lead
 Authorization: Bearer affitor_xxxxxx
 Content-Type: application/json
 
@@ -309,7 +309,7 @@ app.post('/signup', async (req, res) => {
 
   // 3. Track lead via Affitor API (only if customer came via affiliate link)
   if (clickId) {
-    await fetch('https://api.affitor.com/api/tracking/lead', {
+    await fetch('https://api.affitor.com/api/v1/track/lead', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.AFFITOR_API_TOKEN}`,
@@ -343,7 +343,7 @@ def signup():
     # 3. Track lead via Affitor API
     if click_id:
         requests.post(
-            'https://api.affitor.com/api/tracking/lead',
+            'https://api.affitor.com/api/v1/track/lead',
             headers={
                 'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
                 'Content-Type': 'application/json',
@@ -375,7 +375,7 @@ public function signup(Request $request) {
     if ($clickId) {
         Http::withHeaders([
             'Authorization' => 'Bearer ' . env('AFFITOR_API_TOKEN'),
-        ])->post('https://api.affitor.com/api/tracking/lead', [
+        ])->post('https://api.affitor.com/api/v1/track/lead', [
             'click_id' => $clickId,
             'customer_key' => (string) $user->id,
             'email' => $user->email,
@@ -398,7 +398,7 @@ def signup
 
   # 3. Track lead via Affitor API
   if click_id.present?
-    uri = URI('https://api.affitor.com/api/tracking/lead')
+    uri = URI('https://api.affitor.com/api/v1/track/lead')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
 
@@ -479,17 +479,17 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 
 **With `customerKey` provided:**
 ```
-[Affitor Tracker] ✅ Affitor: customerKey detected - user_123
-[Affitor Tracker] trackTest() called true
-[Affitor Tracker] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
+[Affitor] ✅ Affitor: customerKey detected - user_123
+[Affitor] trackTest() called true
+[Affitor] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
 ```
 
 **Without `customerKey`:**
 ```
-[Affitor Tracker] ❌ Affitor: customerKey is REQUIRED for signup() - payment attribution will not work without it!
-[Affitor Tracker]    Please include customerKey in your signup call:
-[Affitor Tracker]    await window.affitor.signup('user_123', 'user@example.com')
-[Affitor Tracker] trackTest() called true
+[Affitor] ❌ Affitor: customerKey is REQUIRED for signup() - payment attribution will not work without it!
+[Affitor]    Please include customerKey in your signup call:
+[Affitor]    await window.affitor.signup('user_123', 'user@example.com')
+[Affitor] trackTest() called true
 ```
 
 **Important:** In debug mode, `signup()` always sends a test event and returns immediately without calling the real API. This prevents accidental test leads in your database.

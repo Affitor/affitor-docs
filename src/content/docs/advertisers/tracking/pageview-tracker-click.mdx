@@ -226,31 +226,31 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 4. You should see the following console messages:
 
 ```
-[Affitor Tracker] Affitor tracker initialized with options: {debug: true}
-[Affitor Tracker] Using advertiser ID: YOUR_PROGRAM_ID
-[Affitor Tracker] 🔍 Verifying cookie functionality...
-[Affitor Tracker] 📝 Writing test cookies: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
-[Affitor Tracker] Cookie set: {name: "affitor_click_id", value: "test_customer_...", expires: ...}
-[Affitor Tracker] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
-[Affitor Tracker] 📖 Reading test cookies back: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
-[Affitor Tracker] ✅ Cookie verification PASSED - All cookies working correctly!
-[Affitor Tracker] trackTest() called true
-[Affitor Tracker] Sending test event to verify tracking: {clickId: null, hasAttribution: false, eventType: "test"}
+[Affitor] Affitor tracker initialized with options: {debug: true}
+[Affitor] Using advertiser ID: YOUR_PROGRAM_ID
+[Affitor] 🔍 Verifying cookie functionality...
+[Affitor] 📝 Writing test cookies: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
+[Affitor] Cookie set: {name: "affitor_click_id", value: "test_customer_...", expires: ...}
+[Affitor] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
+[Affitor] 📖 Reading test cookies back: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
+[Affitor] ✅ Cookie verification PASSED - All cookies working correctly!
+[Affitor] trackTest() called true
+[Affitor] Sending test event to verify tracking: {clickId: null, hasAttribution: false, eventType: "test"}
 ```
 
 **If cookies are blocked**, you'll see:
 
 ```
-[Affitor Tracker] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
-[Affitor Tracker]    affitor_click_id cookie issue:
-[Affitor Tracker]    - Expected: test_customer_...
-[Affitor Tracker]    - Got: null/undefined
-[Affitor Tracker]    Possible causes:
-[Affitor Tracker]    - Browser privacy settings blocking cookies
-[Affitor Tracker]    - Safari Intelligent Tracking Prevention (ITP)
-[Affitor Tracker]    - Third-party cookie restrictions
-[Affitor Tracker]    - Browser extensions (ad blockers, privacy tools)
-[Affitor Tracker]    - Site not served over HTTPS (required for secure cookies)
+[Affitor] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
+[Affitor]    affitor_click_id cookie issue:
+[Affitor]    - Expected: test_customer_...
+[Affitor]    - Got: null/undefined
+[Affitor]    Possible causes:
+[Affitor]    - Browser privacy settings blocking cookies
+[Affitor]    - Safari Intelligent Tracking Prevention (ITP)
+[Affitor]    - Third-party cookie restrictions
+[Affitor]    - Browser extensions (ad blockers, privacy tools)
+[Affitor]    - Site not served over HTTPS (required for secure cookies)
 ```
 
 ### Dashboard Verification
