@@ -38,7 +38,11 @@ Replace `YOUR_PROGRAM_ID` with your program ID from the dashboard.
 
 ## Step 2 — Track Signups
 
-After a user successfully registers, call `signup()`. This links the signup to the affiliate who referred them.
+After a user successfully registers, notify Affitor so the signup is linked to the referring affiliate. Choose the method that fits your stack:
+
+### Option A: Browser-Side (Script)
+
+Call `signup()` from the frontend after the user registers. Requires the Affitor script from Step 1.
 
 ```html
 <script>
@@ -62,11 +66,44 @@ document.getElementById('signup-form').addEventListener('submit', async function
 </script>
 ```
 
+### Option B: Server-Side API
+
+Send a `POST` request from your backend after registration completes. Recommended for backend-heavy integrations.
+
+```bash
+POST https://api.affitor.com/api/v1/track/lead
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+
+{
+  "click_id": "cust_42_1234567890",     // From affitor_click_id cookie
+  "customer_key": "user_123",            // Your internal customer ID
+  "email": "user@example.com"            // Optional: hashed server-side
+}
+```
+
+**Node.js example:**
+
+```js
+await fetch('https://api.affitor.com/api/v1/track/lead', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.AFFITOR_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    click_id: req.cookies.affitor_click_id,
+    customer_key: newUser.id,
+    email: newUser.email,
+  }),
+});
+```
+
 :::note
-`customerKey` (first argument) is required. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
+`customer_key` is required for both options. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
 :::
 
-**What this does:**
+### What this does:
 
 - Validates the stored `affitor_click_id` cookie
 - Creates a lead record linked to the referring partner
@@ -78,9 +115,61 @@ document.getElementById('signup-form').addEventListener('submit', async function
 
 When a customer pays, Affitor needs to know. Choose the method that fits your checkout:
 
-### Stripe Checkout
+### Option A: Server-Side API
 
-Pass Affitor metadata in your Stripe session. Affitor's webhook listener handles the rest automatically.
+Send a `POST` request from your backend whenever a sale completes. Works with any payment provider or custom checkout.
+
+```bash
+POST https://api.affitor.com/api/v1/track/sale
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+
+{
+  "transaction_id": "txn_abc123",         // Required: unique ID for this transaction (deduplicated)
+  "customer_key": "user_123",             // Your internal customer ID
+  "click_id": "cust_42_123456",           // From affitor_click_id cookie (optional if customer_key is set)
+  "amount_cents": 9999,                   // Required: positive integer, amount in cents
+  "currency": "USD",                      // Optional, default: USD
+  "sale_type": "payment",                 // Optional: payment | subscription (default: payment)
+  "is_recurring": false,                  // Optional: true for recurring charges (default: false)
+  "subscription_id": "sub_xyz",           // Optional: your subscription ID for recurring billing
+  "subscription_interval": "monthly",     // Optional: billing interval (e.g. monthly, yearly)
+  "product_id": "prod_456",              // Optional: your product identifier
+  "line_items": [                         // Optional: itemized breakdown
+    { "name": "Pro Plan", "amount_cents": 9999, "quantity": 1 }
+  ]
+}
+```
+
+**Node.js example:**
+
+```js
+await fetch('https://api.affitor.com/api/v1/track/sale', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.AFFITOR_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    transaction_id: order.id,
+    customer_key: currentUser.id,
+    click_id: req.cookies.affitor_click_id,
+    amount_cents: order.totalCents,
+    currency: 'USD',
+    sale_type: 'payment',
+  }),
+});
+```
+
+:::note
+`transaction_id` is required and must be unique per sale — Affitor uses it for deduplication. If you send the same `transaction_id` twice, the second request will be rejected as a duplicate.
+:::
+
+Find your API key in the dashboard under **Program Settings → API Keys**.
+
+### Option B: Stripe Checkout (Automatic)
+
+If you use Stripe, pass Affitor metadata in your checkout session. Affitor's webhook listener handles the rest automatically — no extra API call needed.
 
 ```js
 // Server-side — Node.js example
@@ -99,7 +188,7 @@ const session = await stripe.checkout.sessions.create({
 
 Read the cookie values server-side or pass them from the frontend via a hidden form field.
 
-**What this does:**
+### What this does:
 
 - Matches the payment to the correct partner via `click_id`
 - Calculates commission based on your program tier
