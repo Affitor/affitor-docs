@@ -265,7 +265,7 @@ This means the dashboard hasn't received a pageview event from your site yet. Ru
 
 1. **Verify the script is loading** — Open DevTools → Network tab, filter by `affitor-tracker`. You should see a successful (200) request.
 2. **Check your Program ID** — The `data-affitor-program-id` (script tag) or `programId` (npm SDK) must match the ID shown in your dashboard Settings.
-3. **Visit with a `?ref=` parameter** — Pageview tracking activates when a visitor arrives via an affiliate link, e.g. `https://yoursite.com?ref=TEST123`.
+3. **Visit with a `?aff=` parameter** — Pageview tracking activates when a visitor arrives via an affiliate link, e.g. `https://yoursite.com?aff=TEST123`.
 4. **Disable ad blockers** — Some browser extensions (uBlock Origin, Privacy Badger) can block tracking scripts. Test in an incognito window with extensions disabled.
 5. **HTTPS is required** — Affitor cookies require a secure context. `http://localhost` works for development, but production must use HTTPS.
 6. **Check the browser console** — Enable debug mode (`data-affitor-debug="true"` or `debug` prop) and look for `[Affitor]` messages.
@@ -279,15 +279,15 @@ If you don't see any `[Affitor]` log messages in the browser console:
 - **Debug mode not enabled** — Add `data-affitor-debug="true"` to the script tag, or pass `debug` as a prop to `<AffitorProvider>`, or pass `{ debug: true }` to `loadAffitor()`.
 - **Script not loaded** — Check DevTools → Network for the tracker script request. A 404 means the script URL is wrong. Make sure you're using the correct URL:
   - Production: `https://api.affitor.com/js/affitor-tracker.js`
-  - UAT/Staging: `https://uat-api.affitor.com/js/affitor-tracker-uat.js`
+  - UAT/Staging: `https://uat-affitor-cms.vanilla-ott.com/js/affitor-tracker-uat.js`
 - **Content Security Policy (CSP) blocking** — If your site has CSP headers, ensure they allow scripts from `api.affitor.com`.
 - **Ad blocker interference** — Test in a clean browser profile without extensions.
 
-### Cookies not being set (`customer_code` missing)
+### Cookies not being set (`affitor_click_id` missing)
 
-If you check DevTools → Application → Cookies and don't see a `customer_code` cookie:
+If you check DevTools → Application → Cookies and don't see an `affitor_click_id` cookie:
 
-- **No `?ref=` parameter** — The cookie is only set when a visitor arrives via `?ref=PARTNER_CODE`.
+- **No `?aff=` parameter** — The cookie is only set when a visitor arrives via `?aff=PARTNER_CODE`.
 - **Not on HTTPS** — Cookies require a secure context in production. `http://localhost` is fine for development.
 - **Browser privacy settings** — Some browsers (Safari with ITP, Firefox with ETP) or extensions may block first-party cookies. Check your browser's privacy settings.
 - **CSP blocking** — Your Content Security Policy headers might be blocking cookie creation.
@@ -296,30 +296,30 @@ If you check DevTools → Application → Cookies and don't see a `customer_code
 
 This means the dashboard hasn't received a lead/signup event. Check the following:
 
-1. **Pageview tracker must work first** — The `customer_code` cookie (set by pageview tracking) is needed to link leads to affiliates. Complete and verify pageview tracking before testing lead tracking.
-2. **`trackLead()` not called** — Ensure `trackLead()` is called *after* successful signup, not before or during form submission.
-3. **`user_id` is missing** — The `user_id` field is **required**. Without it, lead events will not be processed for payment attribution.
+1. **Pageview tracker must work first** — The `affitor_click_id` cookie (set by pageview tracking) is needed to link leads to affiliates. Complete and verify pageview tracking before testing lead tracking.
+2. **`signup()` not called** — Ensure `signup()` is called *after* successful signup, not before or during form submission.
+3. **`customerKey` is missing** — The `customerKey` (first argument) is **required**. Without it, lead events will not be processed for payment attribution.
 
    ```js
    // ✅ Correct
-   affitor?.trackLead({ email: 'user@example.com', user_id: 'user_123' });
+   await affitor?.signup('user_123', 'user@example.com');
 
-   // ❌ Missing user_id — will not attribute payments
-   affitor?.trackLead({ email: 'user@example.com' });
+   // ❌ Missing customerKey — will not attribute payments
+   await affitor?.signup(undefined, 'user@example.com');
    ```
 
 4. **Script tag: SDK not ready** — If using the script tag method, `window.affitor` may not be loaded yet. Use the queue fallback pattern:
 
    ```js
    if (window.affitor) {
-     window.affitor.trackLead(leadData);
+     await window.affitor.signup(userId, email);
    } else {
      window.affitorQueue = window.affitorQueue || [];
-     window.affitorQueue.push(['trackLead', leadData]);
+     window.affitorQueue.push(['signup', userId, email]);
    }
    ```
 
-5. **Check console output** — With debug mode on, you should see `[Affitor] trackLead called with: {...}` and `[Affitor] Lead event tracked`.
+5. **Check console output** — With debug mode on, you should see `[Affitor] signup called with: {customerKey: '...', email: '...'}` and `[Affitor] Lead event tracked`.
 
 See the full [Lead Tracking guide](/advertisers/tracking/lead-tracking-signup/) for setup details.
 
@@ -342,7 +342,7 @@ If tracking works on `localhost` but breaks in production:
   <script src="https://api.affitor.com/js/affitor-tracker.js" ...>
 
   <!-- NOT this in production -->
-  <script src="https://uat-api.affitor.com/js/affitor-tracker-uat.js" ...>
+  <script src="https://uat-affitor-cms.vanilla-ott.com/js/affitor-tracker-uat.js" ...>
   ```
 - **CSP headers** — Production environments often have stricter Content Security Policy headers. Ensure `api.affitor.com` is allowed in `script-src` and `connect-src` directives.
 - **HTTPS required** — Production must use HTTPS for cookies to work.

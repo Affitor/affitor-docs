@@ -13,65 +13,9 @@ Choose based on your setup:
 
 | Method | How it works | Best for |
 |--------|--------------|----------|
-| **[Affitor Pay](#affitor-pay)** | Redirect to Affitor checkout | Fastest setup, no Stripe changes |
 | **[Bill Flow](#bill-flow)** | Add metadata to your Stripe checkout | Existing Stripe integration |
 
 **Coming Soon:** Split Pay – Automatic fund splitting via Stripe Connect
-
----
-
-## Affitor Pay
-
-Redirect affiliate-referred customers to Affitor's hosted checkout. Affitor handles payment collection and tracking automatically.
-
-### Implementation
-
-**npm SDK (Recommended):**
-
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-// When customer clicks "Buy" or "Subscribe"
-const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-affitor?.redirectToCheckout({
-  price: 99.99,
-  currency: 'USD',
-  product_name: 'Pro Plan'
-});
-```
-
-**Script tag:**
-
-```javascript
-// When customer clicks "Buy" or "Subscribe"
-var checkoutData = { price: 99.99, currency: 'USD', product_name: 'Pro Plan' };
-
-if (window.affitor) {
-  window.affitor.redirectToCheckout(checkoutData);
-} else {
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['redirectToCheckout', checkoutData]);
-}
-```
-
-### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `price` | number | Yes | Product price |
-| `currency` | string | No | Currency code (default: USD) |
-| `product_name` | string | No | Product name for checkout |
-
-### How It Works
-
-1. Customer clicks buy → `redirectToCheckout()` called
-2. Affitor creates Stripe Checkout session with tracking metadata
-3. Customer completes payment on Affitor-hosted page
-4. Webhook fires → conversion tracked → commission calculated
-5. You receive payment minus commission and platform fee
-
-**Pros:** Zero Stripe configuration needed  
-**Cons:** Customers see Affitor checkout, not your branded checkout
 
 ---
 
@@ -94,7 +38,7 @@ function getCookie(name) {
   return null;
 }
 
-const customerCode = getCookie('customer_code');
+const clickId = getCookie('affitor_click_id');
 
 const session = await stripe.checkout.sessions.create({
   line_items: [{
@@ -104,11 +48,11 @@ const session = await stripe.checkout.sessions.create({
   mode: 'payment',
   success_url: 'https://yoursite.com/success',
   cancel_url: 'https://yoursite.com/cancel',
-  
+
   // ✅ REQUIRED: All three tracking fields
   metadata: {
-    customer_code: customerCode,
-    user_id: currentUser.id,
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
     program_id: 'YOUR_PROGRAM_ID'
   }
 });
@@ -125,7 +69,7 @@ function getCookie(name) {
   return null;
 }
 
-const customerCode = getCookie('customer_code');
+const clickId = getCookie('affitor_click_id');
 
 const session = await stripe.checkout.sessions.create({
   line_items: [{
@@ -135,19 +79,19 @@ const session = await stripe.checkout.sessions.create({
   mode: 'subscription',
   success_url: 'https://yoursite.com/success',
   cancel_url: 'https://yoursite.com/cancel',
-  
+
   // ✅ REQUIRED: Session metadata (first payment)
   metadata: {
-    customer_code: customerCode,
-    user_id: currentUser.id,
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
     program_id: 'YOUR_PROGRAM_ID'
   },
-  
+
   // ✅ REQUIRED: Subscription metadata (recurring payments)
   subscription_data: {
     metadata: {
-      customer_code: customerCode,
-      user_id: currentUser.id,
+      affitor_click_id: clickId,
+      affitor_customer_key: currentUser.id,
       program_id: 'YOUR_PROGRAM_ID'
     }
   }
@@ -159,25 +103,25 @@ const session = await stripe.checkout.sessions.create({
 ```javascript
 // In your checkout endpoint
 app.post('/api/create-checkout', async (req, res) => {
-  // Extract customer_code from cookies (sent in request headers)
+  // Extract affitor_click_id from cookies (sent in request headers)
   const cookies = req.headers.cookie || '';
-  const customerCode = cookies.split('; ')
-    .find(row => row.startsWith('customer_code='))
+  const clickId = cookies.split('; ')
+    .find(row => row.startsWith('affitor_click_id='))
     ?.split('=')[1];
-  
+
   // Get user from your authentication system
-  const userId = req.user.id;
-  
+  const customerKey = req.user.id;
+
   const session = await stripe.checkout.sessions.create({
     line_items: [{ price: 'price_xxx', quantity: 1 }],
     mode: 'payment',
     success_url: 'https://yoursite.com/success',
     cancel_url: 'https://yoursite.com/cancel',
-    
+
     // ✅ REQUIRED: All three tracking fields
     metadata: {
-      customer_code: customerCode,
-      user_id: userId,
+      affitor_click_id: clickId,
+      affitor_customer_key: customerKey,
       program_id: process.env.AFFITOR_PROGRAM_ID
     }
   });
@@ -187,16 +131,16 @@ app.post('/api/create-checkout', async (req, res) => {
 ```
 
 :::tip[Required Tracking Fields]
-Include all three fields (`customer_code`, `user_id`, `program_id`) in Stripe metadata for reliable payment attribution. The backend uses multiple lookup methods to ensure tracking works even if cookies are blocked.
+Include all three fields (`affitor_click_id`, `affitor_customer_key`, `program_id`) in Stripe metadata for reliable payment attribution. The backend uses multiple lookup methods to ensure tracking works even if cookies are blocked.
 :::
 ### How It Works
 
 1. Customer clicks affiliate link → tracked with internal cookies
-2. Customer signs up → calls `trackLead({ user_id })` with your internal user ID
-3. Customer clicks buy → your checkout with `user_id` in metadata
+2. Customer signs up → calls `signup(customerKey, email)` with your internal user ID
+3. Customer clicks buy → your checkout with `affitor_customer_key` in metadata
 4. Customer completes payment via your Stripe
 5. Stripe webhook fires → Affitor receives event
-6. Affitor looks up customer-partner using `user_id` → attributes to partner
+6. Affitor looks up customer-partner using `affitor_customer_key` → attributes to partner
 7. Commission calculated → Affitor invoices you weekly
 
 **Pros:** Simple integration, use your existing checkout, no cookie reading required  
@@ -213,7 +157,7 @@ When Affitor receives a payment webhook from Stripe, it uses a **4-step fallback
 ```
 Payment Event Received (Stripe webhook)
          ↓
-Step 1: Lookup by customer_code (from cookie)
+Step 1: Lookup by click_id (from cookie)
          ↓
     Found? ──Yes──→ ✅ Link to attribution
          ↓
@@ -234,7 +178,7 @@ Step 3: Lookup by stripe_customer_id (returning customer)
          ↓
         No
          ↓
-Step 4: Lookup by advertiser_user_id (if provided)
+Step 4: Lookup by affitor_customer_key (if provided)
          ↓
     Found? ──Yes──→ ✅ Link to attribution
          ↓
@@ -248,11 +192,11 @@ Step 4: Lookup by advertiser_user_id (if provided)
 
 | Scenario | Lookup Method | Example |
 |----------|---------------|---------|
-| Normal flow | `customer_code` (Step 1) | Customer has cookies intact |
+| Normal flow | `click_id` (Step 1) | Customer has cookies intact |
 | Cookies cleared | `email` (Step 2) | Customer cleared browser data |
 | Returning customer | `stripe_customer_id` (Step 3) | Customer made previous purchase |
 | Cross-device | `email_hash` (Step 3) | Customer clicked on mobile, bought on desktop |
-| Custom tracking | `advertiser_user_id` (Step 4) | You provided custom user ID |
+| Custom tracking | `affitor_customer_key` (Step 4) | You provided affitor_customer_key in metadata |
 
 ### What Affitor Receives from Stripe
 
@@ -260,8 +204,8 @@ When the webhook fires, Affitor extracts:
 
 - Payment confirmation
 - `program_id` from metadata
-- `customer_code` from metadata (if available)
-- `user_id` from metadata (if available)
+- `affitor_click_id` from metadata (if available)
+- `affitor_customer_key` from metadata (if available, falls back to `user_id`)
 - Customer email from Stripe
 - `stripe_customer_id` from Stripe
 
@@ -283,16 +227,16 @@ If no attribution is found after all 4 steps, the payment is considered an **org
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `customer_code` | string | **Yes** | Customer identifier from Affitor cookie (set automatically when user clicks affiliate link) |
-| `user_id` | string | **Yes** | Your internal user ID (must match the value from `trackLead()`) |
+| `affitor_click_id` | string | **Yes** | Click identifier from Affitor cookie (set automatically when user clicks affiliate link) |
+| `affitor_customer_key` | string | **Yes** | Your internal user/customer ID (must match the `customerKey` from `signup()`). `user_id` is accepted as a backward-compatible alias. |
 | `program_id` | string | **Yes** | Your Affitor program ID |
 
 **All three fields are required for reliable payment attribution.**
 
 :::caution[Required Metadata Fields]
 All three metadata fields must be included:
-- `customer_code` - Read from Affitor cookie (primary lookup method)
-- `user_id` - Your internal user ID (fallback lookup + validation)
+- `affitor_click_id` - Read from Affitor cookie (primary lookup method)
+- `affitor_customer_key` - Your internal user/customer ID (fallback lookup + validation). `user_id` is accepted as a backward-compatible alias.
 - `program_id` - Your Affitor program ID (program identification)
 
 Without these fields, the purchase cannot be attributed to the affiliate partner.
@@ -300,10 +244,11 @@ Without these fields, the purchase cannot be attributed to the affiliate partner
 
 ### Important Notes
 
-- **Customer Code:** Set automatically by Affitor tracker when user clicks affiliate link. Read from cookie using the helper function.
-- **User ID Must Match:** The `user_id` must exactly match the value you passed during `trackLead()`.
+- **Click ID:** Set automatically by Affitor tracker when user clicks affiliate link. Read from cookie using the helper function.
+- **Customer Key Must Match:** The `affitor_customer_key` must exactly match the `customerKey` you passed during `signup()`.
 - **Program ID:** Find your program ID in the Affitor dashboard under Settings.
-- **Hybrid Attribution:** Backend tries `customer_code` first (primary), falls back to `user_id` if cookies are blocked.
+- **Hybrid Attribution:** Backend tries `affitor_click_id` first (primary), falls back to `affitor_customer_key` if cookies are blocked.
+- **Backward Compatibility:** `user_id` is accepted as an alias for `affitor_customer_key` in metadata.
 
 ---
 
@@ -323,12 +268,12 @@ Without these fields, the purchase cannot be attributed to the affiliate partner
 
 **Check:**
 - All three required fields included in Stripe metadata:
-  - `customer_code` (from Affitor cookie)
-  - `user_id` (your internal user ID)
+  - `affitor_click_id` (from Affitor cookie)
+  - `affitor_customer_key` (your internal user/customer ID)
   - `program_id` (your Affitor program ID)
 - Cookie reading function working correctly
 - Cookies not blocked by browser (check browser console)
-- `user_id` matches the value used in `trackLead()` during signup
+- `affitor_customer_key` matches the `customerKey` used in `signup()` during registration
 - Webhook endpoint configured correctly
 - Webhook events selected (`checkout.session.completed`)
 - User signed up via affiliate link (customer-partner record exists)
@@ -337,17 +282,17 @@ Without these fields, the purchase cannot be attributed to the affiliate partner
 
 **Check:**
 - Customer clicked partner's link before signing up
-- `trackLead()` was called during signup with correct `user_id`
+- `signup()` was called during registration with correct `customerKey`
 - Customer-partner relationship exists in database
-- `customer_code` in metadata matches the cookie value
-- `user_id` in Stripe metadata exactly matches signup `user_id`
+- `affitor_click_id` in metadata matches the cookie value
+- `affitor_customer_key` in Stripe metadata exactly matches `customerKey` from `signup()`
 
 ### Subscription Renewals Not Tracked
 
 **Check:**
 - `subscription_data.metadata` includes all three fields:
-  - `customer_code`
-  - `user_id`
+  - `affitor_click_id`
+  - `affitor_customer_key`
   - `program_id`
 - `invoice.payment_succeeded` webhook event selected
 - Partner within commission duration window

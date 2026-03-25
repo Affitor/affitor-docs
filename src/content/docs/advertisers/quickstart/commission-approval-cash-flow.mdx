@@ -13,28 +13,8 @@ How you receive payments and how partners get paid depends on your checkout inte
 
 | Method | Stripe Account | How it works |
 |--------|----------------|--------------|
-| **Affitor Pay** | Affitor's Stripe | Affitor hosts checkout, collects payment, pays you after deducting commission + fee |
 | **Bill Flow** | Your Stripe | You collect 100%, Affitor invoices you for commission + fee later |
 | **Split Pay (Coming Soon)** | Your Stripe | Customer pays via your checkout, funds split automatically at payment (coming soon) |
-
----
-
-## Affitor Pay Flow
-
-*For advertisers without Stripe. Affitor handles everything.*
-
-![Affitor Pay Flow](/images/affitor-pay-flow.png)
-**Step by step:**
-
-1. **Customer purchases** through Affitor-hosted checkout page
-2. **Affitor collects** 100% of payment
-3. **Transaction validated** (attribution, no duplicate, within window)
-4. **You review** in dashboard (or auto-approve)
-5. **Hold period** (7-21 days, configurable)
-6. **If no refund:** Affitor deducts commission + platform fee, pays you the rest
-7. **Partner commission** moves to Withdrawable balance
-
-**Best for:** Fast setup, no Stripe account needed.
 
 ---
 

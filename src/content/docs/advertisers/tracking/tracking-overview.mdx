@@ -13,7 +13,7 @@ When a partner shares their affiliate link, Affitor tracks three key events:
 
 | Event | What it captures | When it fires |
 |-------|------------------|---------------|
-| **Click** | Visitor arrives via affiliate link | Page load with `?ref=` parameter |
+| **Click** | Visitor arrives via affiliate link | Page load with `?aff=` parameter |
 | **Signup** | Visitor registers or submits a form | Your signup form completion |
 | **Sale** | Customer completes purchase | Stripe payment success |
 
@@ -30,22 +30,22 @@ graph LR
     C --> D[Signs Up]
     D --> E[Purchases]
     
-    A -.->|Unique ?ref= URL| A1[Unique link]
+    A -.->|Unique ?aff= URL| A1[Unique link]
     B -.->|Cookie set| B1[Click tracked]
     C -.->|60 day cookie| C1[Cookie persists]
-    D -.->|trackLead called| D1[Lead tracked]
+    D -.->|signup called| D1[Lead tracked]
     E -.->|Stripe metadata| E1[Sale tracked]
 ```
 
 
 **Step by step:**
 
-1. **Partner gets unique link**: `https://yoursite.com?ref=PARTNER123`
-2. **Customer clicks**: Affitor script detects `?ref=` parameter
-3. **Cookie stored**: `customer_code` saved (60-days lifetime)
+1. **Partner gets unique link**: `https://yoursite.com?aff=PARTNER123`
+2. **Customer clicks**: Affitor script detects `?aff=` parameter
+3. **Cookie stored**: `click_id` saved (60-days lifetime)
 4. **Customer browses**: Cookie persists across sessions
-5. **Customer signs up**: You call `trackLead()` with `user_id` → linked to customer
-6. **Customer purchases**: Stripe metadata with `user_id` captures sale → commission created
+5. **Customer signs up**: You call `signup(customerKey, email)` → linked to customer
+6. **Customer purchases**: Stripe metadata with `customerKey` captures sale → commission created
 
 ---
 
@@ -79,7 +79,7 @@ Both methods provide the same tracking functionality. The npm SDK adds TypeScrip
 Affitor uses **last-click attribution** with cookie-based tracking.
 
 When a customer clicks an affiliate link:
-1. `customer_code` created and stored in cookie
+1. `click_id` created and stored in cookie
 2. Customer-partner relationship created in database
 3. Cookie lasts 60 days
 4. Attribution window is 60 days from first click
@@ -99,7 +99,7 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 
 | Data | Source | Purpose |
 |------|--------|---------|
-| `customer_code` | Auto-generated on first click | Identify visitor & link events together |
+| `click_id` | Auto-generated on first click | Identify visitor & link events together |
 | `program_id` | Your program ID | Route to correct program |
 | Timestamp | Automatic | When event occurred |
 | User agent | Browser | Analytics |
@@ -109,7 +109,7 @@ If a customer clicks Partner A's link, then later clicks Partner B's link:
 
 | Cookie | Value | Lifetime |
 |--------|-------|----------|
-| `customer_code` | Unique visitor ID | 60 days |
+| `affitor_click_id` | Unique visitor ID | 60 days |
 
 Cookies are set automatically by the tracker script. No action required.
 

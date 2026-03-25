@@ -1,29 +1,29 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://docs.affitor.com',
 	integrations: [
+		sitemap(),
 		starlight({
 			title: 'Affitor Documentation',
 			description: 'Complete guide to the Affitor affiliate management platform',
+			customCss: ['./src/styles/custom.css'],
 			logo: {
 				src: './src/assets/affitor-logo.svg',
 				replacesTitle: false,
 			},
-			favicon: '/favicon.svg',
+			favicon: '/favicon-v2.svg',
 			social: [
 				// { icon: 'github', label: 'GitHub', href: 'https://github.com/affitor' },
 				// { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com/affitor' },
 			],
-			editLink: {
-				baseUrl: 'https://github.com/affitor/affiliate-docs/edit/main/',
-			},
 			sidebar: [
 				{
-					label: '📚 Getting Started',
+					label: 'Getting Started',
 					items: [
 						{ label: 'What is Affitor?', slug: 'getting-started/what-is-affitor' },
 						{ label: 'How It Works', slug: 'getting-started/how-it-works' },
@@ -32,7 +32,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: '🏢 For Advertisers',
+					label: 'For Advertisers',
 					items: [
 						{
 							label: 'Quickstart',
@@ -51,12 +51,14 @@ export default defineConfig({
 							label: 'Tracking',
 							collapsed: false,
 							items: [
+								{ label: '3-Step Integration Guide', slug: 'advertisers/tracking/quickstart-integration' },
 								// { label: 'Introduction', slug: 'advertisers/tracking/introduction' },
 								{ label: 'Tracking Overview', slug: 'advertisers/tracking/tracking-overview' },
 								{ label: 'Pageview Tracker (Click)', slug: 'advertisers/tracking/pageview-tracker-click' },
 								{ label: 'Lead Tracking (Signup)', slug: 'advertisers/tracking/lead-tracking-signup' },
 								{ label: 'Payment Tracking (Stripe)', slug: 'advertisers/tracking/payment-tracking-stripe' },
-								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },								// { label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
+								{ label: 'Payment Flow', slug: 'advertisers/tracking/payment-flow' },
+								{ label: 'Testing Integration', slug: 'advertisers/tracking/testing-integration' },
 							],
 						},
 						// {
@@ -69,11 +71,11 @@ export default defineConfig({
 					],
 				},
 				{
-					label: '❓ FAQ',
+					label: 'FAQ',
 					link: '/faq/',
 				},
 				{
-					label: '📞 Support',
+					label: 'Support',
 					items: [
 						{ label: 'Contact Us', slug: 'support/contact' },
 						// { label: 'System Status', slug: 'support/status' },
