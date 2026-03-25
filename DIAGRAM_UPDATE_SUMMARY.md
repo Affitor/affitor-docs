@@ -67,7 +67,7 @@ All diagrams follow these principles:
 
 ### Technical Details Included
 - Money amounts in monospace font
-- Code snippets where relevant (e.g., `?aff=PARTNER123`, `trackLead()`)
+- Code snippets where relevant (e.g., `?aff=PARTNER123`, `signup()`)
 - Timeline annotations (e.g., "7-21 days", "Bi-weekly")
 - Technical metadata (cookies, webhooks, attribution)
 

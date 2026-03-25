@@ -15,6 +15,10 @@ Choose based on your setup:
 |--------|--------------|----------|
 | **[Bill Flow](#bill-flow)** | Add metadata to your Stripe checkout | Existing Stripe integration |
 
+:::tip[Using the direct Sale API instead?]
+If you're not using Stripe Checkout, you can track sales via `POST /api/v1/track/sale`. Amounts must be in **cents** (e.g., `$99.99` = `amount_cents: 9999`). See the [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/#step-3--track-sales) for the full API reference.
+:::
+
 **Coming Soon:** Split Pay – Automatic fund splitting via Stripe Connect
 
 ---

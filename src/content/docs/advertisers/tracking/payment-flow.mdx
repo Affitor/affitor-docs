@@ -66,7 +66,7 @@ Customer completes payment via Stripe.
 metadata: {
   program_id: 'YOUR_PROGRAM_ID',
   affitor_click_id: 'cust_xyz',
-  customer_key: currentUser.id  // Your internal user ID (same as customerKey in signup)
+  affitor_customer_key: currentUser.id  // Your internal user ID (same as customerKey in signup)
 }
 ```
 
@@ -90,8 +90,12 @@ Based on your program settings:
 | Setting | Example |
 |---------|---------|
 | Commission rate | 30% |
-| Sale amount | $100 |
-| Commission | $30 |
+| Sale amount | $100 (10000 cents) |
+| Commission | $30 (3000 cents) |
+
+:::tip[API uses cents]
+When using the [Server-Side Sale API](/advertisers/tracking/quickstart-integration/#step-3--track-sales), amounts must be in **cents** as a positive integer. For example, `$99.99` = `amount_cents: 9999`. Stripe metadata does not require this — Stripe handles amounts natively.
+:::
 
 ### 8. Transaction Validated
 

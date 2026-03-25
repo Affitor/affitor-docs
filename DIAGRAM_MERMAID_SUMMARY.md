@@ -116,7 +116,7 @@ graph LR
     A -.->|Unique ?aff= URL| A1[Unique link]
     B -.->|Cookie set| B1[Click tracked]
     C -.->|30 day cookie| C1[Cookie persists]
-    D -.->|trackLead called| D1[Lead tracked]
+    D -.->|signup() called| D1[Lead tracked]
     E -.->|Stripe metadata| E1[Sale tracked]
 ```
 
