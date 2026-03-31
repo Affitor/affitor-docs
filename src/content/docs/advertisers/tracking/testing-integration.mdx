@@ -111,7 +111,51 @@ Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackCli
 
 ### 3. Payment Tracking (Sale)
 
-**Steps:**
+There are two ways to test payment tracking depending on your integration method.
+
+#### Option A: Test via Sale API (any payment provider)
+
+Send a test sale event using `test_mode`. This creates a sale event with `is_test: true` — no commission, no platform fee, no metric updates.
+
+**Prerequisites:**
+- Your program API key (from **Program Settings → API Keys**)
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "additional_data": { "test_mode": true },
+    "amount_cents": 9999,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'
+```
+
+**Expected response (`200`):**
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": {
+    "eventId": 789,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+All fields except `additional_data.test_mode` and the `Authorization` header are optional in test mode. Default values will be used for any omitted fields (e.g. `amount_cents` defaults to `9999`, `transaction_id` auto-generates as `test_txn_{timestamp}`).
+
+:::note
+Test sale events are created with `is_test: true` — they do **not** create commissions, platform fees, or update any metrics. A customer record is **not** required in test mode.
+:::
+
+#### Option B: Test via Stripe Checkout
+
+If you use Stripe, test with Stripe's test mode:
+
 1. Use Stripe test mode (test card: `4242 4242 4242 4242`)
 2. Complete a test purchase
 3. Check Stripe Dashboard → Webhooks for delivery status
@@ -131,33 +175,151 @@ Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackCli
 
 ---
 
-## Test API Endpoint
+## Test API Endpoints
 
-Programmatically verify integration:
+These endpoints let you programmatically send test events and verify they were received — without needing a browser or real affiliate links. All test events are created with `is_test: true` and do **not** affect real data.
 
-```http
-POST https://api.affitor.com/api/tracking/test
-Content-Type: application/json
+### 1. Send a Test Lead Event
 
-{
-  "program_id": "YOUR_PROGRAM_ID",
-  "step_id": "pageview"
-}
+Creates a test lead event by calling the lead tracking endpoint with `test_mode` in `additional_data`. No Bearer token required.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Content-Type: application/json" \
+  -d '{
+    "click_id": "test_lead_001",
+    "customer_key": "test_customer",
+    "additional_data": {
+      "test_mode": true,
+      "program_id": "YOUR_PROGRAM_ID"
+    }
+  }'
 ```
 
-**Response:**
+**Request body:**
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `additional_data.test_mode` | **Yes** | boolean | Must be `true` to trigger test mode |
+| `additional_data.program_id` | **Yes** | string/number | Your program ID (used to link the test event) |
+| `click_id` | No | string | Optional click ID. Auto-generated if omitted |
+| `customer_key` | No | string | Optional customer key. Defaults to `"test_customer"` |
+
+**Response (`200`):**
 
 ```json
 {
   "success": true,
-  "message": "Test event received",
-  "testEvent": {
-    "id": "evt_123",
-    "event_type": "test",
-    "timestamp": "2026-01-21T12:00:00Z"
+  "message": "Test lead event tracked successfully",
+  "data": {
+    "eventId": 456,
+    "programId": 1,
+    "test_mode": true
   }
 }
 ```
+
+### 2. Send a Test Sale Event
+
+Creates a test sale event. Requires a Bearer token (program API key) but does **not** require a customer record.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "additional_data": { "test_mode": true },
+    "amount_cents": 4999,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'
+```
+
+**Request body:**
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `Authorization` header | **Yes** | string | `Bearer YOUR_PROGRAM_API_KEY` |
+| `additional_data.test_mode` | **Yes** | boolean | Must be `true` to trigger test mode |
+| `transaction_id` | No | string | Auto-generated as `test_txn_{timestamp}` if omitted |
+| `amount_cents` | No | number | Defaults to `9999` |
+| `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
+| `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
+| `click_id` | No | string | Auto-generated as `test_sale_{timestamp}` if omitted |
+| `is_recurring` | No | boolean | Default: `false` |
+| `line_items` | No | array | Optional itemized breakdown |
+
+**Response (`200`):**
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": {
+    "eventId": 789,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+### 3. Verify Test Events Were Received
+
+After sending test events, use this endpoint to confirm they were recorded. It queries test click, lead, and sale events for your program. No authentication required.
+
+```bash
+curl -X POST https://api.affitor.com/api/tracking/check-test-events \
+  -H "Content-Type: application/json" \
+  -d '{
+    "program_id": "YOUR_PROGRAM_ID"
+  }'
+```
+
+**Request body:**
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `program_id` | **Yes** | string/number | Your Affitor program ID |
+| `step_id` | No | string | Filter: `"pageview"` (clicks only), `"referrals"` (leads only), `"payments"` (sales only). Omit to get all |
+
+**Response (`200`):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hasTestEvents": true,
+    "eventCount": 5,
+    "eventsByType": {
+      "click": [{ "id": 123, "is_test": true, "click_id": "test_1711843200000", "createdAt": "..." }],
+      "lead": [{ "id": 456, "is_test": true, "click_id": "test_lead_001", "createdAt": "..." }],
+      "sale": [{ "id": 789, "is_test": true, "click_id": "test_sale_1711843200000", "createdAt": "..." }]
+    },
+    "latestTestEvent": {
+      "id": 789,
+      "event_type": "sale",
+      "timestamp": "2026-01-21T12:00:00.000Z"
+    },
+    "programId": "1",
+    "advertiserId": 5,
+    "stepId": null
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `hasTestEvents` | `true` if any test events exist for this program |
+| `eventCount` | Total number of test events found (max 25 per type) |
+| `eventsByType` | Events grouped by `"click"`, `"lead"`, and `"sale"` |
+| `latestTestEvent` | Most recent test event across all types (by `createdAt`) |
+
+:::tip[Recommended test flow]
+1. Send a test lead: `POST /api/v1/track/lead` with `test_mode: true`
+2. Send a test sale: `POST /api/v1/track/sale` with `test_mode: true`
+3. Verify all arrived: `POST /api/tracking/check-test-events` (omit `step_id` to see all)
+4. Check dashboard — test events should appear with test indicators
+:::
 
 ---
 
