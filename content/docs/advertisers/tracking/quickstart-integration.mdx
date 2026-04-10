@@ -1,15 +1,32 @@
 ---
 title: 3-Step Integration Guide
-description: Get Affitor tracking running on your site in three steps
+description: Get Affitor tracking live with the supported click, signup, and sale flows
 ---
 
+Get Affitor tracking live in three steps: clicks → signups → sales. The first two steps establish attribution; the third step records revenue.
 
-Get affiliate tracking live in three steps. Each step builds on the previous one: clicks → signups → sales.
+## Before You Start
 
+Make sure you have:
 
-### Install the Script
+- Your **program ID**
+- Your **program API key** for server-to-server calls
+- A decision on how you will track sales:
+  - **Sale API** for any backend or payment provider
+  - **Stripe metadata + webhook** for Stripe Checkout / Bill Flow
 
-Add the Affitor script to every page of your site. It auto-detects affiliate links (`?aff=` parameter) and stores the `click_id` in a cookie for later attribution.
+:::note
+Use one naming scheme consistently:
+- `customerKey` — browser helper argument (`signup(customerKey, email)`)
+- `customer_key` — lead/sale API field
+- `affitor_customer_key` — Stripe metadata field
+:::
+
+---
+
+## Step 1 — Install the Tracker
+
+Add the Affitor tracker to every page where affiliate traffic can land.
 
 ```html
 <script
@@ -19,65 +36,61 @@ Add the Affitor script to every page of your site. It auto-detects affiliate lin
 </script>
 ```
 
-Replace `YOUR_PROGRAM_ID` with your program ID from the dashboard.
+Replace `YOUR_PROGRAM_ID` with the program ID from your dashboard.
 
-**What this does:**
+### What this does
 
-- Detects `?aff=` in the URL
-- Stores a `click_id` in a first-party cookie (60-day window)
-- Fires a `pageview` event to Affitor — partners can see their click counts
+- Detects affiliate visits via the `?aff=` parameter
+- Creates a tracked customer / click relationship
+- Stores `affitor_click_id` in a first-party cookie
+- Sends click/pageview tracking data to Affitor
 
-**Verify:** Open your browser console. You should see:
+### Verify
 
-```
-[Affitor] Tracker loaded — program: YOUR_PROGRAM_ID
-[Affitor] Attribution stored — click_id: cust_...
-```
+Visit your site through a real affiliate link or enable debug mode while testing. Then review:
+- browser console / network requests
+- Affitor dashboard → tracking/integration pages
 
+---
 
-### Track Signups
+## Step 2 — Track Signups
 
-After a user successfully registers, notify Affitor so the signup is linked to the referring affiliate. Choose the method that fits your stack:
+After a signup succeeds, tell Affitor which internal user/customer was created.
 
-### Option A: Browser-Side (Script)
+### Option A — Browser-side helper
 
-Call `signup()` from the frontend after the user registers. Requires the Affitor script from Step 1.
-
-
-  
+Use this when your signup flow already runs in the browser and the tracker is loaded.
 
 ```html
 <script>
-// Call this after your signup/registration succeeds
 await window.affitor.signup('user_123', 'user@example.com');
 </script>
 ```
 
-  
-  
+Or inside your signup flow:
 
 ```html
 <script>
 document.getElementById('signup-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  var email = document.getElementById('email').value;
+  const email = document.getElementById('email').value;
 
-  // Run your own signup logic first, then on success:
+  // Run your own signup logic first.
+  // After account creation succeeds:
   await window.affitor.signup(currentUser.id, email);
 });
 </script>
 ```
 
-  
+**Use this when:**
+- you already installed the tracker on the page
+- signup happens in the browser
+- you want the simplest supported flow
 
+### Option B — Server-side lead API
 
-### Option B: Server-Side API
-
-Send a `POST` request from your backend after registration completes. Recommended for backend-heavy integrations.
-
-
-  
+Use this when your signup logic lives on your backend or you want your server to own the tracking call.
 
 ```bash
 POST https://api.affitor.com/api/v1/track/lead
@@ -90,9 +103,6 @@ Content-Type: application/json
   "email": "user@example.com"
 }
 ```
-
-  
-  
 
 ```js
 await fetch('https://api.affitor.com/api/v1/track/lead', {
@@ -109,31 +119,37 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 });
 ```
 
-  
+### Lead tracking rules
 
+- Outside test mode, provide at least one of:
+  - `click_id`
+  - `customer_key`
+- For reliable payment attribution later, always send a stable internal customer ID:
+  - `customerKey` in `signup()`
+  - `customer_key` in the API
+- Browser-side `signup()` is the easiest supported path for most teams
+- Server-side API is best when signup completion happens on your backend
 
-:::note
-`customer_key` is required for both options. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
-:::
+**Response:**
 
-**What this does:**
+```json
+{
+  "success": true,
+  "message": "Lead tracked successfully"
+}
+```
 
-- Validates the stored `affitor_click_id` cookie
-- Creates a lead record linked to the referring partner
-- Partners can now see: Clicks → **Signups**
+---
 
+## Step 3 — Track Sales
 
-### Track Sales
+Once a customer pays, choose **one** supported revenue-tracking path.
 
-When a customer pays, Affitor needs to know. Choose the method that fits your checkout:
+### Option A — Sale API (works with any payment provider)
 
-### Option A: Server-Side API
-
-Send a `POST` request from your backend whenever a sale completes. Works with any payment provider or custom checkout.
+Send a server-to-server request after payment succeeds.
 
 **Endpoint:** `POST https://api.affitor.com/api/v1/track/sale`
-
-**Request body:**
 
 ```json
 {
@@ -155,16 +171,17 @@ Send a `POST` request from your backend whenever a sale completes. Works with an
 
 | Parameter | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `transaction_id` | **Yes** | string | Unique ID for this transaction — used for deduplication |
-| `amount_cents` | **Yes** | number | Positive integer, amount in cents (e.g. `$99.99` = `9999`) |
-| `customer_key` | Conditional | string | Your internal customer ID. **At least one** of `customer_key` or `click_id` must be provided |
-| `click_id` | Conditional | string | From `affitor_click_id` cookie. **At least one** of `customer_key` or `click_id` must be provided |
+| `transaction_id` | **Yes** | string | Unique transaction identifier used for deduplication |
+| `amount_cents` | **Yes** | number | Positive integer amount in cents |
+| `customer_key` | Conditional | string | Your internal customer ID |
+| `click_id` | Conditional | string | Tracked click identifier |
 | `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
 | `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
-| `is_recurring` | No | boolean | `true` for recurring charges. Default: `false` |
-
-
-  
+| `is_recurring` | No | boolean | Use `true` for recurring charges |
+| `subscription_id` | No | string | External subscription ID |
+| `subscription_interval` | No | string | e.g. `monthly`, `quarterly`, `annual` |
+| `product_id` | No | string | External product identifier |
+| `line_items` | No | array | Optional item breakdown |
 
 ```js
 await fetch('https://api.affitor.com/api/v1/track/sale', {
@@ -184,8 +201,7 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 });
 ```
 
-  
-  
+**Response:**
 
 ```json
 {
@@ -196,49 +212,89 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 }
 ```
 
-  
-
-
 :::note
-`transaction_id` must be unique per sale — Affitor uses it for deduplication. If you send the same `transaction_id` twice, the second request will be rejected with a `409 Conflict`.
+`transaction_id` must be unique. Reusing the same value returns `409 Conflict`.
 :::
 
-### Option B: Stripe Checkout (Automatic)
+### Option B — Stripe Checkout metadata (Bill Flow)
 
-If you use Stripe, pass Affitor metadata in your checkout session. Affitor's webhook listener handles the rest automatically — no extra API call needed.
+If you already use Stripe Checkout, keep taking payment in your own Stripe account and attach Affitor metadata to the checkout session.
 
 ```js
-// Server-side — Node.js example
 const session = await stripe.checkout.sessions.create({
   line_items: [{ price: 'price_xxx', quantity: 1 }],
   mode: 'payment',
   success_url: 'https://yoursite.com/success',
-  cancel_url:  'https://yoursite.com/cancel',
+  cancel_url: 'https://yoursite.com/cancel',
   metadata: {
-    affitor_click_id: 'cust_xyz789',
-    affitor_customer_key: 'user_123',
-    program_id:    'YOUR_PROGRAM_ID',
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
+    program_id: 'YOUR_PROGRAM_ID',
   },
 });
 ```
 
-**What this does:**
+#### For subscriptions
 
-- Matches the payment to the correct partner via `click_id`
-- Calculates commission based on your program tier
-- Partners can now see: Clicks → Signups → **Sales**
+Include the same fields in **both** places:
+- `metadata`
+- `subscription_data.metadata`
 
+```js
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'subscription',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  subscription_data: {
+    metadata: {
+      affitor_click_id: clickId,
+      affitor_customer_key: currentUser.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
 
+### Stripe/Bill Flow rules
 
+- **One-time payments** are attributed from Stripe checkout metadata and webhook processing
+- **Subscriptions and renewals** rely on `invoice.payment_succeeded`
+- If `subscription_data.metadata` is missing, renewal attribution can fail
+- Public recommended fields are:
+  - `affitor_click_id`
+  - `affitor_customer_key`
+  - `program_id`
+
+---
+
+## Which Sales Path Should You Use?
+
+| Path | Best for |
+|------|----------|
+| **Sale API** | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
+| **Stripe metadata + webhook** | Existing Stripe Checkout integration using Bill Flow |
+
+Use the Sale API when your backend already knows exactly when revenue is finalized. Use Stripe metadata when you want Affitor to attribute sales directly from your Stripe webhook flow.
 
 ---
 
 ## You're Done
 
-Once all three steps fire successfully, your integration is complete. You can verify it end-to-end using the [Testing Integration](/docs/advertisers/tracking/testing-integration/) guide.
+Once all three steps are working, your integration is live:
 
-| Step | Event | Dashboard view |
-|------|-------|---------------|
-| Script installed | `pageview` | Clicks |
-| Signup tracked | `lead` | Signups |
-| Payment tracked | `conversion` | Revenue |
+| Step | Event | Outcome |
+|------|-------|---------|
+| Tracker installed | Click/pageview tracking | affiliate visit captured |
+| Signup tracked | Lead event | customer linked to partner |
+| Sale tracked | Sale + commission flow | revenue attributed |
+
+Next:
+- [Testing Integration](/docs/advertisers/tracking/testing-integration/)
+- [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+- [Payment Flow](/docs/advertisers/tracking/payment-flow/)

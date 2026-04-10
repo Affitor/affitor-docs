@@ -1,374 +1,117 @@
 ---
 title: "Frequently Asked Questions"
-description: "Common questions about Affitor's affiliate marketing platform for AI SaaS companies."
+description: "Common questions about Affitor's pricing, tracking, commissions, and integration flows."
 ---
-
 
 ## General
 
-
 ### What is Affitor?
-    Affitor is an AI-native affiliate marketing platform that connects AI SaaS companies with content creators, influencers, and agencies. We don't just provide software—we actively execute partner recruitment, activation, and optimization to drive real revenue growth.
-
-### How is Affitor different from other affiliate platforms?
-
-Unlike traditional platforms, Affitor combines execution with technology:
-
-| Traditional Platforms | Affitor |
-|----------------------|---------|
-| Software-only approach | Software plus hands-on program support |
-| Upfront fees + subscriptions | Performance-based pricing |
-| You recruit affiliates yourself | Affitor can support partner sourcing and activation |
-| Complex setup (weeks) | Faster setup for supported integrations |
-| Legacy cookie redirects | First-party click, lead, and sale tracking flows |
-
+Affitor is an affiliate growth platform for SaaS companies. It helps advertisers track partner-driven clicks, signups, and sales, then manage commissions and payout operations through Affitor.
 
 ### Who is Affitor built for?
+Affitor is designed for SaaS teams that want to launch or scale a partner program without taking on the full operational burden themselves.
 
-Affitor is purpose-built for AI SaaS companies, particularly:
-
-- Seed to Series A startups launching their first affiliate program
-- Growth-stage companies scaling partner distribution
-- Companies frustrated with expensive, complex legacy platforms
-
-
-
+### How is Affitor different from traditional affiliate tools?
+Publicly, Affitor positions around:
+- performance-based pricing
+- first-party tracking for click → signup → sale flows
+- support for Stripe Bill Flow or server-side sale tracking
+- commission and payout operations in one workflow
 
 ---
 
-## Pricing & Fees
-
+## Pricing & Billing
 
 ### How much does Affitor cost?
+Affitor charges a **3.5% platform fee** on partner-generated revenue in the current public pricing model.
 
-Affitor charges a **3.5% platform fee** on affiliate-generated revenue. That's it.
+- no monthly subscription
+- no setup fee
 
-- No setup fees
-- No monthly subscriptions
-- No retainers
-- No hidden charges
-
-
-### What about the $10K revenue waiver?
-    Affitor's pricing page currently describes a **$10K fee-free threshold** for affiliate-driven revenue. If you need confirmation on your program's commercial terms, contact the Affitor team before launch.
-
-### How are fees calculated?
-
-Fees are calculated on **actual received revenue** after refunds, chargebacks, and failed transactions. Taxes and payment processing fees (like Stripe's 2.9%) are borne by you as the advertiser, not deducted from affiliate or platform economics.
-
-**Example: $30/month SaaS subscription**
-
-| Item | Amount |
-|------|--------|
-| Gross revenue | $30.00 |
-| Stripe fee (2.9% + $0.30) | -$1.17 |
-| Affiliate commission (30%) | -$9.00 |
-| Affitor platform fee (3.5%) | -$1.05 |
-| **You keep** | **$18.78** |
-
-**Your effective CAC:** $10.05 (affiliate + Affitor)
-**Your net margin:** 62.6% of gross revenue
-
+### What about the $10K fee-free threshold?
+Current public pricing materials describe a **$10K fee-free threshold** for affiliate-driven revenue. If your commercial terms matter for a launch decision, confirm them directly with the Affitor team.
 
 ### When do I pay?
-    In the current public Bill Flow model, advertiser billing is handled through Affitor's invoice process after tracked conversions are validated.
+In the current public **Bill Flow** model, Affitor bills advertisers through its invoice workflow after tracked conversions are validated.
 
-
-
----
-
-## How It Works
-
-
-### Do I need to change my payment infrastructure?
-    No. Affitor is **not** the merchant of record. We integrate with your existing payment system (Stripe, LemonSqueezy, Paddle, etc.). You continue processing customer payments exactly as you do today.
-
-### How does tracking work?
-    Affitor uses modern, first-party tracking methods designed for privacy-conscious browsers. Unlike legacy platforms that rely on third-party cookie redirects (which Safari, Firefox, and ad blockers often block), our tracking is reliable across all devices and browsers.
-
-### How fast can I launch?
-
-Integration speed depends on your stack and checkout setup. Many teams can start quickly with the script-based tracker or existing Stripe Checkout metadata flow, while custom backend integrations may take longer.
-
-
-### What commission structures are supported?
-
-We support flexible commission models:
-
-- **Recurring commissions** (e.g., 30% for 12 months)
-- **One-time commissions** (e.g., flat $50 per sale)
-- **Tiered commissions** (performance-based rates) – coming soon
-- **Custom structures** based on your business needs
-
-
-
+### Does Affitor collect money from my customers?
+No. In the current public Bill Flow model, Affitor is **not** the merchant of record. You continue charging customers in your own Stripe/payment setup.
 
 ---
 
-## Partner Network & Recruitment
+## Tracking & Integration
 
+### What integration paths are supported?
+The public docs support these main paths:
 
-### Does Affitor help find affiliates?
-    Affitor can support partner recruitment and activation as part of the overall program workflow. The exact level of sourcing support may depend on your program setup and commercial agreement.
+1. **Tracker install** for click tracking
+2. **Browser signup helper** or **server lead API** for signup attribution
+3. **Sale API** or **Stripe metadata + webhook** for revenue attribution
 
-### What types of partners does Affitor work with?
+### What is the difference between `customerKey`, `customer_key`, and `affitor_customer_key`?
+They represent the same business concept in different integration contexts:
 
-- Content creators (YouTube, TikTok, newsletters)
-- Industry bloggers and reviewers
-- Niche influencers and thought leaders
-- Agencies and consultants
-- Complementary SaaS companies (strategic partnerships)
+- `customerKey` — browser helper argument for `signup(customerKey, email)`
+- `customer_key` — field used in lead/sale API payloads
+- `affitor_customer_key` — Stripe metadata field
 
+Use the same internal user/customer ID across all three.
 
-### Can I bring my own affiliates?
-    Absolutely. You can invite existing partners to your Affitor program. They'll benefit from our streamlined dashboard while you maintain full relationship control.
+### Can I use Affitor without changing my checkout?
+Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you already use Stripe Checkout and can attach Affitor metadata, you can integrate without replacing your existing payment stack.
 
-### Can I approve or reject partner applications?
-    Yes. You have full rights to review, approve, or reject any partner. You can also request removal of any partner at any time.
-
-
-
----
-
-## Attribution & Tracking
-
+### Does Affitor only work with Stripe?
+No. Stripe is the best-documented Bill Flow path, but the Sale API works with any backend/payment provider that can send revenue events after payment succeeds.
 
 ### How does attribution work?
+Current public docs describe:
+- first-party tracking
+- last-click attribution
+- a 60-day default attribution window
 
-We provide transparent attribution including:
+For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that same identifier in sale tracking.
 
-- Cookie duration settings (60 days default)
-- Last-click attribution (default) or custom models
-- Promo code tracking
-- 60-day attribution window (configurable)
-
-Attribution logic is disclosed upfront, and any material changes require your written approval.
-
-
-### What reporting do I get?
-
-Real-time dashboards showing:
-
-- Revenue by partner
-- Conversion metrics
-- Commission payouts
-- Partner activity and performance trends
-
-
-### Can I export my data?
-    Performance and attribution reporting is fully accessible. Note that raw partner identity data is not exportable, as Affitor maintains responsibility for sourcing and managing partners within the network.
-
-
+### What happens if the customer later pays on Stripe?
+If you use Stripe Bill Flow, Affitor can attribute the sale from metadata and webhook events. For subscriptions, renewals depend on `subscription_data.metadata` being populated as well.
 
 ---
 
-## Payouts & Commissions
+## Commissions & Payouts
 
+### Who pays the partner?
+Affitor handles the commission/payout workflow for partners after attributed conversions move through the commission lifecycle.
 
-### Who pays the affiliates?
+### What happens after a sale is attributed?
+At a high level:
+1. sale is recorded
+2. commission is created
+3. commission moves through review / hold operations
+4. payout workflow continues in Affitor
 
-Affitor handles partner payouts on your behalf:
-
-1. **Sale happens** — Customer purchases via affiliate link
-2. **Invoice sent** — You pay commission + platform fee
-3. **Funds received** — Money moves to Affitor's holding balance
-4. **Hold period clears** — 7-21 days (configurable)
-5. **Bi-weekly payout** — Affitor pays partner
-
-This removes operational burden from your team while ensuring partners get paid reliably.
-
-
-### What payout methods are available for partners?
-
-Partners can receive payouts via:
-
-- **Bank transfer** (global)
-- **Wise** (1-2 business days)
-- **Stripe** (where available)
-
-
-### How often are partners paid?
-    **Bi-weekly** (every 2 weeks). Partners receive all cleared commissions in their Withdrawable balance on a fixed cycle. Minimum payout threshold: **$5**.
-
-### What happens if there's a refund?
-
-**Bill Flow:** Refunds are reconciled through Affitor's commission and payout process. If a commission has not yet cleared, it is cancelled or reversed. If it has already been paid out, the adjustment is applied against the partner's balance or future payout.
-
-Affitor's 3.5% platform fee and partner commission are reconciled together when the refund is processed.
-
-
-
+### What happens if there is a refund?
+Refunds are reconciled through Affitor's commission and payout workflow. The exact outcome depends on where the commission is in the lifecycle when the refund happens.
 
 ---
 
-## Brand Protection
-
-
-### How do you prevent fraud?
-
-We're committed to zero spam, zero fraud, and zero brand-damaging behavior. Our platform includes:
-
-- Partner vetting during recruitment
-- Activity monitoring for suspicious patterns
-- Clear Partner Terms enforcement
-- Immediate action on violations
-
-
-### Can I set rules for partner promotion?
-    Yes. You should define and attach clear Partner/Affiliate Terms to your program. If partners violate these terms (fraud, self-referrals, incentivized traffic without approval, bots, misattribution), you have the right to withhold commission.
-
-### What if a partner damages my brand?
-    If partner content violates your guidelines, contact the Affitor team and document the issue clearly. Removal, review, and commission actions follow your program terms and internal review process.
-
-
-
----
-
-## Contract & Termination
-
-
-### How long is the agreement?
-    Affitor operates on flexible terms. Either party can terminate with reasonable written notice (typically 14-30 days).
-
-### What happens when I terminate?
-
-- Existing partner traffic is stopped cleanly
-- Earned commissions are reconciled and paid
-- Partners are notified to cease traffic
-- A 30-day wind-down period allows proper reconciliation
-
-
-### Can I terminate immediately for cause?
-
-Yes, immediate termination is possible for:
-
-- Brand or reputational harm
-- Fraud or misleading marketing
-- Regulatory or legal risk
-
-Even in immediate termination, earned commissions must still be reconciled and paid.
-
-
-
-
----
-
-## Troubleshooting / Integration
-
-
-### "Test Click Tracking" shows "No Events Detected"
-
-This means the dashboard hasn't received a pageview event from your site yet. Run through this checklist:
-
-1. **Verify the script is loading** — Open DevTools → Network tab, filter by `affitor-tracker`. You should see a successful (200) request.
-2. **Check your Program ID** — The `data-affitor-program-id` must match the ID shown in your dashboard Settings.
-3. **Visit with a `?aff=` parameter** — Pageview tracking activates when a visitor arrives via an affiliate link.
-4. **Disable ad blockers** — Some extensions can block tracking scripts. Test in an incognito window.
-5. **HTTPS is required** — Affitor cookies require a secure context.
-6. **Check the browser console** — Enable debug mode and look for `[Affitor]` messages.
-
-See the full [Pageview Tracker guide](/docs/advertisers/tracking/pageview-tracker-click/) for setup details.
-
-
-### Console shows no Affitor debug messages
-
-- **Debug mode not enabled** — Add `data-affitor-debug="true"` to the script tag
-- **Script not loaded** — Check DevTools → Network for the tracker script request
-- **Content Security Policy (CSP) blocking** — Ensure they allow scripts from `api.affitor.com`
-- **Ad blocker interference** — Test in a clean browser profile
-
-
-### Cookies not being set (affitor_click_id missing)
-
-- **No `?aff=` parameter** — The cookie is only set when a visitor arrives via `?aff=PARTNER_CODE`
-- **Not on HTTPS** — Cookies require a secure context in production
-- **Browser privacy settings** — Some browsers may block first-party cookies
-- **CSP blocking** — Your Content Security Policy headers might be blocking cookie creation
-
-
-### Integration works in development but not in production
-
-- **Wrong tracker script URL** — Production must use `affitor-tracker.js`, not `affitor-tracker-uat.js`
-- **CSP headers** — Production often has stricter policies. Ensure `api.affitor.com` is allowed
-- **HTTPS required** — Production must use HTTPS for cookies to work
-- **Different domain** — Cookies are domain-scoped. Ensure your production domain matches your Affitor config
-
-If issues persist, contact **support@affitor.com** with your Program ID, browser console screenshots, and steps to reproduce.
-
-
-
-
----
-
-## Comparison with Other Platforms
-
-
-### Why Affitor over traditional platforms?
-
-|  | Affitor | Traditional affiliate platforms |
-|--|---------|-------------------------------|
-| **Pricing model** | Performance-based | Often subscription-led or mixed pricing |
-| **Tracking model** | First-party click, lead, and sale flows | Varies by platform |
-| **Checkout support** | Stripe metadata flow or server-side sale API | Varies by platform |
-| **Partner support** | Program support plus optional sourcing help | Usually software-first |
-| **Best fit** | AI SaaS teams that want a lightweight launch path | Teams with different procurement or workflow needs |
-
-
-### Affitor vs PartnerStack
-
-Different platforms fit different teams. Affitor is designed for AI SaaS teams that want performance-based pricing, modern tracking, and a simpler launch path. If you are comparing vendors, validate commercial terms, payout operations, and integration requirements directly with each provider.
-
-
-### Affitor vs Impact.com
-
-Affitor focuses on first-party tracking and simpler launch flows for AI SaaS teams. If you are evaluating enterprise platforms, compare them based on your procurement process, partner operations, reporting needs, and integration model.
-
-
-### Affitor vs Rewardful
-
-Some affiliate tools are checkout-first and self-serve, while Affitor combines tracking, payout operations, and program support. Choose the product that best matches your team's checkout setup and how much hands-on program support you want.
-
-
-
-
----
-
-## Getting Started
-
-
-### How do I start?
-
-1. **Reach out** via hello@affitor.com or our website
-2. **Align** on program goals, commission structure, and integration path
-3. **Implement tracking** using the docs that match your checkout setup
-4. **Launch** once your tracking and payout workflow are verified
-
-
-### What do I need to provide?
-
-- Basic program details (commission rates, product info)
-- Access to integrate tracking with your payment system
-- Brand guidelines for partner communications
-- Partner Terms document (we can help draft this)
-
-
-### Do I need technical resources?
-    For simple setups, technical effort can be light. If you already use Stripe Checkout or can call the sale tracking API from your backend, implementation is usually straightforward. More customized stacks may still need engineering help.
-
-
-
----
-
-## Support
-
+## Support & Troubleshooting
+
+### What is the fastest way to self-serve an integration?
+Follow this order:
+1. [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
+2. [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
+3. [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+4. [Testing Integration](/docs/advertisers/tracking/testing-integration/)
+
+### Why do sales fail to attribute even though click tracking works?
+Most often it is because:
+- signup used the wrong internal identifier
+- Stripe metadata used a different identifier than signup
+- Sale API payload omitted `customer_key` / `click_id`
+- subscription metadata was only added to the initial checkout, not `subscription_data.metadata`
 
 ### How do I get help?
-
-- **Email**: hello@affitor.com
-- **Response time**: Within 24 hours
-
-
-### Do you offer onboarding support?
-    Yes. Every advertiser receives hands-on onboarding support to ensure a smooth launch and optimal program setup.
-
-
+If you still need help after running the integration and testing guides, contact the Affitor team with:
+- your program ID
+- the exact integration path you used
+- request/response samples or Stripe webhook evidence
+- screenshots of any relevant dashboard/test-event state

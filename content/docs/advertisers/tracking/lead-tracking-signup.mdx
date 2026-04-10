@@ -1,54 +1,47 @@
 ---
 title: Lead Tracking (Signup)
-description: Track signups and form submissions from affiliate traffic
+description: Track referred signups with the browser helper or the server-side lead API
 ---
 
-Lead tracking captures when referred visitors sign up or submit forms. This lets you see which partners drive qualified leads—not just clicks.
+Lead tracking connects a signup to the affiliate click that drove it. This is the step that turns anonymous referral traffic into an identified customer record.
 
 ---
 
-## What It Does
+## What Lead Tracking Does
 
-When a visitor signs up on your site, you call `signup()` to record the lead. This:
+When signup tracking succeeds, Affitor can:
 
-1. Sends your signup identifier and lead data for attribution (`customerKey` in `signup()`, `customer_key` in the API)
-2. Links the lead event to the stored `click_id` from the click
-3. Sends lead data to Affitor API for processing
-4. Updates the customer-partner relationship status to "lead"
+1. link the signup to the tracked click/customer relationship
+2. store your internal customer identifier for later payment attribution
+3. move the customer journey forward from click → lead
 
-Partners can then see: Clicks → **Signups** → Sales
+Use these names consistently:
 
-**Note:** In debug mode, calling `signup()` sends a test event instead of a real lead event. This helps verify your integration without creating actual lead records.
+| Context | Field |
+|--------|-------|
+| Browser helper | `customerKey` |
+| Lead API | `customer_key` |
+| Stripe metadata later | `affitor_customer_key` |
 
 ---
 
 ## Prerequisites
 
-Before implementing lead tracking:
+Before tracking a signup:
 
-- [x] Pageview tracker installed ([guide](/docs/advertisers/tracking/pageview-tracker-click/))
-- [x] Visitor arrived via affiliate link and has been tracked (creates `click_id` in database)
-- [x] `affitor_click_id` cookie exists in browser (set automatically by pageview tracker)
+- [x] the visitor arrived through an affiliate-tracked flow
+- [x] the tracker created a click/customer relationship first
+- [x] your signup flow has a stable internal user/customer ID to send to Affitor
 
-**Important:** The lead event requires the `affitor_click_id` cookie to link the signup to the affiliate partner. If this cookie is missing or the customer wasn't tracked via an affiliate link, the lead tracking will fail silently (no error, but lead won't be attributed).
+A tracked click usually means the browser already has `affitor_click_id` from the pageview/click step.
 
 ---
 
-## Basic Implementation
+## Option A — Browser-side `signup()`
 
-After your signup form submits successfully, call `signup()`.
+Use this when signup completes in the browser and the tracker script is already loaded.
 
-### npm SDK (Recommended)
-
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-// Awaits script load — guaranteed to fire
-const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-await affitor?.signup('user_123', 'user@example.com');
-```
-
-### Script Tag
+### Basic example
 
 ```javascript
 if (window.affitor) {
@@ -59,230 +52,78 @@ if (window.affitor) {
 }
 ```
 
-:::caution[Required for Payment Tracking]
-The `customerKey` parameter (first argument) is **required** for reliable payment attribution. This should be your internal user identifier. The same identifier maps to `customer_key` in the lead/sale API and `affitor_customer_key` in Stripe metadata.
+### What the arguments mean
+
+| Argument | Required | Meaning |
+|----------|----------|---------|
+| `customerKey` | **Yes (recommended for all real integrations)** | your internal user/customer ID |
+| `email` | Recommended | customer email; used for hashed/masked attribution support |
+
+:::caution[Use a real internal identifier]
+The `customerKey` you pass here should be the same identifier you later use as:
+- `customer_key` in the lead/sale API
+- `affitor_customer_key` in Stripe metadata
 :::
 
----
-
-## Full Implementation
-
-The `signup()` function takes two positional string arguments:
-
-### npm SDK
-
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-await affitor?.signup('user_123', 'user@example.com');
-```
-
-### Script Tag
-
-```javascript
-if (window.affitor) {
-  await window.affitor.signup('user_123', 'user@example.com');
-} else {
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['signup', 'user_123', 'user@example.com']);
-}
-```
-
-### Parameters
-
-| Parameter | Position | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `customerKey` | 1st | string | **Required** | **Your internal customer/user ID - critical for payment attribution** |
-| `email` | 2nd | string | Recommended | User's email address (hashed for privacy before storage) |
-
-**Privacy Notes:**
-- `email` is hashed (SHA-256) and masked before storage - the original email is never stored
-- Only privacy-safe email fields are stored for lead attribution
-- Your internal customer identifier is stored as `customer_key` in Affitor's backend model
-
----
-
-## Integration Examples
-
-### React / Next.js (npm SDK)
-
-```tsx
-import { loadAffitor } from '@affitor/tracker';
-
-function SignupForm() {
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    // Your signup logic
-    const result = await api.createAccount({
-      email: formData.get('email'),
-      name: formData.get('name')
-    });
-
-    if (result.success) {
-      // ✅ Awaits script load — guaranteed to fire
-      const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-      await affitor?.signup(result.userId, formData.get('email') as string);
-
-      router.push('/welcome');
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input name="email" type="email" required />
-      <input name="name" type="text" />
-      <button type="submit">Sign Up</button>
-    </form>
-  );
-}
-```
-
-### Google/OAuth Signup (npm SDK)
-
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-async function handleOAuthCallback(user) {
-  // User authenticated via Google/GitHub/etc.
-
-  // ✅ Awaits script load — guaranteed to fire
-  const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-  await affitor?.signup(user.id, user.email);
-
-  window.location.href = '/dashboard';
-}
-```
-
-### Standard Form (Script Tag)
+### Example inside a signup flow
 
 ```javascript
 document.getElementById('signup-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  var email = document.getElementById('email').value;
-  var name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
 
-  // Your signup logic
-  var result = await createAccount(email, name);
+  // Your own signup logic first
+  const result = await createAccount(email);
 
   if (result.success) {
-    // Track the signup with customerKey and email
     if (window.affitor) {
       await window.affitor.signup(result.userId, email);
     } else {
       window.affitorQueue = window.affitorQueue || [];
       window.affitorQueue.push(['signup', result.userId, email]);
     }
-
-    window.location.href = '/welcome';
   }
 });
 ```
 
----
+### When to use browser-side signup
 
-## When to Call signup()
-
-Call `signup()` **after** the signup is confirmed successful:
-
-| Scenario | When to track |
-|----------|---------------|
-| Form signup | After form validation passes and account is created |
-| OAuth signup | After OAuth callback, user authenticated |
-| Email verification | After signup, not after verification (track intent) |
-| Free trial | When trial starts |
-| Waitlist | When added to waitlist |
-
-**Don't track:**
-- Failed signups
-- Duplicate signups
-- Bot submissions
+- your frontend knows when signup succeeded
+- the tracker is already installed on the page
+- you want the simplest supported implementation
 
 ---
 
-## npm SDK vs Script Tag
+## Option B — Server-side Lead API
 
-### npm SDK — `await loadAffitor()` (Recommended)
+Use this when account creation happens on your backend or you want your server to send the lead event.
 
-The npm SDK solves all timing issues with a Promise-based API. `loadAffitor()` returns a singleton Promise that resolves once the tracker script is loaded. No race conditions, no queue management, full TypeScript support.
+### Endpoint
 
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-// Always works — awaits script load automatically
-const affitor = await loadAffitor('YOUR_PROGRAM_ID');
-await affitor?.signup(userId, email);
-```
-
-### Script Tag — Check `window.affitor` First
-
-If you're using the script tag approach, always check if `window.affitor` exists first. If it does, call the method directly. If not, use the queue as a fallback for the case where the script hasn't loaded yet.
-
-```javascript
-if (window.affitor) {
-  await window.affitor.signup(userId, email);
-} else {
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['signup', userId, email]);
-}
-```
-
-:::caution[Don't use the queue alone]
-Do **not** use `window.affitorQueue.push()` without first checking `window.affitor`. If the tracker script has already loaded before any queue was created, the queue's `push()` override won't be active and commands will never be processed.
-:::
-
----
-
-## Server-Side API
-
-If you process signups on your backend server, you can track leads directly via the REST API instead of using client-side JavaScript. This is ideal for server-rendered apps or when you want to avoid any client-side tracking code on your signup page.
-
-### When to Use
-
-| Client-side (`signup()`) | Server-side API |
-|---|---|
-| Simple integration | No JS required on signup page |
-| Requires affitor-tracker.js | Works in any server language |
-| Cookie read by browser JS | Cookie read by your server |
-| Best for SPAs / client-rendered apps | Best for server-rendered apps |
-
-Both approaches use `click_id` for attribution. The client-side `signup()` reads the cookie automatically; the server-side API requires your server to read the cookie value and pass it explicitly.
-
-### Authentication
-
-```
-Authorization: Bearer YOUR_PROGRAM_API_KEY
-```
-
-Find your program API key in the dashboard under the relevant integration or API settings.
-
-### How It Works
-
-```
-1. User visits your landing page with ?aff=partner123
-2. Affitor client-side tracker fires → sets affitor_click_id cookie
-3. User fills out your signup form and submits
-4. Your frontend reads cookie for affitor_click_id → sends value to your server
-5. Your server calls the Affitor API with click_id
-6. Lead is attributed to the correct affiliate partner
-```
-
-### API Request
-
-```
+```bash
 POST https://api.affitor.com/api/v1/track/lead
 Authorization: Bearer YOUR_PROGRAM_API_KEY
 Content-Type: application/json
+```
 
+### Request body
+
+```json
 {
-  "click_id": "cust_42_1234567890",  // from affitor_click_id cookie
-  "customer_key": "usr_abc123",      // your internal user/customer ID
-  "email": "user@example.com"        // optional
+  "click_id": "cust_42_1234567890",
+  "customer_key": "usr_abc123",
+  "email": "user@example.com"
 }
 ```
+
+### Rules
+
+Outside test mode, provide at least one of:
+- `click_id`
+- `customer_key`
+
+For reliable downstream payment attribution, you should normally send **both** when available.
 
 ### Response
 
@@ -293,269 +134,130 @@ Content-Type: application/json
 }
 ```
 
-### Code Examples
-
-#### Node.js (Express)
+### Node.js example
 
 ```ts
 app.post('/signup', async (req, res) => {
   const { email, password } = req.body;
-
-  // 1. Create user in your database
   const newUser = await createUser({ email, password });
-
-  // 2. Read the affitor_click_id cookie (set by client-side tracker)
   const clickId = req.cookies.affitor_click_id;
 
-  // 3. Track lead via Affitor API (only if customer came via affiliate link)
-  if (clickId) {
-    await fetch('https://api.affitor.com/api/v1/track/lead', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.AFFITOR_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        click_id: clickId,
-        customer_key: newUser.id,
-        email: newUser.email,
-      }),
-    });
-  }
+  await fetch('https://api.affitor.com/api/v1/track/lead', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.AFFITOR_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      click_id: clickId,
+      customer_key: newUser.id,
+      email: newUser.email,
+    }),
+  });
 
   res.json({ success: true });
 });
 ```
 
-#### Python (Flask)
+### Python example
 
 ```python
-@app.route('/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-
-    # 1. Create user in your database
-    new_user = create_user(data['email'], data['password'])
-
-    # 2. Read the affitor_click_id cookie
-    click_id = request.cookies.get('affitor_click_id')
-
-    # 3. Track lead via Affitor API
-    if click_id:
-        requests.post(
-            'https://api.affitor.com/api/v1/track/lead',
-            headers={
-                'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
-                'Content-Type': 'application/json',
-            },
-            json={
-                'click_id': click_id,
-                'customer_key': str(new_user.id),
-                'email': new_user.email,
-            },
-        )
-
-    return jsonify({'success': True})
+requests.post(
+    'https://api.affitor.com/api/v1/track/lead',
+    headers={
+        'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'click_id': request.cookies.get('affitor_click_id'),
+        'customer_key': str(new_user.id),
+        'email': new_user.email,
+    },
+)
 ```
 
-#### PHP (Laravel)
+---
 
-```php
-public function signup(Request $request) {
-    // 1. Create user in your database
-    $user = User::create([
-        'email' => $request->email,
-        'password' => bcrypt($request->password),
-    ]);
+## Browser Mode vs Server Mode
 
-    // 2. Read the affitor_click_id cookie
-    $clickId = $request->cookie('affitor_click_id');
+| Mode | Best for | Auth |
+|------|----------|------|
+| `signup(customerKey, email)` | frontend/browser signup flows | no Bearer token in your integration |
+| `POST /api/v1/track/lead` | backend-driven signup flows | Bearer program API key recommended |
 
-    // 3. Track lead via Affitor API
-    if ($clickId) {
-        Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('AFFITOR_API_TOKEN'),
-        ])->post('https://api.affitor.com/api/v1/track/lead', [
-            'click_id' => $clickId,
-            'customer_key' => (string) $user->id,
-            'email' => $user->email,
-        ]);
+Both modes should ultimately identify the same customer with the same internal ID.
+
+---
+
+## Test Mode
+
+You can create a test lead event without affecting production attribution.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Content-Type: application/json" \
+  -d '{
+    "click_id": "test_lead_001",
+    "customer_key": "test_customer",
+    "additional_data": {
+      "test_mode": true,
+      "program_id": "YOUR_PROGRAM_ID"
     }
-
-    return response()->json(['success' => true]);
-}
+  }'
 ```
 
-#### Ruby (Rails)
+### Test mode behavior
 
-```ruby
-def signup
-  # 1. Create user in your database
-  user = User.create!(email: params[:email], password: params[:password])
+- creates a test lead event with `is_test: true`
+- does not create a real production lead/customer transition
+- can be verified through dashboard/test-event tooling
 
-  # 2. Read the affitor_click_id cookie
-  click_id = cookies[:affitor_click_id]
-
-  # 3. Track lead via Affitor API
-  if click_id.present?
-    uri = URI('https://api.affitor.com/api/v1/track/lead')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-
-    req = Net::HTTP::Post.new(uri, {
-      'Authorization' => "Bearer #{ENV['AFFITOR_API_TOKEN']}",
-      'Content-Type' => 'application/json',
-    })
-    req.body = {
-      click_id: click_id,
-      customer_key: user.id.to_s,
-      email: user.email,
-    }.to_json
-
-    http.request(req)
-  end
-
-  render json: { success: true }
-end
-```
-
-### Testing Your Integration
-
-To verify your API token and integration work correctly, add `"test_mode": true` to the `additional_data` field:
+### Test mode response
 
 ```json
 {
-  "additional_data": {
+  "success": true,
+  "message": "Test lead event tracked successfully",
+  "data": {
+    "eventId": 456,
+    "programId": 1,
     "test_mode": true
   }
 }
 ```
 
-In test mode:
-- `click_id` and `customer_key` are **not required**
-- No real lead record is created
-- A test event is recorded that the dashboard can verify
+---
 
-After sending a test request, go to **Settings → Referrals Tracker** and click **Test Lead Tracking** to confirm the event was received. Remove `test_mode` when you go to production.
+## Common Failure Modes
 
-### Error Responses
+### Lead not attributed
 
-| Status | Meaning |
-|---|---|
-| `401` | Missing or invalid API token |
-| `400` | Missing `click_id` or `customer_key` |
-| `400` | Customer not found or customer does not belong to this program |
-| `500` | Internal server error |
+Check:
+- the visitor first came through a tracked affiliate click
+- `customerKey` / `customer_key` matches your real internal user ID
+- `affitor_click_id` was available when expected
+- you are not accidentally testing only in debug mode
+
+### Wrong identifier used later in payments
+
+This is a common cause of broken attribution. The same internal ID must line up across:
+- `signup(customerKey, email)`
+- `customer_key` in sale API calls
+- `affitor_customer_key` in Stripe metadata
+
+### Duplicate signup tracking
+
+Prevent by:
+- calling signup tracking only after account creation succeeds once
+- avoiding duplicate frontend submissions
+- deduplicating your own signup flow before retrying tracking calls
 
 ---
 
-## Verifying Lead Tracking
+## What to Do Next
 
-### Test Mode
+After lead tracking works, set up sale tracking:
 
-Enable debug mode in the pageview tracker:
-
-**npm SDK:**
-```ts
-const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
-```
-
-**Script tag:**
-```html
-<script
-  src="https://api.affitor.com/js/affitor-tracker.js"
-  data-affitor-program-id="YOUR_PROGRAM_ID"
-  data-affitor-debug="true">
-</script>
-```
-
-**What happens when you call `signup()` in debug mode:**
-
-1. The tracker sends a **test event** instead of a real lead event
-2. No actual lead record is created in the database
-3. Console shows validation messages for `customerKey`
-4. You'll see these console messages:
-
-**With `customerKey` provided:**
-```
-[Affitor] ✅ Affitor: customerKey detected - user_123
-[Affitor] trackTest() called true
-[Affitor] Sending test event to verify tracking: {customerCode: ..., hasAttribution: true, eventType: "test"}
-```
-
-**Without `customerKey`:**
-```
-[Affitor] ❌ Affitor: customerKey is REQUIRED for signup() - payment attribution will not work without it!
-[Affitor]    Please include customerKey in your signup call:
-[Affitor]    await window.affitor.signup('user_123', 'user@example.com')
-[Affitor] trackTest() called true
-```
-
-**Important:** In debug mode, `signup()` always sends a test event and returns immediately without calling the real API. This prevents accidental test leads in your database.
-
-### Dashboard Verification
-
-1. Visit your site
-2. Go to Affitor dashboard → **Setting** -> **Referrals Tracker**
-3. Click on **Test Lead Tracking**
-4. Referrals Tracker should show **"Connected"** with a blue checkmark
-
----
-
-## Troubleshooting
-
-### signup() Not Working
-
-**Check:**
-- `window.affitor` exists (pageview tracker loaded)
-- `affitor_click_id` cookie exists (visitor came via affiliate link)
-- No JavaScript errors in console
-- Not in debug mode (debug mode sends test events only)
-
-### Lead Not Attributed to Partner
-
-**Check:**
-- Visitor came via affiliate link (`?aff=PARTNER123`) **before** signing up
-- `affitor_click_id` cookie exists and matches a tracked click in the database
-- Attribution window hasn't expired (60 days default)
-- Affiliate customer record exists in database (created during click tracking)
-
-**Common issue:** If the visitor's first page load didn't include `?aff=`, no customer record was created, so the lead cannot be attributed even if cookies exist.
-
-### customerKey Warning Appears
-
-**This is expected behavior** when `customerKey` is missing:
-
-```
-❌ Affitor: customerKey is REQUIRED for signup() - payment attribution will not work without it!
-```
-
-**Solutions:**
-- Always include `customerKey` (first argument) in your `signup()` call
-- `customerKey` should be your internal user/customer identifier (from your database)
-- The same internal identifier must be used later as `affitor_customer_key` in Stripe metadata or as `customer_key` in the sale API
-
-**Note:** The lead may still be tracked without `customerKey` if `click_id` is present, but reliable payment attribution will fail later.
-
-### Duplicate Leads
-
-**Prevent by:**
-- Only calling `signup()` once per registration
-- Checking signup success before tracking
-- Backend automatically handles duplicate lead tracking (updates existing customer instead of creating new lead)
-
-### Lead Tracked But Not Showing in Dashboard
-
-**Check:**
-- Lead event was successfully sent (check browser Network tab)
-- Customer-partner relationship exists in database
-- Lead status updated to "lead" (was previously "click")
-- Dashboard filters aren't hiding the lead
-
----
-
-## Next Steps
-
-Lead tracking is set up. Now capture sales:
-
-**[Set Up Payment Tracking →](/docs/advertisers/tracking/payment-tracking-stripe/)**
+- [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+- [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
+- [Testing Integration](/docs/advertisers/tracking/testing-integration/)

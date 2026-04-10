@@ -1,220 +1,158 @@
 ---
 title: Payment Flow
-description: End-to-end flow from click to commission payout
+description: End-to-end flow from affiliate click to attributed revenue and payout operations
 ---
 
-This guide shows the complete journey from partner link click to commission payout.
-
----
-
-![Payment Flow](/images/payout-flow.png)
+This page shows how attribution moves from click → signup → sale in the current public Affitor model.
 
 ---
 
-## Step-by-Step Flow
+## End-to-End Flow
 
-### 1. Partner Shares Link
+### 1. Partner shares a referral link
 
-Partner promotes your product with their unique link:
+A partner promotes your product with a referral URL such as:
 
-```
+```text
 https://yoursite.com?aff=PARTNER123
 ```
 
-### 2. Customer Clicks
+### 2. Customer lands on your site
 
-Customer clicks the link and lands on your site.
+The tracker detects `?aff=` and creates the click/customer relationship.
 
 **What happens:**
-- Affitor tracker detects `?aff=PARTNER123`
-- Generates unique `click_id` and stores in cookie
-- Creates customer-partner relationship in database
-- Click event recorded
+- click is recorded
+- `affitor_click_id` is stored in a first-party cookie
+- the visit is linked to the correct partner/program
 
-### 3. Customer Browses
+### 3. Customer signs up
 
-Customer explores your site. Cookies persist for 60 days.
+After account creation succeeds, you send your internal customer ID to Affitor.
 
-**Attribution window:** 60 days from first click.     
+**Browser helper example:**
 
-### 4. Customer Signs Up
-
-Customer creates an account.
-
-**Your code calls:**
 ```javascript
 if (window.affitor) {
   await window.affitor.signup('user_123', 'customer@example.com');
-} else {
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['signup', 'user_123', 'customer@example.com']);
 }
 ```
 
-**What happens:**
-- Lead event linked to partner via cookies
-- Your signup identifier is associated with the tracked customer record (`customerKey` in `signup()`, `customer_key` in the API)
-- Partner sees: 1 click → 1 signup
+**What matters here:**
+- your internal identifier is stored for future matching
+- that same identifier should later be reused as:
+  - `customer_key` in the Sale API
+  - `affitor_customer_key` in Stripe metadata
 
-### 5. Customer Purchases
+### 4. Customer pays
 
-Customer completes payment through your checkout.
+You then choose one supported sale-tracking path.
 
-If you use Stripe Checkout, include metadata like this:
+#### Path A — Sale API
+
+Your backend calls Affitor when payment succeeds.
+
+```json
+{
+  "transaction_id": "txn_123",
+  "customer_key": "user_123",
+  "amount_cents": 10000,
+  "currency": "USD"
+}
+```
+
+#### Path B — Stripe Bill Flow
+
+You keep charging in your own Stripe account and attach Affitor metadata.
 
 ```javascript
 metadata: {
   program_id: 'YOUR_PROGRAM_ID',
-  affitor_click_id: 'cust_xyz',
-  affitor_customer_key: currentUser.id  // Your internal user ID (same as customerKey in signup)
+  affitor_click_id: clickId,
+  affitor_customer_key: currentUser.id,
 }
 ```
 
-### 6. Sale Is Recorded
+For subscriptions, also include the same fields in `subscription_data.metadata`.
 
-Affitor receives the completed sale either from your Stripe webhook flow or from `POST /api/v1/track/sale`.
+### 5. Affitor attributes the sale
 
-**What happens:**
-- Affitor receives payment confirmation
-- Reads `program_id`
-- Reads `affitor_click_id` and/or `customer_key` / `affitor_customer_key`
-- Looks up the tracked customer record
-- Verifies attribution is within the active window
-- Creates commission record
+Affitor resolves the customer/partner relationship from the data available.
 
-### 7. Commission Calculated
+It can use a combination of:
+- click ID
+- customer email matching
+- Stripe customer ID
+- customer key
 
-Based on your program settings:
+### 6. Commission and platform records are created
 
-| Setting | Example |
-|---------|---------|
-| Commission rate | 30% |
-| Sale amount | $100 (10000 cents) |
-| Commission | $30 (3000 cents) |
+When attribution succeeds, Affitor records the sale and creates the commission flow.
 
-:::tip[API uses cents]
-When using the [Server-Side Sale API](/docs/advertisers/tracking/quickstart-integration/#step-3--track-sales), amounts must be in **cents** as a positive integer. For example, `$99.99` = `amount_cents: 9999`. Stripe metadata does not require this — Stripe handles amounts natively.
+From there, commissions move through review / hold / payout operations according to the program configuration.
+
+---
+
+## Bill Flow in Plain Language
+
+In the current public Bill Flow model:
+
+1. **you** collect payment from the customer in your own Stripe account
+2. **Affitor** attributes the conversion using Stripe metadata + webhook events
+3. **Affitor** bills through its invoice workflow for validated partner commission + platform fee obligations
+4. partner payouts continue through Affitor's payout operations
+
+:::note
+Affitor is not the merchant of record in this Bill Flow model.
 :::
 
-### 8. Transaction Validated
+---
 
-Affitor checks:
+## One-Time vs Subscription Revenue
 
-| Check | Validation |
-|-------|------------|
-| No duplicate | Customer not already attributed |
-| Matching program | Program ID is valid |
+### One-time payments
 
-### 9. Hold Period
+For one-time Stripe Checkout payments, attribution starts from checkout session metadata and the associated webhook flow.
 
-Commission enters hold period (7-21 days, configurable).
+### Subscriptions
 
-**During hold:**
-- Commission shows as "Pending"
-- If customer refunds → commission cancelled
-- If no refund → commission clears
+For subscriptions, the initial and recurring commission flow depends on invoice processing.
 
-### 10. Partner Payout
+That is why recurring setups must include:
+- `metadata`
+- `subscription_data.metadata`
 
-After hold period clears:
-
-- Commission moves to "Withdrawable"
-- Bi-weekly payout cycle processes
-- Partner receives funds via Bank/Wise/Stripe
+If only the initial checkout metadata is present, renewals may not attribute correctly.
 
 ---
 
-## Flow by Payment Method
+## Common Validation Points
 
-### Bill Flow
-
-```
-Customer → Your checkout → You collect payment
-                                ↓
-                          Affitor tracks conversion
-                          Weekly invoice: commission + platform fee
-                                ↓
-                          You pay invoice
-                                ↓
-                          Hold period clears
-                                ↓
-                          Partner receives payout
-```
+| Check | Why it matters |
+|------|----------------|
+| `customerKey` used at signup | links later payments back to the same internal user |
+| `transaction_id` unique (Sale API) | prevents duplicate sale records |
+| `program_id` in Stripe metadata | routes the event to the correct program |
+| `subscription_data.metadata` set | keeps renewals attributable |
+| click tracked first | gives Affitor the strongest attribution signal |
 
 ---
 
-## Subscription Flow
-
-For recurring payments, the flow repeats each billing cycle:
-
-### Month 1 (Initial Purchase)
-
-```
-Click → Signup → Subscribe $100/mo
-                      ↓
-              Commission: $30
-              Hold: 14 days
-              Partner paid: $30
-```
-
-### Month 2+ (Renewal)
-
-```
-Subscription renews $100
-         ↓
-   Commission: $30 (if within duration)
-   Hold: 14 days
-   Partner paid: $30
-```
-
-### Commission Duration
-
-| Duration Setting | Partner Earns On |
-|-----------------|------------------|
-| One-time | First payment only |
-| 3 months | Months 1-3 |
-| 12 months | Months 1-12 |
-| Lifetime | All future payments |
-
-**Example (12-month duration):**
-- Month 1: ✅ Commission paid
-- Month 6: ✅ Commission paid
-- Month 12: ✅ Commission paid
-- Month 13: ❌ No commission (outside duration)
-
----
-
-## Refund Handling
-
-| When Refund Happens | Commission Status |
-|---------------------|-------------------|
-| During hold period | Cancelled automatically |
-| After hold, before payout | Reversed from balance |
-| After payout | Deducted from next payout |
-
----
-
-## Timeline Example
-
-**Scenario:** 30% commission, Bill Flow, 14-day hold, bi-weekly payout
+## Example Timeline
 
 | Day | Event |
 |-----|-------|
-| 0 | Customer clicks partner link |
-| 3 | Customer signs up (lead tracked) |
-| 7 | Customer purchases $100 |
-| 7 | Conversion tracked, commission: $30 |
-| 8 | You approve transaction |
-| 14 | Weekly invoice: $33.50 |
-| 15 | You pay invoice |
-| 8-22 | Hold period (14 days) |
-| 22 | No refund → commission clears |
-| 28 | Bi-weekly payout cycle |
-| 30 | Partner receives $30 |
+| 0 | customer clicks affiliate link |
+| 0 | tracker stores `affitor_click_id` |
+| 2 | customer signs up and you send `customerKey` |
+| 7 | customer pays |
+| 7 | sale is attributed via Sale API or Stripe webhook flow |
+| 7+ | commission enters review / hold / payout operations |
 
 ---
 
-## What's Next
+## Next Steps
 
-Verify your integration works end-to-end:
-
+- [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+- [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
+- [Testing Integration](/docs/advertisers/tracking/testing-integration/)
