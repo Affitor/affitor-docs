@@ -1,74 +1,56 @@
 ---
 title: Set Up Your Program
-description: Configure your affiliate program in under 10 minutes
+description: Configure your affiliate program and choose the right integration path
 ---
 
-After creating your account, you'll be guided through a setup wizard. Most advertisers complete this in under 10 minutes.
+After creating your account, you'll move through three setup areas:
 
-The setup wizard has three main sections:
-
-1. **Set Program Details** – Your business info, approval settings, and commission rates
-2. **Tracking & Integrations** – Code snippets for your website and checkout
-3. **Share Program** – Get your affiliate recruitment link
+1. **Program details** — business info, approval settings, commission rules
+2. **Tracking & integrations** — click, signup, and sale tracking
+3. **Share program** — your partner-facing program link
 
 ---
 
-## 1. Set Program Details
+## 1. Program Details
 
-### Business Details
+### Business details
 
 | Field | Required | Notes |
 |-------|----------|-------|
-| Company Name | Yes | Pre-filled from your account |
-| Website URL | Yes | Your main product URL |
-| Tagline | No | Short description shown to partners |
-| Logo | Yes | PNG, JPG, or SVG (max 1800×1800px) |
-| Terms of Service URL | No | Link to your affiliate terms |
-| Resources URL | No | Link to marketing materials for partners |
+| Company name | Yes | pre-filled from your account |
+| Website URL | Yes | main product/site URL |
+| Tagline | No | shown to partners |
+| Logo | Yes | PNG, JPG, or SVG |
+| Terms of Service URL | No | affiliate terms / program terms |
+| Resources URL | No | partner-facing marketing resources |
 
-### Approval Mode
-
-Choose how partner applications are handled:
+### Approval mode
 
 | Mode | Description | Best for |
 |------|-------------|----------|
-| **Manual review** | Review each application before approval | Quality control, B2B programs |
-| **Auto-approve** | Automatically approve all applications | High-volume, consumer products |
+| **Manual review** | review each partner application | quality control, B2B motions |
+| **Auto-approve** | approve applicants automatically | higher-volume programs |
 
-You can change this setting later in Program Settings.
-
-### Commission Details
-
-Set your default commission structure:
+### Commission details
 
 | Field | Description |
 |-------|-------------|
-| Commission Rate (%) | The percentage paid to a partner for faciliating a sale  |
-| Commission Duration | How long the partner earns from a referred customer |
+| Commission rate (%) | default partner commission |
+| Commission duration | how long a referred customer keeps earning for the partner |
 
-**Commission Duration options:**
-- One-time
-- 3 months
-- 6 months
-- 12 months
-- Lifetime
-- Custom (set your own duration)
-
-**Example:** 30% commission for 12 months means partners earn 30% of every payment from their referred customers for the first 12 months.
-
-> **Coming soon:** Group Rewards will let you create tiered commission structures for partners with different performance levels.
+Common duration options include one-time, fixed-month recurring, and lifetime depending on the program setup.
 
 ---
 
 ## 2. Tracking & Integrations
 
-Three code integrations connect Affitor to your website and checkout.
+Affitor integrations usually happen in three steps.
 
-### Pageview Tracker (Click Tracking)
+### Step 1 — Pageview / click tracking
 
-Tracks when visitors arrive via affiliate links.
+Install the tracker on pages where affiliate traffic lands.
 
-**npm SDK (React, Next.js, any JS/TS app):**
+**SDK:**
 
 ```bash
 npm install @affitor/tracker
@@ -77,13 +59,12 @@ npm install @affitor/tracker
 ```tsx
 import { AffitorProvider } from '@affitor/tracker/react';
 
-// Wrap your app
 <AffitorProvider programId="YOUR_PROGRAM_ID">
   {children}
 </AffitorProvider>
 ```
 
-**Script tag (HTML, WordPress, no-build sites):**
+**Script tag:**
 
 ```html
 <script
@@ -93,44 +74,69 @@ import { AffitorProvider } from '@affitor/tracker/react';
 </script>
 ```
 
-Set `debug={true}` (SDK) or `data-affitor-debug="true"` (script tag) during testing to see tracking events in your browser console.
+→ [Full guide](/docs/advertisers/tracking/pageview-tracker-click)
 
-→ [Full guide](/advertisers/tracking/pageview-tracker-click)
+### Step 2 — Signup / lead tracking
 
-### Referrals Tracker (Signup/Lead)
+After signup succeeds, send your internal customer ID to Affitor.
 
-Tracks when visitors sign up or submit a form. Add to your registration or signup form to capture leads from affiliate traffic.
+**Browser helper:**
 
-→ [Full guide](/advertisers/tracking/lead-tracking-signup/)
+```js
+await window.affitor.signup('user_123', 'user@example.com');
+```
 
-### Payments Tracker (Sale/Conversion)
+**Server API:**
 
-Tracks purchases and calculates commissions. Choose your integration method:
+```json
+{
+  "click_id": "cust_42_1234567890",
+  "customer_key": "user_123",
+  "email": "user@example.com"
+}
+```
+
+→ [Full guide](/docs/advertisers/tracking/lead-tracking-signup/)
+
+### Step 3 — Sale / payment tracking
+
+Choose the path that matches your checkout.
 
 | Method | How it works | Best for |
 |--------|--------------|----------|
-| **Server-Side Sale API** | Your backend sends completed sale events to Affitor | Any payment provider or custom checkout |
-| **Bill Flow (Stripe metadata)** | You collect payments; Affitor tracks via Stripe metadata and invoices fees | Existing Stripe checkout |
+| **Sale API** | your backend sends `POST /api/v1/track/sale` after payment succeeds | any payment provider or custom backend |
+| **Stripe Bill Flow** | you keep taking payment in your own Stripe checkout; Affitor attributes via metadata + webhooks | existing Stripe Checkout integrations |
 
-→ [Full guide](/advertisers/tracking/payment-tracking-stripe/)
+For Stripe Bill Flow, use these public fields in metadata:
+- `affitor_click_id`
+- `affitor_customer_key`
+- `program_id`
 
----
+For subscriptions, put the same values in both:
+- `metadata`
+- `subscription_data.metadata`
 
-## 3. Share Program
-
-Once tracking is configured, you'll get your affiliate recruitment link:
-
-```
-https://affitor.com/join/your-program
-```
-
-Share this link to recruit partners. When partners click it, they'll see your program details and can apply to join.
+→ [Full guide](/docs/advertisers/tracking/payment-tracking-stripe/)
 
 ---
 
-## What's Next
+## 3. Share Your Program
 
-After completing setup:
+Once setup is complete, you can share your partner recruitment link so affiliates can apply to join.
 
-- **Approve your first partner** – Review and accept partner applications
-- **Customize payouts** – Configure payout frequency and thresholds
+---
+
+## Recommended Setup Order
+
+1. install click tracking
+2. wire signup tracking with a stable internal customer ID
+3. choose Sale API or Stripe Bill Flow
+4. run test flows before launch
+
+---
+
+## Next Steps
+
+- [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
+- [Testing Integration](/docs/advertisers/tracking/testing-integration/)
+- [Commission Approval & Cash Flow](/docs/advertisers/quickstart/commission-approval-cash-flow/)

@@ -1,49 +1,47 @@
 ---
 title: "How Affitor Works"
-description: "See how Affitor tracks referrals from click to payout — in 7 simple steps."
+description: "See how Affitor runs from affiliate click to attributed revenue and payout operations."
 ---
 
-
-Affitor runs alongside your existing stack. No migration required.
+Affitor runs alongside your existing stack. You keep your site, signup flow, and checkout; Affitor adds tracking, attribution, commission operations, and partner payout workflow.
 
 ![How Affitor Works - 7 Step Affiliate Lifecycle](/images/how-it-works-diagram.png)
 
 ## The affiliate lifecycle
 
+### 1. Advertiser creates a program
+You define commission rules, partner approval criteria, and payout/hold settings.
 
-### Advertiser creates program
-    You set up your affiliate program in minutes. Define commission rates, approval rules, and payout terms.
+### 2. Partner joins and gets a referral link
+Approved partners receive links that identify their traffic.
 
-### Partner joins & gets link
-    Partners apply to your program. Once approved, each partner receives a unique tracking link.
+### 3. Partner promotes your product
+Partners share links through content, social, communities, newsletters, or direct outreach.
 
-### Partner promotes
-    Partners share their links via content, social media, newsletters, or direct outreach.
+### 4. Customer clicks and is tracked
+Affitor records the visit and creates the click/customer relationship needed for attribution.
 
-### Customer clicks & visits
-    A potential customer clicks the affiliate link and lands on your website. Affitor records the referral.
+### 5. Customer signs up and pays
+You send signup attribution with your internal customer ID, then record revenue either through:
+- the server-side Sale API, or
+- Stripe metadata + webhook handling in Bill Flow
 
-### Customer converts & pays
-    The customer signs up and completes a payment. Affitor captures the conversion through your sale tracking setup — either Stripe metadata/webhooks or the server-side sale API.
+### 6. Commission is created
+Affitor calculates commission from the program's applicable rules and moves it into the commission workflow.
 
-### Commission calculated
-    Affitor calculates the commission based on your program rules. The commission enters a 7-21 day hold period.
-
-### Partner gets paid
-    After the hold period, cleared commissions become withdrawable and are paid out to partners through Affitor's payout process.
-
-
+### 7. Payout operations continue in Affitor
+Validated commissions move through review, hold, and payout operations for partners.
 
 ## Key points
 
-**Flexible integration paths** — You can track sales through Stripe metadata/webhooks or the server-side sale API, depending on your checkout setup.
+**Flexible integration paths** — Affitor supports browser-side signup tracking, server-side lead/sale APIs, and Stripe Bill Flow metadata.
 
-**60-day attribution window** — Partners get credit for conversions within 60 days of the initial click.
+**60-day default attribution window** — public docs currently describe a 60-day default window for affiliate attribution.
 
-**Real-time dashboard** — Both you and your partners see performance data as it happens.
+**Bill Flow model** — in the current public model, advertisers keep charging customers in their own Stripe/payment setup; Affitor attributes conversions and handles billing/payout operations through its workflow.
 
 ## Next steps
 
-[Create Your Program →](/advertisers/quickstart/create-account)
+[Create Your Program →](/docs/advertisers/quickstart/create-account)
 
-[Understand Pricing →](/getting-started/pricing-performance-model)
+[Understand Pricing →](/docs/getting-started/pricing-performance-model)

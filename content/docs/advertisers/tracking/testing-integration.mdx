@@ -1,35 +1,25 @@
 ---
 title: Testing Integration
-description: Verify your Affitor tracking works end-to-end
+description: Verify click, signup, and sale tracking before going live
 ---
 
-Before going live, test your integration to ensure tracking works correctly.
+Test each layer of the integration before launch:
+
+1. click tracking
+2. signup/lead tracking
+3. sale tracking
+
+The goal is to confirm that your identifiers, metadata, and revenue path line up correctly.
 
 ---
 
-## Enable Test Mode
+## 1. Test Click Tracking
 
-### npm SDK
+### Tracker debug mode
 
-Pass `debug: true` when loading the tracker:
+Enable debug mode in the tracker install you are using.
 
-```ts
-import { loadAffitor } from '@affitor/tracker';
-
-const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
-```
-
-Or with the React provider:
-
-```tsx
-<AffitorProvider programId="YOUR_PROGRAM_ID" debug>
-  {children}
-</AffitorProvider>
-```
-
-### Script Tag
-
-Add `data-affitor-debug="true"` to your tracker script:
+**Script tag:**
 
 ```html
 <script
@@ -39,149 +29,35 @@ Add `data-affitor-debug="true"` to your tracker script:
 </script>
 ```
 
-**Test mode:**
-- Logs all tracking events to browser console
-- Sends test events only — no real records created in database
-- Test events visible in dashboard for verification
+### What to verify
+
+- the tracker script loads successfully
+- the page can set/read Affitor cookies
+- click/pageview-related requests are visible in the browser
+- your dashboard shows test/debug activity for the pageview step
+
+:::caution
+When testing with real affiliate links, remember that a real `?aff=` flow can still create real attribution data. Use test/debug guidance carefully and avoid mixing production referral links into synthetic tests unless that is your intent.
+:::
 
 ---
 
-## Test Checklist
+## 2. Test Lead Tracking
 
-### 1. Pageview Tracking (Click)
+### Browser-side signup test
 
-**Steps:**
-1. Open browser Developer Tools (F12) → Console
-2. Visit your site (no `?aff=` needed — the test event fires automatically in debug mode)
-3. Look for Affitor debug messages
+After a successful signup in a tracked browser session:
 
-**Expected console output:**
-
-```
-[Affitor] Affitor tracker v2 initialized: {debug: true}
-[Affitor] Using program ID: YOUR_PROGRAM_ID
-[Affitor] Verifying cookie functionality...
-[Affitor] Cookie set: {name: "affitor_test_cookie", value: "test_...", expires: ...}
-[Affitor] Cookie verification PASSED
-[Affitor] trackTest() called true
-[Affitor] Sending test click event: {affiliate_url: ..., page_url: "...", ...}
+```javascript
+await window.affitor.signup('user_123', 'user@example.com');
 ```
 
-**If cookies are blocked**, you'll see:
+Verify that:
+- the same internal ID you passed as `customerKey` is the one you plan to reuse later
+- the tracker emits the expected network/debug activity
+- the dashboard/test-event view reflects lead test activity where applicable
 
-```
-[Affitor] Cookie verification FAILED - cookies may be blocked
-[Affitor]   Possible causes: browser privacy settings, ITP, extensions
-```
-
-:::caution[Do not use ?aff= in test mode]
-Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackClick()`) is not guarded by debug mode — it will create a **real** click record and set real cookies. The `trackTest()` event fires automatically and is sufficient for dashboard verification.
-:::
-
-**Dashboard check:**
-- Go to Affitor dashboard → **Settings → Pageview Tracker**
-- Click **Test Click Tracking**
-- Pageview tracker should show a blue checkmark
-
-### 2. Lead Tracking (Signup)
-
-**Steps:**
-1. With cookies set (from step 1), complete your signup flow
-2. Ensure you pass your internal customer ID in `signup(customerKey, email)` so it can map to `customer_key` in the API and `affitor_customer_key` in Stripe metadata
-3. Check console for lead event
-
-**Expected console output:**
-
-```
-[Affitor] trackTest() called true
-[Affitor] Sending test lead event: {click_id: ..., customer_key: "your_customer_key", session_id: "...", ...}
-[Affitor] Test lead event sent successfully {...}
-```
-
-**Note:** In debug mode, `signup()` sends a test event only — no actual lead record is created. If the first `customerKey` argument is missing, you'll see:
-
-```
-[Affitor] signup() requires customerKey as first argument
-```
-
-**Dashboard check:**
-- Go to Affitor dashboard → **Settings → Referrals Tracker**
-- Click **Test Lead Tracking**
-- Referrals tracker should show a blue checkmark
-
-### 3. Payment Tracking (Sale)
-
-There are two ways to test payment tracking depending on your integration method.
-
-#### Option A: Test via Sale API (any payment provider)
-
-Send a test sale event using `test_mode`. This creates a sale event with `is_test: true` — no commission, no platform fee, no metric updates.
-
-**Prerequisites:**
-- Your program API key (from **Program Settings → API Keys**)
-
-```bash
-curl -X POST https://api.affitor.com/api/v1/track/sale \
-  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "additional_data": { "test_mode": true },
-    "amount_cents": 9999,
-    "currency": "USD",
-    "sale_type": "payment"
-  }'
-```
-
-**Expected response (`200`):**
-
-```json
-{
-  "success": true,
-  "message": "Test sale event tracked successfully",
-  "data": {
-    "eventId": 789,
-    "programId": 1,
-    "test_mode": true
-  }
-}
-```
-
-All fields except `additional_data.test_mode` and the `Authorization` header are optional in test mode. Default values will be used for any omitted fields (e.g. `amount_cents` defaults to `9999`, `transaction_id` auto-generates as `test_txn_{timestamp}`).
-
-:::note
-Test sale events are created with `is_test: true` — they do **not** create commissions, platform fees, or update any metrics. A customer record is **not** required in test mode.
-:::
-
-#### Option B: Test via Stripe Checkout
-
-If you use Stripe, test with Stripe's test mode:
-
-1. Use Stripe test mode (test card: `4242 4242 4242 4242`)
-2. Complete a test purchase
-3. Check Stripe Dashboard → Webhooks for delivery status
-
-**Verify metadata (Stripe Dashboard):**
-- Go to Payments → find test payment
-- Click to view details
-- Check metadata contains:
-  - `affitor_click_id: click_id_from_cookie`
-  - `affitor_customer_key: your_user_id` (must represent the same internal user ID you passed as `customerKey` in `signup()`)
-  - `program_id: YOUR_PROGRAM_ID`
-
-**Dashboard check:**
-- Go to Affitor dashboard → **Settings → Payments Tracker**
-- Your payment integration section should show as configured
-- Payments tracker should show a blue checkmark
-
----
-
-## Test API Endpoints
-
-These endpoints let you programmatically send test events and verify they were received — without needing a browser or real affiliate links. All test events are created with `is_test: true` and do **not** affect real data.
-
-### 1. Send a Test Lead Event
-
-Creates a test lead event by calling the lead tracking endpoint with `test_mode` in `additional_data`. No Bearer token required.
+### Server-side lead API test
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/lead \
@@ -196,16 +72,7 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
   }'
 ```
 
-**Request body:**
-
-| Parameter | Required | Type | Description |
-|-----------|----------|------|-------------|
-| `additional_data.test_mode` | **Yes** | boolean | Must be `true` to trigger test mode |
-| `additional_data.program_id` | **Yes** | string/number | Your program ID (used to link the test event) |
-| `click_id` | No | string | Optional click ID. Auto-generated if omitted |
-| `customer_key` | No | string | Optional customer key. Defaults to `"test_customer"` |
-
-**Response (`200`):**
+**Expected response:**
 
 ```json
 {
@@ -219,9 +86,19 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 }
 ```
 
-### 2. Send a Test Sale Event
+### What test mode means for leads
 
-Creates a test sale event. Requires a Bearer token (program API key) but does **not** require a customer record.
+- creates a test lead event only
+- does not create a production lead/customer progression
+- helps verify that your program ID and endpoint wiring are correct
+
+---
+
+## 3. Test Sale Tracking
+
+You can test sale tracking in two different ways depending on your implementation.
+
+### Option A — Test the Sale API
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/sale \
@@ -229,27 +106,13 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Content-Type: application/json" \
   -d '{
     "additional_data": { "test_mode": true },
-    "amount_cents": 4999,
+    "amount_cents": 9999,
     "currency": "USD",
     "sale_type": "payment"
   }'
 ```
 
-**Request body:**
-
-| Parameter | Required | Type | Description |
-|-----------|----------|------|-------------|
-| `Authorization` header | **Yes** | string | `Bearer YOUR_PROGRAM_API_KEY` |
-| `additional_data.test_mode` | **Yes** | boolean | Must be `true` to trigger test mode |
-| `transaction_id` | No | string | Auto-generated as `test_txn_{timestamp}` if omitted |
-| `amount_cents` | No | number | Defaults to `9999` |
-| `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
-| `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
-| `click_id` | No | string | Auto-generated as `test_sale_{timestamp}` if omitted |
-| `is_recurring` | No | boolean | Default: `false` |
-| `line_items` | No | array | Optional itemized breakdown |
-
-**Response (`200`):**
+**Expected response:**
 
 ```json
 {
@@ -263,9 +126,35 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 }
 ```
 
-### 3. Verify Test Events Were Received
+### What test mode means for sales
 
-After sending test events, use this endpoint to confirm they were recorded. It queries test click, lead, and sale events for your program. No authentication required.
+- still requires the Bearer token
+- creates a test sale event only
+- does not create commissions
+- does not create platform fees
+- does not update production metrics
+
+### Option B — Test Stripe Bill Flow
+
+If you use Stripe Checkout:
+
+1. switch Stripe to test mode
+2. complete a test checkout
+3. verify webhook delivery in Stripe
+4. inspect the metadata on the checkout/payment objects
+
+Check that metadata includes:
+- `program_id`
+- `affitor_click_id`
+- `affitor_customer_key`
+
+For subscriptions, also confirm the same values exist in `subscription_data.metadata`.
+
+---
+
+## 4. Verify Test Events Were Received
+
+After sending test lead or test sale events, you can query the test-event checker.
 
 ```bash
 curl -X POST https://api.affitor.com/api/tracking/check-test-events \
@@ -275,184 +164,78 @@ curl -X POST https://api.affitor.com/api/tracking/check-test-events \
   }'
 ```
 
-**Request body:**
-
-| Parameter | Required | Type | Description |
-|-----------|----------|------|-------------|
-| `program_id` | **Yes** | string/number | Your Affitor program ID |
-| `step_id` | No | string | Filter: `"pageview"` (clicks only), `"referrals"` (leads only), `"payments"` (sales only). Omit to get all |
-
-**Response (`200`):**
-
-```json
-{
-  "success": true,
-  "data": {
-    "hasTestEvents": true,
-    "eventCount": 5,
-    "eventsByType": {
-      "click": [{ "id": 123, "is_test": true, "click_id": "test_1711843200000", "createdAt": "..." }],
-      "lead": [{ "id": 456, "is_test": true, "click_id": "test_lead_001", "createdAt": "..." }],
-      "sale": [{ "id": 789, "is_test": true, "click_id": "test_sale_1711843200000", "createdAt": "..." }]
-    },
-    "latestTestEvent": {
-      "id": 789,
-      "event_type": "sale",
-      "timestamp": "2026-01-21T12:00:00.000Z"
-    },
-    "programId": "1",
-    "advertiserId": 5,
-    "stepId": null
-  }
-}
-```
-
-| Field | Description |
-|-------|-------------|
-| `hasTestEvents` | `true` if any test events exist for this program |
-| `eventCount` | Total number of test events found (max 25 per type) |
-| `eventsByType` | Events grouped by `"click"`, `"lead"`, and `"sale"` |
-| `latestTestEvent` | Most recent test event across all types (by `createdAt`) |
-
-:::tip[Recommended test flow]
-1. Send a test lead: `POST /api/v1/track/lead` with `test_mode: true`
-2. Send a test sale: `POST /api/v1/track/sale` with `test_mode: true`
-3. Verify all arrived: `POST /api/tracking/check-test-events` (omit `step_id` to see all)
-4. Check dashboard — test events should appear with test indicators
-:::
+You can also filter by step:
+- `pageview`
+- `referrals`
+- `payments`
 
 ---
 
-## Integration Status Dashboard
+## 5. Recommended Real-World Test Scenarios
 
-Check all three integrations at once:
+### Scenario A — Full tracked funnel
 
-1. Go to Affitor Dashboard
-2. Navigate to **Settings** → each tracker's settings page
-3. View status for each tracker:
+1. open a fresh browser session
+2. land through an affiliate link
+3. sign up
+4. complete payment
+5. verify click → lead → sale linkage
 
-| Tracker | Status | Meaning |
-|---------|--------|---------|
-| Pageview | ✅ Connected | Script installed, receiving clicks (Settings → Pageview Tracker) |
-| Referrals | ✅ Connected | Receiving lead events (Settings → Referrals Tracker) |
-| Payments | ✅ Connected | Payment tracking configured and receiving sales (Settings → Payments Tracker) |
+### Scenario B — Sale API path
 
-| Tracker | Status | Meaning |
-|---------|--------|---------|
-| Pageview | ⏳ Pending | Script not detected yet |
-| Referrals | ⏳ Pending | No lead events received |
-| Payments | ⏳ Pending | Payment tracking not configured yet or no payment events received |
+1. complete a backend-controlled purchase
+2. send `POST /api/v1/track/sale`
+3. verify the response contains `sale_id` and `commission_id`
+4. confirm no duplicate retries reuse the same `transaction_id`
 
----
+### Scenario C — Stripe subscription path
 
-## Common Test Scenarios
-
-### Prerequisites
-
-Before running these scenarios, you need a partner with a referral link:
-
-1. Go to Affitor dashboard → **Partners**
-2. Approve for your test partner
-3. In the Partner Dashboard -> **Referral Links** -> **Create Link**
-4. Copy the referral link — you'll use this in the scenarios below
-
-For Scenario 3 (Partner Override), you need **two** partners with separate referral links.
-
-### Scenario 1: Full Flow Test
-
-These scenarios test **real tracking** (debug mode off) with actual affiliate links:
-
-1. Open incognito window (fresh cookies)
-2. Visit the partner's referral link (e.g. `yoursite.com?aff=abc123`)
-3. Sign up with test email
-4. Purchase with Stripe test card
-5. Check dashboard for: 1 click → 1 signup → 1 conversion
-
-### Scenario 2: Returning Visitor
-
-1. Visit the partner's referral link (e.g. `yoursite.com?aff=abc123`)
-2. Leave site
-3. Return directly to `yoursite.com` (no ref)
-4. Purchase
-
-**Expected:** Attributed to the partner (customer-partner relationship persists via cookie)
-
-### Scenario 3: Partner Override
-
-1. Visit Partner A's referral link (e.g. `yoursite.com?aff=abc123`)
-2. Later visit Partner B's referral link (e.g. `yoursite.com?aff=xyz789`)
-3. Purchase
-
-**Expected:** Attributed to Partner B (last click wins - relationship updated)
-
-### Scenario 4: Expired Attribution
-
-1. Visit the partner's referral link
-2. Wait 61+ days
-3. Purchase
-
-**Expected:** No attribution (outside 60-day window)
+1. create a Stripe Checkout subscription in test mode
+2. ensure both `metadata` and `subscription_data.metadata` are present
+3. verify the initial invoice/webhook delivery
+4. confirm your renewal setup will preserve those identifiers
 
 ---
 
-## Troubleshooting Test Issues
+## Common Failure Modes
 
-### Console Shows No Affitor Messages
+### Lead works but sales do not attribute
 
-**Check:**
-- `data-affitor-debug="true"` is set
-- Script URL is correct
-- No ad blockers/privacy extensions
+Usually caused by one of these:
+- `customerKey` at signup does not match the later payment identifier
+- Stripe metadata uses the wrong customer key
+- `transaction_id` is duplicated or missing in the Sale API path
+- no tracked click/customer relationship exists for the customer
 
-### Cookies Not Setting
+### One-time Stripe works but renewals do not
 
-**Check:**
-- URL has `?aff=` parameter
-- Site uses HTTPS
-- No Content Security Policy blocking cookies
-- No browser extensions blocking cookies
+Usually caused by:
+- missing `subscription_data.metadata`
+- relying only on initial checkout metadata
+- mismatched customer key between signup and Stripe metadata
 
-### Webhook Not Firing
+### Dashboard status is confusing
 
-**Check:**
-- Your Stripe-based payment integration is configured in Settings → Payments Tracker
-- Correct webhook events selected (`checkout.session.completed`, `invoice.payment_succeeded`)
-- All three metadata fields are included in Stripe checkout (`affitor_click_id`, `affitor_customer_key`, `program_id`)
+Runtime uses a mix of:
+- test event presence for click/lead verification
+- Stripe connection/configuration state for payment setup
+- real sale events for broader integration completeness
 
-### Test Event Not in Dashboard
-
-**Check:**
-- Program ID is correct
-- Backend API is reachable
-- Check Network tab for failed requests
+So treat dashboard status, test-event checks, and Stripe webhook delivery logs as complementary signals.
 
 ---
 
-## Going Live
+## Before You Go Live
 
-Once all tests pass:
+Confirm all of the following:
 
-1. **Remove test mode:**
-   - npm SDK: Remove `debug` prop or set `debug={false}`
-   - Script tag: Remove `data-affitor-debug` attribute or set to `"false"`
+- tracker installed on all landing pages
+- signup tracking sends a stable internal customer ID
+- Sale API or Stripe metadata path is fully implemented
+- Stripe subscription metadata is duplicated correctly when relevant
+- one end-to-end test has succeeded with the exact path you will use in production
 
-2. Switch Stripe to live mode (if using test mode)
-
-3. Verify one real transaction before announcing to partners
-
-4. Monitor dashboard for first few days
-
----
-
-## Support
-
-If tests fail after checking troubleshooting steps:
-
-- Screenshot console errors
-- Note which step fails
-- Contact support@affitor.com
-
-**Include:**
-- Program ID
-- Browser and version
-- Steps to reproduce
+Related guides:
+- [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
+- [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
+- [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)

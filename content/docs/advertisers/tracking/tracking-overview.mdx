@@ -1,23 +1,25 @@
 ---
 title: Tracking Overview
-description: How Affitor tracks referrals from click to sale
+description: How Affitor links clicks, signups, and sales together
 ---
 
-Affitor tracking captures the complete customer journey—from the first click on an affiliate link to the final purchase.
+Affitor tracking connects three events into one attribution chain:
+
+- **click** — a visitor arrives through an affiliate link
+- **signup/lead** — you identify the customer after registration
+- **sale** — revenue is recorded through the Sale API or Stripe Bill Flow
 
 ---
 
-## How Tracking Works
+## The Core Model
 
-When a partner shares their affiliate link, Affitor tracks three key events:
+Every successful integration has the same shape:
 
-| Event | What it captures | When it fires |
-|-------|------------------|---------------|
-| **Click** | Visitor arrives via affiliate link | Page load with `?aff=` parameter |
-| **Signup** | Visitor registers or submits a form | Your signup form completion |
-| **Sale** | Customer completes purchase | Sale API call or Stripe webhook flow |
+1. a tracked affiliate visit creates a click/customer relationship
+2. signup tracking attaches your internal user ID to that relationship
+3. sale tracking records revenue against the same customer/partner relationship
 
-Each event is linked together using tracking data like `click_id`, `customer_key`, and program metadata so you can attribute the correct partner.
+That is why identifier consistency matters more than any single code snippet.
 
 ---
 
@@ -25,128 +27,118 @@ Each event is linked together using tracking data like `click_id`, `customer_key
 
 ```mermaid
 graph LR
-    A[Partner Shares Link] --> B[Customer Clicks]
-    B --> C[Visits Site]
-    C --> D[Signs Up]
-    D --> E[Purchases]
-    
-    A -.->|Unique ?aff= URL| A1[Unique link]
-    B -.->|Cookie set| B1[Click tracked]
-    C -.->|60 day cookie| C1[Cookie persists]
-    D -.->|signup called| D1[Lead tracked]
-    E -.->|Sale API or Stripe metadata| E1[Sale tracked]
+    A[Partner shares link] --> B[Customer clicks]
+    B --> C[Tracker stores affitor_click_id]
+    C --> D[Customer signs up]
+    D --> E[Your internal customer ID sent to Affitor]
+    E --> F[Customer pays]
+    F --> G[Sale API or Stripe metadata path]
+    G --> H[Revenue attributed]
 ```
-
-
-**Step by step:**
-
-1. **Partner gets unique link**: `https://yoursite.com?aff=PARTNER123`
-2. **Customer clicks**: Affitor script detects `?aff=` parameter
-3. **Cookie stored**: `click_id` saved (60-days lifetime)
-4. **Customer browses**: Cookie persists across sessions
-5. **Customer signs up**: You call `signup(customerKey, email)` or `POST /api/v1/track/lead` with `customer_key` → linked to customer
-6. **Customer purchases**: You either call `POST /api/v1/track/sale` or attach Stripe metadata so the sale can be attributed and commission created
 
 ---
 
 ## What You Need to Implement
 
-Three integrations connect your site to Affitor:
+### 1. Click tracking
 
-| Integration | Purpose | Difficulty |
-|-------------|---------|------------|
-| [Pageview Tracker](/advertisers/tracking/pageview-tracker-click) | Track clicks from affiliate links | Easy – npm install or one script tag |
-| [Lead Tracking](/advertisers/tracking/lead-tracking-signup) | Track signups and registrations | Easy – one function call |
-| [Payment Tracking](/advertisers/tracking/payment-tracking-stripe) | Track sales via Sale API or Stripe metadata | Medium – backend or metadata setup |
+Install the tracker so affiliate visits are detected automatically.
 
-Most advertisers complete all three quickly once they have their program ID and checkout flow ready.
+- detects `?aff=`
+- stores `affitor_click_id`
+- creates the initial relationship Affitor needs for attribution
 
-### Choose Your Integration Method
+Guide: [Pageview Tracker](/docs/advertisers/tracking/pageview-tracker-click/)
 
-For click + signup tracking, pick one client install method:
+### 2. Signup tracking
 
-| Method | Install | Best for |
-|--------|---------|----------|
-| **npm SDK** (`@affitor/tracker`) | `npm install @affitor/tracker` | React, Next.js, Vue, any JS/TS app |
-| **Script tag** | Copy-paste `<script>` tag | Static HTML, WordPress, no-build sites |
+Send your internal customer/user identifier after signup succeeds.
 
-For sale tracking, pick one payment integration method:
+- browser helper: `signup(customerKey, email)`
+- server API: `POST /api/v1/track/lead` with `customer_key`
 
-| Method | Best for |
-|--------|----------|
-| **Sale API** (`POST /api/v1/track/sale`) | Any payment provider or custom backend |
-| **Stripe metadata + webhook** | Existing Stripe Checkout integration |
+Guide: [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
 
-Both client install methods provide the same click/signup tracking functionality. The npm SDK adds TypeScript types, Promise-based loading, and React hooks.
+### 3. Sale tracking
 
----
+Choose one supported revenue path:
 
-## Attribution
+| Path | Use when |
+|------|----------|
+| **Sale API** | your backend controls revenue events |
+| **Stripe metadata + webhook** | you already use Stripe Checkout / Bill Flow |
 
-### How Attribution Works
-
-Affitor uses **last-click attribution** with cookie-based tracking.
-
-When a customer clicks an affiliate link:
-1. `click_id` created and stored in cookie
-2. Customer-partner relationship created in database
-3. Cookie lasts 60 days
-4. Attribution window is 60 days from first click
-5. Any purchase within window credits that partner
-
-### Multiple Clicks
-
-If a customer clicks Partner A's link, then later clicks Partner B's link:
-- **Partner B gets credit** (last-click wins)
-- Cookie is overwritten with the new `click_id`
+Guide: [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
 
 ---
 
-## Tracking Data
+## Recommended Identifier Mapping
 
-### What Affitor Captures
+| Context | Field |
+|--------|-------|
+| Signup helper | `customerKey` |
+| Lead API | `customer_key` |
+| Sale API | `customer_key` |
+| Stripe metadata | `affitor_customer_key` |
+| Browser click cookie | `affitor_click_id` |
+| Sale API click field | `click_id` |
 
-| Data | Source | Purpose |
-|------|--------|---------|
-| `click_id` | Auto-generated on first click | Identify visitor & link events together |
-| `program_id` | Your program ID | Route to correct program |
-| Timestamp | Automatic | When event occurred |
-| User agent | Browser | Analytics |
-| IP address | Request | Fraud detection |
-
-### Cookie Storage
-
-| Cookie | Value | Lifetime |
-|--------|-------|----------|
-| `affitor_click_id` | Unique visitor ID | 60 days |
-
-Cookies are set automatically by the tracker script. No action required.
+Use one stable internal customer ID everywhere.
 
 ---
 
-## Privacy & Compliance
+## Attribution Basics
 
-### GDPR Considerations
+### Default model
 
-Affitor tracking uses first-party cookies on your domain. You should:
+Affitor public docs currently describe:
+- first-party cookie tracking
+- last-click attribution
+- a 60-day default attribution window
 
-1. **Include in cookie policy**: Mention affiliate tracking cookies
-2. **Cookie consent**: If required in your jurisdiction, include in consent flow
-3. **Data retention**: Tracking data follows your Affitor program settings
+### Why the signup step matters
 
-### No Third-Party Tracking
-
-Affitor doesn't:
-- Use third-party cookies
-- Share data with ad networks
-- Track users across other sites
+The click cookie is strong, but the internal customer ID is what lets Affitor keep attribution working more reliably across later payment events, especially when payment happens after signup or on a backend-controlled path.
 
 ---
 
-## Next Steps
+## One-Time vs Subscription Payments
 
-Set up tracking in order:
+### One-time payment
 
-1. **[Pageview Tracker](/advertisers/tracking/pageview-tracker-click)** – Capture clicks (5 minutes)
-2. **[Lead Tracking](/advertisers/tracking/lead-tracking-signup)** – Capture signups (10 minutes)
-3. **[Payment Tracking](/advertisers/tracking/payment-tracking-stripe)** – Capture sales (15 minutes)
+Either:
+- send a Sale API event after payment succeeds
+- or attach Stripe metadata for Bill Flow
+
+### Subscription payment
+
+If you use Stripe subscriptions:
+- include metadata on the checkout session
+- include the same metadata on `subscription_data.metadata`
+
+Without the subscription metadata, renewals may not be attributable.
+
+---
+
+## What Most Teams Choose
+
+### Fastest path for Stripe Checkout teams
+
+1. install tracker
+2. call `signup(customerKey, email)`
+3. attach Stripe metadata for payment + subscription flows
+
+### Fastest path for custom backend teams
+
+1. install tracker
+2. call `signup(customerKey, email)` or server-side lead API
+3. send `POST /api/v1/track/sale` from your backend
+
+---
+
+## Related Guides
+
+1. [Pageview Tracker](/docs/advertisers/tracking/pageview-tracker-click/)
+2. [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
+3. [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+4. [Testing Integration](/docs/advertisers/tracking/testing-integration/)

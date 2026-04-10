@@ -1,116 +1,71 @@
 ---
 title: "Pricing"
-description: "Affitor charges 3.5% of partner-generated revenue. No monthly fees. No setup costs."
-
+description: "Affitor charges 3.5% of partner-generated revenue with a public Bill Flow model."
 ---
 
-Affitor uses performance-based pricing. You only pay when your partners generate revenue. This model lowers the barrier to adoption, avoids wasted spend, and ensures strong alignment between the platform and your outcomes, making it especially suitable for early-stage and lean teams.
+Affitor uses performance-based pricing. You pay when partner-attributed revenue is recorded through your program.
 
-## How it works
+## Core pricing model
 
-<div className="overflow-x-auto my-6 max-w-[60%]">
-  <table className="min-w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-    <thead>
-      <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600">
-        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-600">Item</th>
-        <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-600">Cost</th>
-      </tr>
-    </thead>
-    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Monthly subscription</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-green-600 dark:text-green-400">$0</td>
-      </tr>
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Setup fee</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-green-600 dark:text-green-400">$0</td>
-      </tr>
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Platform fee</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-blue-600 dark:text-blue-400">3.5% of partner-generated revenue</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+- **Monthly subscription:** $0
+- **Setup fee:** $0
+- **Platform fee:** 3.5% of partner-generated revenue
 
-### Example breakdown
+## Example breakdown
 
-A partner drives a $100 sale with 30% commission:
+A partner drives a $100 sale with a 30% commission:
 
-<div className="overflow-x-auto my-6 max-w-[60%]">
-  <table className="min-w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-    <thead>
-      <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600">
-        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-600">Item</th>
-        <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-600">Amount</th>
-      </tr>
-    </thead>
-    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">Sale revenue</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-slate-900 dark:text-slate-100">$100.00</td>
-      </tr>
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Stripe fee (2.9% + $0.30)</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-red-600 dark:text-red-400">-$3.20</td>
-      </tr>
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Partner commission (30%)</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-red-600 dark:text-red-400">-$30.00</td>
-      </tr>
-      <tr className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Affitor fee (3.5%)</td>
-        <td className="px-6 py-4 text-right text-sm font-medium text-red-600 dark:text-red-400">-$3.50</td>
-      </tr>
-      <tr className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-t-2 border-green-200 dark:border-green-700">
-        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">You receive</td>
-        <td className="px-6 py-4 text-right text-lg font-bold text-green-600 dark:text-green-400">$63.30</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+| Item | Amount |
+|------|--------|
+| Gross revenue | $100.00 |
+| Stripe fee (example) | -$3.20 |
+| Partner commission (30%) | -$30.00 |
+| Affitor platform fee (3.5%) | -$3.50 |
+| **You keep** | **$63.30** |
 
-## When you pay
+## How billing works in the current public model
 
-The 3.5% platform fee is collected when you pay out commissions to partners. No separate invoice, no delayed billing — it happens automatically alongside partner payouts.
+Affitor's public docs currently describe a **Bill Flow** model:
 
-## Cash Flow Timing
+1. you keep collecting customer payments in your own Stripe/payment stack
+2. Affitor attributes validated affiliate conversions
+3. Affitor bills through its invoice workflow for partner commission + platform fee obligations
+4. partner payout operations continue through Affitor
 
-Commissions have a 7-21 day hold period before partner payout. This protects you against refunds and chargebacks.
+:::note
+Affitor is not the merchant of record in this Bill Flow model.
+:::
 
-[→ See full cash flow details](/advertisers/quickstart/commission-approval-cash-flow)
+## Cash flow and payout workflow
+
+Commissions then move through Affitor's review / hold / payout process. Exact operational timing can vary by program settings and payout workflow, so treat your dashboard and commercial setup as the final operational reference.
+
+[→ See full cash flow details](/docs/advertisers/quickstart/commission-approval-cash-flow)
 
 ## $10K guarantee
 
-Your first $10,000 in affiliate-driven revenue is fee-free.
+Your first $10,000 in affiliate-driven revenue is fee-free according to current public pricing materials.
 
-Launch your program, test the platform, and validate results before paying anything to Affitor.
+If you need confirmation on your exact commercial terms, confirm them with the Affitor team before launch.
 
 ## What's included
 
-Everything. No feature tiers, no premium add-ons.
+- partner tracking from click → signup → sale
+- partner program management
+- commission operations
+- payout workflow support
+- analytics and reporting
+- partner messaging / coordination surfaces where available
 
-- Unlimited partners
-- Unlimited programs
-- Full tracking (click → lead → payment)
-- Partner payout handling
-- Partner dashboard
-- Real-time analytics
-- Direct messaging with partners
+## Best fit
 
-## Already using another platform?
+Affitor works best when your team can do one of the following cleanly:
 
-No need to migrate. Affitor runs alongside your existing stack.
-
-If you're on Impact, PartnerStack, or any other affiliate network — keep it running. Affitor works as an additional layer to source and activate new high-quality partners, without disrupting your current setup.
-
-- No migration required
-- No changes to your existing program
-- No additional headcount needed
-- Setup takes 10 minutes
+- send revenue from your backend using `POST /api/v1/track/sale`
+- or attach the required metadata to Stripe Checkout in Bill Flow
 
 ## Next steps
 
-[Create Your Program →](/advertisers/quickstart/create-account)
+[Create Your Program →](/docs/advertisers/quickstart/create-account)
 
-[See How Tracking Works →](/advertisers/tracking/tracking-overview)
+[See How Tracking Works →](/docs/advertisers/tracking/tracking-overview)

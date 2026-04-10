@@ -1,23 +1,31 @@
 ---
 title: Pageview Tracker
-description: Track clicks from affiliate links with the npm SDK or a script tag
+description: Track affiliate visits with the Affitor tracker SDK or script tag
 ---
 
-The pageview tracker captures when visitors arrive via affiliate links. This is the foundation of Affitor tracking.
+The pageview tracker is the first step in every Affitor integration. It detects affiliate visits, creates the click/customer relationship, and stores the browser identifier used by later signup and sale attribution.
 
 ---
 
 ## What It Does
 
-When someone clicks a partner's affiliate link (`https://yoursite.com?aff=PARTNER123`), the tracker:
+When someone lands on your site through an affiliate link such as:
 
-1. Detects the `?aff=` parameter
-2. Request to Affitor backend to get a unique `click_id`
-3. Stores `click_id` in a cookie
-4. Creates customer-partner relationship in database
-5. Sends a click event to Affitor
+```text
+https://yoursite.com?aff=PARTNER123
+```
 
-All subsequent events (signups, purchases) are linked via `click_id` and `customer_key`.
+the tracker:
+
+1. detects the `?aff=` parameter
+2. sends click data to Affitor
+3. creates or updates the tracked customer relationship
+4. stores `affitor_click_id` in a first-party cookie
+5. makes later signup and sale attribution possible
+
+That cookie value is later reused as:
+- `click_id` in API payloads
+- `affitor_click_id` in Stripe metadata
 
 ---
 
@@ -25,86 +33,53 @@ All subsequent events (signups, purchases) are linked via `click_id` and `custom
 
 | Method | Best for | Benefits |
 |--------|----------|----------|
-| **[npm SDK](#npm-sdk-recommended)** | React, Next.js, Vue, any JS/TS app | TypeScript types, Promise-based, no race conditions |
-| **[Script Tag](#script-tag)** | Static HTML, WordPress, no-build sites | Zero dependencies, copy-paste setup |
+| **npm SDK** | React, Next.js, JS/TS apps | Promise-based loading, TypeScript support |
+| **Script tag** | static HTML, CMS sites, no-build installs | copy-paste setup |
 
 ---
 
-## npm SDK (Recommended)
+## npm SDK
 
-Install the official SDK package:
+Install the tracker package:
 
 ```bash
 npm install @affitor/tracker
 ```
 
-### React / Next.js (App Router)
-
-Wrap your app with `AffitorProvider` — the tracker loads automatically:
+### React / Next.js
 
 ```tsx
-// app/layout.tsx (or your root layout)
 import { AffitorProvider } from '@affitor/tracker/react';
 
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <AffitorProvider programId="YOUR_PROGRAM_ID">
-          {children}
-        </AffitorProvider>
-      </body>
-    </html>
-  );
-}
-```
-
-### React / Next.js (Pages Router)
-
-```tsx
-// pages/_app.tsx
-import { AffitorProvider } from '@affitor/tracker/react';
-
-export default function App({ Component, pageProps }) {
+export default function App({ children }) {
   return (
     <AffitorProvider programId="YOUR_PROGRAM_ID">
-      <Component {...pageProps} />
+      {children}
     </AffitorProvider>
   );
 }
 ```
 
-### Any JavaScript / TypeScript App
+### Any JS / TS app
 
 ```ts
 import { loadAffitor } from '@affitor/tracker';
 
-// Load once — returns a singleton Promise
 const affitor = await loadAffitor('YOUR_PROGRAM_ID');
 ```
 
-### SDK Options
+### Useful options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `programId` | `string \| number` | — | **Required.** Your program ID (from dashboard) |
-| `env` | `'production' \| 'uat' \| 'local'` | `'production'` | Environment preset |
-| `debug` | `boolean` | `false` | Enable debug mode (verbose console logs) |
-| `scriptUrl` | `string` | — | Custom script URL (overrides `env`) |
-
-```ts
-// Local development with debug
-const affitor = await loadAffitor('YOUR_PROGRAM_ID', { env: 'local', debug: true });
-
-// UAT environment
-const affitor = await loadAffitor('YOUR_PROGRAM_ID', { env: 'uat' });
-```
+| Option | Type | Description |
+|--------|------|-------------|
+| `programId` | `string \| number` | required program ID |
+| `debug` | `boolean` | verbose debug/testing logs |
+| `env` | `'production' \| 'uat' \| 'local'` | environment preset |
+| `scriptUrl` | `string` | custom script URL override |
 
 ---
 
 ## Script Tag
-
-For static HTML sites or platforms without a build step, add this script tag to your website's `<head>` section:
 
 ```html
 <script
@@ -114,97 +89,36 @@ For static HTML sites or platforms without a build step, add this script tag to 
 </script>
 ```
 
-That's it. The script handles everything automatically.
-
-### Configuration
+### Required attributes
 
 | Attribute | Required | Description |
 |-----------|----------|-------------|
-| `src` | Yes | Affitor tracker script URL |
-| `data-affitor-program-id` | Yes | Your program ID (from dashboard) |
-| `data-affitor-debug` | No | Set "true" for test mode |
-
-### Examples
-
-#### HTML:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Your Site</title>
-  <script
-    src="https://api.affitor.com/js/affitor-tracker.js"
-    data-affitor-program-id="YOUR_PROGRAM_ID"
-    data-affitor-debug="false">
-  </script>
-</head>
-<body>
-  <!-- Your content -->
-</body>
-</html>
-```
-
-#### React (Create React App):
-
-```html
-<!-- public/index.html -->
-<!DOCTYPE html>
-<html>
-<head>
-  <script
-    src="https://api.affitor.com/js/affitor-tracker.js"
-    data-affitor-program-id="YOUR_PROGRAM_ID"
-    data-affitor-debug="false">
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>
-```
-
----
-
-## Finding Your Program ID
-
-1. Go to your Affitor dashboard
-2. Navigate to **Settings → Integration**
-3. Copy your **Program ID**
+| `src` | Yes | tracker script URL |
+| `data-affitor-program-id` | Yes | your Affitor program ID |
+| `data-affitor-debug` | No | set to `true` while testing |
 
 ---
 
 ## How Affiliate Links Work
 
-Partners receive links in this format:
+Affitor looks for the `aff` query parameter on landing URLs, for example:
 
-```
+```text
 https://yoursite.com?aff=PARTNER123
-```
-
-Or with a landing page:
-
-```
 https://yoursite.com/pricing?aff=PARTNER123
 ```
 
-The tracker detects any URL with `?aff=` and captures the partner code.
+When that parameter is present, the tracker can create the click/customer relationship used later by signup and sale tracking.
 
 ---
 
 ## Verifying Installation
 
-### Test Mode
+### Enable debug mode
 
-Enable debug mode to see tracking events in your browser console:
+**SDK:**
 
-**npm SDK:**
-
-```tsx
-// Pass debug: true to AffitorProvider or loadAffitor
-<AffitorProvider programId="YOUR_PROGRAM_ID" debug>
-
-// or
+```ts
 const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 ```
 
@@ -218,75 +132,50 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 </script>
 ```
 
-**Then:**
+### What to verify
 
-1. Open your browser's Developer Tools (F12)
-2. Go to the **Console** tab
-3. Visit your site
-4. You should see the following console messages:
+Open your browser console and network tab, then confirm:
+- the tracker loads successfully
+- cookies can be written/read
+- Affitor debug messages appear
+- pageview/test-click activity appears in the dashboard or test-event tooling
 
-```
-[Affitor] Affitor tracker initialized with options: {debug: true}
-[Affitor] Using advertiser ID: YOUR_PROGRAM_ID
-[Affitor] 🔍 Verifying cookie functionality...
-[Affitor] 📝 Writing test cookies: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
-[Affitor] Cookie set: {name: "affitor_click_id", value: "test_customer_...", expires: ...}
-[Affitor] Cookie set: {name: "affiliate_url", value: "...", expires: ...}
-[Affitor] 📖 Reading test cookies back: {affitor_click_id: "test_customer_...", affiliate_url: "..."}
-[Affitor] ✅ Cookie verification PASSED - All cookies working correctly!
-[Affitor] trackTest() called true
-[Affitor] Sending test event to verify tracking: {clickId: null, hasAttribution: false, eventType: "test"}
-```
-
-**If cookies are blocked**, you'll see:
-
-```
-[Affitor] ❌ Cookie verification FAILED - Cookies may be blocked or not working properly!
-[Affitor]    affitor_click_id cookie issue:
-[Affitor]    - Expected: test_customer_...
-[Affitor]    - Got: null/undefined
-[Affitor]    Possible causes:
-[Affitor]    - Browser privacy settings blocking cookies
-[Affitor]    - Safari Intelligent Tracking Prevention (ITP)
-[Affitor]    - Third-party cookie restrictions
-[Affitor]    - Browser extensions (ad blockers, privacy tools)
-[Affitor]    - Site not served over HTTPS (required for secure cookies)
-```
-
-### Dashboard Verification
-
-1. Visit your site
-2. Go to Affitor dashboard → **Setting** -> **Pageview Tracker**
-3. Click on **Test Click Tracking**
-4. Pageview tracker should show a blue checkmark
+:::caution
+Debug mode helps with test verification, but a real affiliate landing flow using a real `?aff=` value can still create real attribution data. Do not mix synthetic tests and production affiliate links carelessly.
+:::
 
 ---
 
-## Troubleshooting
+## Common Issues
 
-### Script Not Loading
+### No click data appears
 
-**Symptoms:** No cookies set, no console messages in debug mode
+Check:
+- tracker script loaded successfully
+- the page was visited with a valid `?aff=` parameter when testing real attribution
+- your program ID is correct
+- CSP or browser extensions are not blocking the script
 
-**Check:**
-- Script URL is correct
-- No Content Security Policy blocking the script
-- Script is in `<head>`, not `<body>`
+### Cookies are missing
 
-### Cookies Not Set
+Check:
+- the site is served over HTTPS in production
+- browser privacy tooling is not blocking cookies
+- the affiliate landing page actually executed the tracker
 
-**Symptoms:** Script loads but cookies are missing
+### Later signup/sale tracking fails
 
-**Check:**
-- Site is served over **HTTPS** (required for secure cookies)
-- No browser extensions blocking cookies
-
-### Events Not Appearing in Dashboard
-
-**Symptoms:** Cookies set but no events in Affitor
-
-**Check:**
-- Program ID is correct
-- Check browser **Network** tab for failed requests
+Usually this means one of these happened:
+- click tracking never happened first
+- the browser session lost `affitor_click_id`
+- signup/payment identifiers do not match your internal customer ID consistently
 
 ---
+
+## Next Steps
+
+Once click tracking is working, continue with:
+
+- [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
+- [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+- [Testing Integration](/docs/advertisers/tracking/testing-integration/)
