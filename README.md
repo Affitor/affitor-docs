@@ -1,49 +1,57 @@
-# Starlight Starter Kit: Basics
+# Affitor Docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Public documentation site for Affitor, built with Astro + Starlight.
 
+- **Site:** https://docs.affitor.com
+- **Local dev:** `http://localhost:4321`
+- **Content root:** `src/content/docs/`
+
+## What lives here
+
+This repo owns the docs-site structure and published documentation content.
+
+Current docs sections include:
+
+- `src/content/docs/index.mdx` — docs homepage
+- `src/content/docs/getting-started/` — overview, pricing, glossary
+- `src/content/docs/advertisers/quickstart/` — advertiser onboarding
+- `src/content/docs/advertisers/tracking/` — tracking + integration guides
+- `src/content/docs/faq/` — common questions
+- `src/content/docs/support/` — contact and support pages
+
+## Development
+
+```bash
+npm install
+npm run dev
 ```
-npm create astro@latest -- --template starlight
+
+### Useful commands
+
+| Command | Action |
+|---|---|
+| `npm run dev` | Start local docs server |
+| `npm run build` | Build production site |
+| `npm run preview` | Preview the production build |
+
+## Editing docs
+
+- Write docs in `src/content/docs/` using `.mdx`
+- Keep pages concise and user-facing
+- Prefer updating docs to match the owning runtime repo, not the other way around
+- For product behavior, verify against the source repo first (`affiliate-dashboard`, `affiliate-cms`, `affiliate-list`, or `affiliate-skills` depending on ownership)
+
+## Components and styling
+
+Shared docs UI pieces live in:
+
+- `src/components/`
+- `src/styles/`
+
+## Build
+
+```bash
+npm run build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
-
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
-
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
-
-Static assets, like favicons, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Output is generated in `dist/`.

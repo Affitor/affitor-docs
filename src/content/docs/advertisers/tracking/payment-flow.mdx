@@ -53,14 +53,14 @@ if (window.affitor) {
 
 **What happens:**
 - Lead event linked to partner via cookies
-- **`customerKey` saved to customer-partner relationship**
+- Your signup identifier is associated with the tracked customer record (`customerKey` in `signup()`, `customer_key` in the API)
 - Partner sees: 1 click → 1 signup
 
 ### 5. Customer Purchases
 
-Customer completes payment via Stripe.
+Customer completes payment through your checkout.
 
-**Your checkout includes metadata:**
+If you use Stripe Checkout, include metadata like this:
 
 ```javascript
 metadata: {
@@ -70,17 +70,16 @@ metadata: {
 }
 ```
 
-### 6. Webhook Fires
+### 6. Sale Is Recorded
 
-Stripe sends `checkout.session.completed` to Affitor.
+Affitor receives the completed sale either from your Stripe webhook flow or from `POST /api/v1/track/sale`.
 
 **What happens:**
 - Affitor receives payment confirmation
-- Reads `customer_key` from metadata
-- Reads `program_id` from metadata
-- Reads `affitor_click_id` from metadata
-- Looks up customer-partner relationship using `customer_key`, `program_id` and `affitor_click_id`
-- Verifies attribution is within 60-day window
+- Reads `program_id`
+- Reads `affitor_click_id` and/or `customer_key` / `affitor_customer_key`
+- Looks up the tracked customer record
+- Verifies attribution is within the active window
 - Creates commission record
 
 ### 7. Commission Calculated
@@ -130,20 +129,16 @@ After hold period clears:
 ### Bill Flow
 
 ```
-Customer → Your checkout → You collect $100
-                                ↓
-                          Stripe fees: -$3.20
-                          You keep: $96.80
+Customer → Your checkout → You collect payment
                                 ↓
                           Affitor tracks conversion
-                          Weekly invoice: $33.50
-                          (Commission $30 + Fee $3.50)
+                          Weekly invoice: commission + platform fee
                                 ↓
                           You pay invoice
                                 ↓
-                          Hold period (14 days)
+                          Hold period clears
                                 ↓
-                          Partner receives: $30
+                          Partner receives payout
 ```
 
 ---

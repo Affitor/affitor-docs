@@ -128,11 +128,8 @@ A commission model where partners earn a percentage of the sale amount. Example:
 
 ## S
 
-### Split Pay
-A checkout integration method using Stripe Connect. When a customer pays, funds are automatically split: the advertiser receives their portion instantly, and Affitor receives commission + platform fee. No invoices, no manual reconciliation. No extra fees for auto-payout.
-
 ### Stripe Connect
-Stripe's platform for marketplace payments. Affitor uses Stripe Connect to enable automatic fund splitting (Split Pay) and partner payouts.
+Stripe's platform for marketplace payments. In current public Affitor docs, Stripe is primarily used for checkout metadata and webhook-based payment tracking in Bill Flow integrations.
 
 ---
 
@@ -142,7 +139,7 @@ Stripe's platform for marketplace payments. Affitor uses Stripe Connect to enabl
 See: Bill Flow.
 
 ### Tracking
-The system that records clicks, leads, and payments to attribute conversions to the correct partner. Affitor tracking integrates with Stripe for automatic payment capture.
+The system that records clicks, leads, and payments to attribute conversions to the correct partner. Affitor supports payment tracking through Stripe metadata/webhooks or the server-side sale tracking API.
 
 ---
 

@@ -3,11 +3,14 @@ title: 3-Step Integration Guide
 description: Get Affitor tracking running on your site in three steps
 ---
 
+import Steps from '../../../../components/mintlify/Steps.astro';
+import Step from '../../../../components/mintlify/Step.astro';
+import CodeGroup from '../../../../components/mintlify/CodeGroup.astro';
+
 Get affiliate tracking live in three steps. Each step builds on the previous one: clicks → signups → sales.
 
----
-
-## Step 1 — Install the Script
+<Steps>
+<Step title="Install the Script">
 
 Add the Affitor script to every page of your site. It auto-detects affiliate links (`?aff=` parameter) and stores the `click_id` in a cookie for later attribution.
 
@@ -34,15 +37,17 @@ Replace `YOUR_PROGRAM_ID` with your program ID from the dashboard.
 [Affitor] Attribution stored — click_id: cust_...
 ```
 
----
-
-## Step 2 — Track Signups
+</Step>
+<Step title="Track Signups">
 
 After a user successfully registers, notify Affitor so the signup is linked to the referring affiliate. Choose the method that fits your stack:
 
 ### Option A: Browser-Side (Script)
 
 Call `signup()` from the frontend after the user registers. Requires the Affitor script from Step 1.
+
+<CodeGroup>
+  <div data-title="Browser Script">
 
 ```html
 <script>
@@ -51,7 +56,8 @@ await window.affitor.signup('user_123', 'user@example.com');
 </script>
 ```
 
-**Example with a form:**
+  </div>
+  <div data-title="With Form">
 
 ```html
 <script>
@@ -66,9 +72,15 @@ document.getElementById('signup-form').addEventListener('submit', async function
 </script>
 ```
 
+  </div>
+</CodeGroup>
+
 ### Option B: Server-Side API
 
 Send a `POST` request from your backend after registration completes. Recommended for backend-heavy integrations.
+
+<CodeGroup>
+  <div data-title="cURL">
 
 ```bash
 POST https://api.affitor.com/api/v1/track/lead
@@ -76,13 +88,14 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
 Content-Type: application/json
 
 {
-  "click_id": "cust_42_1234567890",     // From affitor_click_id cookie
-  "customer_key": "user_123",            // Your internal customer ID
-  "email": "user@example.com"            // Optional: hashed server-side
+  "click_id": "cust_42_1234567890",
+  "customer_key": "user_123",
+  "email": "user@example.com"
 }
 ```
 
-**Node.js example:**
+  </div>
+  <div data-title="Node.js">
 
 ```js
 await fetch('https://api.affitor.com/api/v1/track/lead', {
@@ -99,19 +112,21 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 });
 ```
 
+  </div>
+</CodeGroup>
+
 :::note
 `customer_key` is required for both options. It lets Affitor match the signup to a later payment even if the user checks out with a different browser or device.
 :::
 
-### What this does:
+**What this does:**
 
 - Validates the stored `affitor_click_id` cookie
 - Creates a lead record linked to the referring partner
 - Partners can now see: Clicks → **Signups**
 
----
-
-## Step 3 — Track Sales
+</Step>
+<Step title="Track Sales">
 
 When a customer pays, Affitor needs to know. Choose the method that fits your checkout:
 
@@ -120,13 +135,6 @@ When a customer pays, Affitor needs to know. Choose the method that fits your ch
 Send a `POST` request from your backend whenever a sale completes. Works with any payment provider or custom checkout.
 
 **Endpoint:** `POST https://api.affitor.com/api/v1/track/sale`
-
-**Headers:**
-
-| Header | Value |
-|--------|-------|
-| `Authorization` | `Bearer YOUR_PROGRAM_API_KEY` |
-| `Content-Type` | `application/json` |
 
 **Request body:**
 
@@ -157,16 +165,9 @@ Send a `POST` request from your backend whenever a sale completes. Works with an
 | `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
 | `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
 | `is_recurring` | No | boolean | `true` for recurring charges. Default: `false` |
-| `subscription_id` | No | string | Your subscription ID for recurring billing |
-| `subscription_interval` | No | string | `monthly`, `quarterly`, or `annual` |
-| `product_id` | No | string | Your product identifier |
-| `line_items` | No | array | Itemized breakdown: `[{ "name": "...", "amount_cents": 0, "quantity": 0 }]` |
 
-:::note
-At least one of `customer_key` or `click_id` is required. Affitor uses them to find the customer-partner attribution. If both are missing, the request will fail with a `400` error.
-:::
-
-**Node.js example:**
+<CodeGroup>
+  <div data-title="Node.js">
 
 ```js
 await fetch('https://api.affitor.com/api/v1/track/sale', {
@@ -186,9 +187,8 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 });
 ```
 
-**Response:**
-
-Success (`200`):
+  </div>
+  <div data-title="Response">
 
 ```json
 {
@@ -199,21 +199,12 @@ Success (`200`):
 }
 ```
 
-**Error responses:**
-
-| Status | Meaning | Example |
-|--------|---------|---------|
-| `401` | Missing or invalid API token | `"Missing or malformed Authorization header"` |
-| `400` | Invalid request data | `"transaction_id is required and must be a string"` |
-| `400` | Customer not found | `"Customer not found. Provide customer_key or click_id."` |
-| `409` | Duplicate transaction | `"Duplicate transaction_id. This sale has already been recorded."` |
-| `500` | Server error | `"Sale tracking failed"` |
+  </div>
+</CodeGroup>
 
 :::note
 `transaction_id` must be unique per sale — Affitor uses it for deduplication. If you send the same `transaction_id` twice, the second request will be rejected with a `409 Conflict`.
 :::
-
-Find your API key in the dashboard under **Program Settings → API Keys**.
 
 ### Option B: Stripe Checkout (Automatic)
 
@@ -227,20 +218,21 @@ const session = await stripe.checkout.sessions.create({
   success_url: 'https://yoursite.com/success',
   cancel_url:  'https://yoursite.com/cancel',
   metadata: {
-    affitor_click_id: 'cust_xyz789',      // from cookie: affitor_click_id
+    affitor_click_id: 'cust_xyz789',
     affitor_customer_key: 'user_123',
     program_id:    'YOUR_PROGRAM_ID',
   },
 });
 ```
 
-Read the cookie values server-side or pass them from the frontend via a hidden form field.
-
-### What this does:
+**What this does:**
 
 - Matches the payment to the correct partner via `click_id`
 - Calculates commission based on your program tier
 - Partners can now see: Clicks → Signups → **Sales**
+
+</Step>
+</Steps>
 
 ---
 

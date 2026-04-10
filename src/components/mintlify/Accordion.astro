@@ -1,0 +1,16 @@
+---
+/**
+ * Accordion — collapsible section, Mintlify style.
+ */
+interface Props {
+  title: string;
+  defaultOpen?: boolean;
+}
+const { title, defaultOpen = false } = Astro.props;
+---
+<details class="mintlify-accordion" open={defaultOpen}>
+  <summary>{title}</summary>
+  <div class="accordion-content">
+    <slot />
+  </div>
+</details>

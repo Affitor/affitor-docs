@@ -11,10 +11,9 @@ This guide explains how money flows through Affitor—from customer purchase to 
 
 How you receive payments and how partners get paid depends on your checkout integration.
 
-| Method | Stripe Account | How it works |
-|--------|----------------|--------------|
-| **Bill Flow** | Your Stripe | You collect 100%, Affitor invoices you for commission + fee later |
-| **Split Pay (Coming Soon)** | Your Stripe | Customer pays via your checkout, funds split automatically at payment (coming soon) |
+| Method | Checkout ownership | How it works |
+|--------|--------------------|--------------|
+| **Bill Flow** | Your checkout | You collect payment first, Affitor validates commissions and invoices you later |
 
 ---
 
@@ -25,7 +24,7 @@ How you receive payments and how partners get paid depends on your checkout inte
 **Step by step:**
 
 1. **Customer purchases** through your existing checkout
-2. **You receive 100%** of payment via your Stripe
+2. **You receive payment** through your existing checkout
 3. **Affitor tracks** and validates the transaction
 4. **You review** in dashboard and approve
 5. **Affitor sends weekly invoice** for: Partner commission + Platform fee (3.5%)
@@ -40,20 +39,6 @@ How you receive payments and how partners get paid depends on your checkout inte
 
 ---
 
-## Split Pay Flow (Coming Soon)
-
-*Funds split instantly at checkout via your Stripe.*
-
-**Why Split Pay:**
-- **Zero manual work** – Funds split automatically, no invoices to manage
-- **No extra fees** – Affitor doesn't charge for auto-payout
-- **Real-time accuracy** – No reconciliation or manual calculations
-- **Instant partner visibility** – Partners see earnings immediately
-- **Cash flow clarity** – You always know your net revenue upfront
-
-![Split Pay Flow - Coming Soon](/images/split-pay-flow.png)
-
----
 
 ## Transaction Validation
 

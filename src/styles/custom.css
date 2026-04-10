@@ -1,59 +1,537 @@
-/* Enterprise-style asides — Stripe/Mercury inspired */
+/* ═══════════════════════════════════════════════════════════
+   Mintlify-inspired theme for Astro Starlight
+   Reference: docs.kymaapi.com (Mintlify hosted)
+   ═══════════════════════════════════════════════════════════ */
 
-/* Base: remove heavy bg, use thin left border */
+/* ── Fonts ──────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Global Theme Variables ─────────────────────────────── */
+:root {
+  /* Brand — Affitor blue */
+  --sl-color-accent-low: #1a1a2e;
+  --sl-color-accent: #4f46e5;
+  --sl-color-accent-high: #818cf8;
+
+  /* Typography */
+  --sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sl-font-system-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Content width */
+  --sl-content-width: 48rem;
+
+  /* Sidebar */
+  --sl-sidebar-width: 17rem;
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+:root[data-theme='light'] {
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #fafafa;
+  --sl-color-bg-inline-code: #f3f4f6;
+
+  --sl-color-hairline-light: #e5e7eb;
+  --sl-color-hairline: #d1d5db;
+
+  --sl-color-white: #111827;
+  --sl-color-gray-1: #374151;
+  --sl-color-gray-2: #6b7280;
+  --sl-color-gray-3: #9ca3af;
+  --sl-color-gray-4: #d1d5db;
+  --sl-color-gray-5: #e5e7eb;
+  --sl-color-gray-6: #f3f4f6;
+  --sl-color-gray-7: #f9fafb;
+
+  --sl-color-accent-low: #eef2ff;
+  --sl-color-accent: #4f46e5;
+  --sl-color-accent-high: #3730a3;
+
+  --sl-color-black: #ffffff;
+}
+
+/* ── Dark Mode ──────────────────────────────────────────── */
+:root[data-theme='dark'] {
+  --sl-color-bg: #0a0a1a;
+  --sl-color-bg-nav: #0e0e22;
+  --sl-color-bg-sidebar: #0e0e22;
+  --sl-color-bg-inline-code: #1a1a2e;
+
+  --sl-color-hairline-light: rgba(255, 255, 255, 0.06);
+  --sl-color-hairline: rgba(255, 255, 255, 0.1);
+
+  --sl-color-white: rgba(255, 255, 255, 0.92);
+  --sl-color-gray-1: rgba(255, 255, 255, 0.8);
+  --sl-color-gray-2: rgba(255, 255, 255, 0.6);
+  --sl-color-gray-3: rgba(255, 255, 255, 0.4);
+  --sl-color-gray-4: rgba(255, 255, 255, 0.2);
+  --sl-color-gray-5: rgba(255, 255, 255, 0.1);
+  --sl-color-gray-6: rgba(255, 255, 255, 0.06);
+  --sl-color-gray-7: rgba(255, 255, 255, 0.03);
+
+  --sl-color-accent-low: #1e1b4b;
+  --sl-color-accent: #818cf8;
+  --sl-color-accent-high: #c7d2fe;
+
+  --sl-color-black: #0a0a1a;
+}
+
+/* ── Global Body ────────────────────────────────────────── */
+body {
+  font-family: var(--sl-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+header.header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar-pane {
+  border-inline-end: 1px solid var(--sl-color-hairline-light);
+}
+
+nav.sidebar a {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+nav.sidebar a:hover {
+  background-color: var(--sl-color-gray-6);
+}
+
+nav.sidebar a[aria-current='page'] {
+  background-color: var(--sl-color-accent-low);
+  color: var(--sl-color-accent);
+  font-weight: 600;
+}
+
+nav.sidebar .top-level > li > details > summary,
+nav.sidebar .top-level > li > a {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sl-color-gray-3);
+  padding: 0.5rem 0.75rem;
+}
+
+/* ── Content Typography ─────────────────────────────────── */
+.sl-markdown-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-top: 0;
+}
+
+.sl-markdown-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+}
+
+.sl-markdown-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+.sl-markdown-content p {
+  line-height: 1.7;
+  color: var(--sl-color-gray-1);
+}
+
+.sl-markdown-content a {
+  color: var(--sl-color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sl-markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* ── Code Blocks ────────────────────────────────────────── */
+.sl-markdown-content pre {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.sl-markdown-content :not(pre) > code {
+  background: var(--sl-color-bg-inline-code);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* ── Tables ─────────────────────────────────────────────── */
+.sl-markdown-content table {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  font-size: 0.875rem;
+}
+
+.sl-markdown-content th {
+  background: var(--sl-color-gray-7);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sl-color-gray-2);
+}
+
+.sl-markdown-content td,
+.sl-markdown-content th {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+}
+
+.sl-markdown-content tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Asides (Callouts) — Mintlify style ─────────────────── */
 .starlight-aside {
-	background-color: transparent !important;
-	border-inline-start: 2px solid var(--sl-color-asides-border);
-	border-radius: 0;
-	padding: 0.75rem 1rem;
-	margin: 1.5rem 0;
+  background-color: transparent !important;
+  border: none;
+  border-inline-start: 3px solid var(--sl-color-asides-border);
+  border-radius: 0;
+  padding: 0.875rem 1.25rem;
+  margin: 1.5rem 0;
 }
 
-/* Title: smaller, uppercase label */
 .starlight-aside__title {
-	font-size: 0.75rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	gap: 0.375rem;
-	margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  gap: 0.375rem;
+  margin-bottom: 0.25rem;
 }
 
-/* Icon: smaller, match title size */
 .starlight-aside__icon {
-	font-size: 1em;
-	width: 1em;
-	height: 1em;
+  font-size: 1em;
+  width: 1em;
+  height: 1em;
 }
 
-/* Content: normal text, subtle */
 .starlight-aside__content {
-	font-size: 0.875rem;
-	line-height: 1.6;
-	color: var(--sl-color-gray-2);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--sl-color-gray-2);
 }
 
 .starlight-aside__content p {
-	margin: 0;
+  margin: 0;
 }
 
-/* Type-specific border colors — muted palette */
 .starlight-aside--note {
-	--sl-color-asides-border: var(--sl-color-blue);
-	--sl-color-asides-text-accent: var(--sl-color-blue-high);
+  --sl-color-asides-border: #3b82f6;
+  --sl-color-asides-text-accent: #60a5fa;
 }
 
 .starlight-aside--tip {
-	--sl-color-asides-border: var(--sl-color-purple);
-	--sl-color-asides-text-accent: var(--sl-color-purple-high);
+  --sl-color-asides-border: #8b5cf6;
+  --sl-color-asides-text-accent: #a78bfa;
 }
 
 .starlight-aside--caution {
-	--sl-color-asides-border: var(--sl-color-orange);
-	--sl-color-asides-text-accent: var(--sl-color-orange-high);
+  --sl-color-asides-border: #f59e0b;
+  --sl-color-asides-text-accent: #fbbf24;
 }
 
 .starlight-aside--danger {
-	--sl-color-asides-border: var(--sl-color-red);
-	--sl-color-asides-text-accent: var(--sl-color-red-high);
+  --sl-color-asides-border: #ef4444;
+  --sl-color-asides-text-accent: #f87171;
+}
+
+/* ── Cards — Mintlify style ─────────────────────────────── */
+.card-grid {
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--sl-color-bg);
+}
+
+.card:hover {
+  border-color: var(--sl-color-accent);
+  box-shadow: 0 0 0 1px var(--sl-color-accent);
+}
+
+.card .title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.card .body {
+  font-size: 0.875rem;
+  color: var(--sl-color-gray-2);
+  line-height: 1.6;
+}
+
+/* ── Hero — Mintlify centered style ─────────────────────── */
+.hero {
+  text-align: center !important;
+  padding-block: 3rem 2rem !important;
+}
+
+.hero .stack {
+  text-align: center !important;
+}
+
+.hero .copy {
+  align-items: center !important;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.1 !important;
+}
+
+.hero .tagline {
+  font-size: clamp(1rem, 2vw, 1.25rem) !important;
+  max-width: 40ch !important;
+  margin-inline: auto;
+}
+
+.hero .actions {
+  justify-content: center !important;
+}
+
+@media (min-width: 50rem) {
+  .hero {
+    grid-template-columns: 1fr !important;
+    padding-block: 4rem 2rem !important;
+  }
+}
+
+/* ── Steps Component ────────────────────────────────────── */
+.mintlify-steps {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.mintlify-step {
+  counter-increment: step-counter;
+  position: relative;
+  padding-left: 3rem;
+  padding-bottom: 1.5rem;
+  border-left: 2px solid var(--sl-color-hairline-light);
+  margin-left: 0.875rem;
+}
+
+.mintlify-step:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.mintlify-step::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: -1rem;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--sl-color-accent);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.mintlify-step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+  margin-bottom: 0.5rem;
+}
+
+.mintlify-step-content {
+  font-size: 0.875rem;
+  color: var(--sl-color-gray-2);
+  line-height: 1.7;
+}
+
+/* ── Accordion ──────────────────────────────────────────── */
+.mintlify-accordion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.mintlify-accordion {
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+}
+
+.mintlify-accordion:last-child {
+  border-bottom: none;
+}
+
+.mintlify-accordion summary {
+  padding: 1rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.15s;
+}
+
+.mintlify-accordion summary:hover {
+  background-color: var(--sl-color-gray-7);
+}
+
+.mintlify-accordion summary::after {
+  content: '+';
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--sl-color-gray-3);
+  transition: transform 0.2s;
+}
+
+.mintlify-accordion[open] summary::after {
+  content: '−';
+}
+
+.mintlify-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.mintlify-accordion .accordion-content {
+  padding: 0 1.25rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--sl-color-gray-2);
+}
+
+/* ── Code Group (Tabbed Code Blocks) ────────────────────── */
+.mintlify-code-group {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.mintlify-code-group .code-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+  background: var(--sl-color-gray-7);
+  padding: 0 0.5rem;
+}
+
+.mintlify-code-group .code-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--sl-color-gray-3);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.mintlify-code-group .code-tab:hover {
+  color: var(--sl-color-gray-1);
+}
+
+.mintlify-code-group .code-tab.active {
+  color: var(--sl-color-white);
+  border-bottom-color: var(--sl-color-accent);
+}
+
+.mintlify-code-group .code-panel {
+  display: none;
+}
+
+.mintlify-code-group .code-panel.active {
+  display: block;
+}
+
+.mintlify-code-group pre {
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* ── Pagination ─────────────────────────────────────────── */
+.pagination-links a {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+
+.pagination-links a:hover {
+  border-color: var(--sl-color-accent);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.page footer {
+  border-top: 1px solid var(--sl-color-hairline-light);
+}
+
+/* ── Table of Contents ──────────────────────────────────── */
+starlight-toc a {
+  font-size: 0.8125rem;
+  color: var(--sl-color-gray-3);
+  transition: color 0.15s;
+}
+
+starlight-toc a:hover,
+starlight-toc a[aria-current='true'] {
+  color: var(--sl-color-accent);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sl-color-gray-4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sl-color-gray-3);
 }

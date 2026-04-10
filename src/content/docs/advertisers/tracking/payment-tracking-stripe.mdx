@@ -1,9 +1,9 @@
 ---
 title: Payment Tracking
-description: Track sales and calculate commissions via API or Stripe integration
+description: Track sales and calculate commissions via Sale API or Stripe metadata
 ---
 
-Payment tracking captures completed purchases and triggers commission calculation. This is where partners actually earn money.
+Payment tracking captures completed purchases and triggers commission calculation. This page covers both supported sale tracking paths: the Sale API and Stripe metadata/webhook tracking.
 
 ---
 
@@ -15,8 +15,6 @@ Choose based on your setup:
 |--------|--------------|----------|
 | **[Sale API](#sale-api)** | Send sale data from your backend | Any payment provider or custom checkout |
 | **[Bill Flow (Stripe)](#bill-flow-stripe)** | Add metadata to your Stripe checkout | Existing Stripe integration |
-
-**Coming Soon:** Split Pay – Automatic fund splitting via Stripe Connect
 
 ---
 
@@ -174,7 +172,7 @@ Include all three fields (`affitor_click_id`, `affitor_customer_key`, `program_i
 6. Affitor looks up customer-partner using `affitor_customer_key` → attributes to partner
 7. Commission calculated → Affitor invoices you weekly
 
-**Pros:** Simple integration, use your existing checkout, no cookie reading required  
+**Pros:** Simple integration, use your existing checkout, no separate sale API call for Stripe checkouts  
 **Cons:** Requires metadata setup, weekly invoice payment
 
 ---

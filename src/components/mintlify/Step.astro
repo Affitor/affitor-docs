@@ -1,0 +1,15 @@
+---
+/**
+ * Step — individual step item within <Steps>.
+ */
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+<li class="mintlify-step">
+  <div class="mintlify-step-title">{title}</div>
+  <div class="mintlify-step-content">
+    <slot />
+  </div>
+</li>

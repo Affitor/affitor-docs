@@ -1,0 +1,50 @@
+---
+/**
+ * CodeGroup — tabbed code blocks, Mintlify style.
+ * Usage:
+ *   <CodeGroup>
+ *     <div data-title="JavaScript">
+ *       ```js
+ *       console.log("hello");
+ *       ```
+ *     </div>
+ *     <div data-title="Python">
+ *       ```python
+ *       print("hello")
+ *       ```
+ *     </div>
+ *   </CodeGroup>
+ */
+---
+<div class="mintlify-code-group">
+  <div class="code-tabs" role="tablist"></div>
+  <div class="code-panels">
+    <slot />
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.mintlify-code-group').forEach(group => {
+    const panels = group.querySelectorAll('.code-panels > div[data-title]');
+    const tabBar = group.querySelector('.code-tabs');
+    if (!tabBar || panels.length === 0) return;
+
+    panels.forEach((panel, i) => {
+      const title = panel.getAttribute('data-title') || `Tab ${i + 1}`;
+      panel.classList.add('code-panel');
+      if (i === 0) panel.classList.add('active');
+
+      const tab = document.createElement('button');
+      tab.className = `code-tab${i === 0 ? ' active' : ''}`;
+      tab.setAttribute('role', 'tab');
+      tab.textContent = title;
+      tab.addEventListener('click', () => {
+        group.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+        group.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        panel.classList.add('active');
+      });
+      tabBar.appendChild(tab);
+    });
+  });
+</script>
