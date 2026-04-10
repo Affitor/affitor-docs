@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.source/
+.turbo/
+*.tsbuildinfo
+.env
+.env.local
+.playwright-mcp/

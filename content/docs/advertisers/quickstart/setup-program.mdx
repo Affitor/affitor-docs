@@ -1,0 +1,137 @@
+---
+title: Set Up Your Program
+description: Configure your affiliate program in under 10 minutes
+---
+
+After creating your account, you'll be guided through a setup wizard. Most advertisers complete this in under 10 minutes.
+
+The setup wizard has three main sections:
+
+1. **Set Program Details** – Your business info, approval settings, and commission rates
+2. **Tracking & Integrations** – Code snippets for your website and checkout
+3. **Share Program** – Get your affiliate recruitment link
+
+---
+
+## 1. Set Program Details
+
+### Business Details
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| Company Name | Yes | Pre-filled from your account |
+| Website URL | Yes | Your main product URL |
+| Tagline | No | Short description shown to partners |
+| Logo | Yes | PNG, JPG, or SVG (max 1800×1800px) |
+| Terms of Service URL | No | Link to your affiliate terms |
+| Resources URL | No | Link to marketing materials for partners |
+
+### Approval Mode
+
+Choose how partner applications are handled:
+
+| Mode | Description | Best for |
+|------|-------------|----------|
+| **Manual review** | Review each application before approval | Quality control, B2B programs |
+| **Auto-approve** | Automatically approve all applications | High-volume, consumer products |
+
+You can change this setting later in Program Settings.
+
+### Commission Details
+
+Set your default commission structure:
+
+| Field | Description |
+|-------|-------------|
+| Commission Rate (%) | The percentage paid to a partner for faciliating a sale  |
+| Commission Duration | How long the partner earns from a referred customer |
+
+**Commission Duration options:**
+- One-time
+- 3 months
+- 6 months
+- 12 months
+- Lifetime
+- Custom (set your own duration)
+
+**Example:** 30% commission for 12 months means partners earn 30% of every payment from their referred customers for the first 12 months.
+
+> **Coming soon:** Group Rewards will let you create tiered commission structures for partners with different performance levels.
+
+---
+
+## 2. Tracking & Integrations
+
+Three code integrations connect Affitor to your website and checkout.
+
+### Pageview Tracker (Click Tracking)
+
+Tracks when visitors arrive via affiliate links.
+
+**npm SDK (React, Next.js, any JS/TS app):**
+
+```bash
+npm install @affitor/tracker
+```
+
+```tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+
+// Wrap your app
+<AffitorProvider programId="YOUR_PROGRAM_ID">
+  {children}
+</AffitorProvider>
+```
+
+**Script tag (HTML, WordPress, no-build sites):**
+
+```html
+<script
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="false">
+</script>
+```
+
+Set `debug={true}` (SDK) or `data-affitor-debug="true"` (script tag) during testing to see tracking events in your browser console.
+
+→ [Full guide](/advertisers/tracking/pageview-tracker-click)
+
+### Referrals Tracker (Signup/Lead)
+
+Tracks when visitors sign up or submit a form. Add to your registration or signup form to capture leads from affiliate traffic.
+
+→ [Full guide](#)
+
+### Payments Tracker (Sale/Conversion)
+
+Tracks purchases and calculates commissions. Choose your integration method:
+
+| Method | How it works | Best for |
+|--------|--------------|----------|
+| **Affitor Pay** | Affitor hosts the checkout page | Fastest setup, no Stripe needed |
+| **Bill Flow** | You collect payments; Affitor invoices fees | Keep existing checkout |
+| **Split Pay** (Coming soon) | Stripe splits funds automatically | Full automation |
+
+→ [Full guide](#)
+
+---
+
+## 3. Share Program
+
+Once tracking is configured, you'll get your affiliate recruitment link:
+
+```
+https://affitor.com/join/your-program
+```
+
+Share this link to recruit partners. When partners click it, they'll see your program details and can apply to join.
+
+---
+
+## What's Next
+
+After completing setup:
+
+- **Approve your first partner** – Review and accept partner applications
+- **Customize payouts** – Configure payout frequency and thresholds

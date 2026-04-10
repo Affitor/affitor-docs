@@ -1,0 +1,22 @@
+{
+  "title": "For Advertisers",
+  "root": true,
+  "pages": [
+    "---Quickstart---",
+    "quickstart/create-account",
+    "quickstart/setup-program",
+    "quickstart/partner-approval-quality-control",
+    "quickstart/view-performance",
+    "quickstart/define-commission",
+    "quickstart/commission-approval-cash-flow",
+    "quickstart/payouts",
+    "---Tracking---",
+    "tracking/quickstart-integration",
+    "tracking/tracking-overview",
+    "tracking/pageview-tracker-click",
+    "tracking/lead-tracking-signup",
+    "tracking/payment-tracking-stripe",
+    "tracking/payment-flow",
+    "tracking/testing-integration"
+  ]
+}
