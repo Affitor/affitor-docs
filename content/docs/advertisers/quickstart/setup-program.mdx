@@ -101,7 +101,7 @@ Set `debug={true}` (SDK) or `data-affitor-debug="true"` (script tag) during test
 
 Tracks when visitors sign up or submit a form. Add to your registration or signup form to capture leads from affiliate traffic.
 
-→ [Full guide](#)
+→ [Full guide](/advertisers/tracking/lead-tracking-signup/)
 
 ### Payments Tracker (Sale/Conversion)
 
@@ -109,11 +109,10 @@ Tracks purchases and calculates commissions. Choose your integration method:
 
 | Method | How it works | Best for |
 |--------|--------------|----------|
-| **Affitor Pay** | Affitor hosts the checkout page | Fastest setup, no Stripe needed |
-| **Bill Flow** | You collect payments; Affitor invoices fees | Keep existing checkout |
-| **Split Pay** (Coming soon) | Stripe splits funds automatically | Full automation |
+| **Server-Side Sale API** | Your backend sends completed sale events to Affitor | Any payment provider or custom checkout |
+| **Bill Flow (Stripe metadata)** | You collect payments; Affitor tracks via Stripe metadata and invoices fees | Existing Stripe checkout |
 
-→ [Full guide](#)
+→ [Full guide](/advertisers/tracking/payment-tracking-stripe/)
 
 ---
 

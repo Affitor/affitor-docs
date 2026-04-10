@@ -2,6 +2,8 @@
   "title": "Support",
   "root": true,
   "pages": [
-    "contact"
+    "index",
+    "contact",
+    "status"
   ]
 }

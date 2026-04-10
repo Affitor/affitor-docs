@@ -22,12 +22,12 @@ We help you acquire customers through affiliates, influencers, and agencies — 
   <div className="rounded-lg border border-fd-border bg-fd-card p-5">
     <div className="text-2xl mb-3">📊</div>
     <h3 className="font-semibold text-base mb-2">Full Attribution</h3>
-    <p className="text-sm text-fd-muted-foreground">Track every click, signup, and payment. Real-time dashboards with Stripe integration.</p>
+    <p className="text-sm text-fd-muted-foreground">Track every click, signup, and payment with first-party tracking plus sale events from Stripe metadata or the sale API.</p>
   </div>
   <div className="rounded-lg border border-fd-border bg-fd-card p-5">
     <div className="text-2xl mb-3">💸</div>
-    <h3 className="font-semibold text-base mb-2">Auto Payouts</h3>
-    <p className="text-sm text-fd-muted-foreground">Commissions calculated and paid automatically via Stripe Connect. Zero manual work.</p>
+    <h3 className="font-semibold text-base mb-2">Payout Operations</h3>
+    <p className="text-sm text-fd-muted-foreground">Commissions move through review, hold, and partner payout inside Affitor's payout flow.</p>
   </div>
 </div>
 
@@ -46,11 +46,11 @@ We help you acquire customers through affiliates, influencers, and agencies — 
 ```
 Partner shares your link → Visitor clicks → Affitor tracks the click
   ↓ Visitor signs up → Lead tracked
-  ↓ Visitor pays → Commission calculated via Stripe webhook
-  ↓ Commission approved → Auto-payout via Stripe Connect
+  ↓ Visitor pays → Sale recorded via Stripe metadata/webhook or sale API
+  ↓ Commission approved → Partner payout handled through Affitor
 ```
 
-Affitor handles the entire lifecycle from click to payout. You set the commission rules, we handle tracking, attribution, and payments.
+Affitor handles the lifecycle from click to payout. You set the commission rules, while Affitor supports tracking, attribution, review, and payout operations.
 
 ## Performance-based pricing
 
@@ -68,7 +68,7 @@ Affitor is designed for SaaS teams that want to add a performance-based growth c
 - Growth teams looking to reduce CAC
 - Companies expanding into US, UK, or EU markets
 
-If you process payments through Stripe, you can use Affitor.
+Affitor works best when you can send payment events either through Stripe metadata/webhooks or the server-side sale tracking API.
 
 ## Next steps
 

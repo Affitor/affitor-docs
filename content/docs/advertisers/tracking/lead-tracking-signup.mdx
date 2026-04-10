@@ -11,7 +11,7 @@ Lead tracking captures when referred visitors sign up or submit forms. This lets
 
 When a visitor signs up on your site, you call `signup()` to record the lead. This:
 
-1. Validates that `customerKey` and `email` are provided (critical for payment tracking)
+1. Sends your signup identifier and lead data for attribution (`customerKey` in `signup()`, `customer_key` in the API)
 2. Links the lead event to the stored `click_id` from the click
 3. Sends lead data to Affitor API for processing
 4. Updates the customer-partner relationship status to "lead"
@@ -60,7 +60,7 @@ if (window.affitor) {
 ```
 
 :::caution[Required for Payment Tracking]
-The `customerKey` parameter (first argument) is **required** for payment attribution to work. This must be your internal user identifier that you'll also pass in Stripe checkout metadata. Without it, purchases cannot be linked to affiliate partners.
+The `customerKey` parameter (first argument) is **required** for reliable payment attribution. This should be your internal user identifier. The same identifier maps to `customer_key` in the lead/sale API and `affitor_customer_key` in Stripe metadata.
 :::
 
 ---
@@ -98,7 +98,8 @@ if (window.affitor) {
 
 **Privacy Notes:**
 - `email` is hashed (SHA-256) and masked before storage - the original email is never stored
-- Only `email_hash`, `email_masked`, and `customerKey` are persisted in the database
+- Only privacy-safe email fields are stored for lead attribution
+- Your internal customer identifier is stored as `customer_key` in Affitor's backend model
 
 ---
 
@@ -253,10 +254,10 @@ Both approaches use `click_id` for attribution. The client-side `signup()` reads
 ### Authentication
 
 ```
-Authorization: Bearer affitor_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Authorization: Bearer YOUR_PROGRAM_API_KEY
 ```
 
-Find your API token in the dashboard under **Settings → Referrals Tracker → Server-Side API**.
+Find your program API key in the dashboard under the relevant integration or API settings.
 
 ### How It Works
 
@@ -273,13 +274,13 @@ Find your API token in the dashboard under **Settings → Referrals Tracker → 
 
 ```
 POST https://api.affitor.com/api/v1/track/lead
-Authorization: Bearer affitor_xxxxxx
+Authorization: Bearer YOUR_PROGRAM_API_KEY
 Content-Type: application/json
 
 {
-  "click_id": "cust_42_1234567890",  // REQUIRED — from affitor_click_id cookie
-  "customer_key": "usr_abc123",            // REQUIRED — your internal user/customer ID
-  "email": "user@example.com"              // optional
+  "click_id": "cust_42_1234567890",  // from affitor_click_id cookie
+  "customer_key": "usr_abc123",      // your internal user/customer ID
+  "email": "user@example.com"        // optional
 }
 ```
 
@@ -288,8 +289,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Lead tracked successfully",
-  "click_id": "cust_42_1234567890"
+  "message": "Lead tracked successfully"
 }
 ```
 
@@ -443,9 +443,8 @@ After sending a test request, go to **Settings → Referrals Tracker** and click
 | Status | Meaning |
 |---|---|
 | `401` | Missing or invalid API token |
-| `403` | Program is not active |
 | `400` | Missing `click_id` or `customer_key` |
-| `404` | Customer not found or not in this program |
+| `400` | Customer not found or customer does not belong to this program |
 | `500` | Internal server error |
 
 ---
@@ -534,9 +533,9 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 **Solutions:**
 - Always include `customerKey` (first argument) in your `signup()` call
 - `customerKey` should be your internal user/customer identifier (from your database)
-- The same `customerKey` must be used in Stripe checkout metadata
+- The same internal identifier must be used later as `affitor_customer_key` in Stripe metadata or as `customer_key` in the sale API
 
-**Note:** The lead is still tracked even without `customerKey`, but payment attribution will fail later.
+**Note:** The lead may still be tracked without `customerKey` if `click_id` is present, but reliable payment attribution will fail later.
 
 ### Duplicate Leads
 

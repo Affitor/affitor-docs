@@ -87,7 +87,7 @@ Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackCli
 
 **Steps:**
 1. With cookies set (from step 1), complete your signup flow
-2. Ensure you pass `customerKey` in your `signup()` call (required for payment attribution)
+2. Ensure you pass your internal customer ID in `signup(customerKey, email)` so it can map to `customer_key` in the API and `affitor_customer_key` in Stripe metadata
 3. Check console for lead event
 
 **Expected console output:**
@@ -98,7 +98,7 @@ Do **not** add `?aff=TEST123` to the URL when testing. Click tracking (`trackCli
 [Affitor] Test lead event sent successfully {...}
 ```
 
-**Note:** In debug mode, `signup()` sends a test event only — no actual lead record is created. If `customerKey` is missing, you'll see:
+**Note:** In debug mode, `signup()` sends a test event only — no actual lead record is created. If the first `customerKey` argument is missing, you'll see:
 
 ```
 [Affitor] signup() requires customerKey as first argument
@@ -165,12 +165,12 @@ If you use Stripe, test with Stripe's test mode:
 - Click to view details
 - Check metadata contains:
   - `affitor_click_id: click_id_from_cookie`
-  - `affitor_customer_key: your_user_id` (must match the `customerKey` from `signup()`)
+  - `affitor_customer_key: your_user_id` (must represent the same internal user ID you passed as `customerKey` in `signup()`)
   - `program_id: YOUR_PROGRAM_ID`
 
 **Dashboard check:**
 - Go to Affitor dashboard → **Settings → Payments Tracker**
-- Stripe Connect Integration should show "Connected"
+- Your payment integration section should show as configured
 - Payments tracker should show a blue checkmark
 
 ---
@@ -335,13 +335,13 @@ Check all three integrations at once:
 |---------|--------|---------|
 | Pageview | ✅ Connected | Script installed, receiving clicks (Settings → Pageview Tracker) |
 | Referrals | ✅ Connected | Receiving lead events (Settings → Referrals Tracker) |
-| Payments | ✅ Connected | Stripe Connect configured, receiving sales (Settings → Payments Tracker) |
+| Payments | ✅ Connected | Payment tracking configured and receiving sales (Settings → Payments Tracker) |
 
 | Tracker | Status | Meaning |
 |---------|--------|---------|
 | Pageview | ⏳ Pending | Script not detected yet |
 | Referrals | ⏳ Pending | No lead events received |
-| Payments | ⏳ Pending | Stripe Connect not configured or no payment events received |
+| Payments | ⏳ Pending | Payment tracking not configured yet or no payment events received |
 
 ---
 
@@ -415,9 +415,9 @@ These scenarios test **real tracking** (debug mode off) with actual affiliate li
 ### Webhook Not Firing
 
 **Check:**
-- Stripe Connect integration is connected in Settings → Payments Tracker
+- Your Stripe-based payment integration is configured in Settings → Payments Tracker
 - Correct webhook events selected (`checkout.session.completed`, `invoice.payment_succeeded`)
-- All three metadata fields included in Stripe checkout (`affitor_click_id`, `affitor_customer_key`, `program_id`)
+- All three metadata fields are included in Stripe checkout (`affitor_click_id`, `affitor_customer_key`, `program_id`)
 
 ### Test Event Not in Dashboard
 
