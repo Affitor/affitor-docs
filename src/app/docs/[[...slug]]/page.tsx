@@ -5,9 +5,12 @@ import {
   DocsDescription,
   DocsTitle,
 } from 'fumadocs-ui/page';
+import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Mermaid } from '@/components/mermaid';
+
+const GITHUB_REPO = 'https://github.com/sonpiaz/affitor-docs';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -17,6 +20,9 @@ export default async function Page(props: {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const slugPath = params.slug?.join('/') ?? 'index';
+  const filePath = `content/docs/${slugPath}.mdx`;
+  const editUrl = `${GITHUB_REPO}/edit/main/${filePath}`;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -25,6 +31,7 @@ export default async function Page(props: {
       <DocsBody>
         <MDX components={{ ...defaultMdxComponents, Mermaid }} />
       </DocsBody>
+      <EditOnGitHub href={editUrl} />
     </DocsPage>
   );
 }
