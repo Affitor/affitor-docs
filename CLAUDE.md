@@ -31,6 +31,7 @@ For tracking / attribution / billing docs, the primary sources are usually:
 - docs app routes are served under `/docs/...`
 - app/router code lives in `src/app/`
 - Fumadocs config lives in `source.config.ts`
+- workflow sync guidance lives in `docs/workflow-sync-map.md`
 
 ## Rules
 1. **Runtime-first docs** — never invent behavior to fill gaps
@@ -63,3 +64,4 @@ Also manually inspect:
 - internal link correctness
 - naming consistency (`customerKey`, `customer_key`, `affitor_customer_key`)
 - supported integration paths
+- whether adjacent workflows in `docs/workflow-sync-map.md` also need syncing

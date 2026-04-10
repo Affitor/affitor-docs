@@ -47,6 +47,7 @@ Trust first:
 - do not document removed features as live behavior
 - keep internal links rooted at `/docs/...`
 - treat disagreement as drift to fix intentionally
+- use `docs/workflow-sync-map.md` to identify which adjacent doc workflows must be updated together
 
 ## Validation baseline
 At minimum:
@@ -59,3 +60,4 @@ Then inspect:
 - route/link correctness
 - consistency of field naming
 - agreement between docs examples and runtime contracts
+- whether all affected workflows from `docs/workflow-sync-map.md` were covered

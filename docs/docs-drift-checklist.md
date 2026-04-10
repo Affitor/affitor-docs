@@ -2,6 +2,8 @@
 
 Use this checklist whenever canonical behavior changes in CMS or dashboard repos.
 
+See also: [Workflow Sync Map](./workflow-sync-map.md) for the grouped workflows and file sets that should move together.
+
 ## 1. Tracking contract changes
 If any of these change:
 - `/api/v1/track/click`
@@ -71,3 +73,14 @@ If docs IA or route serving changes, verify:
 - inspect the highest-risk edited pages manually
 - note which runtime files were treated as canonical
 - if dashboard snippets drift from runtime, document the drift explicitly
+
+## 8. Workflow grouping check
+Before merging, confirm whether the change also requires updates in:
+- tracking API workflow
+- tracker/client integration workflow
+- Stripe metadata/webhook workflow
+- pricing/billing workflow
+- commission/payout workflow
+- homepage/quickstart workflow
+
+Reference: [Workflow Sync Map](./workflow-sync-map.md)
