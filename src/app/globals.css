@@ -131,6 +131,11 @@ a[href*="/edit/main/"]:hover {
   display: none;
 }
 
+/* Sidebar background — match main content area */
+.dark #nd-sidebar {
+  background: var(--color-fd-background) !important;
+}
+
 /* ── Layout ── */
 #nd-docs-layout {
   --fd-docs-height: calc(100dvh - 3rem);
