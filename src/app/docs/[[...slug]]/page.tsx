@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Mermaid } from '@/components/mermaid';
 
-const GITHUB_REPO = 'https://github.com/sonpiaz/affitor-docs';
+const GITHUB_REPO = 'https://github.com/Affitor/affiliate-docs';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
