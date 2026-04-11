@@ -1,0 +1,207 @@
+---
+title: CLI Quickstart
+description: Set up your affiliate program in 3 commands with npx affitor.
+lastUpdated: 2026-04-11
+---
+
+import Steps from '../../../../components/mintlify/Steps.astro';
+import Step from '../../../../components/mintlify/Step.astro';
+import CodeGroup from '../../../../components/mintlify/CodeGroup.astro';
+import PageMeta from '../../../../components/mintlify/PageMeta.astro';
+import RecommendedPath from '../../../../components/mintlify/RecommendedPath.astro';
+import VerifySuccess from '../../../../components/mintlify/VerifySuccess.astro';
+import CommonMistakes from '../../../../components/mintlify/CommonMistakes.astro';
+import NextStep from '../../../../components/mintlify/NextStep.astro';
+
+Create an affiliate program, connect Stripe, and start tracking -- all from your terminal.
+
+<PageMeta
+  who="Developers and technical founders"
+  time="5 minutes"
+  prerequisites="Node.js 18+, a domain, Stripe account (optional)"
+  outcome="A live affiliate program with tracking code ready to paste"
+/>
+
+<RecommendedPath>
+  The CLI is the fastest way to set up Affitor. If you prefer a UI, use the [dashboard quickstart](/advertisers/quickstart) instead.
+</RecommendedPath>
+
+## Why CLI?
+
+| | Dashboard | CLI |
+|---|---|---|
+| Setup time | ~15 minutes | ~5 minutes |
+| Stripe webhooks | Manual (11 steps) | Automatic (1 command) |
+| AI agent compatible | No | Yes (`--json` mode) |
+| Config files generated | No | Yes (`.affitor/`) |
+
+## Setup
+
+No install required. Run directly with `npx`:
+
+```bash
+npx affitor init
+```
+
+<Steps>
+<Step title="Create your program">
+
+Run `npx affitor init` and follow the prompts:
+
+```bash
+npx affitor init
+```
+
+You'll be asked for:
+- **Program name** -- your product or company name
+- **Domain** -- your root domain (e.g., `example.com`)
+- **Commission type** -- percentage, fixed, or recurring
+- **Commission rate** -- default is 40% for recurring
+- **Duration** -- how long recurring commissions last (default: 12 months)
+- **Cookie window** -- attribution window in days (default: 90)
+
+After confirming, the CLI creates your program and generates:
+
+```
+.affitor/
+  config.json     -- program ID, API key, settings
+  .env.example    -- environment variables template
+  skills.md       -- tracking code snippets + AI agent instructions
+```
+
+<VerifySuccess
+  browser={[
+    'The `.affitor/config.json` file exists with your program ID and API key.',
+    'The `.affitor/skills.md` file contains your tracking code snippets.',
+  ]}
+/>
+
+</Step>
+<Step title="Add click tracking to your site">
+
+Copy the script tag from the CLI output and paste it into your site's `<head>`:
+
+```html
+<script src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID">
+</script>
+```
+
+Replace `YOUR_PROGRAM_ID` with the program ID from step 1.
+
+This auto-detects `?aff=PARTNER_CODE` in URLs and stores a 60-day first-party cookie for attribution.
+
+</Step>
+<Step title="Track signups">
+
+Call `signup()` when a user registers in your app:
+
+<CodeGroup>
+```javascript title="Client-side (browser)"
+window.affitor.signup("user_123", "user@example.com");
+```
+
+```bash title="Server-side (API)"
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"customer_key": "user_123", "email": "user@example.com"}'
+```
+</CodeGroup>
+
+</Step>
+<Step title="Connect Stripe (optional)">
+
+Auto-configure Stripe webhooks for payment tracking:
+
+```bash
+npx affitor setup stripe
+```
+
+This opens Stripe Connect OAuth in your browser, then automatically creates webhook endpoints for:
+- `checkout.session.completed` -- sale tracking
+- `invoice.paid` -- recurring commission
+- `charge.refunded` -- automatic commission clawback
+- `customer.created` -- lead tracking
+- `customer.subscription.deleted` -- churn tracking
+
+If you don't use Stripe, track sales via the server-side API instead:
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"customer_key": "user_123", "amount_cents": 4900, "currency": "USD"}'
+```
+
+</Step>
+<Step title="Test your integration">
+
+Send test events to verify everything works:
+
+```bash
+npx affitor test click
+npx affitor test lead
+npx affitor test sale
+```
+
+Then check your program health:
+
+```bash
+npx affitor status
+```
+
+<VerifySuccess
+  browser={[
+    '`npx affitor status` shows recent events count > 0.',
+    'Test events appear in your Affitor dashboard.',
+  ]}
+/>
+
+</Step>
+</Steps>
+
+## Non-interactive mode (for CI/CD and AI agents)
+
+All commands support `--no-interactive --json` for automation:
+
+```bash
+npx affitor init \
+  --name "My SaaS" \
+  --domain example.com \
+  --commission-type recurring_percent \
+  --commission-rate 30 \
+  --duration-months 12 \
+  --cookie-duration 90 \
+  --no-interactive \
+  --json
+```
+
+Output is valid JSON that AI agents can parse directly:
+
+```json
+{
+  "program_id": 430,
+  "api_key": "affitor_...",
+  "domain": "example.com",
+  "status": "created",
+  "tracking": {
+    "script_tag": "<script src=\"...\"></script>",
+    "signup_call": "window.affitor.signup(\"customer_id\", \"email\")",
+    "sale_api": "POST https://api.affitor.com/api/v1/track/sale",
+    "lead_api": "POST https://api.affitor.com/api/v1/track/lead"
+  }
+}
+```
+
+<CommonMistakes items={[
+  'Running `npx affitor init` in a directory that already has `.affitor/config.json` -- delete it first or use a different directory.',
+  'Forgetting to add the tracking script to your site after running init -- the CLI creates the program but does not modify your code.',
+  'Using an expired API key -- run `npx affitor init` again to get a new one.',
+]} />
+
+<NextStep
+  title="CLI Command Reference"
+  href="/advertisers/cli/commands"
+  description="Full reference for all CLI commands, flags, and options."
+/>
