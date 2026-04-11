@@ -1,0 +1,13 @@
+---
+interface Props {
+  title?: string;
+}
+
+const { title = 'Recommended path' } = Astro.props;
+---
+<div class="mintlify-recommended-path">
+  <div class="mintlify-recommended-label">{title}</div>
+  <div class="mintlify-recommended-body">
+    <slot />
+  </div>
+</div>

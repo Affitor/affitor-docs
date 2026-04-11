@@ -1,0 +1,14 @@
+---
+interface Props {
+  items: string[];
+  title?: string;
+}
+
+const { items, title = 'Common mistakes' } = Astro.props;
+---
+<div class="mintlify-common-mistakes">
+  <div class="mintlify-block-title">{title}</div>
+  <ul>
+    {items.map((item) => <li>{item}</li>)}
+  </ul>
+</div>

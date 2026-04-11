@@ -1,0 +1,18 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  ctaLabel?: string;
+}
+
+const { title, description, href, ctaLabel = 'Continue' } = Astro.props;
+---
+<div class="mintlify-next-step">
+  <div>
+    <div class="mintlify-next-step-label">Next recommended step</div>
+    <div class="mintlify-next-step-title">{title}</div>
+    <p>{description}</p>
+  </div>
+  <a class="mintlify-next-step-link" href={href}>{ctaLabel} →</a>
+</div>
