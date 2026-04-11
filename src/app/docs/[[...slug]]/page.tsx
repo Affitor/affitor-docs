@@ -9,6 +9,11 @@ import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Mermaid } from '@/components/mermaid';
+import { Checklist } from '@/components/mdx/checklist';
+import { NextStep } from '@/components/mdx/next-step';
+import { PageMeta } from '@/components/mdx/page-meta';
+import { TaskCardGrid, TaskCard } from '@/components/mdx/task-card-grid';
+import { FlowGrid, FlowCard } from '@/components/mdx/flow-grid';
 
 const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
 
@@ -29,7 +34,7 @@ export default async function Page(props: {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Mermaid }} />
+        <MDX components={{ ...defaultMdxComponents, Mermaid, Checklist, NextStep, PageMeta, TaskCardGrid, TaskCard, FlowGrid, FlowCard }} />
       </DocsBody>
       <EditOnGitHub href={editUrl} />
     </DocsPage>

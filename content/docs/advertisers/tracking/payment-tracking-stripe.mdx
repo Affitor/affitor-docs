@@ -8,6 +8,10 @@ Payment tracking records revenue after a customer pays. Affitor currently suppor
 1. **Sale API** — your backend calls Affitor when revenue is finalized
 2. **Stripe metadata + webhook (Bill Flow)** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
 
+:::tip[Fastest Stripe setup]
+Run `npx affitor setup stripe` to automatically configure Stripe webhooks via OAuth — no manual URL copy-paste or event selection needed. See the [CLI Quickstart](/docs/advertisers/cli/quickstart/) for the full setup flow.
+:::
+
 ---
 
 ## Choose the Right Path
