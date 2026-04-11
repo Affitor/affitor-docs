@@ -11,7 +11,7 @@ export function DocsHeader() {
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center border-b border-fd-border bg-fd-background/95 backdrop-blur-sm px-6">
       {/* Left: Logo */}
-      <Link href="/docs" className="flex items-center gap-2 shrink-0">
+      <Link href="/" className="flex items-center gap-2 shrink-0">
         <img
           src="/affitor-logo.svg"
           alt="Affitor"
@@ -58,7 +58,7 @@ export function DocsHeader() {
           Dashboard
         </Link>
         <Link
-          href="/docs/advertisers/quickstart/create-account"
+          href="/advertisers/quickstart/create-account"
           className="rounded-md bg-fd-primary px-3.5 py-1.5 text-[13px] font-medium text-fd-primary-foreground hover:opacity-90 transition-opacity hidden sm:block"
         >
           Get Started

@@ -48,7 +48,7 @@ Install the tracker so affiliate visits are detected automatically.
 - stores `affitor_click_id`
 - creates the initial relationship Affitor needs for attribution
 
-Guide: [Pageview Tracker](/docs/advertisers/tracking/pageview-tracker-click/)
+Guide: [Pageview Tracker](/advertisers/tracking/pageview-tracker-click/)
 
 ### 2. Signup tracking
 
@@ -57,7 +57,7 @@ Send your internal customer/user identifier after signup succeeds.
 - browser helper: `signup(customerKey, email)`
 - server API: `POST /api/v1/track/lead` with `customer_key`
 
-Guide: [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
+Guide: [Lead Tracking](/advertisers/tracking/lead-tracking-signup/)
 
 ### 3. Sale tracking
 
@@ -68,7 +68,7 @@ Choose one supported revenue path:
 | **Sale API** | your backend controls revenue events |
 | **Stripe metadata + webhook** | you already use Stripe Checkout / Bill Flow |
 
-Guide: [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
+Guide: [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
 
 ---
 
@@ -130,7 +130,7 @@ npx affitor setup stripe  # auto-configures Stripe webhooks via OAuth
 npx affitor test sale     # verifies the full pipeline
 ```
 
-The CLI handles program creation, Stripe webhook configuration, and test events in three commands. See the [CLI Quickstart](/docs/advertisers/cli/quickstart/).
+The CLI handles program creation, Stripe webhook configuration, and test events in three commands. See the [CLI Quickstart](/advertisers/cli/quickstart/).
 
 ### Fastest path for Stripe Checkout teams (manual)
 
@@ -148,7 +148,7 @@ The CLI handles program creation, Stripe webhook configuration, and test events 
 
 ## Related Guides
 
-1. [Pageview Tracker](/docs/advertisers/tracking/pageview-tracker-click/)
-2. [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
-3. [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
-4. [Testing Integration](/docs/advertisers/tracking/testing-integration/)
+1. [Pageview Tracker](/advertisers/tracking/pageview-tracker-click/)
+2. [Lead Tracking](/advertisers/tracking/lead-tracking-signup/)
+3. [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
+4. [Testing Integration](/advertisers/tracking/testing-integration/)

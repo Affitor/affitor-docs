@@ -7,9 +7,13 @@ const config = {
   async redirects() {
     return [
       {
-        // Old Mintlify/Starlight URLs without /docs prefix
-        source: '/:path((?!docs|_next|api|favicon\\.ico|affitor-|images).*)',
-        destination: '/docs/:path',
+        source: '/docs',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/docs/:path*',
+        destination: '/:path*',
         permanent: true,
       },
     ];
