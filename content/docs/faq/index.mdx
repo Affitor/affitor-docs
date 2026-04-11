@@ -96,7 +96,15 @@ Refunds are reconciled through Affitor's commission and payout workflow. The exa
 ## Support & Troubleshooting
 
 ### What is the fastest way to self-serve an integration?
-Follow this order:
+The fastest path is the [Affitor CLI](/docs/advertisers/cli/quickstart/):
+
+```bash
+npx affitor init          # creates program, returns API key + tracking snippets
+npx affitor setup stripe  # auto-configures Stripe webhooks via OAuth
+npx affitor test sale     # verifies the full pipeline
+```
+
+If you prefer manual setup, follow this order:
 1. [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
 2. [Lead Tracking](/docs/advertisers/tracking/lead-tracking-signup/)
 3. [Payment Tracking](/docs/advertisers/tracking/payment-tracking-stripe/)
