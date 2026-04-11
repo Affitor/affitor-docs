@@ -1,0 +1,24 @@
+---
+interface Item {
+  text: string;
+  href?: string;
+}
+
+interface Props {
+  title?: string;
+  items: Item[];
+}
+
+const { title, items } = Astro.props;
+---
+<div class="mintlify-checklist">
+  {title && <div class="mintlify-checklist-title">{title}</div>}
+  <ul>
+    {items.map((item) => (
+      <li>
+        <span class="mintlify-checklist-icon" aria-hidden="true">✓</span>
+        {item.href ? <a href={item.href}>{item.text}</a> : <span>{item.text}</span>}
+      </li>
+    ))}
+  </ul>
+</div>
