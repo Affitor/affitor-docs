@@ -1,0 +1,131 @@
+# Affitor Documentation
+
+> Affitor is an affiliate growth platform for SaaS companies.
+> This file provides LLM-readable documentation for integrating Affitor.
+> Full docs: https://docs.affitor.com
+
+## Pages
+
+- [Getting Started](https://docs.affitor.com/docs): Platform overview and quickstart guides
+- [What is Affitor?](https://docs.affitor.com/docs/getting-started/what-is-affitor): Affiliate growth platform for SaaS with performance-based pricing
+- [How It Works](https://docs.affitor.com/docs/getting-started/how-it-works): The affiliate lifecycle from click to payout
+- [Pricing](https://docs.affitor.com/docs/getting-started/pricing-performance-model): 3.5% platform fee, no subscription
+- [Glossary](https://docs.affitor.com/docs/getting-started/glossary): Key terms and definitions
+- [CLI Quickstart](https://docs.affitor.com/docs/advertisers/cli/quickstart): Set up affiliate program in 3 commands
+- [CLI Commands](https://docs.affitor.com/docs/advertisers/cli/commands): Full command reference for npx affitor
+- [3-Step Integration](https://docs.affitor.com/docs/advertisers/tracking/quickstart-integration): Click, signup, and sale tracking setup
+- [Tracking Overview](https://docs.affitor.com/docs/advertisers/tracking/tracking-overview): How attribution links clicks to revenue
+- [Click Tracking](https://docs.affitor.com/docs/advertisers/tracking/pageview-tracker-click): Install the tracker via npm SDK or script tag
+- [Signup Tracking](https://docs.affitor.com/docs/advertisers/tracking/lead-tracking-signup): Track leads with browser helper or server API
+- [Payment Tracking](https://docs.affitor.com/docs/advertisers/tracking/payment-tracking-stripe): Sale API or Stripe metadata for revenue attribution
+- [Payment Flow](https://docs.affitor.com/docs/advertisers/tracking/payment-flow): End-to-end payment attribution lifecycle
+- [Testing](https://docs.affitor.com/docs/advertisers/tracking/testing-integration): Verify tracking before going live
+- [FAQ](https://docs.affitor.com/docs/faq): Common questions about pricing, tracking, and integration
+
+## Quick Integration
+
+### CLI Setup (fastest — 5 minutes)
+
+```bash
+npx affitor init          # creates program, returns API key + tracking code
+npx affitor setup stripe  # auto-configures Stripe webhooks via OAuth
+npx affitor test sale     # verifies end-to-end pipeline
+```
+
+After `npx affitor init`, an AGENTS.md file is generated in `.affitor/` with full integration instructions readable by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and any AI coding tool.
+
+### Manual Integration (3 steps)
+
+**Step 1 — Click tracking**: Add the tracker script to your site `<head>`:
+
+```html
+<script src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID">
+</script>
+```
+
+Or install via npm: `npm install @affitor/tracker`
+
+```tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+<AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>
+```
+
+**Step 2 — Signup tracking**: Call after user registration succeeds:
+
+```javascript
+// Browser-side
+await window.affitor.signup(userId, userEmail);
+```
+
+```bash
+# Server-side
+POST https://api.affitor.com/api/v1/track/lead
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{"customer_key": "user_123", "email": "user@example.com"}
+```
+
+**Step 3 — Sale tracking**:
+
+Option A: Stripe (run `npx affitor setup stripe` for automatic webhook config)
+
+Option B: Sale API (any payment provider):
+
+```bash
+POST https://api.affitor.com/api/v1/track/sale
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "transaction_id": "txn_unique_id",
+  "customer_key": "user_123",
+  "amount_cents": 4900,
+  "currency": "USD"
+}
+```
+
+Option C: Stripe metadata (manual):
+
+```javascript
+metadata: {
+  affitor_click_id: clickId,
+  affitor_customer_key: userId,
+  program_id: 'YOUR_PROGRAM_ID'
+}
+// For subscriptions, also set subscription_data.metadata with same fields
+```
+
+## Identifier Consistency
+
+Use the same internal user ID everywhere:
+
+| Context | Field Name |
+|---|---|
+| Browser signup | `customerKey` (1st argument to signup()) |
+| Lead API | `customer_key` |
+| Sale API | `customer_key` |
+| Stripe metadata | `affitor_customer_key` |
+
+## API Reference
+
+| Endpoint | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/v1/track/lead` | POST | Bearer API key | Track signup/lead |
+| `/api/v1/track/sale` | POST | Bearer API key | Track sale/payment |
+| Base URL: `https://api.affitor.com` | | | |
+
+## Conventions
+
+- All amounts in cents (e.g., $49.00 = 4900)
+- `transaction_id` must be unique per sale (duplicate returns 409)
+- Test mode: add `"additional_data": {"test_mode": true}` to skip commission creation
+- CLI automation flags: `--no-interactive --json`
+- Attribution: first-party cookie, last-click, 60-day default window
+
+## Pricing
+
+- No monthly subscription, no setup fee
+- 3.5% platform fee on partner-generated revenue
+- $10K fee-free threshold for new programs
