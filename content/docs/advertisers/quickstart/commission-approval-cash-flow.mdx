@@ -1,13 +1,20 @@
 ---
 title: Commission Approval & Cash Flow
-description: Understand how attributed sales move into commissions, billing, and payout workflow
+description: Understand how attributed sales move into commissions, billing, and payout workflow.
 ---
 
-This guide explains the public Bill Flow model at a high level: you collect customer payment in your own checkout, Affitor attributes the sale, then commission and payout workflow continues inside Affitor.
+Use this page to understand what happens after a sale is attributed and before partner funds are paid out.
 
----
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers, ops, and finance-aware teams' },
+    { label: 'Time required', value: '5–10 minutes' },
+    { label: 'Prerequisites', value: 'A working understanding of sale tracking and your program commission rules' },
+    { label: 'Outcome', value: 'You understand how attributed sales move into billing, commission review, hold, and payout workflow' },
+  ]}
+/>
 
-## Payment Integration Method
+## Payment integration method
 
 | Method | Checkout ownership | How it works |
 |--------|--------------------|--------------|
@@ -53,15 +60,17 @@ Programs can use review and hold settings to control when commissions become pay
 
 ---
 
-## Public-Safe Cash Flow Summary
+## Public-safe cash flow summary
 
-For an attributed sale:
-
-1. customer payment lands with the advertiser
-2. Affitor records the attributed revenue event
-3. commission and platform obligations are calculated through the Affitor workflow
-4. advertiser billing happens through the invoice process
-5. partner payout continues after the commission clears the review/hold path
+<Checklist
+  items={[
+    { text: 'Customer payment lands with the advertiser' },
+    { text: 'Affitor records the attributed revenue event' },
+    { text: 'Commission and platform obligations are calculated through the Affitor workflow' },
+    { text: 'Advertiser billing happens through the invoice process' },
+    { text: 'Partner payout continues after the commission clears the review and hold path' },
+  ]}
+/>
 
 ---
 
@@ -71,8 +80,9 @@ Refunds are reconciled through the commission and payout workflow based on the c
 
 ---
 
-## Related Guides
-
-- **[Payouts](/docs/advertisers/quickstart/payouts)**
-- **[View Performance](/docs/advertisers/quickstart/view-performance)**
-- **[Pricing](/docs/getting-started/pricing-performance-model)**
+<NextStep
+  title="Understand payouts"
+  description="After reviewing commission approval and cash flow, continue to the payout guide to see how cleared earnings move toward partner payment."
+  href="/docs/advertisers/quickstart/payouts"
+  ctaLabel="Open payout guide"
+/>
