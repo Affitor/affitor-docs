@@ -1,17 +1,26 @@
 ---
 title: Set Up Your Program
-description: Configure your affiliate program and choose the right integration path
+description: Configure your affiliate program and choose the right integration path.
 ---
 
-After creating your account, you'll move through three setup areas:
+Configure your program basics before you invite partners or install tracking.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers and operators' },
+    { label: 'Time required', value: '10–15 minutes' },
+    { label: 'Prerequisites', value: 'A created advertiser account and your initial program details' },
+    { label: 'Outcome', value: 'Your program basics, approval mode, commission direction, and tracking path are ready' },
+  ]}
+/>
+
+## What you are setting up
 
 1. **Program details** — business info, approval settings, commission rules
 2. **Tracking & integrations** — click, signup, and sale tracking
 3. **Share program** — your partner-facing program link
 
----
-
-## 1. Program Details
+## 1. Program details
 
 ### Business details
 
@@ -126,12 +135,16 @@ Once setup is complete, you can share your partner recruitment link so affiliate
 
 ---
 
-## Recommended Setup Order
+## Recommended setup order
 
-1. install click tracking
-2. wire signup tracking with a stable internal customer ID
-3. choose Sale API or Stripe Bill Flow
-4. run test flows before launch
+<Checklist
+  items={[
+    { text: 'Install click tracking first' },
+    { text: 'Wire signup tracking with a stable internal customer ID' },
+    { text: 'Choose Sale API or Stripe Bill Flow for payment tracking' },
+    { text: 'Run test flows before launch' },
+  ]}
+/>
 
 :::tip[CLI alternative]
 The Affitor CLI handles steps 1–4 with guided prompts:
@@ -147,8 +160,9 @@ See [CLI Quickstart](/docs/advertisers/cli/quickstart/).
 
 ---
 
-## Next Steps
-
-- [3-Step Integration Guide](/docs/advertisers/tracking/quickstart-integration/)
-- [Testing Integration](/docs/advertisers/tracking/testing-integration/)
-- [Commission Approval & Cash Flow](/docs/advertisers/quickstart/commission-approval-cash-flow/)
+<NextStep
+  title="Install tracking"
+  description="Once your program details are in place, move into the tracking quickstart to capture clicks, signups, and payments end to end."
+  href="/docs/advertisers/tracking/quickstart-integration"
+  ctaLabel="Open tracking quickstart"
+/>
