@@ -40,12 +40,17 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
     customer_key: currentUser.id,
     amount_cents: order.totalCents,
     currency: 'USD',
+    product_id: order.primaryProductId,
   }),
 });
 ```
 
 :::note
 `transaction_id` must be unique per sale — Affitor uses it for deduplication. At least one of `customer_key` or `click_id` is required for attribution.
+:::
+
+:::tip[Include `product_id` for per-product policies]
+`product_id` is optional at the API level, but you should send it for real sales whenever possible. Without it, Affitor cannot distinguish whether the customer bought product A or product B, which can affect one-time commission policies that are evaluated per product.
 :::
 
 ---

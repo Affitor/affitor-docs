@@ -159,11 +159,15 @@ Send a `POST` request from your backend whenever a sale completes. Works with an
 | `is_recurring` | No | boolean | `true` for recurring charges. Default: `false` |
 | `subscription_id` | No | string | Your subscription ID for recurring billing |
 | `subscription_interval` | No | string | `monthly`, `quarterly`, or `annual` |
-| `product_id` | No | string | Your product identifier |
+| `product_id` | No | string | Your product identifier. Strongly recommended for real sales so per-product commission policies can distinguish which product was purchased |
 | `line_items` | No | array | Itemized breakdown: `[{ "name": "...", "amount_cents": 0, "quantity": 0 }]` |
 
 :::note
 At least one of `customer_key` or `click_id` is required. Affitor uses them to find the customer-partner attribution. If both are missing, the request will fail with a `400` error.
+:::
+
+:::tip[Use `product_id` in production]
+If your program uses one-time commission rules per product, always send `product_id` in `/api/v1/track/sale`. Omitting it means Affitor can still track the sale, but it cannot reliably tell whether the customer bought the same product again or a different product.
 :::
 
 **Node.js example:**
@@ -182,6 +186,7 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
     amount_cents: order.totalCents,
     currency: 'USD',
     sale_type: 'payment',
+    product_id: order.primaryProductId,
   }),
 });
 ```
