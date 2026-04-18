@@ -1,0 +1,120 @@
+---
+title: "Frequently Asked Questions"
+description: "Common questions about Affitor's pricing, tracking, commissions, and integration flows."
+---
+
+## General
+
+### What is Affitor?
+Affitor is an affiliate growth platform for SaaS companies. It helps advertisers track partner-driven clicks, signups, and sales, then manage commissions and payout operations through Affitor.
+
+### Who is Affitor built for?
+Affitor is designed for SaaS teams that want to launch or scale a partner program without taking on the full operational burden themselves.
+
+### How is Affitor different from traditional affiliate tools?
+Publicly, Affitor positions around:
+- performance-based pricing
+- first-party tracking for click → signup → sale flows
+- support for Stripe Bill Flow or server-side sale tracking
+- commission and payout operations in one workflow
+
+---
+
+## Pricing & Billing
+
+### How much does Affitor cost?
+Affitor charges a **3.5% platform fee** on partner-generated revenue in the current public pricing model.
+
+- no monthly subscription
+- no setup fee
+
+### What about the $10K fee-free threshold?
+Current public pricing materials describe a **$10K fee-free threshold** for affiliate-driven revenue. If your commercial terms matter for a launch decision, confirm them directly with the Affitor team.
+
+### When do I pay?
+In the current public **Bill Flow** model, Affitor bills advertisers through its invoice workflow after tracked conversions are validated. If billing timing matters for a launch decision, confirm the commercial details directly with the Affitor team.
+
+### Does Affitor collect money from my customers?
+No. In the current public Bill Flow model, Affitor is **not** the merchant of record. You continue charging customers in your own Stripe/payment setup.
+
+---
+
+## Tracking & Integration
+
+### What integration paths are supported?
+The public docs support these main paths:
+
+1. **Tracker install** for click tracking
+2. **Browser signup helper** or **server lead API** for signup attribution
+3. **Sale API** or **Stripe metadata + webhook** for revenue attribution
+
+### What is the difference between `customerKey`, `customer_key`, and `affitor_customer_key`?
+They represent the same business concept in different integration contexts:
+
+- `customerKey` — browser helper argument for `signup(customerKey, email)`
+- `customer_key` — field used in lead/sale API payloads
+- `affitor_customer_key` — Stripe metadata field
+
+Use the same internal user/customer ID across all three.
+
+### Can I use Affitor without changing my checkout?
+Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you already use Stripe Checkout and can attach Affitor metadata, you can integrate without replacing your existing payment stack.
+
+### Does Affitor only work with Stripe?
+No. Stripe is the best-documented Bill Flow path, but the Sale API works with any backend/payment provider that can send revenue events after payment succeeds.
+
+### How does attribution work?
+Current public docs describe:
+- first-party tracking
+- last-click attribution
+- a 60-day default attribution window
+
+For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that same identifier in sale tracking.
+
+### What happens if the customer later pays on Stripe?
+If you use Stripe Bill Flow, Affitor can attribute the sale from metadata and webhook events. For subscriptions, renewals depend on `subscription_data.metadata` being populated as well.
+
+---
+
+## Commissions & Payouts
+
+### Who pays the partner?
+Affitor handles the commission/payout workflow for partners after attributed conversions move through the commission lifecycle.
+
+### What happens after a sale is attributed?
+At a high level:
+1. sale is recorded
+2. commission is created
+3. commission moves through review / hold operations
+4. payout workflow continues in Affitor
+
+### What happens if there is a refund?
+Refunds are reconciled through Affitor's commission and payout workflow. The exact outcome depends on where the commission is in the lifecycle when the refund happens.
+
+---
+
+## Support & Troubleshooting
+
+### What is the fastest way to self-serve an integration?
+For most teams, the clearest public path is the manual docs flow:
+
+1. [Install Tracking](/advertisers/tracking/quickstart-integration)
+2. [Lead Tracking](/advertisers/tracking/lead-tracking-signup)
+3. [Payment Tracking](/advertisers/tracking/payment-tracking-stripe)
+4. [Testing Integration](/advertisers/tracking/testing-integration)
+
+If your team prefers terminal-based setup, the [Affitor CLI](/advertisers/cli/quickstart/) is an alternative path for developer and agent-driven workflows.
+
+### Why do sales fail to attribute even though click tracking works?
+Most often it is because:
+- signup used the wrong internal identifier
+- Stripe metadata used a different identifier than signup
+- Sale API payload omitted `customer_key` / `click_id`
+- subscription metadata was only added to the initial checkout, not `subscription_data.metadata`
+
+### How do I get help?
+If you still need help after running the integration and testing guides, contact the Affitor team with:
+- your program ID
+- the exact integration path you used
+- request/response samples or Stripe webhook evidence
+- screenshots of any relevant dashboard/test-event state

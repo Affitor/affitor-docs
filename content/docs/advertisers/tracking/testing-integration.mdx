@@ -1,0 +1,253 @@
+---
+title: Testing Integration
+description: Verify click, signup, and sale tracking before going live
+---
+
+Test each layer of the integration before launch:
+
+1. click tracking
+2. signup/lead tracking
+3. sale tracking
+
+The goal is to confirm that your identifiers, metadata, and revenue path line up correctly.
+
+:::tip[CLI test commands]
+The Affitor CLI can send test events for each layer in one command:
+
+```bash
+npx affitor test click
+npx affitor test lead
+npx affitor test sale
+```
+
+See [CLI Commands](/advertisers/cli/commands/) for details.
+:::
+
+---
+
+## 1. Test Click Tracking
+
+### Tracker debug mode
+
+Enable debug mode in the tracker install you are using.
+
+**Script tag:**
+
+```html
+<script
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="true">
+</script>
+```
+
+### What to verify
+
+- the tracker script loads successfully
+- the page can set/read Affitor cookies
+- click/pageview-related requests are visible in the browser
+- your dashboard shows test/debug activity for the pageview step
+
+:::caution
+When testing with real affiliate links, remember that a real `?aff=` flow can still create real attribution data. Use test/debug guidance carefully and avoid mixing production referral links into synthetic tests unless that is your intent.
+:::
+
+---
+
+## 2. Test Lead Tracking
+
+### Browser-side signup test
+
+After a successful signup in a tracked browser session:
+
+```javascript
+await window.affitor.signup('user_123', 'user@example.com');
+```
+
+Verify that:
+- the same internal ID you passed as `customerKey` is the one you plan to reuse later
+- the tracker emits the expected network/debug activity
+- the dashboard/test-event view reflects lead test activity where applicable
+
+### Server-side lead API test
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Content-Type: application/json" \
+  -d '{
+    "click_id": "test_lead_001",
+    "customer_key": "test_customer",
+    "additional_data": {
+      "test_mode": true,
+      "program_id": "YOUR_PROGRAM_ID"
+    }
+  }'
+```
+
+**Expected response:**
+
+```json
+{
+  "success": true,
+  "message": "Test lead event tracked successfully",
+  "data": {
+    "eventId": 456,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+### What test mode means for leads
+
+- creates a test lead event only
+- does not create a production lead/customer progression
+- helps verify that your program ID and endpoint wiring are correct
+
+---
+
+## 3. Test Sale Tracking
+
+You can test sale tracking in two different ways depending on your implementation.
+
+### Option A — Test the Sale API
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "additional_data": { "test_mode": true },
+    "amount_cents": 9999,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'
+```
+
+**Expected response:**
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": {
+    "eventId": 789,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+### What test mode means for sales
+
+- still requires the Bearer token
+- creates a test sale event only
+- does not create commissions
+- does not create platform fees
+- does not update production metrics
+
+### Option B — Test Stripe Bill Flow
+
+If you use Stripe Checkout:
+
+1. switch Stripe to test mode
+2. complete a test checkout
+3. verify webhook delivery in Stripe
+4. inspect the metadata on the checkout/payment objects
+
+Check that metadata includes:
+- `program_id`
+- `affitor_click_id`
+- `affitor_customer_key`
+
+For subscriptions, also confirm the same values exist in `subscription_data.metadata`.
+
+---
+
+## 4. Verify Test Events Were Received
+
+After sending test lead or test sale events, you can query the test-event checker.
+
+```bash
+curl -X POST https://api.affitor.com/api/tracking/check-test-events \
+  -H "Content-Type: application/json" \
+  -d '{
+    "program_id": "YOUR_PROGRAM_ID"
+  }'
+```
+
+You can also filter by step:
+- `pageview`
+- `referrals`
+- `payments`
+
+---
+
+## 5. Recommended Real-World Test Scenarios
+
+### Scenario A — Full tracked funnel
+
+1. open a fresh browser session
+2. land through an affiliate link
+3. sign up
+4. complete payment
+5. verify click → lead → sale linkage
+
+### Scenario B — Sale API path
+
+1. complete a backend-controlled purchase
+2. send `POST /api/v1/track/sale`
+3. verify the response contains `sale_id` and `commission_id`
+4. confirm no duplicate retries reuse the same `transaction_id`
+
+### Scenario C — Stripe subscription path
+
+1. create a Stripe Checkout subscription in test mode
+2. ensure both `metadata` and `subscription_data.metadata` are present
+3. verify the initial invoice/webhook delivery
+4. confirm your renewal setup will preserve those identifiers
+
+---
+
+## Common Failure Modes
+
+### Lead works but sales do not attribute
+
+Usually caused by one of these:
+- `customerKey` at signup does not match the later payment identifier
+- Stripe metadata uses the wrong customer key
+- `transaction_id` is duplicated or missing in the Sale API path
+- no tracked click/customer relationship exists for the customer
+
+### One-time Stripe works but renewals do not
+
+Usually caused by:
+- missing `subscription_data.metadata`
+- relying only on initial checkout metadata
+- mismatched customer key between signup and Stripe metadata
+
+### Dashboard status is confusing
+
+Runtime uses a mix of:
+- test event presence for click/lead verification
+- Stripe connection/configuration state for payment setup
+- real sale events for broader integration completeness
+
+So treat dashboard status, test-event checks, and Stripe webhook delivery logs as complementary signals.
+
+---
+
+## Before You Go Live
+
+Confirm all of the following:
+
+- tracker installed on all landing pages
+- signup tracking sends a stable internal customer ID
+- Sale API or Stripe metadata path is fully implemented
+- Stripe subscription metadata is duplicated correctly when relevant
+- one end-to-end test has succeeded with the exact path you will use in production
+
+Related guides:
+- [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/)
+- [Lead Tracking](/advertisers/tracking/lead-tracking-signup/)
+- [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)

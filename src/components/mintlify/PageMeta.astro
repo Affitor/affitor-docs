@@ -1,0 +1,24 @@
+---
+interface Props {
+  who?: string;
+  time?: string;
+  prerequisites?: string;
+  outcome?: string;
+}
+
+const { who, time, prerequisites, outcome } = Astro.props;
+const items = [
+  who ? { label: 'Who this is for', value: who } : null,
+  time ? { label: 'Time required', value: time } : null,
+  prerequisites ? { label: 'Prerequisites', value: prerequisites } : null,
+  outcome ? { label: 'Outcome', value: outcome } : null,
+].filter(Boolean);
+---
+<div class="mintlify-meta-grid">
+  {items.map((item) => (
+    <div class="mintlify-meta-card">
+      <div class="mintlify-meta-label">{item.label}</div>
+      <div class="mintlify-meta-value">{item.value}</div>
+    </div>
+  ))}
+</div>

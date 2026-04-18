@@ -1,0 +1,212 @@
+---
+title: CLI Command Reference
+description: Complete reference for all npx affitor commands, flags, and options.
+---
+
+Full reference for the `npx affitor` CLI.
+
+## Global Flags
+
+These flags work with every command:
+
+| Flag | Description |
+|---|---|
+| `--json` | Output as JSON (for AI agents and scripts) |
+| `--no-interactive` | Skip all prompts, fail on missing values |
+| `--auto-confirm` | Auto-yes to confirmation prompts |
+| `--quiet` | Suppress non-essential output |
+| `--api-key <key>` | Override API key from config |
+| `--api-url <url>` | Override API URL |
+| `--verbose` | Show debug output |
+| `-V, --version` | Show version number |
+| `-h, --help` | Show help |
+
+---
+
+## `affitor init`
+
+Create a new affiliate program and generate config files.
+
+```bash
+npx affitor init
+```
+
+| Flag | Description | Default |
+|---|---|---|
+| `--name <name>` | Program name | (prompted) |
+| `--domain <domain>` | Root domain | (prompted) |
+| `--commission-type <type>` | `percent`, `fixed`, `recurring_percent`, `recurring_fixed` | (prompted) |
+| `--commission-rate <rate>` | Commission rate (% or $) | 40 |
+| `--cookie-duration <days>` | Cookie window in days | 90 |
+| `--duration-months <months>` | Recurring commission duration (0 = lifetime) | 12 |
+
+**Example (non-interactive):**
+
+```bash
+npx affitor init \
+  --name "My SaaS" \
+  --domain example.com \
+  --commission-type recurring_percent \
+  --commission-rate 30 \
+  --duration-months 12 \
+  --no-interactive
+```
+
+**Files created:**
+
+| File | Purpose |
+|---|---|
+| `.affitor/config.json` | Program ID, API key, settings |
+| `.affitor/.env.example` | Environment variables template |
+| `.affitor/skills.md` | Tracking code snippets and AI agent instructions |
+
+---
+
+## `affitor setup stripe`
+
+Connect your Stripe account for automatic payment tracking.
+
+```bash
+npx affitor setup stripe
+```
+
+**What happens:**
+
+1. Opens Stripe Connect OAuth in your browser
+2. You authorize Affitor to read your payment data
+3. Webhook endpoints are auto-created on your Stripe account
+4. Connection is saved to your program config
+
+| Flag | Description |
+|---|---|
+| `--stripe-client-id <id>` | Override Stripe Connect client ID |
+| `--stripe-secret-key <key>` | Override Stripe secret key |
+
+**Environment variables (alternative to flags):**
+
+- `STRIPE_CONNECT_CLIENT_ID` or `AFFITOR_STRIPE_CLIENT_ID`
+- `STRIPE_SECRET_KEY` or `AFFITOR_STRIPE_SECRET_KEY`
+
+**Webhook events configured:**
+
+| Event | Purpose |
+|---|---|
+| `customer.created` | Lead tracking |
+| `checkout.session.completed` | Sale tracking |
+| `invoice.paid` | Recurring commission |
+| `invoice.payment_failed` | Failed payment alerts |
+| `charge.refunded` | Automatic commission clawback |
+| `customer.subscription.deleted` | Churn tracking |
+
+---
+
+## `affitor setup dns`
+
+Set up DNS CNAME tracking for first-party tracking.
+
+```bash
+npx affitor setup dns
+```
+
+:::note
+DNS tracking is coming soon. For now, use the tracking script or Stripe integration.
+:::
+
+When available, add this DNS record:
+
+```
+Type:   CNAME
+Name:   t.yourdomain.com
+Target: track.affitor.com
+TTL:    300
+```
+
+---
+
+## `affitor status`
+
+Show program health: tracking, Stripe connection, recent events.
+
+```bash
+npx affitor status
+```
+
+**Example output:**
+
+```
+  ╭──────────────────╮
+  │   My SaaS        │
+  │   example.com    │
+  │                  │
+  │   Program ID: 42 │
+  ╰──────────────────╯
+
+✓ Stripe: connected
+⚠ DNS: not configured
+
+  Events (last 24h):
+    Clicks:  142
+    Leads:   23
+    Sales:   8
+
+  Active partners:      5
+  Pending commissions:  3
+```
+
+---
+
+## `affitor test [event-type]`
+
+Send a test tracking event to verify your integration.
+
+```bash
+npx affitor test click    # Test click event
+npx affitor test lead     # Test lead event
+npx affitor test sale     # Test sale event
+```
+
+| Type | What it tests |
+|---|---|
+| `click` | Click tracking pipeline |
+| `lead` | Signup/lead tracking |
+| `sale` | Payment/sale tracking |
+
+Test events are marked with `is_test: true` and appear in your dashboard with a test badge.
+
+---
+
+## Config File
+
+The CLI stores configuration in `.affitor/config.json`:
+
+```json
+{
+  "version": 1,
+  "program_id": "430",
+  "domain": "example.com",
+  "commission": {
+    "type": "recurring_percent",
+    "rate": 40,
+    "duration_months": 12
+  },
+  "cookie": {
+    "name": "_aff",
+    "duration_days": 90
+  },
+  "stripe_connected": false,
+  "api_key": "affitor_...",
+  "api_url": "https://api.affitor.com"
+}
+```
+
+---
+
+## Error Messages
+
+| Error | Message |
+|---|---|
+| No config | `No Affitor config found. Run npx affitor init to set up your program.` |
+| Invalid API key | `API key expired or invalid. Run npx affitor init to get a new one.` |
+| Already configured | `Affitor already configured in this directory. Use npx affitor status to check.` |
+| Stripe OAuth cancelled | `Stripe authorization cancelled. Run npx affitor setup stripe to try again.` |
+| Network error | `Network error: <details>. Check your internet connection and try again.` |

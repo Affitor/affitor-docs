@@ -1,0 +1,88 @@
+---
+title: Commission Approval & Cash Flow
+description: Understand how attributed sales move into commissions, billing, and payout workflow.
+---
+
+Use this page to understand what happens after a sale is attributed and before partner funds are paid out.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers, ops, and finance-aware teams' },
+    { label: 'Time required', value: '5–10 minutes' },
+    { label: 'Prerequisites', value: 'A working understanding of sale tracking and your program commission rules' },
+    { label: 'Outcome', value: 'You understand how attributed sales move into billing, commission review, hold, and payout workflow' },
+  ]}
+/>
+
+## Payment integration method
+
+| Method | Checkout ownership | How it works |
+|--------|--------------------|--------------|
+| **Bill Flow** | Your checkout | You collect customer payment, Affitor attributes conversions and bills through its invoice workflow |
+
+---
+
+## Bill Flow
+
+**Step by step:**
+
+1. customer purchases through your existing checkout
+2. you receive payment in your own payment stack
+3. Affitor attributes and validates the conversion
+4. commission is created according to your program rules
+5. advertiser billing is handled through Affitor's invoice workflow
+6. commission moves through review / hold / payout operations
+
+![Bill Flow](/images/bill-flow.png)
+
+---
+
+## Validation Before Commission
+
+Affitor validates attributed sales before the commission workflow proceeds.
+
+Typical checks include:
+- valid attribution
+- no obvious duplicate sale event
+- in-window attribution
+- matching program/customer relationship
+
+---
+
+## Approval and Hold Workflow
+
+Programs can use review and hold settings to control when commissions become payable.
+
+### Common uses
+- reduce refund risk
+- review suspicious activity
+- delay payout until a commission is cleared
+
+---
+
+## Public-safe cash flow summary
+
+<Checklist
+  items={[
+    { text: 'Customer payment lands with the advertiser' },
+    { text: 'Affitor records the attributed revenue event' },
+    { text: 'Commission and platform obligations are calculated through the Affitor workflow' },
+    { text: 'Advertiser billing happens through the invoice process' },
+    { text: 'Partner payout continues after the commission clears the review and hold path' },
+  ]}
+/>
+
+---
+
+## Refund Handling
+
+Refunds are reconciled through the commission and payout workflow based on the commission's current lifecycle stage.
+
+---
+
+<NextStep
+  title="Understand payouts"
+  description="After reviewing commission approval and cash flow, continue to the payout guide to see how cleared earnings move toward partner payment."
+  href="/advertisers/quickstart/payouts"
+  ctaLabel="Open payout guide"
+/>

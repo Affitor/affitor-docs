@@ -1,0 +1,29 @@
+---
+interface Props {
+  browser?: string[];
+  network?: string[];
+  dashboard?: string[];
+  ifNotWorking?: string[];
+}
+
+const { browser = [], network = [], dashboard = [], ifNotWorking = [] } = Astro.props;
+const sections = [
+  browser.length ? { title: 'Browser', items: browser } : null,
+  network.length ? { title: 'Network', items: network } : null,
+  dashboard.length ? { title: 'Dashboard', items: dashboard } : null,
+  ifNotWorking.length ? { title: `If it doesn't work`, items: ifNotWorking } : null,
+].filter(Boolean);
+---
+<div class="mintlify-verify-success">
+  <div class="mintlify-block-title">Verify success</div>
+  <div class="mintlify-verify-grid">
+    {sections.map((section) => (
+      <div class="mintlify-verify-card">
+        <div class="mintlify-verify-title">{section.title}</div>
+        <ul>
+          {section.items.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    ))}
+  </div>
+</div>

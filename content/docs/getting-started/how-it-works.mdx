@@ -1,0 +1,47 @@
+---
+title: "How Affitor Works"
+description: "See how Affitor runs from affiliate click to attributed revenue and payout operations."
+---
+
+Affitor runs alongside your existing stack. You keep your site, signup flow, and checkout; Affitor adds tracking, attribution, commission operations, and partner payout workflow.
+
+![How Affitor Works - 7 Step Affiliate Lifecycle](/images/how-it-works-diagram.png)
+
+## The affiliate lifecycle
+
+### 1. Advertiser creates a program
+You define commission rules, partner approval criteria, and payout/hold settings.
+
+### 2. Partner joins and gets a referral link
+Approved partners receive links that identify their traffic.
+
+### 3. Partner promotes your product
+Partners share links through content, social, communities, newsletters, or direct outreach.
+
+### 4. Customer clicks and is tracked
+Affitor records the visit and creates the click/customer relationship needed for attribution.
+
+### 5. Customer signs up and pays
+You send signup attribution with your internal customer ID, then record revenue either through:
+- the server-side Sale API, or
+- Stripe metadata + webhook handling in Bill Flow
+
+### 6. Commission is created
+Affitor calculates commission from the program's applicable rules and moves it into the commission workflow.
+
+### 7. Payout operations continue in Affitor
+Validated commissions move through review, hold, and payout operations for partners.
+
+## Key points
+
+**Flexible integration paths** — Affitor supports browser-side signup tracking, server-side lead/sale APIs, and Stripe Bill Flow metadata.
+
+**60-day default attribution window** — public docs currently describe a 60-day default window for affiliate attribution.
+
+**Bill Flow model** — in the current public model, advertisers keep charging customers in their own Stripe/payment setup; Affitor attributes conversions and handles billing/payout operations through its workflow.
+
+## Next steps
+
+[Create Your Program →](/advertisers/quickstart/create-account)
+
+[Understand Pricing →](/getting-started/pricing-performance-model)

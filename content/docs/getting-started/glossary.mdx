@@ -1,0 +1,100 @@
+---
+title: Glossary
+description: Common terms used across Affitor docs
+---
+
+## A
+
+### Advertiser
+The company running an affiliate program in Affitor.
+
+### Affiliate Link
+A partner-specific referral link that includes tracking information, typically through the `?aff=` parameter.
+
+### Attribution
+The process of crediting a conversion to the correct partner. Current public docs describe first-party tracking with a 60-day default window and last-click attribution.
+
+### Attribution Window
+The time period during which a tracked click can still receive credit for a later conversion. Public docs currently describe a 60-day default window.
+
+## B
+
+### Bill Flow
+The current public payment-tracking model where the advertiser keeps collecting end-customer payment in their own checkout/Stripe account, and Affitor attributes conversions then bills through its invoice workflow.
+
+## C
+
+### Click
+A tracked affiliate visit created when someone lands via a partner link.
+
+### Commission
+The amount earned by a partner after a sale is attributed and processed through the commission workflow.
+
+### Customer Key
+Your internal customer/user identifier. It appears as:
+- `customerKey` in the browser helper
+- `customer_key` in lead/sale API payloads
+- `affitor_customer_key` in Stripe metadata
+
+## H
+
+### Hold Period
+The review/protection period before a commission becomes available for payout operations.
+
+## P
+
+### Partner
+Any individual or organization promoting an advertiser's product in exchange for commission.
+
+### Payout
+The transfer of cleared partner earnings through Affitor's payout workflow.
+
+### Performance-based Pricing
+A pricing model where fees are tied to partner-generated revenue rather than a monthly subscription.
+
+### Platform Fee
+Affitor's fee charged on partner-generated revenue in the public pricing model. Public pricing materials currently describe this as 3.5%.
+
+### Program ID
+The identifier for your Affitor program. It is used in tracker setup, test flows, Stripe metadata, and CLI commands. You receive your program ID when running `npx affitor init`.
+
+## R
+
+### Recurring Commission
+A commission structure where a partner can keep earning on subscription renewals for a defined duration or lifetime, depending on the configured program rules.
+
+## S
+
+### Sale API
+The server-to-server revenue tracking endpoint: `POST /api/v1/track/sale`.
+
+### Signup Helper
+The browser-side helper call used after a successful signup: `signup(customerKey, email)`.
+
+### Stripe Bill Flow Metadata
+The metadata Affitor uses to attribute Stripe Checkout payments, typically:
+- `affitor_click_id`
+- `affitor_customer_key`
+- `program_id`
+
+## T
+
+### Test Mode
+A testing path that creates test events without affecting production attribution or commission data.
+
+### Tracking
+The system that connects click, signup, and sale data so revenue can be attributed to the correct partner.
+
+## W
+
+### Webhook
+An automated event notification. Affitor uses Stripe webhooks to process payment attribution in Bill Flow.
+
+### Withdrawable Balance
+Partner earnings that have cleared the hold/review workflow and are available within the payout process.
+
+## Related resources
+
+- [What is Affitor?](/getting-started/what-is-affitor)
+- [How Affitor Works](/getting-started/how-it-works)
+- [Pricing](/getting-started/pricing-performance-model)

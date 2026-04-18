@@ -1,0 +1,158 @@
+---
+title: Payment Flow
+description: End-to-end flow from affiliate click to attributed revenue and payout operations
+---
+
+This page shows how attribution moves from click → signup → sale in the current public Affitor model.
+
+---
+
+## End-to-End Flow
+
+### 1. Partner shares a referral link
+
+A partner promotes your product with a referral URL such as:
+
+```text
+https://yoursite.com?aff=PARTNER123
+```
+
+### 2. Customer lands on your site
+
+The tracker detects `?aff=` and creates the click/customer relationship.
+
+**What happens:**
+- click is recorded
+- `affitor_click_id` is stored in a first-party cookie
+- the visit is linked to the correct partner/program
+
+### 3. Customer signs up
+
+After account creation succeeds, you send your internal customer ID to Affitor.
+
+**Browser helper example:**
+
+```javascript
+if (window.affitor) {
+  await window.affitor.signup('user_123', 'customer@example.com');
+}
+```
+
+**What matters here:**
+- your internal identifier is stored for future matching
+- that same identifier should later be reused as:
+  - `customer_key` in the Sale API
+  - `affitor_customer_key` in Stripe metadata
+
+### 4. Customer pays
+
+You then choose one supported sale-tracking path.
+
+#### Path A — Sale API
+
+Your backend calls Affitor when payment succeeds.
+
+```json
+{
+  "transaction_id": "txn_123",
+  "customer_key": "user_123",
+  "amount_cents": 10000,
+  "currency": "USD"
+}
+```
+
+#### Path B — Stripe Bill Flow
+
+You keep charging in your own Stripe account and attach Affitor metadata.
+
+```javascript
+metadata: {
+  program_id: 'YOUR_PROGRAM_ID',
+  affitor_click_id: clickId,
+  affitor_customer_key: currentUser.id,
+}
+```
+
+For subscriptions, also include the same fields in `subscription_data.metadata`.
+
+### 5. Affitor attributes the sale
+
+Affitor resolves the customer/partner relationship from the data available.
+
+It can use a combination of:
+- click ID
+- customer email matching
+- Stripe customer ID
+- customer key
+
+### 6. Commission and platform records are created
+
+When attribution succeeds, Affitor records the sale and creates the commission flow.
+
+From there, commissions move through review / hold / payout operations according to the program configuration.
+
+---
+
+## Bill Flow in Plain Language
+
+In the current public Bill Flow model:
+
+1. **you** collect payment from the customer in your own Stripe account
+2. **Affitor** attributes the conversion using Stripe metadata + webhook events
+3. **Affitor** bills through its invoice workflow for validated partner commission + platform fee obligations
+4. partner payouts continue through Affitor's payout operations
+
+:::note
+Affitor is not the merchant of record in this Bill Flow model.
+:::
+
+---
+
+## One-Time vs Subscription Revenue
+
+### One-time payments
+
+For one-time Stripe Checkout payments, attribution starts from checkout session metadata and the associated webhook flow.
+
+### Subscriptions
+
+For subscriptions, the initial and recurring commission flow depends on invoice processing.
+
+That is why recurring setups must include:
+- `metadata`
+- `subscription_data.metadata`
+
+If only the initial checkout metadata is present, renewals may not attribute correctly.
+
+---
+
+## Common Validation Points
+
+| Check | Why it matters |
+|------|----------------|
+| `customerKey` used at signup | links later payments back to the same internal user |
+| `transaction_id` unique (Sale API) | prevents duplicate sale records |
+| `program_id` in Stripe metadata | routes the event to the correct program |
+| `subscription_data.metadata` set | keeps renewals attributable |
+| click tracked first | gives Affitor the strongest attribution signal |
+
+---
+
+## Example Timeline
+
+| Day | Event |
+|-----|-------|
+| 0 | customer clicks affiliate link |
+| 0 | tracker stores `affitor_click_id` |
+| 2 | customer signs up and you send `customerKey` |
+| 7 | customer pays |
+| 7 | sale is attributed via Sale API or Stripe webhook flow |
+| 7+ | commission enters review / hold / payout operations |
+
+---
+
+## Next Steps
+
+- [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
+- [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/)
+- [Testing Integration](/advertisers/tracking/testing-integration/)

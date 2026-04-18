@@ -1,0 +1,260 @@
+---
+title: Payment Tracking
+description: Track completed sales with the Sale API or Stripe metadata in Bill Flow
+---
+
+Payment tracking records revenue after a customer pays. Affitor currently supports two public sale-tracking paths:
+
+1. **Sale API** — your backend calls Affitor when revenue is finalized
+2. **Stripe metadata + webhook (Bill Flow)** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
+
+:::tip[Fastest Stripe setup]
+Run `npx affitor setup stripe` to automatically configure Stripe webhooks via OAuth — no manual URL copy-paste or event selection needed. See the [CLI Quickstart](/advertisers/cli/quickstart/) for the full setup flow.
+:::
+
+---
+
+## Choose the Right Path
+
+| Path | Best for |
+|------|----------|
+| **Sale API** | custom backend, any payment provider, Paddle/LemonSqueezy/manual revenue events |
+| **Stripe metadata + webhook** | existing Stripe Checkout integration |
+
+If you already know exactly when a paid conversion happens on your server, use the Sale API. If you already use Stripe Checkout and want Affitor to attribute revenue from Stripe webhooks, use Bill Flow metadata.
+
+---
+
+## Option A — Sale API
+
+### Endpoint
+
+```bash
+POST https://api.affitor.com/api/v1/track/sale
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+```
+
+### Minimum real-sale payload
+
+```json
+{
+  "transaction_id": "txn_abc123",
+  "customer_key": "user_123",
+  "amount_cents": 9999,
+  "currency": "USD"
+}
+```
+
+### Full example
+
+```js
+await fetch('https://api.affitor.com/api/v1/track/sale', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.AFFITOR_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    transaction_id: order.id,
+    customer_key: currentUser.id,
+    click_id: req.cookies.affitor_click_id,
+    amount_cents: order.totalCents,
+    currency: 'USD',
+    sale_type: 'payment',
+    line_items: [
+      { name: 'Pro Plan', amount_cents: order.totalCents, quantity: 1 },
+    ],
+  }),
+});
+```
+
+### Runtime rules
+
+- `Authorization: Bearer <program_api_key>` is required
+- `transaction_id` is required and must be unique
+- `amount_cents` is required and must be a positive number
+- Affitor must be able to resolve the customer via:
+  - `customer_key`
+  - or `click_id`
+- If the same `transaction_id` is sent twice, Affitor returns `409 Conflict`
+
+### Response
+
+```json
+{
+  "success": true,
+  "sale_id": 42,
+  "commission_id": 18,
+  "message": "Sale tracked successfully"
+}
+```
+
+:::tip
+Use the Sale API if you want one server-controlled source of truth for revenue events across all payment providers.
+:::
+
+---
+
+## Option B — Stripe Metadata + Webhook (Bill Flow)
+
+In Bill Flow, the advertiser keeps charging customers through their own Stripe account. Affitor does **not** become merchant of record. Instead, Affitor attributes the conversion through Stripe metadata and webhook processing, then bills through its invoice workflow.
+
+### Recommended metadata fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `affitor_click_id` | Recommended | tracked click ID from the browser cookie |
+| `affitor_customer_key` | Recommended | your internal customer/user ID |
+| `program_id` | **Yes** | your Affitor program ID |
+
+### One-time payment example
+
+```js
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+const clickId = getCookie('affitor_click_id');
+
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'payment',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+});
+```
+
+### Subscription example
+
+For subscriptions, set the same values in both `metadata` and `subscription_data.metadata`.
+
+```js
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'subscription',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  subscription_data: {
+    metadata: {
+      affitor_click_id: clickId,
+      affitor_customer_key: currentUser.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
+
+### Why subscriptions need both locations
+
+- One-time payments are handled from Stripe checkout session completion
+- Subscription commissions are created from `invoice.payment_succeeded`
+- Renewals rely on subscription metadata still being present later
+- If `subscription_data.metadata` is missing, renewal attribution can fail
+
+---
+
+## How Affitor Resolves Attribution from Stripe
+
+When a Stripe event arrives, Affitor attempts attribution through a fallback chain.
+
+### Simplified lookup order
+
+1. click metadata (`affitor_click_id`)
+2. customer email matching
+3. Stripe customer ID
+4. customer key (`affitor_customer_key`)
+
+This is why the best production setup is:
+- install the tracker first
+- send a stable internal customer ID at signup
+- pass the same internal ID into Stripe metadata later
+
+---
+
+## Compatibility Notes
+
+The runtime still accepts some legacy metadata aliases for backward compatibility, such as older click/customer-key field names. Public docs should **not** use them for new integrations.
+
+For new implementations, use only:
+- `affitor_click_id`
+- `affitor_customer_key`
+- `program_id`
+
+---
+
+## Test Mode for Sale API
+
+You can send a test sale event without creating a real commission or platform fee.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "additional_data": { "test_mode": true },
+    "amount_cents": 9999,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'
+```
+
+### Test mode behavior
+
+- still requires the Bearer token
+- creates a test sale event with `is_test: true`
+- does **not** create commissions, platform fees, or production metrics
+- does not require an existing customer record
+
+---
+
+## Troubleshooting
+
+### Sale API returns `401`
+
+Check:
+- the `Authorization` header is present
+- the value is `Bearer YOUR_PROGRAM_API_KEY`
+- the API key belongs to the same program you intend to track
+
+### Sale API returns `409`
+
+Check:
+- `transaction_id` is unique
+- retries are not resending the same completed sale without idempotency control on your side
+
+### Stripe one-time sale not attributed
+
+Check:
+- `program_id` is present in metadata
+- `affitor_click_id` and `affitor_customer_key` are passed when available
+- signup tracking used the same internal customer ID earlier
+- the Stripe webhook was delivered successfully
+
+### Stripe renewals not attributed
+
+Check:
+- `subscription_data.metadata` contains all three fields
+- `invoice.payment_succeeded` is enabled and delivered
+- the same customer key was used at signup and in Stripe metadata
+
+---
+
+## Related Guides
+
+- [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/)
+- [Payment Flow](/advertisers/tracking/payment-flow/)
+- [Testing Integration](/advertisers/tracking/testing-integration/)

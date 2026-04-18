@@ -1,0 +1,284 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-ui/css/neutral.css';
+
+/* ═══════════════════════════════════════════════════════
+   Affitor Docs — Design System
+   Reference: docs.kymaapi.com (Mintlify gold → Affitor blue)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Design Tokens: Light Mode ── */
+:root {
+  /* Brand */
+  --color-fd-primary: #155DFC;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-ring: #155DFC;
+
+  /* Surfaces — warm neutrals (Mintlify pattern) */
+  --color-fd-background: #ffffff;
+  --color-fd-foreground: #1d1b18;
+  --color-fd-card: #ffffff;
+  --color-fd-border: #e4e3e0;
+  --color-fd-muted: #f9f7f4;
+  --color-fd-muted-foreground: #76756e;
+  --color-fd-secondary: #f4f3f0;
+  --color-fd-secondary-foreground: #1d1b18;
+  --color-fd-popover: #ffffff;
+  --color-fd-popover-foreground: #1d1b18;
+  --color-fd-accent: #f9f7f4;
+  --color-fd-accent-foreground: #1d1b18;
+}
+
+/* ── Design Tokens: Dark Mode ── */
+.dark {
+  /* Brand — lighter blue for dark bg */
+  --color-fd-primary: #5B8DEF;
+  --color-fd-primary-foreground: #0a0a0a;
+  --color-fd-ring: #5B8DEF;
+
+  /* Surfaces — deep navy (Mintlify dark: #08081a → adapted) */
+  --color-fd-background: #0b0c0e;
+  --color-fd-foreground: #e4e3e0;
+  --color-fd-card: #111214;
+  --color-fd-border: rgba(255, 255, 255, 0.08);
+  --color-fd-muted: rgba(255, 255, 255, 0.04);
+  --color-fd-muted-foreground: #a5a3a0;
+  --color-fd-secondary: rgba(255, 255, 255, 0.06);
+  --color-fd-secondary-foreground: #e4e3e0;
+  --color-fd-popover: #111214;
+  --color-fd-popover-foreground: #e4e3e0;
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: #e4e3e0;
+}
+
+/* ── Typography ── */
+@layer base {
+  body {
+    font-family: 'Inter', 'Inter Fallback', -apple-system, 'system-ui',
+      'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Article body — match Mintlify's generous line-height */
+article {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* Headings — Mintlify scale: h1 30/36 700 -0.75, h2 24/32 600, h3 20/28 600 */
+article :where(h1) {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-fd-foreground);
+}
+
+article :where(h2) {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+article :where(h3) {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Paragraphs */
+article :where(p) {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Links — clean, no underlines, subtle hover ── */
+article :where(p, li, td) a {
+  color: var(--color-fd-primary);
+  text-decoration: none !important;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+article :where(p, li, td) a:hover {
+  opacity: 0.75;
+}
+
+/* Heading anchors — inherit color */
+article :where(h1, h2, h3, h4, h5, h6) a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* ── Tables — modern, minimal (Mintlify pattern) ── */
+article table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+article table thead th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-fd-foreground);
+  padding: 0 0.5rem 0.75rem 0;
+  border-bottom: 1px solid var(--color-fd-border);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+article table tbody td {
+  padding: 0.625rem 0.5rem 0.625rem 0;
+  border-bottom: 1px solid var(--color-fd-border);
+  color: var(--color-fd-muted-foreground);
+}
+
+article table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Subtle hover */
+article table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+article table tbody tr:hover {
+  background-color: var(--color-fd-muted);
+}
+
+/* Remove default alternating rows */
+article table tbody tr:nth-child(even) {
+  background: transparent;
+}
+
+article table tbody tr:nth-child(even):hover {
+  background-color: var(--color-fd-muted);
+}
+
+/* ── Code blocks — dark bg, rounded, Mintlify style ── */
+article pre {
+  font-size: 0.875rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid var(--color-fd-border) !important;
+}
+
+article :where(p, li, td) code {
+  font-size: 0.8125rem;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  background: var(--color-fd-muted);
+  color: var(--color-fd-foreground);
+  font-weight: 500;
+}
+
+/* ── Layout ── */
+#nd-docs-layout {
+  --fd-docs-height: calc(100dvh - 3rem);
+}
+
+/* Fix: tabs bar stretches to full grid cell height, covering article content */
+#nd-docs-layout > div[class*="[grid-area:main]"]:not(article) {
+  align-self: start;
+  position: sticky;
+  top: 0;
+}
+
+/* ── Sidebar ── */
+/* Hide fumadocs default nav (we have custom header) */
+#nd-sidebar > div:first-child {
+  display: none;
+}
+
+#nd-sidebar > button:last-of-type {
+  display: none;
+}
+
+/* Sidebar — match main content background */
+.dark #nd-sidebar {
+  background: var(--color-fd-background) !important;
+}
+
+/* Sidebar link sizing — Mintlify uses 14px */
+#nd-sidebar a {
+  font-size: 0.875rem;
+}
+
+/* ── Search dialog — centered (Mintlify pattern) ── */
+div[role="dialog"][data-state="open"] {
+  top: 20vh !important;
+}
+
+.dark div.fixed.inset-0[data-state="open"] {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+/* ── Edit on GitHub — compact, right-aligned, subtle ── */
+a[href*="/edit/main/"] {
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.75rem !important;
+  opacity: 0.35;
+  transition: opacity 0.15s ease;
+  width: fit-content !important;
+  margin-left: auto !important;
+  border: 1px solid var(--color-fd-border) !important;
+  background: transparent !important;
+}
+
+a[href*="/edit/main/"]:hover {
+  opacity: 1;
+  background: var(--color-fd-muted) !important;
+}
+
+/* ── Prev/Next navigation cards ── */
+.dark a[data-card] {
+  border-color: var(--color-fd-border);
+}
+
+/* ── Callout/Admonition refinements ── */
+article [class*="callout"],
+article [class*="Callout"] {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* ── Scrollbar (dark mode) ── */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Selection color ── */
+::selection {
+  background: rgba(21, 93, 252, 0.15);
+  color: inherit;
+}
+
+.dark ::selection {
+  background: rgba(91, 141, 239, 0.2);
+  color: inherit;
+}

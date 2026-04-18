@@ -1,0 +1,275 @@
+---
+title: Lead Tracking (Signup)
+description: Track referred signups with the browser helper or the server-side lead API
+---
+
+Lead tracking connects a signup to the affiliate click that drove it. This is the step that turns anonymous referral traffic into an identified customer record.
+
+---
+
+## What Lead Tracking Does
+
+When signup tracking succeeds, Affitor can:
+
+1. link the signup to the tracked click/customer relationship
+2. store your internal customer identifier for later payment attribution
+3. move the customer journey forward from click → lead
+
+Use these names consistently:
+
+| Context | Field |
+|--------|-------|
+| Browser helper | `customerKey` |
+| Lead API | `customer_key` |
+| Stripe metadata later | `affitor_customer_key` |
+
+---
+
+## Prerequisites
+
+Before tracking a signup:
+
+- [x] the visitor arrived through an affiliate-tracked flow
+- [x] the tracker created a click/customer relationship first
+- [x] your signup flow has a stable internal user/customer ID to send to Affitor
+
+A tracked click usually means the browser already has `affitor_click_id` from the pageview/click step.
+
+---
+
+## Option A — Browser-side `signup()`
+
+Use this when signup completes in the browser and the tracker script is already loaded.
+
+### Basic example
+
+```javascript
+if (window.affitor) {
+  await window.affitor.signup('user_123', 'user@example.com');
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['signup', 'user_123', 'user@example.com']);
+}
+```
+
+### What the arguments mean
+
+| Argument | Required | Meaning |
+|----------|----------|---------|
+| `customerKey` | **Yes (recommended for all real integrations)** | your internal user/customer ID |
+| `email` | Recommended | customer email; used for hashed/masked attribution support |
+
+:::caution[Use a real internal identifier]
+The `customerKey` you pass here should be the same identifier you later use as:
+- `customer_key` in the lead/sale API
+- `affitor_customer_key` in Stripe metadata
+:::
+
+### Example inside a signup flow
+
+```javascript
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+
+  // Your own signup logic first
+  const result = await createAccount(email);
+
+  if (result.success) {
+    if (window.affitor) {
+      await window.affitor.signup(result.userId, email);
+    } else {
+      window.affitorQueue = window.affitorQueue || [];
+      window.affitorQueue.push(['signup', result.userId, email]);
+    }
+  }
+});
+```
+
+### When to use browser-side signup
+
+- your frontend knows when signup succeeded
+- the tracker is already installed on the page
+- you want the simplest supported implementation
+
+---
+
+## Option B — Server-side Lead API
+
+Use this when account creation happens on your backend or you want your server to send the lead event.
+
+### Endpoint
+
+```bash
+POST https://api.affitor.com/api/v1/track/lead
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+```
+
+### Request body
+
+```json
+{
+  "click_id": "cust_42_1234567890",
+  "customer_key": "usr_abc123",
+  "email": "user@example.com"
+}
+```
+
+### Rules
+
+Outside test mode, provide at least one of:
+- `click_id`
+- `customer_key`
+
+For reliable downstream payment attribution, you should normally send **both** when available.
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Lead tracked successfully"
+}
+```
+
+### Node.js example
+
+```ts
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+  const newUser = await createUser({ email, password });
+  const clickId = req.cookies.affitor_click_id;
+
+  await fetch('https://api.affitor.com/api/v1/track/lead', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.AFFITOR_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      click_id: clickId,
+      customer_key: newUser.id,
+      email: newUser.email,
+    }),
+  });
+
+  res.json({ success: true });
+});
+```
+
+### Python example
+
+```python
+requests.post(
+    'https://api.affitor.com/api/v1/track/lead',
+    headers={
+        'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'click_id': request.cookies.get('affitor_click_id'),
+        'customer_key': str(new_user.id),
+        'email': new_user.email,
+    },
+)
+```
+
+---
+
+## Browser Mode vs Server Mode
+
+| Mode | Best for | Auth |
+|------|----------|------|
+| `signup(customerKey, email)` | frontend/browser signup flows | no Bearer token in your integration |
+| `POST /api/v1/track/lead` | backend-driven signup flows | Bearer program API key recommended |
+
+Both modes should ultimately identify the same customer with the same internal ID.
+
+---
+
+## Test Mode
+
+You can create a test lead event without affecting production attribution.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Content-Type: application/json" \
+  -d '{
+    "click_id": "test_lead_001",
+    "customer_key": "test_customer",
+    "additional_data": {
+      "test_mode": true,
+      "program_id": "YOUR_PROGRAM_ID"
+    }
+  }'
+```
+
+### Test mode behavior
+
+- creates a test lead event with `is_test: true`
+- does not create a real production lead/customer transition
+- can be verified through dashboard/test-event tooling
+
+### Test mode response
+
+```json
+{
+  "success": true,
+  "message": "Test lead event tracked successfully",
+  "data": {
+    "eventId": 456,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+---
+
+## Common Failure Modes
+
+### Lead not attributed
+
+Check:
+- the visitor first came through a tracked affiliate click
+- `customerKey` / `customer_key` matches your real internal user ID
+- `affitor_click_id` was available when expected
+- you are not accidentally testing only in debug mode
+
+### Wrong identifier used later in payments
+
+This is a common cause of broken attribution. The same internal ID must line up across:
+- `signup(customerKey, email)`
+- `customer_key` in sale API calls
+- `affitor_customer_key` in Stripe metadata
+
+### Duplicate signup tracking
+
+Prevent by:
+- calling signup tracking only after account creation succeeds once
+- avoiding duplicate frontend submissions
+- deduplicating your own signup flow before retrying tracking calls
+
+---
+
+## Testing Lead Tracking with the CLI
+
+You can send a test lead event without writing any integration code:
+
+```bash
+npx affitor test lead
+```
+
+This creates a test lead event against your program and confirms the endpoint is working. See [CLI Commands](/advertisers/cli/commands/) for all available test commands.
+
+---
+
+## What to Do Next
+
+After lead tracking works, set up sale tracking:
+
+- [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
+- [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/)
+- [Testing Integration](/advertisers/tracking/testing-integration/)

@@ -1,0 +1,83 @@
+---
+title: Payouts
+description: How partner commissions move through Affitor's payout workflow.
+---
+
+Understand how cleared commissions move toward partner payment and what role the advertiser still plays.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers and ops teams' },
+    { label: 'Time required', value: '5 minutes' },
+    { label: 'Prerequisites', value: 'An understanding of commission approval, hold workflow, and attributed sales' },
+    { label: 'Outcome', value: 'You understand the payout lifecycle, methods, and the advertiser role in the process' },
+  ]}
+/>
+
+## How payouts work
+
+```mermaid
+graph LR
+    A[Sale attributed] --> B[Commission created]
+    B --> C[Review / hold workflow]
+    C --> D[Commission clears]
+    D --> E[Payout workflow continues]
+```
+
+At a high level:
+1. a sale is attributed
+2. commission is created
+3. commission moves through review / hold workflow
+4. cleared earnings become withdrawable within the payout process
+5. partner payout is processed through Affitor
+
+You do not need to manage individual partner transfers yourself.
+
+---
+
+## Payout Methods
+
+Depending on availability and partner setup, payout methods can include:
+
+| Method | Notes |
+|--------|-------|
+| Bank transfer | Common partner payout path |
+| Wise | Used where supported |
+| Stripe | Used where supported |
+
+Partners manage their payout details inside the payout workflow; advertisers do not need to collect bank details directly.
+
+---
+
+## Balance States
+
+| State | Meaning |
+|-------|---------|
+| **Pending** | Still in hold/review workflow |
+| **Withdrawable** | Cleared and available for payout workflow |
+| **Paid** | Completed payout |
+
+---
+
+## Your Role as Advertiser
+
+| Do | Don’t |
+|----|-------|
+| review transactions/commissions where needed | manage individual partner bank transfers |
+| configure commission and hold settings | build your own payout ops layer for each partner |
+| monitor affiliate cost and performance | manually reconcile every partner payment outside the workflow |
+
+---
+
+## Refunds
+
+If a refund happens, the commission is reconciled through the commission/payout workflow based on where it currently sits in the lifecycle.
+
+---
+
+<NextStep
+  title="Review performance views"
+  description="Once payout flow is clear, check the performance guide to see where clicks, leads, sales, and payout-related outcomes appear in the dashboard."
+  href="/advertisers/quickstart/view-performance"
+  ctaLabel="Open performance guide"
+/>

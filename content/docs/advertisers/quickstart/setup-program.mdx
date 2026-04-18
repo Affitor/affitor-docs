@@ -1,0 +1,168 @@
+---
+title: Set Up Your Program
+description: Configure your affiliate program and choose the right integration path.
+---
+
+Configure your program basics before you invite partners or install tracking.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers and operators' },
+    { label: 'Time required', value: '10–15 minutes' },
+    { label: 'Prerequisites', value: 'A created advertiser account and your initial program details' },
+    { label: 'Outcome', value: 'Your program basics, approval mode, commission direction, and tracking path are ready' },
+  ]}
+/>
+
+## What you are setting up
+
+1. **Program details** — business info, approval settings, commission rules
+2. **Tracking & integrations** — click, signup, and sale tracking
+3. **Share program** — your partner-facing program link
+
+## 1. Program details
+
+### Business details
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| Company name | Yes | pre-filled from your account |
+| Website URL | Yes | main product/site URL |
+| Tagline | No | shown to partners |
+| Logo | Yes | PNG, JPG, or SVG |
+| Terms of Service URL | No | affiliate terms / program terms |
+| Resources URL | No | partner-facing marketing resources |
+
+### Approval mode
+
+| Mode | Description | Best for |
+|------|-------------|----------|
+| **Manual review** | review each partner application | quality control, B2B motions |
+| **Auto-approve** | approve applicants automatically | higher-volume programs |
+
+### Commission details
+
+| Field | Description |
+|-------|-------------|
+| Commission rate (%) | default partner commission |
+| Commission duration | how long a referred customer keeps earning for the partner |
+
+Common duration options include one-time, fixed-month recurring, and lifetime depending on the program setup.
+
+---
+
+## 2. Tracking & Integrations
+
+Affitor integrations usually happen in three steps.
+
+### Step 1 — Pageview / click tracking
+
+Install the tracker on pages where affiliate traffic lands.
+
+**SDK:**
+
+```bash
+npm install @affitor/tracker
+```
+
+```tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+
+<AffitorProvider programId="YOUR_PROGRAM_ID">
+  {children}
+</AffitorProvider>
+```
+
+**Script tag:**
+
+```html
+<script
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  data-affitor-debug="false">
+</script>
+```
+
+→ [Full guide](/advertisers/tracking/pageview-tracker-click)
+
+### Step 2 — Signup / lead tracking
+
+After signup succeeds, send your internal customer ID to Affitor.
+
+**Browser helper:**
+
+```js
+await window.affitor.signup('user_123', 'user@example.com');
+```
+
+**Server API:**
+
+```json
+{
+  "click_id": "cust_42_1234567890",
+  "customer_key": "user_123",
+  "email": "user@example.com"
+}
+```
+
+→ [Full guide](/advertisers/tracking/lead-tracking-signup/)
+
+### Step 3 — Sale / payment tracking
+
+Choose the path that matches your checkout.
+
+| Method | How it works | Best for |
+|--------|--------------|----------|
+| **Sale API** | your backend sends `POST /api/v1/track/sale` after payment succeeds | any payment provider or custom backend |
+| **Stripe Bill Flow** | you keep taking payment in your own Stripe checkout; Affitor attributes via metadata + webhooks | existing Stripe Checkout integrations |
+
+For Stripe Bill Flow, use these public fields in metadata:
+- `affitor_click_id`
+- `affitor_customer_key`
+- `program_id`
+
+For subscriptions, put the same values in both:
+- `metadata`
+- `subscription_data.metadata`
+
+→ [Full guide](/advertisers/tracking/payment-tracking-stripe/)
+
+---
+
+## 3. Share Your Program
+
+Once setup is complete, you can share your partner recruitment link so affiliates can apply to join.
+
+---
+
+## Recommended setup order
+
+<Checklist
+  items={[
+    { text: 'Install click tracking first' },
+    { text: 'Wire signup tracking with a stable internal customer ID' },
+    { text: 'Choose Sale API or Stripe Bill Flow for payment tracking' },
+    { text: 'Run test flows before launch' },
+  ]}
+/>
+
+:::tip[CLI alternative]
+The Affitor CLI handles steps 1–4 with guided prompts:
+
+```bash
+npx affitor init          # program + tracking snippets
+npx affitor setup stripe  # auto-configure Stripe webhooks
+npx affitor test sale     # verify end-to-end
+```
+
+See [CLI Quickstart](/advertisers/cli/quickstart/).
+:::
+
+---
+
+<NextStep
+  title="Install tracking"
+  description="Once your program details are in place, move into the tracking quickstart to capture clicks, signups, and payments end to end."
+  href="/advertisers/tracking/quickstart-integration"
+  ctaLabel="Open tracking quickstart"
+/>

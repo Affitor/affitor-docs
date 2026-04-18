@@ -1,0 +1,10 @@
+{
+  "title": "Getting Started",
+  "root": true,
+  "pages": [
+    "what-is-affitor",
+    "how-it-works",
+    "pricing-performance-model",
+    "glossary"
+  ]
+}

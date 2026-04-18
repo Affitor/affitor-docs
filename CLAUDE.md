@@ -1,43 +1,67 @@
-# Affitor Docs — Claude Rules
+# Affiliate Docs v2 — Claude Rules
 
-**Read first:** [../affitor-context.md](../affitor-context.md) — shared architecture & conventions.
+## Repo role
+This repo owns the current docs v2 / Fumadocs site for public Affitor documentation.
 
-## Stack
-Astro 5.6.1 + Starlight 0.37.3
+It is a **derived docs repo**:
+- it documents canonical behavior owned by runtime repos
+- it does **not** define CMS/dashboard tracking or payment behavior by itself
+
+## Read first for behavior changes
+Before editing docs content about product behavior, read in this order:
+1. `../affitor-context.md`
+2. `../docs/AGENT-SOURCE-OF-TRUTH.md`
+3. `docs/AGENT-SOURCE-OF-TRUTH.md`
+4. canonical runtime/source repos for the affected domain
+
+## Canonical source rule
+When docs conflict with runtime repos, trust:
+1. runtime code / executed config
+2. schema / contract definitions
+3. repo-level source-of-truth docs in the runtime repo
+4. public docs in this repo
+
+For tracking / attribution / billing docs, the primary sources are usually:
+- `../affiliate-cms/src/api/affiliate-tracking/*`
+- `../affiliate-cms/src/api/webhook-distributor/*`
+- `../affiliate-dashboard/src/containers/AffiliateManagement/Advertiser/*`
+
+## Current docs structure
+- content lives in `content/docs/`
+- docs app routes are served under `/docs/...`
+- app/router code lives in `src/app/`
+- Fumadocs config lives in `source.config.ts`
+- workflow sync guidance lives in `docs/workflow-sync-map.md`
 
 ## Rules
+1. **Runtime-first docs** — never invent behavior to fill gaps
+2. **Prefer public supported paths** — mention legacy aliases only as compatibility notes when runtime still accepts them
+3. **Keep pathing correct** — internal docs links should resolve under `/docs/...`
+4. **Do not revive removed features** — Affitor Pay is removed unless explicitly reintroduced in canonical runtime/docs
+5. **Avoid unsupported certainty** — if payout timing or business wording is ambiguous across canonicals, use conservative wording and note the dependency
+6. **Keep docs self-serve** — optimize for advertisers and agents implementing integrations without support calls
+7. **Build after meaningful docs changes** — run `npm run build`
 
-1. **Content in MDX** — All docs in `src/content/docs/`. Use `.mdx` extension.
-2. **Frontmatter required** — Every page needs: `title`, `description`. Optional: `author`, `tags`, `featured`.
-3. **Sidebar config** — Defined in `astro.config.mjs`. Update when adding new sections.
-4. **Stub pages** — 23 pages are stubs ("Coming soon"). Fill before launch.
-5. **Images** — Put in `public/images/`. Reference as `/images/filename.png`.
-6. **No custom CSS** — Use Starlight defaults. No Tailwind in this repo.
-7. **Site URL** — `docs.affitor.com`. Set in `astro.config.mjs`.
+## High-risk domains
+Treat these topics as high-risk even in docs-only changes:
+- tracking / attribution
+- sale and lead API contracts
+- Stripe metadata requirements
+- invoice / billing wording
+- commissions / payout lifecycle
+- auth / API keys
 
-## Content Status
+For these, read runtime code first and capture the source files used.
 
-| Section | Done | Stubs |
-|---------|------|-------|
-| Getting Started | 4 | 0 |
-| Advertiser Quickstart | 1 | 6 |
-| Tracking | 2 | 4 |
-| FAQ | 1 | 0 |
-| Support | 1 | 1 |
-| **Total** | **9** | **11** |
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `astro.config.mjs` | Site config + sidebar |
-| `src/content/content.config.ts` | Schema (custom fields) |
-| `vercel.json` | Deploy config + security headers |
-| `scripts/create-placeholders.js` | Stub page generator |
-
-## Dev
+## Validation
+At minimum for meaningful docs changes:
+```bash
+cd /Users/sonpiaz/Affitor-main/affiliate-docs-port
+npm run build
 ```
-npm run dev                      # Dev server (:4321)
-npm run build                    # Build static site
-npm run preview                  # Preview build
-```
+
+Also manually inspect:
+- internal link correctness
+- naming consistency (`customerKey`, `customer_key`, `affitor_customer_key`)
+- supported integration paths
+- whether adjacent workflows in `docs/workflow-sync-map.md` also need syncing
