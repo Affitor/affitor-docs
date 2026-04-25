@@ -49,8 +49,14 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: Dashboard + Get Started + Theme toggle */}
+      {/* Right: Changelog + Dashboard + Get Started + Theme toggle */}
       <div className="flex items-center gap-4 shrink-0">
+        <Link
+          href="/changelog"
+          className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden sm:block"
+        >
+          Changelog
+        </Link>
         <Link
           href="https://affitor.com/affiliate-management"
           className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden sm:block"
