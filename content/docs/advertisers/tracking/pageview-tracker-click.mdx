@@ -48,7 +48,13 @@ npm install @affitor/tracker
 
 ### React / Next.js
 
+:::warning
+**Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `@affitor/tracker/react` uses browser APIs and cannot run in a Server Component. Add `"use client"` at the top of any file that imports `AffitorProvider`.
+:::
+
 ```tsx
+"use client";
+
 import { AffitorProvider } from '@affitor/tracker/react';
 
 export default function App({ children }) {
