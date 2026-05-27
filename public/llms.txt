@@ -11,8 +11,6 @@
 - [How It Works](https://docs.affitor.com/docs/getting-started/how-it-works): The affiliate lifecycle from click to payout
 - [Pricing](https://docs.affitor.com/docs/getting-started/pricing-performance-model): 3.5% platform fee, no subscription
 - [Glossary](https://docs.affitor.com/docs/getting-started/glossary): Key terms and definitions
-- [CLI Quickstart](https://docs.affitor.com/docs/advertisers/cli/quickstart): Set up affiliate program in 3 commands
-- [CLI Commands](https://docs.affitor.com/docs/advertisers/cli/commands): Full command reference for npx affitor
 - [3-Step Integration](https://docs.affitor.com/docs/advertisers/tracking/quickstart-integration): Click, signup, and sale tracking setup
 - [Tracking Overview](https://docs.affitor.com/docs/advertisers/tracking/tracking-overview): How attribution links clicks to revenue
 - [Click Tracking](https://docs.affitor.com/docs/advertisers/tracking/pageview-tracker-click): Install the tracker via npm SDK or script tag
@@ -24,17 +22,7 @@
 
 ## Quick Integration
 
-### CLI Setup (fastest — 5 minutes)
-
-```bash
-npx affitor init          # creates program, returns API key + tracking code
-npx affitor setup stripe  # auto-configures Stripe webhooks via OAuth
-npx affitor test sale     # verifies end-to-end pipeline
-```
-
-After `npx affitor init`, an AGENTS.md file is generated in `.affitor/` with full integration instructions readable by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and any AI coding tool.
-
-### Manual Integration (3 steps)
+### Integration (3 steps)
 
 **Step 1 — Click tracking**: Add the tracker script to your site `<head>`:
 
@@ -69,7 +57,7 @@ Content-Type: application/json
 
 **Step 3 — Sale tracking**:
 
-Option A: Stripe (run `npx affitor setup stripe` for automatic webhook config)
+Option A: Stripe metadata + webhook (Bill Flow):
 
 Option B: Sale API (any payment provider):
 
@@ -121,7 +109,6 @@ Use the same internal user ID everywhere:
 - All amounts in cents (e.g., $49.00 = 4900)
 - `transaction_id` must be unique per sale (duplicate returns 409)
 - Test mode: add `"additional_data": {"test_mode": true}` to skip commission creation
-- CLI automation flags: `--no-interactive --json`
 - Attribution: first-party cookie, last-click, 60-day default window
 
 ## Pricing
