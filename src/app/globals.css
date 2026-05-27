@@ -282,3 +282,38 @@ article [class*="Callout"] {
   background: rgba(91, 141, 239, 0.2);
   color: inherit;
 }
+
+/* ═══════════════════════════════════════════════════════
+   Search Dialog — Kyma/Mintlify-style
+   ═══════════════════════════════════════════════════════ */
+
+/* Match highlight in brand blue (Kyma uses gold, Affitor uses blue) */
+[role='dialog'] mark,
+[role='dialog'] [data-active='true'] mark {
+  background: transparent !important;
+  color: var(--color-fd-primary) !important;
+  font-weight: 600;
+  padding: 0;
+}
+
+/* Bigger, more prominent search input */
+[role='dialog'] input[type='search'],
+[role='dialog'] input[placeholder*='Search'] {
+  font-size: 0.9375rem;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+/* Breadcrumb header — slightly bolder, brand-tinted */
+[role='dialog'] [class*='inline-flex'][class*='text-fd-muted-foreground'][class*='text-xs'] {
+  color: var(--color-fd-muted-foreground);
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+}
+
+/* ESC key hint badge */
+[role='dialog'] kbd {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+}
