@@ -163,6 +163,71 @@ const session = await stripe.checkout.sessions.create({
 
 ---
 
+## Pay-as-you-go / Repeated One-Time Purchases
+
+Some products charge customers per usage event — no subscription object, just independent checkout sessions. Examples: API credit top-ups, usage-based batches billed separately, metered add-ons.
+
+### How it works
+
+Every `checkout.session.completed` event with `mode: 'payment'` is processed independently by Affitor. Each one goes through the full attribution and commission calculation flow.
+
+:::note
+**`invoice.payment_succeeded` is not involved here.**
+Affitor only uses `invoice.payment_succeeded` for recurring subscription renewals. Pay-as-you-go purchases use `checkout.session.completed` — one event per purchase, each attributed and commissioned separately.
+:::
+
+### Attribution across multiple purchases
+
+The first purchase is straightforward — if the customer clicked an affiliate link recently, `affitor_click_id` is still in their browser cookie.
+
+Later purchases may arrive weeks or months after the last click. The cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
+
+**Required metadata on every checkout — including repeat purchases:**
+
+```js
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'payment',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: getCookie('affitor_click_id') || '', // may be empty — that is expected
+    affitor_customer_key: currentUser.id,                  // required and must be stable
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+});
+```
+
+:::tip
+`affitor_click_id` may be absent for repeat purchases — that is expected and not an error. Affitor will fall back to `affitor_customer_key` for attribution. Still send it when it is available.
+:::
+
+### Pre-requisite: signup tracking
+
+Cross-purchase attribution requires an affiliate-customer record, which is created when the signup tracker fires at user registration:
+
+```js
+affitor.signup({ customer_key: currentUser.id });
+```
+
+If signup tracking was not set up or did not fire for a given user, no customer record exists and later purchases will not be attributed.
+
+### Attribution does not expire
+
+Once an affiliate-customer record is linked to a partner, the link persists indefinitely. There is no time-based cut-off on the customer-to-partner relationship.
+
+Your tier configuration may include a `duration_months` cap (for example, "pay commission for 12 months after signup"). That is a **commission duration limit** — it controls how long a partner earns on a customer, not whether purchases are recognized.
+
+### Troubleshooting pay-as-you-go
+
+| Symptom | Likely cause |
+|---------|--------------|
+| First purchase attributed, later purchases are not | `affitor_customer_key` is missing or inconsistent across checkouts |
+| No purchases attributed at all | Signup tracker never fired — no customer record exists |
+| Commissions created but stop after N months | Tier has a `duration_months` cap — this is expected behavior, not a bug |
+
+---
+
 ## How Affitor Resolves Attribution from Stripe
 
 When a Stripe event arrives, Affitor attempts attribution through a fallback chain.
@@ -239,6 +304,13 @@ Check:
 - `affitor_click_id` and `affitor_customer_key` are passed when available
 - signup tracking used the same internal customer ID earlier
 - the Stripe webhook was delivered successfully
+
+### Stripe pay-as-you-go second/third purchase not attributed
+
+Check:
+- `affitor_customer_key` is present in the metadata of every checkout session (not just the first)
+- the value is exactly the same stable ID used at signup — any mismatch means the customer record cannot be found
+- the signup tracker fired for this user — without it, no customer record exists and attribution fails silently
 
 ### Stripe renewals not attributed
 
