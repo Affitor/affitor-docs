@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create Your Advertiser Account · Affitor Docs (Linear-style mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AFFITOR DOCS — Linear-style mockup
+   Tokens = converged set (dashboard slate grays + Linear restraint)
+   ============================================================ */
+:root {
+  /* Brand (shared SSOT) */
+  --brand: #155DFC;
+  --brand-hover: #1249D6;
+  --brand-tint: rgba(21,93,252,0.08);
+
+  /* Radius (converged toward dashboard 10px) */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 12px;
+
+  /* Type */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Semantic (lifted verbatim from dashboard dsFeedbackTones) */
+  --info-solid:#155dfc;  --info-bg:#eff6ff;  --info-text:#1d4ed8;
+  --warn-solid:#d68a18;  --warn-bg:#fffbeb;  --warn-text:#b45309;
+  --ok-solid:#15935e;    --ok-bg:#ecfdf5;    --ok-text:#0e8a52;
+  --danger-solid:#e5484d;--danger-bg:#fef2f2;--danger-text:#b42318;
+}
+
+/* ---- LIGHT (default) ---- */
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-elevated: #fafafa;
+  --ink: #262626;          /* headings — dashboard slate */
+  --body: #3c4257;         /* body text — dashboard slate */
+  --muted: #6a7383;        /* secondary/help */
+  --dim: #aab1bd;
+  --border: #e3e8ee;       /* default border — dashboard */
+  --border-strong: #d8dee4;
+  --border-hover: #cfd6df;
+  --card: transparent;
+  --code-bg: #f6f7f9;
+  --code-text: #3c4257;
+  --code-block-bg: #0e0f11;     /* dark code block even in light mode */
+  --code-block-text: #c7d2e6;
+  --header-bg: rgba(255,255,255,0.82);
+  --sidebar-active-bg: var(--brand-tint);
+}
+/* ---- DARK ---- */
+:root[data-theme="dark"] {
+  --bg: #08090a;
+  --bg-elevated: #121314;
+  --ink: #f7f8f8;
+  --body: #d0d6e0;
+  --muted: #80848c;
+  --dim: #50545c;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.12);
+  --border-hover: rgba(255,255,255,0.14);
+  --card: rgb(18,19,20);
+  --code-bg: rgba(255,255,255,0.06);
+  --code-text: #c7d2e6;
+  --code-block-bg: #0e0f11;
+  --code-block-text: #c7d2e6;
+  --header-bg: rgba(8,9,10,0.82);
+  --brand: #5881ff;            /* interactive blue lifts in dark */
+  --brand-tint: rgba(88,129,255,0.14);
+  --sidebar-active-bg: var(--brand-tint);
+  --info-bg: rgba(88,129,255,0.07);   --info-text:#9db4ff;
+  --warn-bg: rgba(214,138,24,0.08);   --warn-text:#e7b15e;
+  --ok-bg: rgba(21,147,94,0.08);      --ok-text:#5fcf95;
+  --danger-bg: rgba(229,72,77,0.08);  --danger-text:#f1888b;
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::selection { background: rgba(21,93,252,0.16); }
+:root[data-theme="dark"] ::selection { background: rgba(88,129,255,0.28); }
+
+/* ===== Header ===== */
+header.top {
+  position: sticky; top: 0; z-index: 20;
+  height: 48px;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 22px;
+  background: var(--header-bg);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand-lockup { display:flex; align-items:center; gap:9px; text-decoration:none; }
+.logo-glyph { display:block; width:22px; height:22px; }
+.brand-name { color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing:-0.01em; }
+.brand-sep { color: var(--dim); font-size: 14px; }
+.brand-docs { color: var(--muted); font-size: 14px; font-weight: 500; }
+.spacer { flex: 1; }
+.search-trigger {
+  display:flex; align-items:center; gap:8px;
+  width: 220px; height: 32px; padding: 0 10px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--bg-elevated); color: var(--muted);
+  font-size: 13px; cursor: text;
+}
+:root[data-theme="dark"] .search-trigger { background: rgba(255,255,255,0.04); }
+.search-trigger .kbd { margin-left:auto; display:flex; gap:3px; }
+kbd {
+  font-family: var(--font); font-size: 11px; color: var(--muted);
+  border: 1px solid var(--border-strong); border-radius: 4px;
+  padding: 1px 5px; line-height: 1.4; background: var(--bg);
+}
+.ghost-link { color: var(--muted); text-decoration:none; font-size:13px; font-weight:500; padding:6px 8px; border-radius:6px; }
+.ghost-link:hover { color: var(--ink); background: var(--bg-elevated); }
+.cta {
+  height: 32px; padding: 0 14px; display:inline-flex; align-items:center;
+  background: var(--brand); color:#fff; border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 600; text-decoration:none;
+  transition: background-color 160ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1);
+}
+.cta:hover { background: var(--brand-hover); }
+.cta:active { transform: scale(0.97); }   /* Emil: button press 100-160ms, scale .97 */
+.toggle {
+  width:32px; height:32px; display:grid; place-items:center;
+  border:1px solid var(--border); border-radius: var(--r-sm);
+  background: transparent; color: var(--muted); cursor:pointer; font-size:14px;
+}
+.toggle:hover { color: var(--ink); border-color: var(--border-hover); }
+
+/* ===== Layout ===== */
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0,1fr) 200px;
+  max-width: 1320px; margin: 0 auto;
+  align-items: start;
+}
+
+/* ===== Sidebar ===== */
+aside.side {
+  position: sticky; top: 48px;
+  height: calc(100vh - 48px); overflow-y: auto;
+  padding: 24px 12px 40px 22px;
+  font-size: 13px;
+}
+.side-group { margin-bottom: 22px; }
+.side-eyebrow {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted);
+  padding: 0 8px; margin-bottom: 8px;
+}
+.side a {
+  display:block; padding: 5px 9px; border-radius: var(--r-sm);
+  color: var(--muted); text-decoration: none; line-height: 1.45;
+  border-left: 2px solid transparent; margin-left: -2px;
+}
+.side a:hover { color: var(--ink); background: var(--bg-elevated); }
+.side a.active {
+  color: var(--brand); font-weight: 500;
+  background: var(--sidebar-active-bg);
+  border-left-color: var(--brand);
+}
+
+/* ===== Content ===== */
+main.doc {
+  padding: 30px 48px 80px;
+  max-width: 760px;
+}
+.breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 22px; display:flex; gap:7px; align-items:center; }
+.breadcrumb .sep { color: var(--dim); }
+.breadcrumb a { color: var(--muted); text-decoration:none; }
+.breadcrumb a:hover { color: var(--ink); }
+
+h1 {
+  font-size: 32px; font-weight: 590; letter-spacing: -0.015em;
+  line-height: 1.15; color: var(--ink); margin: 0 0 12px;
+}
+.lede { font-size: 16px; line-height: 1.6; color: var(--muted); margin: 0 0 28px; }
+.lede strong { color: var(--body); font-weight: 600; }
+
+h2 {
+  font-size: 22px; font-weight: 590; letter-spacing: -0.012em;
+  color: var(--ink); margin: 48px 0 14px; padding-top: 4px;
+}
+h3 { font-size: 17px; font-weight: 590; letter-spacing:-0.008em; color: var(--ink); margin: 30px 0 10px; }
+p { margin: 0 0 16px; }
+hr { border:0; border-top:1px solid var(--border); margin: 36px 0; }
+
+/* prose links — monochrome, subtle underline at rest, ink on hover */
+.doc a.link {
+  color: inherit; text-decoration: none;
+  border-bottom: 1px solid var(--border-strong);
+  transition: border-color .15s ease, color .15s ease;
+}
+.doc a.link:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+ul, ol { margin: 0 0 16px; padding-left: 22px; }
+li { margin: 6px 0; }
+ul.clean { list-style: none; padding-left: 0; }
+ul.clean li { display:flex; gap:10px; align-items:flex-start; }
+ul.clean li .dot { color: var(--muted); margin-top: 9px; flex:none; width:4px; height:4px; border-radius:50%; background: var(--muted); }
+
+/* inline code */
+code.inline {
+  font-family: var(--mono); font-size: 0.86em;
+  background: var(--code-bg); color: var(--code-text);
+  padding: 2px 5px; border-radius: 4px;
+}
+
+/* section eyebrow label */
+.eyebrow {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px;
+}
+
+/* checklist card (replaces ✅ emoji) */
+.checklist {
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--card); padding: 18px 20px; margin: 4px 0 16px;
+}
+.checklist ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:11px; }
+.checklist li { display:flex; gap:11px; align-items:flex-start; font-size:14.5px; color: var(--body); }
+.check {
+  flex:none; width:18px; height:18px; border-radius:50%;
+  background: var(--ok-bg); color: var(--ok-solid);
+  display:grid; place-items:center; margin-top:1px;
+}
+.check svg { width:11px; height:11px; }
+:root[data-theme="dark"] .check { color: var(--ok-text); }
+
+/* callouts — Linear left-stripe + dashboard semantic colors, dark text */
+.callout {
+  display:flex; gap:11px; padding: 12px 15px;
+  border-radius: var(--r-sm); margin: 16px 0; font-size: 14px; line-height:1.55;
+  border-left: 3px solid var(--c);
+}
+.callout .ic { flex:none; margin-top:1px; color: var(--c); }
+.callout .ic svg { width:16px; height:16px; display:block; }
+.callout .body { color: var(--body); }
+.callout .body strong { color: var(--ink); font-weight:600; }
+.callout.info { background: var(--info-bg); --c: var(--info-solid); }
+.callout.warn { background: var(--warn-bg); --c: var(--warn-solid); }
+.callout.ok   { background: var(--ok-bg);   --c: var(--ok-solid); }
+:root[data-theme="dark"] .callout.info{--c:#9db4ff;}
+:root[data-theme="dark"] .callout.warn{--c:#e7b15e;}
+:root[data-theme="dark"] .callout.ok{--c:#5fcf95;}
+
+/* numbered steps */
+.step { display:grid; grid-template-columns: 26px 1fr; gap:14px; margin: 22px 0; }
+.step .num {
+  width:26px; height:26px; border-radius:50%;
+  background: var(--bg-elevated); border:1px solid var(--border);
+  color: var(--muted); font-size:13px; font-weight:600;
+  display:grid; place-items:center; margin-top:1px;
+}
+:root[data-theme="dark"] .step .num { background: rgba(255,255,255,0.05); }
+.step h3 { margin: 2px 0 6px; }
+
+/* link chip (the portal url) */
+a.urlchip {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family: var(--mono); font-size: 13px;
+  padding: 8px 12px; border:1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--brand); text-decoration:none; background: var(--card);
+}
+a.urlchip:hover { border-color: var(--border-hover); }
+a.urlchip .ic { color: var(--muted); }
+
+/* code block */
+.codeblock {
+  border-radius: var(--r-md); overflow: hidden; margin: 18px 0;
+  border:1px solid var(--border);
+  background: var(--code-block-bg);   /* FIX: dark base so the title strip isn't white-on-white in light mode */
+}
+.codeblock .bar {
+  display:flex; align-items:center; gap:8px;
+  background: rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.07);
+  padding: 8px 14px; font-family: var(--mono); font-size:12px; color: rgba(199,210,230,0.78);
+}
+.codeblock pre {
+  margin:0; padding: 14px 16px; background: var(--code-block-bg);
+  color: var(--code-block-text); font-family: var(--mono); font-size:13px; line-height:1.6;
+  overflow-x:auto;
+}
+.codeblock .c-key { color:#9db4ff; } .codeblock .c-str { color:#7fcf95; } .codeblock .c-com { color:#5b606b; }
+
+/* next-step cards grid */
+.cards { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin: 8px 0 16px; }
+.card {
+  border:1px solid var(--border); border-radius: var(--r-md);
+  padding: 16px 18px; background: var(--card); text-decoration:none; display:block;
+  transition: border-color 150ms ease, transform 150ms cubic-bezier(0.23,1,0.32,1);
+}
+.card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+.card .t { font-size:14.5px; font-weight:600; color: var(--ink); margin-bottom:4px; }
+.card:hover .t { color: var(--brand); }
+.card .d { font-size:13px; color: var(--muted); line-height:1.5; }
+
+/* footer pager — flat: single top divider, no per-item boxes (kills the stacked-box repetition) */
+.pager { display:flex; justify-content:space-between; margin-top:40px; padding-top:22px; border-top:1px solid var(--border); gap:24px; }
+.pager a { display:flex; flex-direction:column; text-decoration:none; padding:2px; }
+.pager .lbl { font-size:12px; color: var(--muted); }
+.pager .ttl { font-size:15px; color: var(--ink); font-weight:500; margin-top:4px; transition: color 150ms ease; }
+.pager a:hover .ttl { color: var(--brand); }
+.pager .nx { text-align:right; }
+
+/* ===== TOC ===== */
+nav.toc {
+  position: sticky; top: 48px;
+  padding: 30px 22px 40px 0;
+  font-size: 13px;
+}
+.toc .eyebrow { margin-bottom: 12px; }
+.toc a { display:block; color: var(--muted); text-decoration:none; padding: 4px 0 4px 11px; border-left: 2px solid var(--border); line-height:1.45; }
+.toc a:hover { color: var(--ink); }
+.toc a.on { color: var(--ink); border-left-color: var(--brand); }
+
+.mock-note {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); font-size: 12px; font-weight:500;
+  padding: 6px 14px; border-radius: 999px; opacity: 0.88; z-index: 50;
+}
+
+/* Emil rule: respect reduced-motion — drop transforms, keep color/opacity for comprehension */
+@media (prefers-reduced-motion: reduce) {
+  .cta:active, .card:hover { transform: none; }
+  * { transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand-lockup" href="#">
+    <svg class="logo-glyph" viewBox="0 0 104 104" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M31.8914 92H14L41.2613 13H62.7773L90 92H72.1086L52.3278 31.0527H51.7108L31.8914 92ZM30.7732 60.9478H73.034V73.9858H30.7732V60.9478Z" fill="var(--brand)"/></svg>
+    <span class="brand-name">Affitor</span>
+    <span class="brand-sep">/</span>
+    <span class="brand-docs">Docs</span>
+  </a>
+  <div class="spacer"></div>
+  <div class="search-trigger">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <span>Search…</span>
+    <span class="kbd"><kbd>⌘</kbd><kbd>K</kbd></span>
+  </div>
+  <a class="ghost-link" href="#">Changelog</a>
+  <a class="ghost-link" href="#">Dashboard</a>
+  <a class="cta" href="#">Get Started</a>
+  <button class="toggle" onclick="toggleTheme()" id="tg" title="Toggle theme">🌙</button>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="side">
+    <div class="side-group">
+      <div class="side-eyebrow">For Advertisers</div>
+      <a href="#">Overview</a>
+    </div>
+    <div class="side-group">
+      <div class="side-eyebrow">Quickstart</div>
+      <a href="#" class="active">Create your account</a>
+      <a href="#">Set up your program</a>
+      <a href="#">Define commission</a>
+      <a href="#">Partner approval</a>
+      <a href="#">View performance</a>
+      <a href="#">Payouts</a>
+    </div>
+    <div class="side-group">
+      <div class="side-eyebrow">Tracking</div>
+      <a href="#">Quickstart integration</a>
+      <a href="#">Tracking overview</a>
+      <a href="#">Pageview &amp; click</a>
+      <a href="#">Lead tracking</a>
+      <a href="#">Payment (Stripe)</a>
+      <a href="#">Testing integration</a>
+    </div>
+    <div class="side-group">
+      <div class="side-eyebrow">Billing</div>
+      <a href="#">Overdue policy</a>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="doc">
+    <div class="breadcrumb"><a href="#">Advertisers</a><span class="sep">›</span><a href="#">Quickstart</a><span class="sep">›</span><span>Create your account</span></div>
+
+    <h1>Create Your Advertiser Account</h1>
+    <p class="lede"><strong>Get started with Affitor in minutes.</strong> Creating an advertiser account is the first step to accessing our network of affiliate partners and growing your business through performance-based marketing.</p>
+
+    <h2 id="learn">What You'll Learn</h2>
+    <ul class="clean">
+      <li><span class="dot"></span>How to register as an advertiser on Affitor</li>
+      <li><span class="dot"></span>What information you'll need to provide</li>
+      <li><span class="dot"></span>How to access your advertiser dashboard</li>
+      <li><span class="dot"></span>Next steps after account creation</li>
+    </ul>
+
+    <h2 id="prereq">Prerequisites</h2>
+    <p>Before starting, ensure you have:</p>
+    <div class="checklist">
+      <ul>
+        <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>A business or company email address</li>
+        <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Basic information about your business</li>
+        <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Products or services to promote</li>
+      </ul>
+    </div>
+    <div class="callout info">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+      <span class="body"><strong>Note:</strong> You don't need a Stripe account yet — we'll set that up in a later step. Focus on creating your account first.</span>
+    </div>
+
+    <h2 id="steps">Registration Steps</h2>
+    <p>Follow these simple steps to create your advertiser account:</p>
+
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h3>Visit Affitor Management Portal</h3>
+        <p>Navigate to the Affitor management portal:</p>
+        <a class="urlchip" href="#"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>affitor.com/affiliate-management/welcome-page</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>Select "Get started"</h3>
+        <p>On the landing page, click the <code class="inline">Get started</code> button. This will direct you to the role selection page.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Select "I'm a Company"</h3>
+        <p>Click the <code class="inline">I'm a Company</code> button. This will direct you to the advertiser registration flow.</p>
+        <div class="callout warn">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+          <span class="body"><strong>Important:</strong> Make sure you select "I'm a Company" (Advertiser) and not "I'm a Partner" (Affiliate). Companies are businesses looking to work with affiliates; Partners are marketers looking to promote products.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div>
+        <h3>Login with Company Email</h3>
+        <p>Use your <strong>company or business email address</strong> to create your account. This ensures professional communication with partners, proper account verification, and access to business-level features.</p>
+        <div class="callout ok">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span>
+          <span class="body"><strong>Best practice:</strong> Use an email like <code class="inline">partnerships@yourcompany.com</code> rather than a personal email — it makes managing team access easier later.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div>
+        <h3>Complete Initial Setup Wizard</h3>
+        <p>As a first-time user, you'll be redirected to a <strong>setup wizard</strong> to configure your initial program. This one-time setup asks for:</p>
+        <div class="codeblock">
+          <div class="bar">setup-wizard.fields</div>
+          <pre><span class="c-com"># One-time, only for new accounts</span>
+<span class="c-key">program_name</span>:  Acme Partners Program
+<span class="c-key">website_url</span>:   <span class="c-str">https://acme.com</span>
+<span class="c-key">logo</span>:          company-logo.svg</pre>
+        </div>
+      </div>
+    </div>
+
+    <hr/>
+
+    <h2 id="next">What Happens Next?</h2>
+    <p>After creating your account, you're ready to:</p>
+    <div class="cards">
+      <a class="card" href="#"><div class="t">Create your program</div><div class="d">Define your commission structure and program details.</div></a>
+      <a class="card" href="#"><div class="t">Connect Stripe</div><div class="d">Link your Stripe account for payment processing.</div></a>
+      <a class="card" href="#"><div class="t">Add tracking</div><div class="d">Install the tracking script on your website.</div></a>
+      <a class="card" href="#"><div class="t">Get your first partner</div><div class="d">Start working with affiliate marketers.</div></a>
+    </div>
+
+    <div class="pager">
+      <a href="#"><div class="lbl">← Previous</div><div class="ttl">Overview</div></a>
+      <a href="#" class="nx"><div class="lbl">Next →</div><div class="ttl">Set up your program</div></a>
+    </div>
+  </main>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="eyebrow">On this page</div>
+    <a href="#learn" class="on">What you'll learn</a>
+    <a href="#prereq">Prerequisites</a>
+    <a href="#steps">Registration steps</a>
+    <a href="#next">What happens next</a>
+  </nav>
+
+</div>
+
+<div class="mock-note" id="mocknote">Mockup · Light mode · Linear-style + Affitor converged tokens</div>
+
+<script>
+function toggleTheme(){
+  const r = document.documentElement;
+  const dark = r.getAttribute('data-theme') === 'dark';
+  r.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('tg').textContent = dark ? '🌙' : '☀️';
+  document.getElementById('mocknote').textContent = 'Mockup · ' + (dark ? 'Light' : 'Dark') + ' mode · Linear-style + Affitor converged tokens';
+}
+</script>
+</body>
+</html>
