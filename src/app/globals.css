@@ -271,15 +271,26 @@ article blockquote strong { color: var(--color-fd-foreground); font-weight: 600;
 article blockquote a { border-bottom-color: var(--aff-border-strong); }
 
 /* ── Layout ── */
+:root { --aff-topbar: 100px; } /* header 56 + tab row 44 */
 #nd-docs-layout {
-  --fd-docs-height: calc(100dvh - 3rem);
+  --fd-docs-height: calc(100dvh - var(--aff-topbar));
 }
 
-/* Fix: tabs bar stretches to full grid cell height, covering article content */
-#nd-docs-layout > div[class*="[grid-area:main]"]:not(article) {
+/* Sidebar (left) + TOC (right): FIXED below the top bar, only content scrolls */
+#nd-sidebar {
+  position: sticky !important;
+  top: var(--aff-topbar) !important;
+  height: calc(100dvh - var(--aff-topbar)) !important;
+  overflow-y: auto;
   align-self: start;
-  position: sticky;
-  top: 0;
+}
+#nd-toc,
+[data-toc] {
+  position: sticky !important;
+  top: var(--aff-topbar) !important;
+  max-height: calc(100dvh - var(--aff-topbar));
+  overflow-y: auto;
+  align-self: start;
 }
 
 /* ── Sidebar ── */

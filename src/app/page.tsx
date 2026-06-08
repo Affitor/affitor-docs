@@ -16,7 +16,7 @@ export default function HomePage() {
 
   return (
     <DocsShell>
-      <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }}>
+      <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         <DocsBody>
