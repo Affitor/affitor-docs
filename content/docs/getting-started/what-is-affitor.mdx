@@ -13,37 +13,30 @@ It helps advertisers run partner programs with click, signup, and sale attributi
 
 ## Overview
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 not-prose my-6">
-  <div className="rounded-lg border border-fd-border bg-fd-card p-5">
-    <div className="text-2xl mb-3">🤝</div>
-    <h3 className="font-semibold text-base mb-2">Partner Program</h3>
-    <p className="text-sm text-fd-muted-foreground">Run an affiliate program with partner applications, links, tracking, and commission operations.</p>
-  </div>
-  <div className="rounded-lg border border-fd-border bg-fd-card p-5">
-    <div className="text-2xl mb-3">📊</div>
-    <h3 className="font-semibold text-base mb-2">Attribution</h3>
-    <p className="text-sm text-fd-muted-foreground">Track clicks, signups, and sales through the Sale API or Stripe Bill Flow metadata.</p>
-  </div>
-  <div className="rounded-lg border border-fd-border bg-fd-card p-5">
-    <div className="text-2xl mb-3">💸</div>
-    <h3 className="font-semibold text-base mb-2">Payout Workflow</h3>
-    <p className="text-sm text-fd-muted-foreground">Commissions move through review, hold, and payout operations inside Affitor.</p>
-  </div>
-</div>
+<FeatureCards>
+  <FeatureCard icon="users" title="Partner Program">Run an affiliate program with partner applications, links, tracking, and commission operations.</FeatureCard>
+  <FeatureCard icon="chart" title="Attribution">Track clicks, signups, and sales through the Sale API or Stripe Bill Flow metadata.</FeatureCard>
+  <FeatureCard icon="card" title="Payout Workflow">Commissions move through review, hold, and payout operations inside Affitor.</FeatureCard>
+</FeatureCards>
 
 ## How it fits into your stack
 
 Affitor runs alongside your existing product stack.
 
-```text
-Partner shares link → visitor clicks → Affitor tracks click
-                    ↓
-              customer signs up → lead linked to partner
-                    ↓
-              customer pays → sale attributed via Sale API or Stripe metadata/webhooks
-                    ↓
-              commission + payout workflow handled in Affitor
-```
+<Flow>
+  <FlowStep caption="First touch is captured and tied to the partner.">
+    Partner shares link → visitor clicks → **Affitor tracks the click**
+  </FlowStep>
+  <FlowStep caption="The signup is attributed to the referring partner.">
+    Customer signs up → **lead linked to partner**
+  </FlowStep>
+  <FlowStep caption="Revenue is matched to the click that drove it.">
+    Customer pays → **sale attributed** via `Sale API` or `Stripe metadata / webhooks`
+  </FlowStep>
+  <FlowStep caption="Review, hold, and pay out — all in one place.">
+    **Commission + payout workflow** handled in Affitor
+  </FlowStep>
+</Flow>
 
 You keep your own site and checkout. In the public Bill Flow model, you continue collecting payment in your own Stripe/payment setup.
 
@@ -65,13 +58,7 @@ Affitor is a strong fit for SaaS teams that want:
 
 ## Next steps
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-6">
-  <a href="/advertisers/quickstart/create-account" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">Create your account →</h3>
-    <p className="text-sm text-fd-muted-foreground">Start the advertiser setup flow.</p>
-  </a>
-  <a href="/getting-started/how-it-works" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">See how it works →</h3>
-    <p className="text-sm text-fd-muted-foreground">Review the lifecycle from click to payout operations.</p>
-  </a>
-</div>
+<FeatureCards>
+  <FeatureCard icon="zap" title="Create your account →" href="/advertisers/quickstart/create-account">Start the advertiser setup flow.</FeatureCard>
+  <FeatureCard icon="book" title="See how it works →" href="/getting-started/how-it-works">Review the lifecycle from click to payout operations.</FeatureCard>
+</FeatureCards>
