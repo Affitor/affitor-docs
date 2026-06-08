@@ -5,21 +5,9 @@ description: Complete guide to the Affitor affiliate management platform
 
 Welcome to Affitor Documentation. Build and scale affiliate programs with tracking, commissions, and payouts — all in one platform.
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-6">
-  <a href="/getting-started/what-is-affitor" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">What is Affitor? →</h3>
-    <p className="text-sm text-fd-muted-foreground">Platform overview, key concepts, and pricing.</p>
-  </a>
-  <a href="/getting-started/how-it-works" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">How It Works →</h3>
-    <p className="text-sm text-fd-muted-foreground">The 7-step affiliate lifecycle from click to payout.</p>
-  </a>
-  <a href="/advertisers/cli/quickstart" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">CLI Quickstart →</h3>
-    <p className="text-sm text-fd-muted-foreground">Set up your program, Stripe webhooks, and tracking in 3 commands with <code>npx affitor</code>.</p>
-  </a>
-  <a href="/faq" className="rounded-lg border border-fd-border bg-fd-card p-5 no-underline hover:border-fd-primary transition-colors">
-    <h3 className="font-semibold text-base mb-1">FAQ →</h3>
-    <p className="text-sm text-fd-muted-foreground">Common questions about Affitor, answered.</p>
-  </a>
-</div>
+<FeatureCards>
+  <FeatureCard icon="book" title="What is Affitor?" href="/getting-started/what-is-affitor">Platform overview, key concepts, and pricing.</FeatureCard>
+  <FeatureCard icon="zap" title="How It Works" href="/getting-started/how-it-works">The 7-step affiliate lifecycle from click to payout.</FeatureCard>
+  <FeatureCard icon="code" title="CLI Quickstart" href="/advertisers/cli/quickstart">Set up your program, Stripe webhooks, and tracking in 3 commands with `npx affitor`.</FeatureCard>
+  <FeatureCard icon="settings" title="FAQ" href="/faq">Common questions about Affitor, answered.</FeatureCard>
+</FeatureCards>

@@ -6,6 +6,11 @@ import { NextStep } from '@/components/mdx/next-step';
 import { PageMeta } from '@/components/mdx/page-meta';
 import { TaskCardGrid, TaskCard } from '@/components/mdx/task-card-grid';
 import { FlowGrid, FlowCard } from '@/components/mdx/flow-grid';
+import { Flow, FlowStep } from '@/components/mdx/flow';
+import { FeatureCards, FeatureCard } from '@/components/mdx/feature-card';
+import { CommonMistakes } from '@/components/mdx/common-mistakes';
+import { RecommendedPath } from '@/components/mdx/recommended-path';
+import { VerifySuccess } from '@/components/mdx/verify-success';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -18,6 +23,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     TaskCard,
     FlowGrid,
     FlowCard,
+    Flow,
+    FlowStep,
+    FeatureCards,
+    FeatureCard,
+    CommonMistakes,
+    RecommendedPath,
+    VerifySuccess,
     ...components,
   };
 }

@@ -436,3 +436,306 @@ article [data-card] {
   font-size: 0.6875rem;
   letter-spacing: 0.02em;
 }
+
+/* ═══════════════════════════════════════════════════════
+   MDX components — Linear design language
+   (restyles the existing docs-* components whose warm-gold
+    CSS was dropped, + the new <Flow> timeline)
+   ═══════════════════════════════════════════════════════ */
+
+.docs-block-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+  margin-bottom: 12px;
+}
+
+/* ── <Flow> — sequential pipeline timeline (replaces ASCII diagrams) ── */
+.docs-flow {
+  margin: 20px 0;
+}
+.docs-flow-stage {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding-bottom: 22px;
+}
+.docs-flow-stage:last-child {
+  padding-bottom: 0;
+}
+.docs-flow-stage:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: 2px;
+  width: 2px;
+  background: linear-gradient(var(--color-fd-border) 60%, transparent);
+}
+.docs-flow-node {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-fd-accent);
+  color: var(--color-fd-primary);
+}
+.docs-flow-content {
+  padding-top: 4px;
+}
+.docs-flow-text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--aff-body);
+}
+.docs-flow-text strong {
+  color: var(--color-fd-foreground);
+  font-weight: 600;
+}
+.docs-flow-caption {
+  font-size: 13px;
+  color: var(--color-fd-muted-foreground);
+  margin-top: 3px;
+}
+
+/* ── Shared card surface for grid/task/meta components ── */
+.docs-flow-grid,
+.docs-task-grid,
+.docs-meta-grid {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+.docs-flow-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.docs-task-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.docs-meta-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+.docs-flow-card,
+.docs-task-card,
+.docs-meta-card {
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--aff-radius);
+  padding: 18px 20px;
+  background: transparent;
+  transition: border-color 0.15s ease, transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.docs-task-card {
+  display: block;
+  text-decoration: none !important;
+  color: inherit;
+}
+.docs-flow-card:hover,
+.docs-task-card:hover {
+  border-color: var(--aff-border-strong);
+  transform: translateY(-1px);
+}
+.docs-flow-step {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-fd-accent);
+  color: var(--color-fd-primary);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.docs-flow-title,
+.docs-task-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+.docs-task-card:hover .docs-task-title { color: var(--color-fd-primary); }
+.docs-flow-body,
+.docs-task-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* ── Card-surface blocks (checklist / mistakes / next / recommended / verify) ── */
+.docs-checklist,
+.docs-common-mistakes,
+.docs-next-step,
+.docs-recommended-path,
+.docs-verify {
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--aff-radius);
+  padding: 20px 22px;
+  margin: 20px 0;
+  background: transparent;
+}
+
+.docs-checklist ul,
+.docs-common-mistakes ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.docs-checklist li,
+.docs-common-mistakes li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--aff-body);
+}
+.docs-check-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  margin-top: 1px;
+  background: var(--aff-ok-bg);
+  color: var(--aff-ok-solid);
+  font-size: 11px;
+  font-weight: 700;
+}
+.docs-check-icon::before { content: '\2713'; }
+.docs-common-mistakes li::before {
+  content: '\2715';
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  margin-top: 1px;
+  background: var(--aff-danger-bg);
+  color: var(--aff-danger-solid);
+  font-size: 11px;
+  font-weight: 700;
+}
+.docs-checklist a { color: var(--color-fd-primary); text-decoration: none; }
+.docs-checklist a:hover { opacity: 0.8; }
+
+/* Next step */
+.docs-next-step { display: flex; flex-direction: column; gap: 6px; }
+.docs-next-title { font-size: 15px; font-weight: 600; color: var(--color-fd-foreground); }
+.docs-next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-fd-primary);
+  text-decoration: none;
+  width: fit-content;
+}
+.docs-next-link::after { content: '\2192'; transition: transform 0.15s ease; }
+.docs-next-link:hover::after { transform: translateX(3px); }
+
+/* Recommended path */
+.docs-recommended-body {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--aff-body);
+}
+.docs-recommended-body p { margin: 0 0 10px; }
+.docs-recommended-body p:last-child { margin-bottom: 0; }
+
+/* Verify success */
+.docs-verify-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.docs-verify-card {
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--r-sm, 6px);
+  padding: 14px 16px;
+}
+.docs-verify-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  margin-bottom: 8px;
+}
+.docs-verify-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.docs-verify-card li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-fd-muted-foreground);
+  padding-left: 14px;
+  position: relative;
+}
+.docs-verify-card li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-fd-muted-foreground);
+}
+
+/* ── <FeatureCards> — line-icon feature grid (replaces emoji card divs) ── */
+.docs-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.docs-feature-card {
+  display: block;
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--aff-radius);
+  padding: 20px;
+  background: transparent;
+  text-decoration: none !important;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+a.docs-feature-card:hover {
+  border-color: var(--aff-border-strong);
+  transform: translateY(-1px);
+}
+.docs-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--color-fd-accent);
+  color: var(--color-fd-primary);
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+}
+.docs-feature-icon svg { width: 18px; height: 18px; }
+.docs-feature-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  margin-bottom: 6px;
+}
+a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); }
+.docs-feature-body {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-fd-muted-foreground);
+}
