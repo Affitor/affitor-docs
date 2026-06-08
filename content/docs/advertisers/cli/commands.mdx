@@ -39,6 +39,7 @@ npx affitor init
 | `--commission-rate <rate>` | Commission rate (% or $) | 40 |
 | `--cookie-duration <days>` | Cookie window in days | 90 |
 | `--duration-months <months>` | Recurring commission duration (0 = lifetime) | 12 |
+| `--no-wizard` | Skip the auto-install wizard and print manual setup steps | — |
 
 **Example (non-interactive):**
 
@@ -58,7 +59,8 @@ npx affitor init \
 |---|---|
 | `.affitor/config.json` | Program ID, API key, settings |
 | `.affitor/.env.example` | Environment variables template |
-| `.affitor/skills.md` | Tracking code snippets and AI agent instructions |
+| `AGENTS.md` | Tracking code snippets and AI agent instructions |
+| `skills.md` | Backward-compatible alias for `AGENTS.md` |
 
 ---
 
@@ -97,29 +99,6 @@ npx affitor setup stripe
 | `invoice.payment_failed` | Failed payment alerts |
 | `charge.refunded` | Automatic commission clawback |
 | `customer.subscription.deleted` | Churn tracking |
-
----
-
-## `affitor setup dns`
-
-Set up DNS CNAME tracking for first-party tracking.
-
-```bash
-npx affitor setup dns
-```
-
-:::note
-DNS tracking is coming soon. For now, use the tracking script or Stripe integration.
-:::
-
-When available, add this DNS record:
-
-```
-Type:   CNAME
-Name:   t.yourdomain.com
-Target: track.affitor.com
-TTL:    300
-```
 
 ---
 

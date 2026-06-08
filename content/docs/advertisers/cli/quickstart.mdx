@@ -40,9 +40,11 @@ After confirming, the CLI creates your program and generates:
 
 ```
 .affitor/
-  config.json     -- program ID, API key, settings
-  .env.example    -- environment variables template
-  AGENTS.md       -- AI agent instructions (universal format)
+  AGENTS.md       -- AI agent instructions (primary, universal standard)
+  config.json     -- program ID, settings
+  .env            -- API key and secrets (gitignored)
+  .env.example    -- env template for teammates and CI
+  skills.md       -- tracking code snippets (backward-compat)
 ```
 
 :::tip[Works with any AI coding tool]
