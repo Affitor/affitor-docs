@@ -49,7 +49,9 @@ npm install @affitor/tracker
 ### React / Next.js
 
 :::warning
+
 **Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `@affitor/tracker/react` uses browser APIs and cannot run in a Server Component. Add `"use client"` at the top of any file that imports `AffitorProvider`.
+
 :::
 
 ```tsx
@@ -147,7 +149,9 @@ Open your browser console and network tab, then confirm:
 - Pageview or test-click activity appears in the dashboard or test-event tooling
 
 :::caution
+
 Debug mode helps with test verification, but a real affiliate landing flow using a real `?aff=` value still creates real attribution data. Do not mix synthetic tests and production affiliate links.
+
 :::
 
 ---

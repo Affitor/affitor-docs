@@ -1,6 +1,23 @@
 import { defineDocs, defineCollections, defineConfig, frontmatterSchema } from 'fumadocs-mdx/config';
 import { z } from 'zod';
+import { remarkAdmonition } from 'fumadocs-core/mdx-plugins';
 import { remarkMermaid } from './src/lib/remark-mermaid';
+
+// `:::note / :::tip / :::warning / :::caution` colon-fence callouts -> <Callout>.
+// Without this, Fumadocs 16 leaves the `:::` markers as literal text on every
+// page that uses them. Cover every type used across the docs (the default
+// typeMap omits `caution`).
+const admonitionTypeMap = {
+  info: 'info',
+  note: 'info',
+  tip: 'info',
+  warn: 'warn',
+  warning: 'warn',
+  caution: 'warn',
+  danger: 'error',
+  error: 'error',
+  success: 'success',
+};
 
 export const docs = defineDocs({
   dir: 'content/docs',
@@ -28,7 +45,7 @@ export const changelog = defineCollections({
 
 export default defineConfig({
   mdxOptions: {
-    remarkPlugins: [remarkMermaid],
+    remarkPlugins: [remarkMermaid, [remarkAdmonition, { typeMap: admonitionTypeMap }]],
     // Dark code blocks in BOTH light & dark page modes — pair a dark Shiki
     // theme (light text) with the dark code surface so text never goes
     // dark-on-dark. (Fumadocs' default dual github-light/dark put DARK text in
