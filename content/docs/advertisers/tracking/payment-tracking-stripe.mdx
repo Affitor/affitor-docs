@@ -87,7 +87,9 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 ```
 
 :::tip
+
 Use the Sale API if you want one server-controlled source of truth for revenue events across all payment providers.
+
 :::
 
 ---
@@ -172,8 +174,10 @@ Some products charge per usage event rather than via a subscription — independ
 Every `checkout.session.completed` event with `mode: 'payment'` is processed independently by Affitor. Each one goes through the full attribution and commission calculation flow.
 
 :::note
+
 **`invoice.payment_succeeded` is not involved here.**
 Affitor only uses `invoice.payment_succeeded` for recurring subscription renewals. Pay-as-you-go purchases use `checkout.session.completed` — one event per purchase, each attributed and commissioned separately.
+
 :::
 
 ### Attribution across multiple purchases
@@ -199,7 +203,9 @@ const session = await stripe.checkout.sessions.create({
 ```
 
 :::tip
+
 `affitor_click_id` may be absent for repeat purchases — that is expected and not an error. Affitor will fall back to `affitor_customer_key` for attribution. Still send it when it is available.
+
 :::
 
 ### Pre-requisite: signup tracking

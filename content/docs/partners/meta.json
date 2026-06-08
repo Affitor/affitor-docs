@@ -1,0 +1,15 @@
+{
+  "title": "For Partners",
+  "root": true,
+  "pages": [
+    "index",
+    "---Get started---",
+    "quickstart/create-account",
+    "quickstart/find-and-join-programs",
+    "quickstart/get-your-referral-link",
+    "---Earn---",
+    "dashboard",
+    "payouts",
+    "faq"
+  ]
+}

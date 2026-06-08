@@ -60,9 +60,11 @@ if (window.affitor) {
 | `email` | Recommended | customer email; used for hashed/masked attribution support |
 
 :::caution[Use a real internal identifier]
+
 The `customerKey` you pass here should be the same identifier you later use as:
 - `customer_key` in the lead/sale API
 - `affitor_customer_key` in Stripe metadata
+
 :::
 
 ### Example inside a signup flow

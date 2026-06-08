@@ -42,6 +42,16 @@
 
 - [Overdue Invoices & Program Pause Policy](https://docs.affitor.com/advertisers/billing/overdue-policy): How Affitor handles unpaid commission invoices, when programs pause, and how to resume
 
+## For Partners
+
+- [Become a Partner](https://docs.affitor.com/partners): Join a SaaS affiliate program, get your referral link, and start earning commission
+- [Create Your Partner Account](https://docs.affitor.com/partners/quickstart/create-account): Sign up, verify your email, and choose the Partner role to unlock programs
+- [Find and Join Programs](https://docs.affitor.com/partners/quickstart/find-and-join-programs): Browse the Marketplace, apply in one click, and get approved instantly or after review
+- [Get Your Referral Link](https://docs.affitor.com/partners/quickstart/get-your-referral-link): Find, copy, and share your tracked ?aff= referral link, generated automatically when you join
+- [Your Partner Dashboard](https://docs.affitor.com/partners/dashboard): Programs, performance, referred customers, and earnings
+- [Getting Paid](https://docs.affitor.com/partners/payouts): Balances, payment methods (ACH/BIC-SWIFT/Wise), withdrawal, and payout timing
+- [Partner FAQ](https://docs.affitor.com/partners/faq): Common partner questions about joining, links, tracking, and payouts
+
 ## API Reference
 
 - [API Reference Overview](https://docs.affitor.com/api-reference/overview): Base URL, authentication, request/response envelope, and available endpoints
