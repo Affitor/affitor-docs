@@ -3,7 +3,7 @@ title: Attribution Mechanics
 description: How Affitor assigns credit to partners — the cookie, the click ID, the attribution windows, and what happens on re-click.
 ---
 
-> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+> **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
 Affitor uses a **last-click, last-partner-wins** attribution model. When a visitor clicks an affiliate link the SDK writes a first-party cookie. Every downstream lead and sale resolves to the partner whose click is active in that cookie at conversion time.
 
@@ -50,7 +50,7 @@ The SDK auto-detects the broadest writable domain so attribution follows a visit
 You can skip auto-detection by passing an explicit `cookieDomain` to `init()`:
 
 ```ts
-import { init } from '@affitor/sdk';
+import { init } from 'affitor-sdk';
 
 init({ programId: 123, cookieDomain: '.example.com' });
 ```

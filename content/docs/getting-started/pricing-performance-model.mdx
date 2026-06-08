@@ -1,6 +1,6 @@
 ---
 title: "Pricing"
-description: "Affitor charges 3.5% of partner-generated revenue with a public Bill Flow model."
+description: "Affitor charges 3.5% of partner-generated revenue with a public invoice billing model."
 ---
 
 Affitor charges only when partners generate revenue — no subscription, no setup fee.
@@ -25,7 +25,7 @@ A partner drives a $100 sale with a 30% commission:
 
 ## How billing works in the current public model
 
-Affitor's public docs currently describe a **Bill Flow** model:
+Affitor's public docs currently describe an **invoice billing** model:
 
 1. You keep collecting customer payments in your own Stripe/payment stack.
 2. Affitor attributes validated affiliate conversions.
@@ -34,7 +34,7 @@ Affitor's public docs currently describe a **Bill Flow** model:
 
 :::note
 
-Affitor is not the merchant of record in this Bill Flow model.
+Affitor is not the merchant of record in this invoice billing model.
 
 :::
 
@@ -64,7 +64,7 @@ Confirm your exact commercial terms with the Affitor team before launch.
 Affitor works best when your team can cleanly do one of the following:
 
 - send revenue from your backend using `POST /api/v1/track/sale`
-- or attach the required metadata to Stripe Checkout in Bill Flow
+- or attach the required metadata to Stripe Checkout via Stripe integration
 
 ## Next steps
 

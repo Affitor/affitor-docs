@@ -1,6 +1,6 @@
 ---
 title: Payment Flow
-description: End-to-end flow from affiliate click to attributed revenue and payout operations
+description: End-to-end flow from affiliate click to attributed revenue and payout operations, covering server-side tracking and Stripe integration paths
 ---
 
 Understand how attribution moves from click → signup → sale in the current public Affitor model.
@@ -41,16 +41,16 @@ if (window.affitor) {
 **What matters here:**
 - Your internal identifier is stored for future matching
 - Reuse that same identifier as:
-  - `customer_key` in the Sale API
+  - `customer_key` in Server-side tracking — your backend calls POST /api/v1/track/sale
   - `affitor_customer_key` in Stripe metadata
 
 ### 4. Customer pays
 
-You then choose one supported sale-tracking path.
+You then choose one supported sale-tracking path: server-side tracking vs Stripe integration.
 
-#### Path A — Sale API
+#### Path A — Server-side tracking
 
-Your backend calls Affitor when payment succeeds.
+Your backend calls POST /api/v1/track/sale when payment succeeds.
 
 ```json
 {
@@ -61,7 +61,7 @@ Your backend calls Affitor when payment succeeds.
 }
 ```
 
-#### Path B — Stripe Bill Flow
+#### Path B — Stripe integration
 
 You keep charging in your own Stripe account and attach Affitor metadata.
 
@@ -89,9 +89,9 @@ When attribution succeeds, Affitor records the sale and creates the commission f
 
 ---
 
-## Bill Flow in Plain Language
+## Invoice billing in Plain Language
 
-In the current public Bill Flow model:
+In the current public invoice billing model:
 
 1. **You** collect payment from the customer in your own Stripe account
 2. **Affitor** attributes the conversion using Stripe metadata + webhook events
@@ -100,7 +100,7 @@ In the current public Bill Flow model:
 
 :::note
 
-Affitor is not the merchant of record in this Bill Flow model.
+Affitor is not the merchant of record in this invoice billing model.
 
 :::
 
@@ -129,7 +129,7 @@ If only the initial checkout metadata is present, renewals may not attribute cor
 | Check | Why it matters |
 |------|----------------|
 | `customerKey` used at signup | links later payments back to the same internal user |
-| `transaction_id` unique (Sale API) | prevents duplicate sale records |
+| `transaction_id` unique (server-side tracking) | prevents duplicate sale records |
 | `program_id` in Stripe metadata | routes the event to the correct program |
 | `subscription_data.metadata` set | keeps renewals attributable |
 | click tracked first | gives Affitor the strongest attribution signal |
@@ -144,7 +144,7 @@ If only the initial checkout metadata is present, renewals may not attribute cor
 | 0 | tracker stores `affitor_click_id` |
 | 2 | customer signs up and you send `customerKey` |
 | 7 | customer pays |
-| 7 | sale is attributed via Sale API or Stripe webhook flow |
+| 7 | sale is attributed via server-side tracking or Stripe integration |
 | 7+ | commission enters review / hold / payout operations |
 
 ---

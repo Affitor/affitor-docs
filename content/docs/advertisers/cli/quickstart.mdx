@@ -92,7 +92,9 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 
 ## Step 4 -- Track Payments
 
-### Option A: Stripe (automatic)
+Choose your payment tracking method: **Server-side tracking vs Stripe integration**.
+
+### Option A: Stripe integration (automatic)
 
 Auto-configure Stripe webhooks for payment tracking:
 
@@ -102,12 +104,12 @@ npx affitor setup stripe
 
 This opens Stripe Connect OAuth in your browser, then automatically creates webhook endpoints for:
 - `checkout.session.completed` -- sale tracking
-- `invoice.paid` -- recurring commission
+- `invoice.payment_succeeded` -- recurring commission
 - `charge.refunded` -- automatic commission clawback
 - `customer.created` -- lead tracking
 - `customer.subscription.deleted` -- churn tracking
 
-### Option B: Sale API (any payment provider)
+### Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/sale \

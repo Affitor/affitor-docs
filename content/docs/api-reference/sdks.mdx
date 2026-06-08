@@ -1,34 +1,34 @@
 ---
 title: SDKs
-description: Typed client libraries for browser tracking (@affitor/tracker) and server-side conversion reporting (@affitor/node).
+description: Typed client libraries for browser tracking (affitor-sdk) and server-side conversion reporting (affitor-node).
 ---
 
-> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+> **Beta** — The affitor-sdk / affitor-node SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
 Two packages cover the full attribution chain: the browser SDK captures clicks and leads on the frontend; the Node SDK reports conversions from your backend.
 
 <FeatureCards>
-  <FeatureCard icon="monitor" title="@affitor/tracker" href="#affitortracker-browser">Browser SDK — captures affiliate clicks, persists attribution in a first-party cookie, and reports lead events.</FeatureCard>
-  <FeatureCard icon="server" title="@affitor/node" href="#affitornode-server">Node SDK — reports leads, sales, clicks, and refunds from your backend with Bearer auth.</FeatureCard>
+  <FeatureCard icon="monitor" title="affitor-sdk" href="#affitor-sdk-browser">Browser SDK — captures affiliate clicks, persists attribution in a first-party cookie, and reports lead events.</FeatureCard>
+  <FeatureCard icon="server" title="affitor-node" href="#affitor-node-server">Node SDK — reports leads, sales, clicks, and refunds from your backend with Bearer auth.</FeatureCard>
 </FeatureCards>
 
 ---
 
-## @affitor/tracker (Browser)
+## affitor-sdk (Browser)
 
 SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server — safe to import in Next.js and other SSR frameworks without guards.
 
 ### Install
 
 ```bash
-npm install @affitor/tracker
+npm install affitor-sdk
 ```
 
 Or include the script tag directly:
 
 ```html
 <script
-  src="https://cdn.affitor.com/affitor-tracker.js"
+  src="https://api.affitor.com/js/affitor-tracker.js"
   data-affitor-program-id="YOUR_PROGRAM_ID"
   defer
 ></script>
@@ -37,7 +37,7 @@ Or include the script tag directly:
 ### Quick start
 
 ```ts
-import { init, signup } from '@affitor/tracker';
+import { init, signup } from 'affitor-sdk';
 
 // On app load (client-side only — no-op on server)
 init({ programId: 123 });
@@ -92,23 +92,29 @@ Returned by `getData()` — a snapshot of current tracker state.
 ### Full example (Next.js)
 
 ```ts
-// lib/affitor.ts — client-side init, called once from _app.tsx
-import { init, signup, getData } from '@affitor/tracker';
-
-export function initAffitor() {
-  init({ programId: Number(process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID) });
+// app/providers.tsx — client component
+'use client';
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+export function AffitorInit() {
+  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  return null;
 }
+// render <AffitorInit /> once in app/layout.tsx
+```
+
+After successful signup, call `signup(customerKey, email)` from the SDK (or `window.affitor.signup(...)` for the script-tag path):
+
+```ts
+import { signup } from 'affitor-sdk';
 
 // After successful signup
-export async function trackSignup(userId: string, email: string) {
-  await signup(userId, email);
-  console.log('Attribution state:', getData());
-}
+await signup(userId, email);
 ```
 
 ---
 
-## @affitor/node (Server)
+## affitor-node (Server)
 
 Typed, Bearer-authenticated client over the Affitor conversion API. Use this from your backend to report leads, sales, and refunds for any payment provider (Stripe, Polar, Lemon Squeezy, Paddle, etc.).
 
@@ -117,13 +123,13 @@ Typed, Bearer-authenticated client over the Affitor conversion API. Use this fro
 ### Install
 
 ```bash
-npm install @affitor/node
+npm install affitor-node
 ```
 
 ### Quick start
 
 ```ts
-import Affitor from '@affitor/node';
+import Affitor from 'affitor-node';
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
@@ -206,7 +212,7 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 
 #### `trackClick(input?: TrackClickInput)`
 
-Track a click server-side. Click tracking is usually handled in the browser by `@affitor/tracker`; use this only for server-rendered flows or redirect-based affiliate links.
+Track a click server-side. Click tracking is usually handled in the browser by `affitor-sdk`; use this only for server-rendered flows or redirect-based affiliate links.
 
 This endpoint does not require authentication.
 
@@ -240,7 +246,7 @@ Reverses the commission for a previously tracked sale. Call from your payment pr
 
 ```ts
 import Stripe from 'stripe';
-import Affitor from '@affitor/node';
+import Affitor from 'affitor-node';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });

@@ -7,7 +7,7 @@ Affitor tracking links three events into one attribution chain:
 
 - **click** — a visitor arrives through an affiliate link
 - **signup/lead** — you identify the customer after registration
-- **sale** — revenue is recorded through the Sale API or Stripe Bill Flow
+- **sale** — revenue is recorded through Server-side tracking or Stripe integration
 
 ---
 
@@ -32,7 +32,7 @@ Identifier consistency matters more than any single code snippet.
   <FlowStep>Customer signs up</FlowStep>
   <FlowStep>Your internal customer ID sent to Affitor</FlowStep>
   <FlowStep>Customer pays</FlowStep>
-  <FlowStep>Sale API or Stripe metadata path</FlowStep>
+  <FlowStep>Server-side tracking or Stripe metadata path</FlowStep>
   <FlowStep>**Revenue attributed**</FlowStep>
 </Flow>
 
@@ -65,8 +65,8 @@ Choose one supported revenue path:
 
 | Path | Use when |
 |------|----------|
-| **Sale API** | your backend controls revenue events |
-| **Stripe metadata + webhook** | you already use Stripe Checkout / Bill Flow |
+| **Server-side tracking** | your backend controls revenue events |
+| **Stripe metadata + webhook** | you already use Stripe Checkout / Stripe integration |
 
 Guide: [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
 
@@ -78,10 +78,10 @@ Guide: [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
 |--------|-------|
 | Signup helper | `customerKey` |
 | Lead API | `customer_key` |
-| Sale API | `customer_key` |
+| Server-side tracking | `customer_key` |
 | Stripe metadata | `affitor_customer_key` |
 | Browser click cookie | `affitor_click_id` |
-| Sale API click field | `click_id` |
+| Server-side tracking click field | `click_id` |
 
 Use one stable internal customer ID everywhere.
 
@@ -108,8 +108,8 @@ The click cookie is reliable, but the internal customer ID is what keeps attribu
 ### One-time payment
 
 Choose either:
-- Send a Sale API event after payment succeeds.
-- Attach Stripe metadata for Bill Flow.
+- Send a server-side tracking event (POST /api/v1/track/sale) after payment succeeds.
+- Attach Stripe metadata for Stripe integration.
 
 ### Subscription payment
 
