@@ -9,21 +9,24 @@ export function DocsHeader() {
   const { setOpenSearch } = useSearchContext();
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center border-b border-fd-border bg-fd-background/95 backdrop-blur-sm px-6">
+    <header className="sticky top-0 z-50 flex h-12 items-center gap-4 border-b border-fd-border bg-fd-background/80 backdrop-blur-md px-5">
       {/* Left: Logo */}
       <Link href="/" className="flex items-center gap-2 shrink-0">
         <img
           src="/affitor-logo.svg"
           alt="Affitor"
-          style={{ height: '22px', width: 'auto' }}
+          style={{ height: '20px', width: 'auto' }}
         />
       </Link>
 
-      {/* Center: Search */}
-      <div className="flex-1 flex justify-center px-8">
+      <div className="flex-1" />
+
+      {/* Right: compact search + nav + CTA + theme toggle */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Compact search trigger (right-aligned, Linear-style) */}
         <button
           onClick={() => setOpenSearch(true)}
-          className="flex items-center gap-2 rounded-md border border-fd-border bg-fd-muted/50 px-3.5 py-1.5 text-[13px] text-fd-muted-foreground hover:bg-fd-muted transition-colors w-full max-w-sm cursor-text"
+          className="hidden sm:flex items-center gap-2 h-8 w-[210px] rounded-md border border-fd-border bg-fd-muted/50 px-2.5 text-[13px] text-fd-muted-foreground hover:border-fd-muted-foreground/30 transition-colors cursor-text"
         >
           <svg
             width="14"
@@ -37,8 +40,8 @@ export function DocsHeader() {
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
-          <span className="opacity-60">Search...</span>
-          <span className="ml-auto flex gap-0.5 text-[11px] opacity-40">
+          <span className="opacity-70">Search…</span>
+          <span className="ml-auto flex gap-0.5 text-[11px] opacity-50">
             <kbd className="rounded border border-fd-border bg-fd-background px-1.5 py-0.5 font-sans">
               ⌘
             </kbd>
@@ -47,10 +50,7 @@ export function DocsHeader() {
             </kbd>
           </span>
         </button>
-      </div>
 
-      {/* Right: Changelog + Dashboard + Get Started + Theme toggle */}
-      <div className="flex items-center gap-4 shrink-0">
         <Link
           href="/changelog"
           className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden sm:block"
@@ -65,10 +65,12 @@ export function DocsHeader() {
         </Link>
         <Link
           href="/advertisers/quickstart/create-account"
-          className="rounded-md bg-fd-primary px-3.5 py-1.5 text-[13px] font-medium text-fd-primary-foreground hover:opacity-90 transition-opacity hidden sm:block"
+          className="hidden sm:inline-flex items-center h-8 rounded-md bg-fd-primary px-3.5 text-[13px] font-medium text-fd-primary-foreground transition-[opacity,transform] duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           Get Started
         </Link>
+
+        {/* Theme toggle — Son's existing sun/moon icon, kept verbatim */}
         <button
           onClick={() =>
             setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
