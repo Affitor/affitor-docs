@@ -1,0 +1,188 @@
+---
+title: Agent Integration
+description: How AI coding agents (Claude Code, Cursor, Copilot, and others) auto-install Affitor tracking using generated instruction files.
+---
+
+> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+
+`npx affitor init` generates two instruction files inside `.affitor/` that any AI coding agent can read to wire up tracking automatically — without you writing a single line yourself.
+
+---
+
+## How it works
+
+When you run `npx affitor init` the CLI authenticates, fetches your program config, and writes these files to your project root:
+
+| File | Path | Purpose |
+|------|------|---------|
+| `AGENTS.md` | `.affitor/AGENTS.md` | Universal AI-agent instructions — consumed by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and any tool that honours `AGENTS.md` |
+| `skills.md` | `.affitor/skills.md` | Identical content, written for backward compatibility with agent tools that look for `skills.md` specifically |
+| `.env` | `.affitor/.env` | Secrets (`AFFITOR_API_KEY`, `AFFITOR_PROGRAM_ID`, `STRIPE_CONNECTED_ACCOUNT_ID`). Auto-added to `.gitignore` |
+| `.env.example` | `.affitor/.env.example` | Safe-to-commit template of the env vars |
+
+Both `AGENTS.md` and `skills.md` contain **identical content**. The duplication ensures coverage regardless of which filename convention a given agent looks for.
+
+---
+
+## What AGENTS.md contains
+
+The file is pre-populated with your live program values at init time. It includes:
+
+### Program context block
+
+```markdown
+## Project Context
+
+This project uses Affitor for affiliate/partner tracking.
+
+- **Program ID**: `42`
+- **Domain**: `yourapp.com`
+- **Commission**: 20% per sale
+- **Cookie Duration**: 30 days
+- **API Base URL**: `https://api.affitor.com`
+- **API Key**: stored in `.affitor/.env` as `AFFITOR_API_KEY`
+```
+
+### Ready-to-paste integration snippets
+
+The file contains three verbatim integration sections an agent can copy directly into your codebase:
+
+**1. Click tracking** — script tag for plain HTML, plus the React/Next.js SDK variant:
+
+```html
+<script src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="42">
+</script>
+```
+
+```tsx
+import { AffitorProvider } from '@affitor/tracker/react';
+
+<AffitorProvider programId="42">
+  {children}
+</AffitorProvider>
+```
+
+**2. Signup/lead tracking** — browser-side helper and server-side curl:
+
+```javascript
+// Browser (requires tracker script loaded)
+await window.affitor.signup(user.id, user.email);
+```
+
+```bash
+# Server-side
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer $AFFITOR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"customer_key": "user_123", "email": "user@example.com"}'
+```
+
+**3. Sale tracking** — three options in priority order: Stripe OAuth auto-connect, Sale API, Stripe metadata:
+
+```bash
+# Option A: auto-connect Stripe (recommended)
+npx affitor setup stripe
+
+# Option B: Sale API (any payment provider)
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer $AFFITOR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "txn_unique_id",
+    "customer_key": "user_123",
+    "amount_cents": 4900,
+    "currency": "USD"
+  }'
+```
+
+```javascript
+// Option C: Stripe metadata (manual Checkout Sessions)
+metadata: {
+  affitor_click_id: clickId,
+  affitor_customer_key: user.id,
+  program_id: '42'
+}
+```
+
+### Identifier consistency table
+
+The file includes a table that tells agents which field name to use in each context — preventing the most common integration mistake (using different IDs at signup vs. payment):
+
+| Context | Field name |
+|---------|------------|
+| Browser signup helper | `customerKey` (1st argument) |
+| Lead API | `customer_key` |
+| Sale API | `customer_key` |
+| Stripe metadata | `affitor_customer_key` |
+
+### CLI reference and API endpoint table
+
+```bash
+npx affitor status          # Check program health
+npx affitor setup stripe    # Auto-connect Stripe via OAuth
+npx affitor test click      # Send test click event
+npx affitor test lead       # Send test lead event
+npx affitor test sale       # Send test sale event
+```
+
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/track/lead` | POST | Bearer API key | Track signup/lead |
+| `/api/v1/track/sale` | POST | Bearer API key | Track sale/payment |
+| `/api/v1/cli/status` | GET | Bearer API key | Program health check |
+
+---
+
+## Using it with an AI agent
+
+Once `.affitor/AGENTS.md` exists in your repo, tell your agent in plain English:
+
+> "Add Affitor referral tracking to this project."
+
+The agent reads `AGENTS.md`, finds the click-tracking snippet for your framework, wires `window.affitor.signup()` into your registration handler, and inserts the correct `customer_key` at checkout — all from the context in that single file.
+
+This works with any agent that reads project context files:
+
+<FeatureCards>
+  <FeatureCard icon="terminal" title="Claude Code" href="https://claude.ai/code">Reads AGENTS.md automatically when present in the project tree.</FeatureCard>
+  <FeatureCard icon="mouse-pointer" title="Cursor" href="https://cursor.sh">Picks up .affitor/AGENTS.md as project rules context.</FeatureCard>
+  <FeatureCard icon="code" title="GitHub Copilot" href="https://github.com/features/copilot">Workspace context includes AGENTS.md files.</FeatureCard>
+  <FeatureCard icon="wind" title="Windsurf" href="https://codeium.com/windsurf">Reads AGENTS.md as part of repo-level instructions.</FeatureCard>
+  <FeatureCard icon="git-branch" title="Aider" href="https://aider.chat">Include AGENTS.md in the aider context for automatic pickup.</FeatureCard>
+</FeatureCards>
+
+---
+
+## Conventions the agent must follow
+
+AGENTS.md instructs agents to follow these rules. They apply equally when you integrate manually:
+
+- All amounts are in **cents** (e.g. $49.00 = `4900`)
+- `transaction_id` must be **unique per sale** — duplicates return `409`
+- Use the **same internal user ID** as `customer_key` at lead time and at sale time
+- For subscriptions, duplicate the Stripe metadata fields in `subscription_data.metadata`
+- Test events: add `"additional_data": {"test_mode": true}` to skip commission creation during development
+
+---
+
+## File locations and gitignore
+
+`npx affitor init` appends these entries to `.gitignore` automatically:
+
+```text
+# Affitor secrets (do not commit)
+.affitor/.env
+.affitor/.env.*
+```
+
+`AGENTS.md` and `skills.md` are safe to commit — they contain no secrets and help future contributors (and agents) understand how tracking is wired.
+
+---
+
+## Related
+
+- [SDK Reference](/api-reference/sdks/) — `@affitor/tracker` package for React and Next.js
+- [Track Lead](/api-reference/track-lead/) — full API contract for signup tracking
+- [Track Sale](/api-reference/track-sale/) — full API contract for sale/revenue tracking
+- [Get Tracking Status](/api-reference/status/) — verify integration health after setup

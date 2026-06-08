@@ -1,0 +1,144 @@
+---
+title: Attribution Mechanics
+description: How Affitor assigns credit to partners — the cookie, the click ID, the attribution windows, and what happens on re-click.
+---
+
+> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+
+Affitor uses a **last-click, last-partner-wins** attribution model. When a visitor clicks an affiliate link the SDK writes a first-party cookie. Every downstream lead and sale resolves to the partner whose click is active in that cookie at conversion time.
+
+---
+
+## Attribution model
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| `attribution_model` | `last_click` | `last_click`, `first_click`, `linear` | Which click receives credit when a customer converts |
+| `cookie_window_days` | `90` | 1 – 365 | How long the `affitor_click_id` cookie stays valid |
+| `attribution_window_days` | `60` | 1 – 365 | Maximum lookback when matching a sale to a prior click |
+
+Both windows are **per-program** and configurable from your program settings. The SDK receives `cookie_window_days` from the `/api/v1/track/click` response and applies it when writing the cookie — so no SDK update is needed when you change the value in the dashboard.
+
+---
+
+## The `affitor_click_id` cookie
+
+When a visitor lands on a URL containing `?aff=<code>`, the SDK calls `POST /api/v1/track/click` and stores two first-party cookies:
+
+| Cookie | Purpose |
+|--------|---------|
+| `affitor_click_id` | The primary attribution token. Passed to lead and sale calls. |
+| `affitor_aff_url` | The full landing URL used to detect partner changes on re-click. |
+
+A legacy `customer_code` cookie is written alongside `affitor_click_id` for backwards compatibility with older integrations. On read, if only `customer_code` exists, the SDK migrates its value into `affitor_click_id` automatically.
+
+Cookie expiry defaults to **60 days** inside the SDK (`DEFAULT_COOKIE_EXPIRE_DAYS`) but is overridden at runtime by the `cookie_window_days` value returned from the click endpoint, which defaults to **90 days** at the program level.
+
+---
+
+## Cross-subdomain cookie sharing
+
+The SDK auto-detects the broadest writable domain so attribution follows a visitor across subdomains (e.g. `app.example.com` and `www.example.com` share the same cookie).
+
+**Detection algorithm** (`getRootDomain`, line 147–165 of `index.ts`):
+
+1. Split `window.location.hostname` into parts.
+2. Starting from the registrable domain (e.g. `.example.com`), attempt to write a probe cookie with each candidate domain.
+3. The first domain that accepts the write becomes the cookie domain for the session and is cached in `cookieDomain`.
+4. `localhost` and bare IP addresses are excluded — no domain is set, so the cookie is host-only.
+
+You can skip auto-detection by passing an explicit `cookieDomain` to `init()`:
+
+```ts
+import { init } from '@affitor/sdk';
+
+init({ programId: 123, cookieDomain: '.example.com' });
+```
+
+---
+
+## Last-partner-wins on re-click
+
+If a visitor already has an `affitor_click_id` cookie and clicks a **different** partner's link, the SDK detects a partner switch and creates a **new click record** that replaces the old attribution.
+
+```ts
+// Simplified logic from initializeAffiliateAttribution() — lines 114–144
+const isNewPartner = existingAff !== null && currentAff !== existingAff;
+const needsTracking = !existingClickId || isNewPartner;
+
+if (needsTracking) {
+  // Pass existingClickId so the server can record the partner switch
+  void this.trackClick(currentUrl, isNewPartner ? existingClickId : null);
+}
+```
+
+| Scenario | Outcome |
+|----------|---------|
+| No existing cookie, `?aff=` present | New click tracked, new `affitor_click_id` written |
+| Same partner link clicked again | Existing cookie reused — no new click event |
+| Different partner link clicked | New click tracked, old `click_id` superseded (`existing_click_id` forwarded to server for audit) |
+| No `?aff=` in URL, cookie present | Existing attribution restored from cookie silently |
+| No `?aff=` in URL, no cookie | `hasAttribution` stays `false`; lead/sale calls fire without a `click_id` |
+
+---
+
+## Cookie window vs. attribution window
+
+These two windows serve different purposes:
+
+**Cookie window (`cookie_window_days`, default 90)**
+How long the `affitor_click_id` cookie lives in the visitor's browser. A sale can only carry attribution if the cookie is still present at checkout time.
+
+**Attribution window (`attribution_window_days`, default 60)**
+The maximum lookback the server uses when matching a sale to a prior click record in the database. Even if the cookie is present, a click older than `attribution_window_days` will not generate a commission.
+
+In practice the attribution window is the binding constraint: a sale must occur within 60 days of the attributed click (by default), regardless of cookie lifetime.
+
+```
+Click event
+    │
+    ├── cookie_window_days (90d default) ────────────────────────────►
+    │                                                        cookie expires
+    │
+    └── attribution_window_days (60d default) ──────────►
+                                                 outside this → no commission
+```
+
+---
+
+## Recurring revenue attribution
+
+For subscription products, every recurring charge can generate a commission as long as the original click is within the attribution window and the `subscription_id` matches.
+
+| Commission type | `default_duration_months` | Behavior |
+|-----------------|--------------------------|---------|
+| `cps_recurring` | e.g. `12` | Commission paid for up to N months of renewals |
+| `cps_lifetime` | `null` | Commission paid on every renewal indefinitely |
+| `cps_one_time` | `0` | Commission paid once on the first payment only |
+
+The Stripe webhook handler uses `is_recurring: true` and `subscription_id` on the `/api/v1/track/sale` call to match renewals back to the original attributed partner. No action is required from the SDK on renewal — Stripe autocapture handles it automatically when the webhook is connected.
+
+---
+
+## Program-level attribution fields
+
+These fields are stored on the `affiliate_programs` content type and can be updated from your program settings:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `attribution_model` | `enum` | `last_click` | `last_click`, `first_click`, or `linear` |
+| `cookie_window_days` | `integer` | `90` | Browser cookie lifetime (1–365 days) |
+| `attribution_window_days` | `integer` | `60` | Commission lookback window (1–365 days) |
+| `default_commission_type` | `enum` | — | `cpc`, `cpl`, `cps_one_time`, `cps_recurring`, `cps_lifetime` |
+| `default_duration_months` | `integer` | — | Recurring commission duration; `null` = lifetime, `0` = one-time |
+| `default_hold_period_days` | `integer` | `15` | Days a commission stays in hold before becoming payable (max 31) |
+
+---
+
+## Related pages
+
+<FeatureCards>
+  <FeatureCard icon="mouse-pointer-click" title="Track Click" href="/api-reference/track-click">Endpoint that creates the click record and returns the click ID.</FeatureCard>
+  <FeatureCard icon="credit-card" title="Track Sale" href="/api-reference/track-sale">Record a sale and trigger commission creation against the attributed click.</FeatureCard>
+  <FeatureCard icon="activity" title="Status" href="/api-reference/status">Check whether tracking is wired up correctly for your program.</FeatureCard>
+</FeatureCards>

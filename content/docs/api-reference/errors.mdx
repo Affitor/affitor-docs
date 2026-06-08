@@ -1,0 +1,234 @@
+---
+title: Errors & Troubleshooting
+description: All API error codes, their causes, and how to fix common integration problems.
+---
+
+> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+
+This page covers every error response the tracking API can return and practical fixes for the most common integration issues.
+
+---
+
+## Error response shape
+
+All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths.
+
+```json
+{
+  "error": "transaction_id is required and must be a string"
+}
+```
+
+---
+
+## Error reference
+
+### Authentication errors (401)
+
+| Status | Condition | Meaning | Fix |
+|--------|-----------|---------|-----|
+| `401` | `Authorization` header missing or does not start with `Bearer ` | The request reached a server-authenticated endpoint without a valid header | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
+| `401` | Header present but token string is empty after trimming | Bearer prefix found but no token value followed it | Check for trailing spaces or an empty env variable |
+| `401` | Token does not match any `api_token` in the program table | Wrong key, revoked key, or key from a different program | Copy the API key from your program settings in the Affitor dashboard |
+
+Endpoints that require a Bearer token: `POST /api/v1/track/sale`, `POST /api/v1/track/refund`. The lead endpoint accepts a Bearer token for server mode but does not require it for browser mode.
+
+---
+
+### Validation errors (400)
+
+#### Track click
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `400` | `affiliate_url is required` | Body did not include `affiliate_url` | Pass the full URL that contains the `?aff=` parameter |
+| `400` | `Invalid affiliate_url` | URL could not be parsed by `new URL()` | Ensure the value is a fully-qualified URL (includes scheme) |
+| `400` | `No aff parameter found in affiliate_url` | URL was valid but had no `aff` query parameter | Only call this endpoint when `?aff=` is present in the URL |
+| `400` | `Referral link not found` | No referral link matched the `aff` value | Verify the partner link exists and `short_link` matches the `aff` value |
+| `400` | `Invalid referral link configuration` | Link exists but has no linked partner or program | Contact Affitor support — the referral link record is incomplete |
+
+#### Track lead
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `400` | `click_id or customer_key is required` | Neither identifier was sent in the body | Pass the `click_id` from the `affitor_click_id` cookie, or the `customer_key` set at signup |
+| `400` | `Customer not found. Provide a valid click_id or customer_key.` | No customer record matched either identifier | The click was not tracked, the cookie was cleared, or the customer_key was never recorded — ensure `init()` and `signup()` ran successfully |
+| `400` | `Customer does not belong to this program` | Customer was found but is attributed to a different program (server mode only) | Use the API key for the program that originated the click |
+| `400` | `Customer status cannot be updated to lead. Current status: <status>` | Lead service rejected the status transition | A lead was already recorded for this customer, or the customer is at a later funnel stage — this is usually safe to ignore |
+
+#### Track sale
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `400` | `transaction_id is required and must be a string` | Field missing or not a string type | Always pass `transaction_id` as a string |
+| `400` | `amount_cents is required and must be a positive integer` | Field missing, zero, negative, or wrong type | Pass sale amount in smallest currency unit (e.g. `4900` for $49.00 USD) as a positive integer |
+| `400` | `Customer not found. Provide customer_key or click_id.` | Neither identifier resolved a customer | Ensure lead tracking ran first and the customer record exists |
+| `400` | `No affiliate attribution found for this customer in this program` | Customer exists but is attributed to a different program | Use the API key matching the program where the click originated |
+| `400` | `No partner-program relationship found for this customer` | Customer has no linked partner-program junction | The customer record is missing a partner relationship — check that the original click was tracked correctly |
+| `400` | `partnerId required to create commission` | Customer resolved but has no `affiliate_partner` relation | Internal data inconsistency — contact Affitor support |
+
+#### Track refund
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `400` | `transaction_id is required` | Body did not include `transaction_id` | Pass the same `transaction_id` used when recording the original sale |
+
+---
+
+### Conflict errors (409)
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
+
+Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_id`). The check is scoped globally, not per-program.
+
+---
+
+### Not found errors (404)
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `404` | `Sale not found for transaction_id` | Refund was attempted but no sale with that `transaction_id` exists in the program | Verify the `transaction_id` matches exactly what was sent to `/track/sale` and that the Bearer token is for the same program |
+
+---
+
+### Server errors (500)
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `500` | `Click tracking failed` | Unhandled exception in click handler | Check server logs; usually a DB or network error |
+| `500` | `Lead tracking failed` | Unhandled exception in lead handler | Check server logs |
+| `500` | `Sale tracking failed` | Unhandled exception in sale handler | Check server logs |
+| `500` | `Refund tracking failed` | Unhandled exception in refund handler | Check server logs |
+| `500` | `Failed to create commission` (or commission service error message) | Commission creation step threw internally after the sale event was written | The sale record exists but has no commission — contact Affitor support with the `transaction_id` |
+
+Metric update failures (step 10 in the sale flow) are logged as warnings and do not cause a 500 — the sale and commission are still created.
+
+---
+
+## Troubleshooting
+
+### Cookies blocked by the browser
+
+The Affitor browser SDK stores the click ID in a first-party cookie named `affitor_click_id` (`SameSite=Lax; Secure` on HTTPS). Attribution is lost when:
+
+- The user has a browser extension or privacy setting that blocks first-party cookies.
+- The page is served over HTTP in production (the `Secure` flag is only set on HTTPS).
+- Safari ITP aggressively expires cookies set via JavaScript within 7 days for domains classified as trackers.
+
+**Fix:** The SDK auto-detects the root domain and sets the cookie there (e.g. `.example.com`) to share attribution across subdomains. For custom domains or cross-domain attribution, pass `cookieDomain` explicitly:
+
+```ts
+init({ programId: 123, cookieDomain: '.example.com' });
+```
+
+There is no server-side fallback for blocked cookies — if the cookie is missing when `signup()` fires, pass `customer_key` alone and accept that the lead will be unattributed.
+
+---
+
+### CORS
+
+The tracking API (`api.affitor.com`) must allow your site's origin for browser-mode requests. If you see CORS errors:
+
+1. Check that your site's domain is listed in the allowed origins on the Affitor program settings page.
+2. Browser-mode tracking calls (`/track/click`, `/track/lead` without a Bearer token) are the only routes intended for direct browser fetch. Server-mode routes (`/track/sale`, `/track/refund`) should only be called from your backend — they do not need CORS.
+3. In development, use `localhost` explicitly rather than `127.0.0.1` (or vice versa) — the two are treated as different origins.
+
+---
+
+### Attribution window edge cases
+
+The attribution window defaults to 60 days and is set per program (`cookie_window_days`). The actual value is returned in the click response:
+
+```json
+{
+  "success": true,
+  "click_id": "cust_42_1712345678901",
+  "cookie_window_days": 60
+}
+```
+
+The SDK applies this value as the cookie expiry. Edge cases:
+
+| Scenario | Behavior |
+|----------|----------|
+| User clears cookies before signup | Attribution is lost; lead and sale will be unattributed unless you pass `customer_key` server-side |
+| User visits with a different partner's link after the first click | Last-touch attribution: the SDK detects a new `aff` value, fires a new click, and overwrites the cookie |
+| Signup fires after cookie expiry | `click_id` from cookie is null; lead is still recorded (unattributed) if `customer_key` is provided |
+| Sale fires with a `customer_key` for a customer whose window expired | Sale is recorded and attribution is resolved from the stored customer record, not the cookie — the window only governs cookie persistence |
+
+---
+
+### Duplicate `transaction_id` handling
+
+The sale endpoint uses `transaction_id` as a globally unique idempotency key stored as `processor_event_id`. The rules:
+
+- Sending the same `transaction_id` twice returns `409 Conflict` — the second request is a no-op.
+- The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
+- Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
+- If a sale was recorded but commission creation failed (500), the `transaction_id` is still consumed. Contact Affitor support to investigate the commission state before re-submitting under a new ID.
+
+**Recommended pattern:**
+
+```ts
+const response = await fetch('https://api.affitor.com/api/v1/track/sale', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${PROGRAM_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ transaction_id: chargeId, ... }),
+});
+
+if (response.status === 409) {
+  // Already recorded — safe to continue
+  return;
+}
+
+if (!response.ok) {
+  // Unexpected error — log and alert
+  const body = await response.json();
+  throw new Error(`Affitor error ${response.status}: ${body.error}`);
+}
+```
+
+---
+
+### SDK `debug: true` for verbose logging
+
+Pass `debug: true` to `init()` to enable verbose console output. This sets `AffitorInitOptions.debug` on the tracker instance.
+
+```ts
+import { init } from '@affitor/sdk';
+
+init({
+  programId: 123,
+  debug: true,
+});
+```
+
+With `debug: true`, the SDK logs to the browser console using `[Affitor]` as the prefix for every `info` and `warn` level message — including initialization, program ID resolution, click tracking, and signup calls. Errors (`console.error`) are always logged regardless of the `debug` flag.
+
+```
+[Affitor] Affitor SDK initialized: { programId: 123, debug: true }
+[Affitor] Using program ID: 123
+[Affitor] Click tracked, click_id saved: cust_42_1712345678901
+[Affitor] Signup tracked successfully
+```
+
+**Disable in production.** The `debug` flag is intended for development and integration testing only. Leave it off in production builds to avoid leaking internal state to end users.
+
+To check the current tracker state at any point:
+
+```ts
+import { getData } from '@affitor/sdk';
+
+console.log(getData());
+// {
+//   clickId: "cust_42_1712345678901",
+//   programId: 123,
+//   hasAttribution: true,
+//   affiliateUrl: "https://example.com/?aff=abc123"
+// }
+```
