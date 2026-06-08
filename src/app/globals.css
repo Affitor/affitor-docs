@@ -147,60 +147,80 @@ article :where(h1, h2, h3, h4, h5, h6) a {
   text-decoration: none !important;
 }
 
-/* ── Tables — modern, minimal (Mintlify pattern) ── */
+/* ── Tables — Mintlify-clean: no wrapper box, hairline rows only ── */
+/* Kill the Fumadocs bordered/rounded wrapper around tables */
+article :where(figure, div):has(> table) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 18px 0;
+  overflow-x: auto;
+}
 article table {
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   width: 100%;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.55;
+  border: 0 !important;
 }
-
 article table thead th {
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-fd-muted-foreground);
-  padding: 0 0.75rem 0.625rem 0;
-  border-bottom: 1px solid var(--color-fd-border);
+  padding: 0 18px 10px 0;
+  border: 0 !important;
+  border-bottom: 1px solid var(--color-fd-border) !important;
   text-align: left;
+  white-space: nowrap;
 }
-
 article table tbody td {
-  padding: 0.625rem 0.5rem 0.625rem 0;
-  border-bottom: 1px solid var(--color-fd-border);
-  color: var(--color-fd-muted-foreground);
+  padding: 13px 18px 13px 0;
+  border: 0 !important;
+  border-bottom: 1px solid var(--color-fd-border) !important;
+  color: var(--aff-body);
+  vertical-align: top;
 }
+article table :where(th, td):first-child { padding-left: 0; }
+article table tbody tr:last-child td { border-bottom: 0 !important; }
 
-article table tbody tr:last-child td {
-  border-bottom: none;
+/* ── Code blocks — the Fumadocs <figure> wrapper IS the dark surface; the
+   <pre> fills it edge-to-edge (kills the white "box-in-box" + shadow). ── */
+article figure:has(pre) {
+  background: var(--aff-code-bg) !important;
+  border: 1px solid var(--color-fd-border) !important;
+  border-radius: var(--aff-radius) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  margin: 18px 0 !important;
 }
-
-/* Subtle hover */
-article table tbody tr {
-  transition: background-color 0.15s ease;
+/* Filename / title strip on the figure */
+article figure:has(pre) figcaption {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(199, 210, 230, 0.72) !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12.5px !important;
+  padding: 9px 16px !important;
+  margin: 0 !important;
 }
-
-article table tbody tr:hover {
-  background-color: var(--color-fd-muted);
-}
-
-/* Remove default alternating rows */
-article table tbody tr:nth-child(even) {
-  background: transparent;
-}
-
-article table tbody tr:nth-child(even):hover {
-  background-color: var(--color-fd-muted);
-}
-
-/* ── Code blocks — dark, cool-neutral, 10px radius (both modes) ── */
+/* kill Fumadocs' inner scroll-div padding so only <pre> pads the code */
+article figure:has(pre) > div { padding: 0 !important; }
 article pre {
   font-size: 0.84rem !important;
   line-height: 1.6 !important;
-  border-radius: var(--aff-radius) !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 13px 16px !important;
+}
+/* Standalone <pre> with no figure wrapper still gets the dark surface */
+article pre:not(figure pre) {
   border: 1px solid var(--color-fd-border) !important;
+  border-radius: var(--aff-radius) !important;
   background: var(--aff-code-bg) !important;
 }
 article pre,
@@ -298,21 +318,21 @@ div[role="dialog"][data-state="open"] {
   backdrop-filter: blur(4px) !important;
 }
 
-/* ── Edit on GitHub — compact, right-aligned, subtle ── */
+/* ── Edit on GitHub — minimal text link (no button box); GitHub icon lives in footer ── */
 a[href*="/edit/main/"] {
-  font-size: 0.75rem !important;
-  padding: 0.25rem 0.75rem !important;
-  opacity: 0.35;
-  transition: opacity 0.15s ease;
+  font-size: 0.8125rem !important;
+  padding: 0 !important;
+  color: var(--color-fd-muted-foreground) !important;
+  transition: color 0.15s ease;
   width: fit-content !important;
   margin-left: auto !important;
-  border: 1px solid var(--color-fd-border) !important;
+  border: 0 !important;
   background: transparent !important;
 }
 
 a[href*="/edit/main/"]:hover {
-  opacity: 1;
-  background: var(--color-fd-muted) !important;
+  color: var(--color-fd-foreground) !important;
+  background: transparent !important;
 }
 
 /* ── Content cards (Fumadocs <Card>) — flat, border-only, Emil-compliant lift.
@@ -609,7 +629,7 @@ article [data-card] {
   font-size: 11px;
   font-weight: 700;
 }
-.docs-check-icon::before { content: '\2713'; }
+/* (check glyph comes from the component's literal ✓ — no ::before, avoids double-tick) */
 .docs-common-mistakes li::before {
   content: '\2715';
   flex: none;

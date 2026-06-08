@@ -9,7 +9,7 @@ export function DocsHeader() {
   const { setOpenSearch } = useSearchContext();
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b border-fd-border bg-fd-background/80 backdrop-blur-md px-5">
+    <header className="flex h-14 items-center gap-4 bg-fd-background/80 backdrop-blur-md px-5">
       {/* Left: Logo */}
       <Link href="/" className="flex items-center gap-2 shrink-0">
         <img
@@ -49,14 +49,8 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: nav + CTA + theme toggle */}
+      {/* Right: nav + CTA + theme toggle (Changelog lives in the tab row, not here) */}
       <div className="flex items-center gap-3 shrink-0">
-        <Link
-          href="/changelog"
-          className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden md:block"
-        >
-          Changelog
-        </Link>
         <Link
           href="https://affitor.com/affiliate-management"
           className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden md:block"
