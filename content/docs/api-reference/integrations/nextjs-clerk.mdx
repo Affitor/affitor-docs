@@ -1,0 +1,144 @@
+---
+title: "Next.js + Clerk"
+description: "Add Affitor tracking to a Next.js (App Router) app that uses Clerk for authentication."
+---
+
+This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
+
+:::note
+The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls (sales)
+- A Next.js App Router app with **Clerk** configured
+
+## 1. Capture the click
+
+Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `affitor-sdk`, create the `<AffitorInit />` client component, and render it in your root layout. Nothing changes for Clerk.
+
+## 2. Track the signup
+
+The `affitor_click_id` is stored in a **first-party browser cookie**. A server-side Clerk webhook (`user.created`) runs with no access to that cookie, so it cannot supply the click ID on its own.
+
+**Two paths are available — the client-side path is the reliable default.**
+
+### Option A — Client-side (recommended)
+
+After Clerk completes sign-up, call `signup()` from a client component. The browser SDK reads the `affitor_click_id` cookie automatically — you do not need to pass it explicitly.
+
+Use Clerk's `useUser()` hook to access the signed-in user, then fire `signup()` once the user is available:
+
+```tsx
+// app/post-signup.tsx  — render this on your post-signup or onboarding page
+'use client';
+
+import { useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { signup } from 'affitor-sdk';
+
+export function AffitorSignup() {
+  const { user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    signup(user.id, user.primaryEmailAddress?.emailAddress);
+  }, [isLoaded, user]);
+
+  return null;
+}
+```
+
+`user.id` is Clerk's stable `userId` — use this exact value as `customerExternalId` at sale time too.
+
+:::note
+Place `<AffitorSignup />` on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page is harmless — `signup()` is idempotent — but placing it on the post-signup destination keeps attribution tight.
+:::
+
+### Option B — Clerk webhook (`user.created`)
+
+If you need to track signups server-side via Clerk's `user.created` webhook, you **must** forward the click ID yourself. The webhook fires with no browser context, so Affitor cannot attribute the lead without it.
+
+**Step 1.** On the client, read the click ID and store it on the Clerk user before sign-up completes (e.g. in a pre-submit handler or just before redirecting away from your sign-up form):
+
+```tsx
+'use client';
+
+import { useSignUp } from '@clerk/nextjs';
+import { getClickId } from 'affitor-sdk';
+
+// during your sign-up form submit
+const { signUp } = useSignUp();
+
+await signUp.update({
+  unsafeMetadata: {
+    affitor_click_id: getClickId() ?? null,
+  },
+});
+```
+
+**Step 2.** In your Clerk webhook handler, read the forwarded click ID and call `trackLead`:
+
+```ts
+// app/api/webhooks/clerk/route.ts
+import { Webhook } from 'svix';
+import Affitor from 'affitor-node';
+
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+export async function POST(req: Request) {
+  const payload = await req.text();
+  const headers = {
+    'svix-id': req.headers.get('svix-id')!,
+    'svix-timestamp': req.headers.get('svix-timestamp')!,
+    'svix-signature': req.headers.get('svix-signature')!,
+  };
+
+  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+  const event = wh.verify(payload, headers) as { type: string; data: Record<string, unknown> };
+
+  if (event.type === 'user.created') {
+    const user = event.data;
+    const unsafeMeta = (user.unsafe_metadata as Record<string, string> | undefined) ?? {};
+
+    await affitor.trackLead({
+      customerExternalId: user.id as string,
+      clickId: unsafeMeta.affitor_click_id ?? undefined, // forwarded from the browser
+      email: (user.email_addresses as Array<{ email_address: string }>)[0]?.email_address,
+    });
+  }
+
+  return new Response('ok');
+}
+```
+
+:::note
+If `affitor_click_id` is `null` (the user arrived directly, not via an affiliate link), `trackLead` still records the lead — it just won't be attributed to a partner. That is the correct behavior.
+:::
+
+## 3. Track the sale
+
+Follow [Step 3 of the base Next.js guide](/api-reference/integrations/nextjs#3-track-the-sale). Use `user.id` (the Clerk user ID) as `affitor_customer_key` in Stripe metadata and as `customerExternalId` in `trackSale` — the same value you used at signup.
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response after Clerk sign-up"]}
+  dashboard={["The click and lead appear under your program's tracking events, attributed to the partner"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without commissions", "If using the webhook path and leads are unattributed, confirm `affitor_click_id` is present in `unsafe_metadata` before the webhook fires"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Using Option B (webhook) without forwarding the click ID — the `user.created` webhook has no browser cookie access, so leads arrive with no partner attribution.",
+  "Different customer IDs at signup vs sale — `user.id` from Clerk must be used as `affitor_customer_key` and `customerExternalId` consistently.",
+  "Reading `getClickId()` too late — call it before Clerk redirects away from the sign-up page, otherwise the value may not be available in the new page context.",
+  "Calling `signup()` in a server component or route handler — it must run in a client component where the cookie is accessible.",
+  "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to any partner."
+]} />
+
+<NextStep title="Add Stripe for sales tracking" description="Attach Affitor metadata to Stripe Checkout Sessions so sales and renewals attribute automatically." href="/api-reference/integrations/stripe" />

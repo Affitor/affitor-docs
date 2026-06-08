@@ -1,0 +1,146 @@
+---
+title: "Next.js + Supabase Auth"
+description: "Add Affitor tracking to a Next.js app that uses Supabase Auth — clicks, signups, and sales."
+---
+
+This guide covers the Supabase-specific signup step. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — refer there for full detail.
+
+:::note
+The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls (sales)
+- A Next.js app with **Supabase Auth** configured
+
+## 1. Capture the click
+
+Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `affitor-sdk`, create an `<AffitorInit />` client component that calls `init({ programId })` on mount, and render it once in your root layout.
+
+## 2. Track the signup
+
+Supabase Auth exposes `onAuthStateChange` — a client-side listener that fires whenever the session changes. This is the **recommended place** to call `signup()` because the browser SDK reads the `affitor_click_id` cookie automatically. No click-id plumbing required.
+
+```tsx
+'use client';
+
+import { useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import { signup } from 'affitor-sdk';
+
+export function AffitorAuthSync() {
+  useEffect(() => {
+    const supabase = createClient();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Only fire on a genuinely new sign-up, not every page load.
+          // Use a flag stored in sessionStorage to call signup() once.
+          const key = `affitor_lead_sent_${session.user.id}`;
+          if (!sessionStorage.getItem(key)) {
+            signup(session.user.id, session.user.email ?? undefined);
+            sessionStorage.setItem(key, '1');
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return null;
+}
+```
+
+Render this component alongside `<AffitorInit />` in your root layout:
+
+```tsx
+// app/layout.tsx
+import { AffitorInit } from './affitor-init';
+import { AffitorAuthSync } from './affitor-auth-sync';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AffitorInit />
+        <AffitorAuthSync />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+`signup(userId, email?)` fires `POST /api/v1/track/lead`. The `userId` here is `session.user.id` — the stable Supabase UUID. Use this exact value as `customerExternalId` everywhere: at sale time and in any Stripe metadata.
+
+:::note
+**Why client-side is the reliable default.** The `affitor_click_id` is a first-party browser cookie. A Supabase DB trigger or Edge Function runs with no access to that cookie, so it cannot supply the click ID on its own. The `onAuthStateChange` listener runs in the browser where the cookie exists, so attribution is automatic.
+:::
+
+### Server-side option (DB trigger / Edge Function)
+
+If you need to track leads from a Supabase Edge Function or DB trigger, you must forward the click ID yourself.
+
+1. On the client, read the click ID before or during sign-up:
+
+```tsx
+import { getClickId } from 'affitor-sdk';
+
+const clickId = getClickId(); // returns the affitor_click_id cookie value
+// Store clickId on the user's metadata or pass it through your sign-up flow.
+await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    data: { affitor_click_id: clickId },
+  },
+});
+```
+
+2. In your Edge Function, read the forwarded click ID and call `affitor-node`:
+
+```ts
+// supabase/functions/on-signup/index.ts
+import Affitor from 'affitor-node';
+
+const affitor = new Affitor({ apiKey: Deno.env.get('AFFITOR_API_KEY')! });
+
+const clickId = user.user_metadata?.affitor_click_id;
+
+await affitor.trackLead({
+  customerExternalId: user.id,  // Supabase user.id
+  clickId,                      // undefined if user did not arrive via a partner link
+  email: user.email,
+});
+```
+
+Without the forwarded `clickId`, the lead has no partner to attribute to — the event is recorded but conversion credit cannot be assigned.
+
+## 3. Track the sale
+
+Follow [Step 3 of the Next.js guide](/api-reference/integrations/nextjs#3-track-the-sale). Use `session.user.id` (your `customerExternalId`) as `affitor_customer_key` in Stripe metadata, or as `customerExternalId` in `affitor.trackSale()`. Sales must always be tracked server-side.
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response after Supabase SIGNED_IN"]}
+  dashboard={["The click, lead, and sale appear under your program's tracking events"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without commissions"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Firing signup() on every SIGNED_IN event — SIGNED_IN fires on every page load when a session exists, not only on first sign-up. Guard with a sessionStorage flag keyed to the user ID.",
+  "Using different IDs at signup vs sale — `session.user.id` must match the `customerExternalId` / `affitor_customer_key` sent at sale time.",
+  "Tracking leads from a server webhook without forwarding the click ID — the browser cookie is not available server-side. Either use the client-side path or store and forward the click ID explicitly.",
+  "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to the originating partner click.",
+  "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
+]} />
+
+<NextStep title="Ready to track sales?" description="Connect Stripe so Affitor attributes subscription renewals automatically." href="/api-reference/integrations/stripe" />

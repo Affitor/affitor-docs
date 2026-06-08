@@ -1,0 +1,156 @@
+---
+title: "Next.js + NextAuth"
+description: "Add Affitor lead tracking to a Next.js app using NextAuth (Auth.js) — handle the click-id cookie gap correctly."
+---
+
+This guide covers the signup step when your Next.js app uses **NextAuth (Auth.js)** for authentication. Steps 1 (capture click) and 3 (track sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this page focuses on what is different: wiring the lead call to NextAuth's auth lifecycle without losing the click attribution.
+
+:::note
+The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls
+- A Next.js App Router app with NextAuth (Auth.js) configured
+
+## 1. Capture the click
+
+Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `affitor-sdk`, create an `AffitorInit` client component, and render it in your root layout. No changes needed for NextAuth.
+
+## 2. Track the signup
+
+### The cookie gap
+
+NextAuth's `events.createUser` callback fires **on the server**, once per new user — it looks like the ideal place to call `trackLead`. It is — but with one important caveat:
+
+**The `affitor_click_id` is a first-party browser cookie.** A server-side callback has no access to it. If you call `affitor-node trackLead` from `events.createUser` without passing a `clickId`, the lead is recorded but has no partner to attribute to — the click attribution is lost.
+
+### Recommended: track client-side after sign-in
+
+The most reliable path is to fire `signup()` from the **browser**, immediately after NextAuth confirms a new user session. The browser SDK reads the `affitor_click_id` cookie automatically — no forwarding required.
+
+```tsx
+// app/auth-tracker.tsx
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import { signup } from 'affitor-sdk';
+
+export function AffitorAuthTracker() {
+  const { data: session, status } = useSession();
+  const tracked = useRef(false);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || tracked.current) return;
+    if (!session?.user?.id) return;
+
+    // Fire once per new session. Your backend should also guard
+    // against duplicate leads using customerExternalId.
+    tracked.current = true;
+    signup(session.user.id, session.user.email ?? undefined);
+  }, [status, session]);
+
+  return null;
+}
+```
+
+Render it inside your root layout, alongside `AffitorInit`:
+
+```tsx
+// app/layout.tsx
+import { AffitorInit } from './affitor-init';
+import { AffitorAuthTracker } from './auth-tracker';
+import { SessionProvider } from 'next-auth/react';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <SessionProvider>
+          <AffitorInit />
+          <AffitorAuthTracker />
+          {children}
+        </SessionProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+:::note
+`signup()` calls `POST /api/v1/track/lead`. Affitor deduplicates by `customerExternalId`, so calling it on every sign-in is safe — only the first call for a given ID creates a lead.
+:::
+
+### Alternative: server-side via events.createUser with click-id forwarding
+
+If you need the lead recorded the moment the user row is created (before the client redirects), you can use `events.createUser` — but you **must** forward the click ID from the browser yourself.
+
+**Step A — read the click ID on the client before the user submits the sign-up form:**
+
+```tsx
+'use client';
+import { getClickId } from 'affitor-sdk';
+
+// In your sign-up form handler, read the click ID and include
+// it in the request or store it on the user's session/metadata.
+const clickId = getClickId(); // returns the affitor_click_id cookie value
+```
+
+**Step B — pass it through to your NextAuth config and call `trackLead` in the event:**
+
+```ts
+// auth.ts (NextAuth config)
+import Affitor from 'affitor-node';
+import type { NextAuthConfig } from 'next-auth';
+
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+export const authConfig: NextAuthConfig = {
+  // ...providers, callbacks, etc.
+  events: {
+    async createUser({ user }) {
+      // user.id is the NextAuth-generated user ID — use it as
+      // customerExternalId everywhere: signup, sale, Stripe metadata.
+      await affitor.trackLead({
+        customerExternalId: user.id,
+        clickId: user.affitorClickId ?? undefined, // forwarded from the browser
+        email: user.email ?? undefined,
+      });
+    },
+  },
+};
+```
+
+:::note
+`user.affitorClickId` is illustrative — the forwarding mechanism depends on your auth flow. Common approaches: store the click ID in the sign-up form's hidden field and write it to a custom user attribute before `createUser` fires, or pass it through a custom `session` object. Without it, `clickId` is undefined and the lead will not be attributed to a partner.
+:::
+
+If you cannot reliably forward the click ID in your server webhook, **prefer the client-side path above.**
+
+## 3. Track the sale
+
+Follow [Step 3 of the Next.js guide](/api-reference/integrations/nextjs#3-track-the-sale). Use `session.user.id` as `affitor_customer_key` (Stripe path) or `customerExternalId` (server SDK path) — it must match the value you sent at signup.
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response after sign-in"]}
+  dashboard={["The lead appears under your program's tracking events, attributed to the correct partner"]}
+  ifNotWorking={["If leads appear but show no partner, the click ID is not being read — confirm `AffitorInit` runs before the user signs in. Send `additional_data: { test_mode: true }` to create test events without commissions."]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Calling trackLead from events.createUser without a clickId — the lead is recorded but has no partner attribution. Use the client-side signup() path or forward the click ID explicitly.",
+  "Different customer IDs at signup vs sale — `session.user.id` must be used consistently as `customerExternalId` / `affitor_customer_key` everywhere.",
+  "Wrapping AffitorAuthTracker outside SessionProvider — useSession() will throw. SessionProvider must be an ancestor.",
+  "Calling signup() before init() runs — AffitorInit must mount first so the SDK is initialized before the auth tracker fires.",
+  "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
+]} />
+
+<NextStep title="Ready to track sales?" description="Connect Stripe so renewals and one-time payments attribute automatically." href="/api-reference/integrations/stripe" />

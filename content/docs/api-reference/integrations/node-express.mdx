@@ -1,0 +1,213 @@
+---
+title: "Node / Express"
+description: "Server-side Affitor integration with affitor-node — track signups and sales from your Express backend."
+---
+
+This guide wires Affitor into a Node.js / Express app. Because Express is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `affitor-node`.
+
+:::note
+The `affitor-node` package is **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls (dashboard → API keys)
+- `affitor-node` installed in your backend
+
+```bash
+npm i affitor-node
+```
+
+## 1. Capture the click (frontend)
+
+Add the Affitor script tag to every page of your frontend. It reads `?aff=` from the URL and stores the `affitor_click_id` as a first-party cookie automatically — no JS call required.
+
+```html
+<script
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  defer
+></script>
+```
+
+When your signup form submits, read the click id and send it to your server along with the form data:
+
+```js
+// frontend — read the click id before submitting
+const clickId = window.affitor?.getClickId() ?? null;
+
+await fetch('/api/signup', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password, affitorClickId: clickId }),
+});
+```
+
+:::note
+The `affitor_click_id` lives in a **first-party browser cookie**. Your Express handlers run with no access to that cookie, so you must forward the click id from the client explicitly. Without it, the lead has no partner to attribute to.
+:::
+
+## 2. Track the signup
+
+Instantiate the SDK once (module-level or via a shared singleton) and call `trackLead` as soon as you create the user record.
+
+```js
+// lib/affitor.js
+import Affitor from 'affitor-node';
+
+export const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY });
+```
+
+```js
+// routes/signup.js
+import express from 'express';
+import { affitor } from '../lib/affitor.js';
+import { createUser } from '../db/users.js';
+
+const router = express.Router();
+
+router.post('/api/signup', async (req, res) => {
+  const { email, password, affitorClickId } = req.body;
+
+  // 1. Create the user in your database
+  const user = await createUser({ email, password });
+
+  // 2. Track the lead with Affitor
+  const result = await affitor.trackLead({
+    customerExternalId: user.id, // stable internal ID — reuse at sale time
+    clickId: affitorClickId,     // forwarded from the browser (may be null)
+    email: user.email,           // optional but improves attribution
+  });
+
+  if (!result.ok) {
+    // Non-fatal — log and continue; the user is already created
+    console.error('[affitor] trackLead failed', result.status, result.error);
+  }
+
+  res.json({ userId: user.id });
+});
+
+export default router;
+```
+
+`customerExternalId` is your **stable internal user ID**. Use the exact same value when you track a sale — this is what links a partner's click to a commission.
+
+:::note
+If you use a **server-side auth webhook** (e.g. a third-party identity provider firing a `user.created` event), that webhook runs with no browser context and therefore no `affitor_click_id`. In that case you must read `window.affitor.getClickId()` on the client at signup time, store the click id on the user record or pass it through your own API, and then forward `clickId` to `trackLead` from the webhook. The client-side path above is simpler and more reliable.
+:::
+
+## 3. Track the sale
+
+Sales must always be tracked server-side — never from the browser.
+
+### Option A — Stripe integration (recommended for Stripe Checkout)
+
+Attach Affitor metadata when you create the Checkout Session. Affitor reads your `checkout.session.completed` and `invoice.payment_succeeded` webhooks and attributes the sale automatically — no extra `trackSale` call needed.
+
+```js
+// server — creating the Checkout Session
+const session = await stripe.checkout.sessions.create({
+  mode: 'subscription', // or 'payment'
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: affitorClickId,   // forwarded from the browser
+    affitor_customer_key: user.id,      // SAME id used at signup
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  // Duplicate into subscription_data so renewals attribute correctly
+  subscription_data: {
+    metadata: {
+      affitor_click_id: affitorClickId,
+      affitor_customer_key: user.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
+
+### Option B — Server-side tracking (any payment provider)
+
+Call `trackSale` directly from your payment webhook or post-charge handler.
+
+```js
+// routes/webhook.js  (or wherever you confirm payment)
+import { affitor } from '../lib/affitor.js';
+
+router.post('/webhooks/payment', async (req, res) => {
+  const event = verifyAndParse(req); // your provider's webhook verification
+
+  if (event.type === 'payment.succeeded') {
+    const { userId, amountCents, invoiceId } = event.data;
+
+    const result = await affitor.trackSale({
+      customerExternalId: userId, // SAME id as trackLead
+      amount: amountCents,        // integer cents, e.g. 4999 for $49.99
+      invoiceId: invoiceId,       // idempotency key — duplicate returns 409
+    });
+
+    if (!result.ok) {
+      if (result.status === 409) {
+        // Already tracked — safe to ignore
+      } else {
+        console.error('[affitor] trackSale failed', result.status, result.error);
+      }
+    }
+  }
+
+  res.sendStatus(200);
+});
+```
+
+The `invoiceId` field acts as an idempotency key. If your webhook fires twice for the same payment, the second call returns `{ ok: false, status: 409 }` — handle it as a no-op, not an error.
+
+To track a refund, call `trackRefund` with the same `invoiceId`:
+
+```js
+await affitor.trackRefund({
+  invoiceId: originalInvoiceId,
+});
+```
+
+### Raw API fallback (cURL / any HTTP client)
+
+If you cannot use the npm package, call the REST endpoint directly. All server-side endpoints require a `Bearer` token.
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "txn_abc",
+    "customer_key": "user_123",
+    "amount_cents": 4999,
+    "currency": "USD"
+  }'
+```
+
+:::note
+`customer_key` in the raw API, `customerExternalId` in `affitor-node`, and `affitor_customer_key` in Stripe metadata are all **the same value** — your stable internal user ID. Keep it consistent.
+:::
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set in the browser"]}
+  network={["Your `/api/signup` handler calls `trackLead` and receives a 2xx response"]}
+  dashboard={["The click, lead, and sale appear under your program's tracking events"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` in your `trackLead` / `trackSale` call to create test events without issuing real commissions"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Not forwarding `affitorClickId` from the client — your Express handler has no access to the browser cookie, so the lead arrives with no partner attribution.",
+  "Different customer IDs at signup vs sale — `customerExternalId` / `customer_key` / `affitor_customer_key` must be the exact same stable user ID everywhere.",
+  "Ignoring the 409 on `trackSale` — a duplicate `invoiceId` returns 409 by design; treat it as a no-op, not a failure.",
+  "Subscriptions missing `subscription_data.metadata` in Stripe — renewal invoices won't attribute to a partner.",
+  "Tracking a sale from the browser — sales are server-side only (Stripe metadata or the server SDK / REST API)."
+]} />
+
+<NextStep title="Building with Next.js?" description="See the full App Router integration including client-side init and server route handlers." href="/api-reference/integrations/nextjs" />
