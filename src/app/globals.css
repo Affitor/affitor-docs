@@ -158,13 +158,13 @@ article table {
 
 article table thead th {
   font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--color-fd-foreground);
-  padding: 0 0.5rem 0.75rem 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-fd-muted-foreground);
+  padding: 0 0.75rem 0.625rem 0;
   border-bottom: 1px solid var(--color-fd-border);
   text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
 }
 
 article table tbody td {
@@ -195,21 +195,57 @@ article table tbody tr:nth-child(even):hover {
   background-color: var(--color-fd-muted);
 }
 
-/* ── Code blocks — dark bg, rounded, Mintlify style ── */
+/* ── Code blocks — dark, cool-neutral, 10px radius (both modes) ── */
 article pre {
-  font-size: 0.875rem !important;
-  border-radius: 0.5rem !important;
+  font-size: 0.84rem !important;
+  line-height: 1.6 !important;
+  border-radius: var(--aff-radius) !important;
   border: 1px solid var(--color-fd-border) !important;
+  background: var(--aff-code-bg) !important;
+}
+article pre,
+article pre code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* Inline code — minimal chip, mono carries it */
 article :where(p, li, td) code {
-  font-size: 0.8125rem;
-  padding: 0.15em 0.4em;
-  border-radius: 0.25rem;
-  background: var(--color-fd-muted);
-  color: var(--color-fd-foreground);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82em;
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--aff-body);
   font-weight: 500;
+  letter-spacing: -0.01em;
 }
+.dark article :where(p, li, td) code {
+  background: rgba(255, 255, 255, 0.07);
+  color: #c7d2e6;
+}
+/* Inside links: drop chip, keep mono + link treatment */
+article :where(p, li, td) a code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* ── Callouts — blockquotes become Linear left-stripe marginalia ── */
+article blockquote {
+  border-left: 3px solid var(--aff-info-solid);
+  background: var(--aff-info-bg);
+  border-radius: var(--aff-radius);
+  padding: 12px 16px;
+  margin: 18px 0;
+  color: var(--aff-body);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-style: normal;
+}
+article blockquote p { margin: 0; }
+article blockquote p + p { margin-top: 8px; }
+article blockquote strong { color: var(--color-fd-foreground); font-weight: 600; }
+article blockquote a { border-bottom-color: var(--aff-border-strong); }
 
 /* ── Layout ── */
 #nd-docs-layout {
@@ -238,9 +274,15 @@ article :where(p, li, td) code {
   background: var(--color-fd-background) !important;
 }
 
-/* Sidebar link sizing — Mintlify uses 14px */
+/* Sidebar links — 13px, active = brand left-stripe + tint (Linear) */
 #nd-sidebar a {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+}
+#nd-sidebar a[data-active='true'] {
+  color: var(--color-fd-primary);
+  background: var(--color-fd-accent);
+  font-weight: 500;
 }
 
 /* ── Search dialog — centered (Mintlify pattern) ── */
