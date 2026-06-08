@@ -312,16 +312,23 @@ a[href*="/edit/main/"]:hover {
   background: var(--color-fd-muted) !important;
 }
 
-/* ── Prev/Next navigation cards ── */
-.dark a[data-card] {
-  border-color: var(--color-fd-border);
+/* ── Prev/Next navigation cards — flat, border-only, Emil-compliant lift ── */
+a[data-card] {
+  border-radius: var(--aff-radius);
+  border: 1px solid var(--color-fd-border);
+  box-shadow: none;
+  transition: border-color 0.15s ease, transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+a[data-card]:hover {
+  border-color: var(--aff-border-strong);
+  transform: translateY(-1px);
 }
 
 /* ── Callout/Admonition refinements ── */
 article [class*="callout"],
 article [class*="Callout"] {
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  border-radius: var(--aff-radius);
+  font-size: 0.9375rem;
 }
 
 /* ── Scrollbar (dark mode) ── */
@@ -350,8 +357,33 @@ article [class*="Callout"] {
 }
 
 .dark ::selection {
-  background: rgba(91, 141, 239, 0.2);
+  background: rgba(88, 129, 255, 0.28);
   color: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Motion layer — Emil Kowalski standards (animations.dev)
+   transform/opacity only · <300ms · ease-out · interruptible
+   ═══════════════════════════════════════════════════════ */
+
+/* Sidebar / nav item hover — color only, fast */
+#nd-sidebar a,
+article [data-card] {
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Respect reduced-motion: drop transforms, keep color/opacity for comprehension */
+@media (prefers-reduced-motion: reduce) {
+  a[data-card]:hover {
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
