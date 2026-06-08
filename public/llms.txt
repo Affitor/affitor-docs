@@ -73,6 +73,15 @@
 - [List Tracking Events](https://docs.affitor.com/api-reference/events): Retrieve paginated, merged tracking events (clicks, leads, conversions) for a program
 - [GET /tracking/performance/:programId](https://docs.affitor.com/api-reference/performance): Retrieve daily performance aggregates and period-over-period trend metrics
 
+### Integrations
+
+- [Next.js](https://docs.affitor.com/api-reference/integrations/nextjs): Add Affitor tracking to a Next.js App Router app — clicks, signups, sales (affitor-sdk + Stripe integration)
+- [Next.js + Clerk](https://docs.affitor.com/api-reference/integrations/nextjs-clerk): Fire the signup from Clerk auth, with click-id forwarding for server webhooks
+- [Next.js + Supabase](https://docs.affitor.com/api-reference/integrations/nextjs-supabase): Fire the signup from Supabase Auth state changes
+- [Next.js + NextAuth](https://docs.affitor.com/api-reference/integrations/nextjs-nextauth): Fire the signup from NextAuth events.createUser, forwarding the click id
+- [Stripe integration](https://docs.affitor.com/api-reference/integrations/stripe): Attach affitor_click_id / affitor_customer_key / program_id metadata to Checkout Sessions; Affitor reads webhooks (one-time + subscription)
+- [Node / Express](https://docs.affitor.com/api-reference/integrations/node-express): Server-side tracking with affitor-node (trackLead / trackSale / trackRefund) + raw API
+
 ## Support
 
 - [Support](https://docs.affitor.com/support): Fastest self-serve path and when to contact the team

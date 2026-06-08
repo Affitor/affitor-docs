@@ -1,0 +1,151 @@
+---
+title: "Next.js"
+description: "Add Affitor tracking to a Next.js (App Router) app — clicks, signups, and sales."
+---
+
+This guide wires Affitor into a Next.js App Router app with the three moves every integration needs: **capture the click**, **track the signup**, **track the sale**.
+
+:::note
+The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls (sales)
+- A Next.js app on the **App Router**
+
+## 1. Capture the click
+
+Install the browser SDK and initialize it once on the client. `init()` reads `?aff=` from the URL and stores a first-party `affitor_click_id` cookie. It is SSR-safe — `init()` is a no-op on the server.
+
+```bash
+npm i affitor-sdk
+```
+
+Create a client component that runs `init()` on mount:
+
+```tsx
+// app/affitor-init.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+
+export function AffitorInit() {
+  useEffect(() => {
+    init({ programId: YOUR_PROGRAM_ID });
+  }, []);
+  return null;
+}
+```
+
+Render it once in your root layout:
+
+```tsx
+// app/layout.tsx
+import { AffitorInit } from './affitor-init';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AffitorInit />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+## 2. Track the signup
+
+When a user finishes signing up, link them to their click. Call the browser helper with **your own stable user ID** — you'll reuse this exact value at sale time.
+
+```tsx
+'use client';
+import { signup } from 'affitor-sdk';
+
+// after your signup flow completes
+await signup(user.id, user.email); // email optional
+```
+
+Prefer to do it server-side (e.g. in a route handler or after a DB write)? Use the server SDK with your program API key:
+
+```ts
+// server only
+import Affitor from 'affitor-node';
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+await affitor.trackLead({
+  customerExternalId: user.id, // same ID you'll send at sale time
+  clickId,                     // affitor_click_id, forwarded from the cookie
+  email: user.email,           // optional
+});
+```
+
+## 3. Track the sale
+
+Pick one of two paths — this is the real choice: **does Stripe tell us, or does your server?**
+
+### Option A — Stripe integration (recommended for Stripe Checkout)
+
+Attach Affitor metadata when you create the Checkout Session in **your own** Stripe account. Affitor reads your Stripe webhooks and attributes the sale automatically — no extra call.
+
+```ts
+// server — creating the Checkout Session
+const session = await stripe.checkout.sessions.create({
+  mode: 'subscription', // or 'payment'
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: clickId,        // from the affitor_click_id cookie
+    affitor_customer_key: user.id,    // SAME id you used at signup
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  // subscriptions: duplicate the SAME metadata so renewals attribute
+  subscription_data: {
+    metadata: {
+      affitor_click_id: clickId,
+      affitor_customer_key: user.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
+
+### Option B — Server-side tracking (any provider)
+
+Report the finalized sale from your backend. Works with any payment provider.
+
+```ts
+import Affitor from 'affitor-node';
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+await affitor.trackSale({
+  customerExternalId: user.id, // SAME id as signup
+  amount: 4999,                // integer cents
+  invoiceId: invoice.id,       // idempotency key — a duplicate returns 409
+});
+```
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response"]}
+  dashboard={["The click, lead, and sale appear under your program's tracking events"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without commissions"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Different customer IDs at signup vs sale — `affitor_customer_key` must equal the `customer_key`/`customerExternalId` you sent at signup.",
+  "Subscriptions missing `subscription_data.metadata` — renewals won't attribute.",
+  "Calling init() on the server — it must run in a client component (it no-ops on the server).",
+  "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
+]} />
+
+<NextStep title="Using Clerk for auth?" description="Fire the signup from Clerk's user.created webhook." href="/api-reference/integrations/nextjs-clerk" />
