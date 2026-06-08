@@ -1,0 +1,289 @@
+---
+title: SDKs
+description: Typed client libraries for browser tracking (@affitor/tracker) and server-side conversion reporting (@affitor/node).
+---
+
+> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+
+Two packages cover the full attribution chain: the browser SDK captures clicks and leads on the frontend; the Node SDK reports conversions from your backend.
+
+<FeatureCards>
+  <FeatureCard icon="monitor" title="@affitor/tracker" href="#affitortracker-browser">Browser SDK — captures affiliate clicks, persists attribution in a first-party cookie, and reports lead events.</FeatureCard>
+  <FeatureCard icon="server" title="@affitor/node" href="#affitornode-server">Node SDK — reports leads, sales, clicks, and refunds from your backend with Bearer auth.</FeatureCard>
+</FeatureCards>
+
+---
+
+## @affitor/tracker (Browser)
+
+SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server — safe to import in Next.js and other SSR frameworks without guards.
+
+### Install
+
+```bash
+npm install @affitor/tracker
+```
+
+Or include the script tag directly:
+
+```html
+<script
+  src="https://cdn.affitor.com/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  defer
+></script>
+```
+
+### Quick start
+
+```ts
+import { init, signup } from '@affitor/tracker';
+
+// On app load (client-side only — no-op on server)
+init({ programId: 123 });
+
+// After the user completes signup / checkout
+await signup('user_abc123', 'user@example.com');
+```
+
+---
+
+### `AffitorInitOptions`
+
+Options accepted by `init()` and the `AffitorTracker` constructor.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `programId` | `number \| string` | No | Your affiliate program id. Falls back to `data-affitor-program-id` on the script tag, then `window.AFFITOR_PROGRAM_ID`. |
+| `debug` | `boolean` | No | Enables verbose `console.log` output. Errors always log regardless of this flag. |
+| `cookieDomain` | `string` | No | Force a cookie domain (e.g. `.example.com`). Auto-detected from the current hostname when omitted. |
+| `apiBase` | `string` | No | Override the tracking API base URL. Defaults to `https://api.affitor.com`. |
+
+---
+
+### `AffitorData`
+
+Returned by `getData()` — a snapshot of current tracker state.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clickId` | `string \| null` | The active `affitor_click_id` (in-memory or from cookie). |
+| `programId` | `number \| null` | The resolved program id. |
+| `hasAttribution` | `boolean` | `true` when a valid click has been tracked in this session. |
+| `affiliateUrl` | `string \| null` | The affiliate URL that originated the current attribution. |
+
+---
+
+### Methods
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `init` | `(options?: AffitorInitOptions) => AffitorTracker \| null` | Initialize tracking. Captures `?aff=` from the current URL and sets up the click id cookie. Returns `null` on the server. |
+| `signup` | `(customerKey: string, email?: string) => Promise<void>` | Report a lead (signup) event. Pass your internal user id as `customerKey`. |
+| `trackClick` | `(affiliateUrl?: string, existingClickId?: string \| null) => Promise<void>` | Manually track a click. Usually called automatically by `init()` when `?aff=` is detected. |
+| `getClickId` | `() => string \| null` | Return the current click id from memory or the `affitor_click_id` cookie. |
+| `getData` | `() => AffitorData \| null` | Return a snapshot of tracker state. `null` before `init()` is called. |
+| `getTracker` | `() => AffitorTracker \| null` | Return the underlying `AffitorTracker` instance (advanced use). `null` before `init()`. |
+
+> `signup()` requires `customerKey` — this is your own user id. Affitor uses it to bind the customer to a click so later backend sale calls can resolve attribution by id alone.
+
+---
+
+### Full example (Next.js)
+
+```ts
+// lib/affitor.ts — client-side init, called once from _app.tsx
+import { init, signup, getData } from '@affitor/tracker';
+
+export function initAffitor() {
+  init({ programId: Number(process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID) });
+}
+
+// After successful signup
+export async function trackSignup(userId: string, email: string) {
+  await signup(userId, email);
+  console.log('Attribution state:', getData());
+}
+```
+
+---
+
+## @affitor/node (Server)
+
+Typed, Bearer-authenticated client over the Affitor conversion API. Use this from your backend to report leads, sales, and refunds for any payment provider (Stripe, Polar, Lemon Squeezy, Paddle, etc.).
+
+**Never ship the program API key to the browser.**
+
+### Install
+
+```bash
+npm install @affitor/node
+```
+
+### Quick start
+
+```ts
+import Affitor from '@affitor/node';
+
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+// On user signup — bind the customer to their affiliate click
+await affitor.trackLead({ customerExternalId: user.id, clickId });
+
+// On payment success — report the sale
+await affitor.trackSale({
+  customerExternalId: user.id,
+  amount: 4999,         // cents
+  invoiceId: inv.id,    // idempotency key
+});
+```
+
+---
+
+### `AffitorOptions`
+
+Constructor options for `new Affitor(opts)`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `apiKey` | `string` | **Yes** | Program API key (Bearer). Find it in your Affitor dashboard under program settings. |
+| `apiUrl` | `string` | No | Override the API base URL. Defaults to `https://api.affitor.com`. |
+| `fetch` | `typeof fetch` | No | Custom fetch implementation. Required for Node versions below 18 that lack a global `fetch`. |
+
+---
+
+### `AffitorResponse<T>`
+
+All methods return `Promise<AffitorResponse<T>>`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | `boolean` | `true` when the HTTP status was 2xx. |
+| `status` | `number` | HTTP status code. `0` on network error. |
+| `data` | `T \| null` | Parsed response body when `ok` is `true`; `null` on error. |
+| `error` | `string \| undefined` | Error message or HTTP status text when `ok` is `false`. |
+
+---
+
+### Methods
+
+#### `trackLead(input: TrackLeadInput)`
+
+Binds `customerExternalId` to `clickId`. Once bound, later `trackSale` calls need only `customerExternalId` — no click id required.
+
+At least one of `customerExternalId` or `clickId` is required; throws synchronously if both are missing.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customerExternalId` | `string` | Conditional | Your own user id. Binds the customer to the click for downstream sale attribution. |
+| `clickId` | `string` | Conditional | `affitor_click_id` cookie value from the browser. |
+| `email` | `string` | No | Customer email (hashed server-side). |
+| `eventName` | `string` | No | Custom event label for segmentation. |
+| `additionalData` | `Record<string, unknown>` | No | Arbitrary metadata passed through to the event record. |
+
+---
+
+#### `trackSale(input: TrackSaleInput)`
+
+Records a completed sale and creates a commission. Resolves attribution by `customerExternalId` first, then `clickId`. Idempotent by `invoiceId`.
+
+At least one of `customerExternalId` or `clickId` is required, and `amount` must be a positive integer. Both `amount` and `invoiceId` throw synchronously if invalid.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customerExternalId` | `string` | Conditional | Your own user id — resolves attribution from the earlier `trackLead` call. |
+| `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
+| `amount` | `number` | **Yes** | Sale amount in **integer cents** (e.g. `4999` = $49.99). |
+| `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
+| `currency` | `string` | No | ISO 4217 currency code. Defaults to `USD`. |
+| `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
+| `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
+| `subscriptionId` | `string` | No | External subscription id from your payment provider. |
+| `subscriptionInterval` | `'monthly' \| 'quarterly' \| 'annual'` | No | Billing cadence for subscription sales. |
+| `eventName` | `string` | No | Custom event label for segmentation. |
+
+---
+
+#### `trackClick(input?: TrackClickInput)`
+
+Track a click server-side. Click tracking is usually handled in the browser by `@affitor/tracker`; use this only for server-rendered flows or redirect-based affiliate links.
+
+This endpoint does not require authentication.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `affiliateUrl` | `string` | No | The full affiliate URL containing the `?aff=` parameter. |
+| `pageUrl` | `string` | No | The landing page URL. |
+| `referrerUrl` | `string` | No | The HTTP referrer. |
+| `existingClickId` | `string` | No | Pass an existing click id to enable last-partner attribution (overwrites old click). |
+
+---
+
+#### `trackRefund(input: TrackRefundInput)`
+
+Reverses the commission for a previously tracked sale. Call from your payment provider's refund webhook. Idempotent by `invoiceId`.
+
+- Omit `refundAmountCents` (or pass `0`) for a full refund → commission status set to `reversed`.
+- Pass a partial amount → commission status set to `refunded` (proportional).
+
+`invoiceId` is required and throws synchronously if missing.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
+| `refundAmountCents` | `number` | No | Refund amount in integer cents. Omit or pass `0` for a full refund. |
+| `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
+
+---
+
+### Full example (Stripe webhook)
+
+```ts
+import Stripe from 'stripe';
+import Affitor from '@affitor/node';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+
+// POST /webhooks/stripe
+export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
+  const event = stripe.webhooks.constructEvent(
+    rawBody,
+    sig,
+    process.env.STRIPE_WEBHOOK_SECRET!
+  );
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const result = await affitor.trackSale({
+      customerExternalId: session.client_reference_id ?? undefined,
+      amount: session.amount_total ?? 0,
+      invoiceId: session.payment_intent as string,
+      currency: session.currency?.toUpperCase(),
+      saleType: 'payment',
+    });
+
+    if (!result.ok) {
+      console.error('Affitor trackSale failed:', result.error);
+    }
+  }
+
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object as Stripe.Charge;
+    await affitor.trackRefund({
+      invoiceId: charge.payment_intent as string,
+      refundAmountCents: charge.amount_refunded,
+    });
+  }
+}
+```
+
+---
+
+## Related
+
+- [Track Click](/docs/api-reference/track-click) — raw HTTP endpoint reference
+- [Track Lead](/docs/api-reference/track-lead) — raw HTTP endpoint reference
+- [Track Sale](/docs/api-reference/track-sale) — raw HTTP endpoint reference
+- [Track Refund](/docs/api-reference/track-refund) — raw HTTP endpoint reference
+- [Lead Tracking Guide](/docs/advertisers/tracking/lead-tracking-signup) — implementation walkthrough
