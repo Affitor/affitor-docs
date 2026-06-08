@@ -308,6 +308,18 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
   font-weight: 500;
 }
 
+/* ── Right TOC ("On this page") — breathe, readable nesting ── */
+#nd-toc a,
+[data-toc] a {
+  padding: 4.5px 0 !important;
+  line-height: 1.45 !important;
+  font-size: 13px;
+}
+#nd-toc, [data-toc] { font-size: 13px; }
+
+/* ── Section dividers (---) — unnecessary; sections separate by heading rhythm ── */
+article hr { display: none; }
+
 /* ── Search dialog — centered (Mintlify pattern) ── */
 div[role="dialog"][data-state="open"] {
   top: 20vh !important;

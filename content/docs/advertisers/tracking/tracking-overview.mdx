@@ -25,16 +25,16 @@ That is why identifier consistency matters more than any single code snippet.
 
 ## The Tracking Flow
 
-```mermaid
-graph LR
-    A[Partner shares link] --> B[Customer clicks]
-    B --> C[Tracker stores affitor_click_id]
-    C --> D[Customer signs up]
-    D --> E[Your internal customer ID sent to Affitor]
-    E --> F[Customer pays]
-    F --> G[Sale API or Stripe metadata path]
-    G --> H[Revenue attributed]
-```
+<Flow>
+  <FlowStep>Partner shares link</FlowStep>
+  <FlowStep>Customer clicks</FlowStep>
+  <FlowStep>Tracker stores `affitor_click_id`</FlowStep>
+  <FlowStep>Customer signs up</FlowStep>
+  <FlowStep>Your internal customer ID sent to Affitor</FlowStep>
+  <FlowStep>Customer pays</FlowStep>
+  <FlowStep>Sale API or Stripe metadata path</FlowStep>
+  <FlowStep>**Revenue attributed**</FlowStep>
+</Flow>
 
 ---
 

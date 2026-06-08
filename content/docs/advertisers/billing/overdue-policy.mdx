@@ -15,16 +15,14 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
 
 ## The billing timeline
 
-```mermaid
-graph LR
-    A[Sales attributed Mon–Sun] --> B[Invoice issued Mon 09:00 UTC]
-    B --> C{Pay within 7 days}
-    C -->|paid| D[Status: paid]
-    C -->|past due| E[Status: overdue]
-    E --> F[Program paused]
-    F --> G[Mark invoice paid]
-    G --> H[Program auto-resumed]
-```
+<Flow>
+  <FlowStep>Sales attributed Mon–Sun</FlowStep>
+  <FlowStep>Invoice issued Mon 09:00 UTC</FlowStep>
+  <FlowStep>Pay within 7 days → **paid:** Status: paid · **past due:** Status: overdue</FlowStep>
+  <FlowStep>Program paused</FlowStep>
+  <FlowStep>Mark invoice paid</FlowStep>
+  <FlowStep>Program auto-resumed</FlowStep>
+</Flow>
 
 | Stage | When | What happens |
 |-------|------|--------------|

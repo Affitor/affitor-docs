@@ -16,13 +16,13 @@ Understand how cleared commissions move toward partner payment and what role the
 
 ## How payouts work
 
-```mermaid
-graph LR
-    A[Sale attributed] --> B[Commission created]
-    B --> C[Review / hold workflow]
-    C --> D[Commission clears]
-    D --> E[Payout workflow continues]
-```
+<Flow>
+  <FlowStep>Sale attributed</FlowStep>
+  <FlowStep>Commission created</FlowStep>
+  <FlowStep>Review / hold workflow</FlowStep>
+  <FlowStep>Commission clears</FlowStep>
+  <FlowStep>Payout workflow continues</FlowStep>
+</Flow>
 
 At a high level:
 1. a sale is attributed
