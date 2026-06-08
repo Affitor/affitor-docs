@@ -272,25 +272,42 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 
 /* ── Layout ── */
 :root { --aff-topbar: 100px; } /* header 56 + tab row 44 */
+/* The full-width top bar is 100px. Tell Fumadocs the sticky offset so its NATIVE
+   grid-area:sidebar / grid-area:toc wrappers stick at the right place. Do NOT
+   override #nd-sidebar/#nd-toc position — Fumadocs' wrapper is the sticky element
+   (the aside inside is absolute); overriding it breaks the sticky containing block. */
 #nd-docs-layout {
+  --fd-docs-row-1: var(--aff-topbar);
+  --fd-nav-height: var(--aff-topbar);
   --fd-docs-height: calc(100dvh - var(--aff-topbar));
 }
 
-/* Sidebar (left) + TOC (right): FIXED below the top bar, only content scrolls */
-#nd-sidebar {
+/* Left sidebar wrapper (grid-area:sidebar) IS the sticky element — pin it
+   viewport-tall below the top bar; the <aside> inside scrolls. */
+#nd-docs-layout > div[class*="grid-area:sidebar"] {
   position: sticky !important;
   top: var(--aff-topbar) !important;
   height: calc(100dvh - var(--aff-topbar)) !important;
-  overflow-y: auto;
-  align-self: start;
+  align-self: start !important;
 }
+#nd-sidebar { overflow-y: auto !important; }
+
+/* Right TOC — sticky viewport-tall below the top bar */
 #nd-toc,
 [data-toc] {
   position: sticky !important;
   top: var(--aff-topbar) !important;
-  max-height: calc(100dvh - var(--aff-topbar));
+  max-height: calc(100dvh - var(--aff-topbar)) !important;
   overflow-y: auto;
-  align-self: start;
+  align-self: start !important;
+  scrollbar-width: none; /* TOC fits — no scrollbar gutter */
+}
+#nd-toc::-webkit-scrollbar, [data-toc]::-webkit-scrollbar { display: none; }
+/* TOC indicator bar: was a full-height brand bar ("thanh trượt"); make it a
+   thin muted track — the active item's accent+bold text is the position cue. */
+#nd-toc [class*="bg-fd-primary"],
+[data-toc] [class*="bg-fd-primary"] {
+  background-color: var(--color-fd-border) !important;
 }
 
 /* ── Sidebar ── */
