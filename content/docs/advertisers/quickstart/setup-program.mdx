@@ -62,15 +62,19 @@ Install the tracker on pages where affiliate traffic lands.
 **SDK:**
 
 ```bash
-npm install @affitor/tracker
+npm install affitor-sdk
 ```
 
 ```tsx
-import { AffitorProvider } from '@affitor/tracker/react';
-
-<AffitorProvider programId="YOUR_PROGRAM_ID">
-  {children}
-</AffitorProvider>
+// app/providers.tsx — client component
+'use client';
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+export function AffitorInit() {
+  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  return null;
+}
+// render <AffitorInit /> once in app/layout.tsx
 ```
 
 **Script tag:**
@@ -113,10 +117,10 @@ Choose the path that matches your checkout.
 
 | Method | How it works | Best for |
 |--------|--------------|----------|
-| **Sale API** | your backend sends `POST /api/v1/track/sale` after payment succeeds | any payment provider or custom backend |
-| **Stripe Bill Flow** | you keep taking payment in your own Stripe checkout; Affitor attributes via metadata + webhooks | existing Stripe Checkout integrations |
+| **Server-side tracking** | your backend sends `POST /api/v1/track/sale` after payment succeeds | any payment provider or custom backend |
+| **Stripe integration** | you keep taking payment in your own Stripe checkout; Affitor attributes via metadata + webhooks | existing Stripe Checkout integrations |
 
-For Stripe Bill Flow, use these public fields in metadata:
+For Stripe integration, use these public fields in metadata:
 - `affitor_click_id`
 - `affitor_customer_key`
 - `program_id`
@@ -141,7 +145,7 @@ Once setup is complete, share your partner recruitment link so affiliates can ap
   items={[
     { text: 'Install click tracking first' },
     { text: 'Wire signup tracking with a stable internal customer ID' },
-    { text: 'Choose Sale API or Stripe Bill Flow for payment tracking' },
+    { text: 'Choose Server-side tracking or Stripe integration for payment tracking' },
     { text: 'Run test flows before launch' },
   ]}
 />

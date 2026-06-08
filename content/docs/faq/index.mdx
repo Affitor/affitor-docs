@@ -1,6 +1,6 @@
 ---
 title: "Frequently Asked Questions"
-description: "Common questions about Affitor's pricing, tracking, commissions, and integration flows."
+description: "Common questions about Affitor's pricing, tracking, commissions, and integration options."
 ---
 
 ## General
@@ -15,7 +15,7 @@ Affitor is designed for SaaS teams that want to launch or scale a partner progra
 Affitor differentiates on:
 - performance-based pricing
 - first-party tracking for click → signup → sale flows
-- support for Stripe Bill Flow or server-side sale tracking
+- support for Stripe integration or Server-side tracking
 - commission and payout operations in one workflow
 
 ---
@@ -32,7 +32,7 @@ Affitor charges a **3.5% platform fee** on partner-generated revenue.
 Affitor's pricing includes a **$10K fee-free threshold** on affiliate-driven revenue. Confirm your commercial terms directly with the Affitor team before a launch decision.
 
 ### When do I pay?
-In the **Bill Flow** model, Affitor bills you through its invoice workflow after tracked conversions are validated. Confirm billing timing directly with the Affitor team if it affects your launch decision.
+In the **invoice billing** model, Affitor bills you through its invoice workflow after tracked conversions are validated. Confirm billing timing directly with the Affitor team if it affects your launch decision.
 
 ### Does Affitor collect money from my customers?
 No. Affitor is **not** the merchant of record. You continue charging customers through your own Stripe or payment setup.
@@ -46,13 +46,13 @@ Three main paths are supported:
 
 1. **Tracker install** for click tracking
 2. **Browser signup helper** or **server lead API** for signup attribution
-3. **Sale API** or **Stripe metadata + webhook** for revenue attribution
+3. **Server-side tracking** or **Stripe integration** for revenue attribution
 
 ### What is the difference between `customerKey`, `customer_key`, and `affitor_customer_key`?
 They represent the same business concept in different integration contexts:
 
 - `customerKey` — browser helper argument for `signup(customerKey, email)`
-- `customer_key` — field used in lead/sale API payloads
+- `customer_key` — field used in the tracking API payloads
 - `affitor_customer_key` — Stripe metadata field
 
 Use the same internal user/customer ID across all three.
@@ -61,7 +61,7 @@ Use the same internal user/customer ID across all three.
 Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you already use Stripe Checkout and can attach Affitor metadata, you can integrate without replacing your existing payment stack.
 
 ### Does Affitor only work with Stripe?
-No. Stripe is the best-documented Bill Flow path, but the Sale API works with any backend/payment provider that can send revenue events after payment succeeds.
+No. Stripe is the best-documented integration path, but Server-side tracking works with any backend/payment provider that can send revenue events after payment succeeds.
 
 ### How does attribution work?
 Affitor uses:
@@ -72,7 +72,7 @@ Affitor uses:
 For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that identifier in sale tracking.
 
 ### What happens if the customer later pays on Stripe?
-With Stripe Bill Flow, Affitor attributes the sale from metadata and webhook events. For subscriptions, renewals also require `subscription_data.metadata` to be populated.
+With Stripe integration, Affitor attributes the sale from metadata and webhook events. For subscriptions, renewals also require `subscription_data.metadata` to be populated.
 
 ---
 
@@ -109,7 +109,7 @@ If your team prefers terminal-based setup, the [Affitor CLI](/advertisers/cli/qu
 The most common causes are:
 - signup used the wrong internal identifier
 - Stripe metadata used a different identifier than signup
-- Sale API payload omitted `customer_key` / `click_id`
+- Server-side tracking payload omitted `customer_key` / `click_id`
 - subscription metadata was only added to the initial checkout, not `subscription_data.metadata`
 
 ### How do I get help?

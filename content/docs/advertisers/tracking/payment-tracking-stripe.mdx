@@ -1,12 +1,12 @@
 ---
 title: Payment Tracking
-description: Track completed sales with the Sale API or Stripe metadata in Bill Flow
+description: Track completed sales with server-side tracking or Stripe integration
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
 
-1. **Sale API** — your backend calls Affitor when revenue is finalized
-2. **Stripe metadata + webhook (Bill Flow)** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
+1. **Server-side tracking** — your backend calls POST /api/v1/track/sale when revenue is finalized
+2. **Stripe integration** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
 
 ---
 
@@ -14,14 +14,14 @@ Payment tracking records revenue after a customer pays. Affitor supports two sal
 
 | Path | Best for |
 |------|----------|
-| **Sale API** | custom backend, any payment provider, Paddle/LemonSqueezy/manual revenue events |
-| **Stripe metadata + webhook** | existing Stripe Checkout integration |
+| **Server-side tracking** | custom backend, any payment provider, Paddle/LemonSqueezy/manual revenue events |
+| **Stripe integration** | existing Stripe Checkout integration |
 
-Use the Sale API when you control the exact moment revenue is finalized on your server. Use Bill Flow metadata when you already use Stripe Checkout and want Affitor to attribute revenue from webhook events.
+Use server-side tracking when you control the exact moment revenue is finalized on your server. Use Stripe integration when you already use Stripe Checkout and want Affitor to attribute revenue from webhook events.
 
 ---
 
-## Option A — Sale API
+## Option A — Server-side tracking
 
 ### Endpoint
 
@@ -88,15 +88,15 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 
 :::tip
 
-Use the Sale API if you want one server-controlled source of truth for revenue events across all payment providers.
+Use server-side tracking if you want one server-controlled source of truth for revenue events across all payment providers.
 
 :::
 
 ---
 
-## Option B — Stripe Metadata + Webhook (Bill Flow)
+## Option B — Stripe integration
 
-In Bill Flow, you keep charging customers through your own Stripe account — Affitor does **not** become merchant of record. Affitor attributes the conversion through Stripe metadata and webhook processing, then bills through its invoice workflow.
+With the Stripe integration, you keep charging customers through your own Stripe account — Affitor does **not** become merchant of record. Affitor attributes the conversion through Stripe metadata and webhook processing, then invoices you through its invoice billing workflow.
 
 ### Recommended metadata fields
 
@@ -263,7 +263,7 @@ For new implementations, use only:
 
 ---
 
-## Test Mode for Sale API
+## Test Mode for Server-side tracking
 
 Send a test sale event without creating a real commission or platform fee.
 
@@ -290,14 +290,14 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 
 ## Troubleshooting
 
-### Sale API returns `401`
+### Server-side tracking returns `401`
 
 Check:
 - the `Authorization` header is present
 - the value is `Bearer YOUR_PROGRAM_API_KEY`
 - the API key belongs to the same program you intend to track
 
-### Sale API returns `409`
+### Server-side tracking returns `409`
 
 Check:
 - `transaction_id` is unique

@@ -1,6 +1,6 @@
 ---
 title: Testing Integration
-description: Verify click, signup, and sale tracking before going live
+description: Verify click, signup, and server-side tracking before going live
 ---
 
 Before going live, verify each layer in order to confirm that your identifiers, metadata, and revenue path line up correctly:
@@ -96,9 +96,9 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 
 ## 3. Test Sale Tracking
 
-You can test sale tracking in two different ways depending on your implementation.
+You can test sale tracking in two different ways depending on your implementation: server-side tracking vs Stripe integration.
 
-### Option A — Test the Sale API
+### Option A — Test Server-side tracking
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/sale \
@@ -134,7 +134,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 - does not create platform fees
 - does not update production metrics
 
-### Option B — Test Stripe Bill Flow
+### Option B — Test Stripe integration
 
 If you use Stripe Checkout:
 
@@ -181,7 +181,7 @@ You can also filter by step:
 4. complete payment
 5. verify click → lead → sale linkage
 
-### Scenario B — Sale API path
+### Scenario B — Server-side tracking path
 
 1. complete a backend-controlled purchase
 2. send `POST /api/v1/track/sale`
@@ -204,7 +204,7 @@ You can also filter by step:
 Usually caused by one of these:
 - `customerKey` at signup does not match the later payment identifier
 - Stripe metadata uses the wrong customer key
-- `transaction_id` is duplicated or missing in the Sale API path
+- `transaction_id` is duplicated or missing in the server-side tracking path
 - no tracked click/customer relationship exists for the customer
 
 ### One-time Stripe works but renewals do not
@@ -231,7 +231,7 @@ Confirm all of the following:
 
 - tracker installed on all landing pages
 - signup tracking sends a stable internal customer ID
-- Sale API or Stripe metadata path is fully implemented
+- Server-side tracking or Stripe integration path is fully implemented
 - Stripe subscription metadata is duplicated correctly when relevant
 - one end-to-end test has succeeded with the exact path you will use in production
 

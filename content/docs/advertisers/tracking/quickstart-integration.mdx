@@ -1,6 +1,6 @@
 ---
 title: 3-Step Integration Guide
-description: Get Affitor tracking live with the supported click, signup, and sale flows
+description: Get Affitor tracking live with the supported click, signup, and server-side tracking flows
 ---
 
 Three steps get Affitor tracking live: clicks → signups → sales. Steps 1 and 2 establish attribution; step 3 records revenue.
@@ -11,15 +11,15 @@ Make sure you have:
 
 - Your **program ID**
 - Your **program API key** for server-to-server calls
-- A decision on how you will track sales:
-  - **Sale API** for any backend or payment provider
-  - **Stripe metadata + webhook** for Stripe Checkout / Bill Flow
+- A decision on how you will track sales (server-side tracking vs Stripe integration):
+  - **Server-side tracking** — your backend calls `POST /api/v1/track/sale` — for any backend or payment provider
+  - **Stripe integration** — attach Affitor metadata to Stripe Checkout sessions
 
 :::note
 
 Use one naming scheme consistently:
 - `customerKey` — browser helper argument (`signup(customerKey, email)`)
-- `customer_key` — lead/sale API field
+- `customer_key` — tracking API field
 - `affitor_customer_key` — Stripe metadata field
 
 :::
@@ -155,7 +155,7 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 
 When a customer pays, choose **one** revenue-tracking path.
 
-### Option A — Sale API (works with any payment provider)
+### Option A — Server-side tracking (works with any payment provider)
 
 Send a server-to-server request once payment succeeds.
 
@@ -228,7 +228,7 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 
 :::
 
-### Option B — Stripe Checkout metadata (Bill Flow)
+### Option B — Stripe integration
 
 If you already use Stripe Checkout, keep taking payment in your own Stripe account — just attach Affitor metadata to the checkout session.
 
@@ -273,7 +273,7 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-### Stripe/Bill Flow rules
+### Stripe integration rules
 
 - **One-time payments** are attributed from Stripe checkout metadata and webhook processing
 - **Subscriptions and renewals** rely on `invoice.payment_succeeded`
@@ -289,10 +289,10 @@ const session = await stripe.checkout.sessions.create({
 
 | Path | Best for |
 |------|----------|
-| **Sale API** | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
-| **Stripe metadata + webhook** | Existing Stripe Checkout integration using Bill Flow |
+| **Server-side tracking** — `POST /api/v1/track/sale` | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
+| **Stripe integration** | Existing Stripe Checkout integration |
 
-Use the Sale API when your backend controls the revenue event. Use Stripe metadata when you want Affitor to attribute sales directly from your Stripe webhook flow.
+Use server-side tracking when your backend controls the revenue event. Use Stripe integration when you want Affitor to attribute sales directly from your Stripe webhook flow.
 
 ---
 

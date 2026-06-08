@@ -34,7 +34,7 @@
 - [Tracking Overview](https://docs.affitor.com/advertisers/tracking/tracking-overview): How Affitor links clicks, signups, and sales together for attribution
 - [Pageview Tracker (Click)](https://docs.affitor.com/advertisers/tracking/pageview-tracker-click): Track affiliate visits with the Affitor tracker SDK or script tag
 - [Lead Tracking (Signup)](https://docs.affitor.com/advertisers/tracking/lead-tracking-signup): Track referred signups with the browser helper or server-side lead API
-- [Payment Tracking](https://docs.affitor.com/advertisers/tracking/payment-tracking-stripe): Track completed sales with the Sale API or Stripe metadata in Bill Flow
+- [Payment Tracking](https://docs.affitor.com/advertisers/tracking/payment-tracking-stripe): Track completed sales with Server-side tracking or Stripe metadata in Stripe integration
 - [Payment Flow](https://docs.affitor.com/advertisers/tracking/payment-flow): End-to-end flow from affiliate click to attributed revenue and payout operations
 - [Testing Integration](https://docs.affitor.com/advertisers/tracking/testing-integration): Verify click, signup, and sale tracking before going live
 
@@ -55,7 +55,7 @@
 ## API Reference
 
 - [API Reference Overview](https://docs.affitor.com/api-reference/overview): Base URL, authentication, request/response envelope, and available endpoints
-- [SDKs (Beta)](https://docs.affitor.com/api-reference/sdks): @affitor/tracker (browser) + @affitor/node (server) reference
+- [SDKs (Beta)](https://docs.affitor.com/api-reference/sdks): affitor-sdk (browser) + affitor-node (server) reference
 - [Agent Integration (Beta)](https://docs.affitor.com/api-reference/agent-integration): .affitor/AGENTS.md + skills.md the CLI generates for AI agents
 - [Attribution](https://docs.affitor.com/api-reference/attribution): How Affitor links clicks, signups, and sales for attribution
 - [Error Reference](https://docs.affitor.com/api-reference/errors): Error codes and troubleshooting guide
@@ -83,21 +83,28 @@
 
 ## SDKs
 
-### @affitor/tracker
+### affitor-sdk
 
 Browser-side click tracking SDK. Install via npm or use the script tag.
 
 **npm install:**
 
 ```bash
-npm install @affitor/tracker
+npm i affitor-sdk
 ```
 
-**React provider:**
+**React usage:**
 
 ```tsx
-import { AffitorProvider } from '@affitor/tracker/react';
-<AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>
+// app/providers.tsx — client component
+'use client';
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+export function AffitorInit() {
+  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  return null;
+}
+// render <AffitorInit /> once in app/layout.tsx
 ```
 
 **Script tag:**
@@ -111,10 +118,12 @@ import { AffitorProvider } from '@affitor/tracker/react';
 **Browser signup helper:**
 
 ```javascript
+signup(customerKey, email) // SDK
+// or
 await window.affitor.signup(userId, userEmail);
 ```
 
-### @affitor/node
+### affitor-node
 
 Server-side Node.js SDK for lead and sale tracking from your backend. See the [API Reference](https://docs.affitor.com/api-reference/overview) for direct API usage.
 
@@ -139,11 +148,18 @@ These files are designed to be consumed by AI agents performing automated integr
 </script>
 ```
 
-Or install via npm: `npm install @affitor/tracker`
+Or install via npm: `npm i affitor-sdk`
 
 ```tsx
-import { AffitorProvider } from '@affitor/tracker/react';
-<AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>
+// app/providers.tsx — client component
+'use client';
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+export function AffitorInit() {
+  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  return null;
+}
+// render <AffitorInit /> once in app/layout.tsx
 ```
 
 **Step 2 — Signup tracking**: Call after user registration succeeds:
@@ -162,11 +178,11 @@ Content-Type: application/json
 {"customer_key": "user_123", "email": "user@example.com"}
 ```
 
-**Step 3 — Sale tracking**:
+**Step 3 — Sale tracking** (Server-side tracking vs Stripe integration):
 
-Option A: Stripe metadata + webhook (Bill Flow):
+Option A: Stripe integration (Stripe metadata + webhook):
 
-Option B: Sale API (any payment provider):
+Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider):
 
 ```bash
 POST https://api.affitor.com/api/v1/track/sale
@@ -200,7 +216,7 @@ Use the same internal user ID everywhere:
 |---|---|
 | Browser signup | `customerKey` (1st argument to signup()) |
 | Lead API | `customer_key` |
-| Sale API | `customer_key` |
+| Server-side tracking | `customer_key` |
 | Stripe metadata | `affitor_customer_key` |
 
 ## API Reference

@@ -23,8 +23,8 @@ Affitor records the visit and stores the click-to-customer relationship needed f
 
 ### 5. Customer signs up and pays
 You send signup attribution with your internal customer ID, then record revenue either through:
-- the server-side Sale API, or
-- Stripe metadata + webhook handling in Bill Flow
+- Server-side tracking — your backend calls POST /api/v1/track/sale, or
+- Stripe integration — Stripe metadata + webhook handling
 
 ### 6. Commission is created
 Affitor calculates commission from the program's applicable rules and moves it into the commission workflow.
@@ -34,11 +34,11 @@ Validated commissions move through review, hold, and payout operations for partn
 
 ## Key points
 
-**Flexible integration paths** — Affitor supports browser-side signup tracking, server-side lead/sale APIs, and Stripe Bill Flow metadata.
+**Flexible integration paths** — Affitor supports browser-side signup tracking, server-side tracking vs Stripe integration, and server-side lead APIs.
 
 **60-day default attribution window** — Affitor documents a 60-day default window for affiliate attribution.
 
-**Bill Flow model** — Advertisers charge customers through their own Stripe or payment setup. Affitor attributes conversions and manages billing and payout operations through its workflow.
+**Invoice billing model** — Advertisers charge customers through their own Stripe or payment setup. Affitor attributes conversions and manages billing and payout operations through its workflow.
 
 ## Next steps
 

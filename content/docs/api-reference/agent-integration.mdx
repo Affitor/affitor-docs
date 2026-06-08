@@ -3,7 +3,7 @@ title: Agent Integration
 description: How AI coding agents (Claude Code, Cursor, Copilot, and others) auto-install Affitor tracking using generated instruction files.
 ---
 
-> **Beta** — The @affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+> **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
 `npx affitor init` generates two instruction files inside `.affitor/` that any AI coding agent can read to wire up tracking automatically — without you writing a single line yourself.
 
@@ -56,11 +56,15 @@ The file contains three verbatim integration sections an agent can copy directly
 ```
 
 ```tsx
-import { AffitorProvider } from '@affitor/tracker/react';
-
-<AffitorProvider programId="42">
-  {children}
-</AffitorProvider>
+// app/providers.tsx — client component
+'use client';
+import { useEffect } from 'react';
+import { init } from 'affitor-sdk';
+export function AffitorInit() {
+  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  return null;
+}
+// render <AffitorInit /> once in app/layout.tsx
 ```
 
 **2. Signup/lead tracking** — browser-side helper and server-side curl:
@@ -78,13 +82,13 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
   -d '{"customer_key": "user_123", "email": "user@example.com"}'
 ```
 
-**3. Sale tracking** — three options in priority order: Stripe OAuth auto-connect, Sale API, Stripe metadata:
+**3. Sale tracking** — three options in priority order: Stripe OAuth auto-connect, Server-side tracking vs Stripe integration:
 
 ```bash
 # Option A: auto-connect Stripe (recommended)
 npx affitor setup stripe
 
-# Option B: Sale API (any payment provider)
+# Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
 curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Authorization: Bearer $AFFITOR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -97,7 +101,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 ```
 
 ```javascript
-// Option C: Stripe metadata (manual Checkout Sessions)
+// Option C: Stripe integration — metadata (manual Checkout Sessions)
 metadata: {
   affitor_click_id: clickId,
   affitor_customer_key: user.id,
@@ -113,7 +117,7 @@ The file includes a table that tells agents which field name to use in each cont
 |---------|------------|
 | Browser signup helper | `customerKey` (1st argument) |
 | Lead API | `customer_key` |
-| Sale API | `customer_key` |
+| Server-side tracking | `customer_key` |
 | Stripe metadata | `affitor_customer_key` |
 
 ### CLI reference and API endpoint table
@@ -182,7 +186,7 @@ AGENTS.md instructs agents to follow these rules. They apply equally when you in
 
 ## Related
 
-- [SDK Reference](/api-reference/sdks/) — `@affitor/tracker` package for React and Next.js
+- [SDK Reference](/api-reference/sdks/) — `affitor-sdk` package for React and Next.js
 - [Track Lead](/api-reference/track-lead/) — full API contract for signup tracking
 - [Track Sale](/api-reference/track-sale/) — full API contract for sale/revenue tracking
 - [Get Tracking Status](/api-reference/status/) — verify integration health after setup

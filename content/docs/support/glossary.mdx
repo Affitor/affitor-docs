@@ -1,6 +1,6 @@
 ---
 title: Glossary
-description: Common terms used across Affitor docs
+description: Common terms used across Affitor docs — server-side tracking, Stripe integration, invoice billing, and more
 ---
 
 ## A
@@ -19,7 +19,7 @@ The time period during which a tracked click can still receive credit for a late
 
 ## B
 
-### Bill Flow
+### Invoice billing
 The current public payment-tracking model where the advertiser keeps collecting end-customer payment in their own checkout/Stripe account, and Affitor attributes conversions then bills through its invoice workflow.
 
 ## C
@@ -33,7 +33,7 @@ The amount earned by a partner after a sale is attributed and processed through 
 ### Customer Key
 Your internal customer/user identifier. It appears as:
 - `customerKey` in the browser helper
-- `customer_key` in lead/sale API payloads
+- `customer_key` in the tracking API payloads
 - `affitor_customer_key` in Stripe metadata
 
 ## H
@@ -65,13 +65,13 @@ A commission structure where a partner can keep earning on subscription renewals
 
 ## S
 
-### Sale API
-The server-to-server revenue tracking endpoint: `POST /api/v1/track/sale`.
+### Server-side tracking
+The server-to-server revenue tracking method — your backend calls `POST /api/v1/track/sale`.
 
 ### Signup Helper
 The browser-side helper call used after a successful signup: `signup(customerKey, email)`.
 
-### Stripe Bill Flow Metadata
+### Stripe metadata
 The metadata Affitor uses to attribute Stripe Checkout payments, typically:
 - `affitor_click_id`
 - `affitor_customer_key`
@@ -88,7 +88,7 @@ The system that connects click, signup, and sale data so revenue can be attribut
 ## W
 
 ### Webhook
-An automated event notification. Affitor uses Stripe webhooks to process payment attribution in Bill Flow.
+An automated event notification. Affitor uses Stripe webhooks to process payment attribution in the Stripe integration.
 
 ### Withdrawable Balance
 Partner earnings that have cleared the hold/review workflow and are available within the payout process.
