@@ -1,0 +1,148 @@
+---
+title: Track Sale
+description: Record an attributed sale and create the partner commission from your backend
+---
+
+Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
+
+```bash
+POST https://api.affitor.com/api/v1/track/sale
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+```
+
+---
+
+## Authentication
+
+All requests require a program API key sent as a Bearer token in the `Authorization` header.
+
+```
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+```
+
+The API key is found in your program settings in the Affitor dashboard.
+
+---
+
+## Request Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `transaction_id` | string | **Yes** | Your unique payment identifier. Used for duplicate detection — re-sending the same value returns 409. |
+| `amount_cents` | integer | **Yes** | Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer. |
+| `customer_key` | string | No | Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. |
+| `click_id` | string | No | The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided. |
+| `currency` | string | No | ISO 4217 currency code. Defaults to `USD`. |
+| `sale_type` | string | No | `"payment"` (default) or `"subscription"`. |
+| `line_items` | object | No | Arbitrary line-item detail to store with the sale record. |
+| `is_recurring` | boolean | No | `true` if this is a recurring billing charge. Defaults to `false`. |
+| `subscription_id` | string | No | Your subscription identifier. Required for proper recurring commission attribution. |
+| `subscription_interval` | string | No | `"monthly"`, `"quarterly"`, or `"annual"`. |
+| `product_id` | string | No | Your product identifier. Used for per-product commission policy matching. |
+
+At least one of `customer_key` or `click_id` must match an existing customer record so Affitor can resolve attribution.
+
+---
+
+## Request Body Example
+
+```json
+{
+  "transaction_id": "txn_abc123",
+  "customer_key": "usr_9876",
+  "amount_cents": 4900,
+  "currency": "USD",
+  "sale_type": "payment"
+}
+```
+
+### Subscription example
+
+```json
+{
+  "transaction_id": "inv_sub_001",
+  "customer_key": "usr_9876",
+  "amount_cents": 4900,
+  "currency": "USD",
+  "sale_type": "subscription",
+  "is_recurring": true,
+  "subscription_id": "sub_stripe_xyz",
+  "subscription_interval": "monthly",
+  "product_id": "prod_pro_plan"
+}
+```
+
+---
+
+## Success Response
+
+HTTP `200 OK`
+
+```json
+{
+  "success": true,
+  "sale_id": 42,
+  "commission_id": 17,
+  "message": "Sale tracked successfully"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` on success. |
+| `sale_id` | integer | ID of the created sale event record. |
+| `commission_id` | integer | ID of the created commission record. |
+| `message` | string | Human-readable confirmation. |
+
+---
+
+## Error Responses
+
+| Status | When |
+|--------|------|
+| `400` | `transaction_id` missing or not a string |
+| `400` | `amount_cents` missing, not a positive integer |
+| `400` | Neither `customer_key` nor `click_id` resolved a customer record |
+| `400` | Customer does not belong to the program identified by the API key |
+| `400` | No partner-program relationship found for the resolved customer |
+| `401` | Missing or malformed `Authorization` header |
+| `401` | API key does not match any active program |
+| `409` | `transaction_id` already recorded — duplicate sale |
+| `500` | Commission creation failed internally |
+
+---
+
+## Test Mode
+
+Send `additional_data.test_mode: true` to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode.
+
+```json
+{
+  "additional_data": {
+    "test_mode": true
+  }
+}
+```
+
+Test mode response:
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": {
+    "eventId": 12,
+    "programId": 3,
+    "test_mode": true
+  }
+}
+```
+
+---
+
+## Related
+
+- [Lead Tracking (Signup)](/advertisers/tracking/lead-tracking-signup/)
+- [Payment Flow](/advertisers/tracking/payment-flow/)
+- [Testing Integration](/advertisers/tracking/testing-integration/)

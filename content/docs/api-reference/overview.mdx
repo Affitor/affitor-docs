@@ -1,0 +1,114 @@
+---
+title: API Reference
+description: Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
+---
+
+The Affitor Tracking API lets your backend record affiliate events — clicks, signups, sales, and refunds — and retrieve program performance data.
+
+---
+
+## Base URL
+
+```text
+https://api.affitor.com
+```
+
+All paths below are relative to this base. Strapi serves v1 routes under `/api`, so the full path for a tracking endpoint is:
+
+```text
+https://api.affitor.com/api/v1/track/sale
+```
+
+---
+
+## Authentication
+
+Different endpoints use different auth modes.
+
+| Endpoint | Auth required | How to pass |
+|----------|--------------|-------------|
+| `POST /api/v1/track/click` | None | No token needed |
+| `POST /api/v1/track/lead` | Optional (server mode) | `Authorization: Bearer <program_api_key>` |
+| `POST /api/v1/track/sale` | Required | `Authorization: Bearer <program_api_key>` |
+| `POST /api/v1/track/refund` | Required | `Authorization: Bearer <program_api_key>` |
+
+Your **program API key** (`api_token`) is found in the Affitor dashboard under your program settings.
+
+### Server mode vs browser mode (lead endpoint)
+
+`POST /api/v1/track/lead` supports two modes:
+
+- **Browser mode** — called by `affitor-tracker.js` from the customer's browser. No Bearer token. Attribution is proved by the `click_id` cookie value passed in the body.
+- **Server mode** — called from your backend. Include `Authorization: Bearer <program_api_key>`. Pass `customer_key` or `click_id` to identify the customer.
+
+---
+
+## Response envelope
+
+All endpoints return JSON. A successful response always includes `"success": true`. Error responses include an `"error"` string.
+
+**Success shape:**
+
+```json
+{
+  "success": true
+}
+```
+
+Sale and refund responses include additional IDs:
+
+```json
+{
+  "success": true,
+  "sale_id": 42,
+  "commission_id": 17,
+  "message": "Sale tracked successfully"
+}
+```
+
+**Error shape:**
+
+```json
+{
+  "error": "transaction_id is required and must be a string"
+}
+```
+
+---
+
+## Endpoint families
+
+### `/api/v1/track/*` — Tracking API (v1)
+
+The primary integration surface. Writes to the v1 event tables (`affiliate_click_events`, `affiliate_lead_events`, `affiliate_sale_events`).
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/v1/track/click` | Record an affiliate link click |
+| `POST` | `/api/v1/track/lead` | Record a customer signup |
+| `POST` | `/api/v1/track/sale` | Record a completed sale and create a commission |
+| `POST` | `/api/v1/track/refund` | Reverse the commission for a previously tracked sale |
+
+### `/api/tracking/*` — Legacy tracking endpoints
+
+Earlier `affitor-tracker.js` versions used paths under `/api/tracking/`. The v1 paths above are the current supported surface; `/api/tracking/` exists as a compatibility alias only.
+
+---
+
+## Test mode
+
+Pass `"additional_data": { "test_mode": true }` in any tracking request body to create a flagged test record without affecting real attribution, commission, or metric state. Test records are marked `is_test: true` in the database.
+
+---
+
+## Endpoint pages
+
+<FeatureCards>
+  <FeatureCard icon="mouse-pointer-click" title="Track Click" href="/api-reference/track-click">Record an affiliate link click and create the customer attribution relationship.</FeatureCard>
+  <FeatureCard icon="user-check" title="Track Lead" href="/api-reference/track-lead">Record a customer signup and link it to a prior click.</FeatureCard>
+  <FeatureCard icon="credit-card" title="Track Sale" href="/api-reference/track-sale">Record a completed sale, create a commission, and update program metrics.</FeatureCard>
+  <FeatureCard icon="rotate-ccw" title="Track Refund" href="/api-reference/track-refund">Reverse the commission for a sale that was refunded.</FeatureCard>
+  <FeatureCard icon="activity" title="Status" href="/api-reference/status">Check program integration status and health.</FeatureCard>
+  <FeatureCard icon="list" title="Events" href="/api-reference/events">Retrieve click, lead, and sale event records for a program.</FeatureCard>
+  <FeatureCard icon="bar-chart-2" title="Performance" href="/api-reference/performance">Retrieve aggregated performance metrics for a program.</FeatureCard>
+</FeatureCards>

@@ -1,0 +1,104 @@
+---
+title: Get Tracking Status
+description: Returns integration step statuses and Stripe connection info for a program
+---
+
+Retrieves the integration health of a program: whether each of the three setup steps (pageview, referrals, payments) is complete, a summary of recent test events for each step, and the connected Stripe account details.
+
+---
+
+## Endpoint
+
+`GET /api/tracking/status/:programId`
+
+---
+
+## Authentication
+
+This endpoint is protected by the `verify-program-access` workspace policy. The caller must be an authenticated dashboard user with `tracking:read` permission on the program. No Bearer API key is used.
+
+---
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `programId` | integer | Yes | The numeric ID of the affiliate program |
+
+---
+
+## Response
+
+```json
+{
+  "data": {
+    "programId": "42",
+    "stepStatuses": {
+      "pageview": "complete",
+      "referrals": "pending",
+      "payments": "complete"
+    },
+    "statistics": {
+      "pageview": {
+        "testEventCount": 3,
+        "hasTestEvents": true,
+        "latestTestEvent": {
+          "id": 101,
+          "timestamp": "2026-06-07T10:23:45.000Z",
+          "createdAt": "2026-06-07T10:23:45.000Z"
+        }
+      },
+      "referrals": {
+        "testEventCount": 0,
+        "hasTestEvents": false,
+        "latestTestEvent": null
+      },
+      "payments": {
+        "stripeConnectionStatus": "connected",
+        "isStripeConnected": true,
+        "stripeAccountId": "acct_1AbCdEfGhIjKlMnO",
+        "chargesEnabled": true,
+        "payoutsEnabled": true,
+        "detailsSubmitted": true,
+        "connectionDate": "2026-05-01T08:00:00.000Z"
+      }
+    },
+    "hasPartners": true,
+    "lastUpdated": "2026-06-08T12:00:00.000Z"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.programId` | string | The program ID from the URL path |
+| `data.stepStatuses` | object | Status of each integration step: `"complete"` or `"pending"` |
+| `data.stepStatuses.pageview` | string | `"complete"` when at least one test click event exists for the program |
+| `data.stepStatuses.referrals` | string | `"complete"` when at least one test lead event exists for the program |
+| `data.stepStatuses.payments` | string | `"complete"` when the advertiser's Stripe account `stripeConnectionStatus` is `"connected"` |
+| `data.statistics.pageview.testEventCount` | integer | Number of test click events found (up to 10) |
+| `data.statistics.pageview.hasTestEvents` | boolean | `true` if at least one test click event exists |
+| `data.statistics.pageview.latestTestEvent` | object \| null | ID and timestamps of the most recent test click event |
+| `data.statistics.referrals.testEventCount` | integer | Number of test lead events found (up to 10) |
+| `data.statistics.referrals.hasTestEvents` | boolean | `true` if at least one test lead event exists |
+| `data.statistics.referrals.latestTestEvent` | object \| null | ID and timestamps of the most recent test lead event |
+| `data.statistics.payments.stripeConnectionStatus` | string | Raw Stripe connection status from the advertiser record |
+| `data.statistics.payments.isStripeConnected` | boolean | `true` when `stripeConnectionStatus === "connected"` |
+| `data.statistics.payments.stripeAccountId` | string \| null | Stripe connected account ID (`acct_...`), or `null` if not connected |
+| `data.statistics.payments.chargesEnabled` | boolean | Whether the Stripe account can accept charges |
+| `data.statistics.payments.payoutsEnabled` | boolean | Whether the Stripe account can receive payouts |
+| `data.statistics.payments.detailsSubmitted` | boolean | Whether Stripe onboarding details have been submitted |
+| `data.statistics.payments.connectionDate` | string \| null | ISO timestamp of when Stripe was connected, or `null` |
+| `data.hasPartners` | boolean | `true` when at least one approved partner-program record exists for this program |
+| `data.lastUpdated` | string | ISO timestamp of when this response was generated |
+
+---
+
+## Errors
+
+| Status | When |
+|--------|------|
+| 404 | `programId` does not match any affiliate program |
+| 500 | Internal server error while querying step data |

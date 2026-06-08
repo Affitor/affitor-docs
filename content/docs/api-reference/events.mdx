@@ -1,0 +1,121 @@
+---
+title: List Tracking Events
+description: Retrieve paginated, merged tracking events (clicks, leads, conversions) for a program
+---
+
+`GET /api/tracking/events/:programId`
+
+Returns a merged, reverse-chronological list of click, lead, and conversion events recorded for the specified program. Events from all three tables are fetched, normalized to a common shape, sorted by timestamp, and then paginated.
+
+---
+
+## Authentication
+
+This endpoint uses workspace-policy enforcement. The request must carry a valid authenticated session that has been granted the `tracking:list` action for the program. This is enforced by the `verify-program-access` policy on the Strapi backend.
+
+---
+
+## Path Parameter
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `programId` | integer | **Yes** | Numeric ID of the affiliate program |
+
+---
+
+## Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `page` | integer | No | `1` | Page number (1-indexed) |
+| `pageSize` | integer | No | `10` | Number of events per page |
+| `eventType` | string | No | *(all)* | Filter by event type. Accepted values: `click`, `lead`, `conversion` |
+| `dateFrom` | string (ISO 8601) | No | *(none)* | Inclusive lower bound on event timestamp |
+| `dateTo` | string (ISO 8601) | No | *(none)* | Inclusive upper bound on event timestamp |
+
+### Example request
+
+```bash
+GET /api/tracking/events/42?page=1&pageSize=10&eventType=click&dateFrom=2026-06-01T00:00:00Z&dateTo=2026-06-07T23:59:59Z
+```
+
+---
+
+## Response
+
+Returns a `data` array of normalized event objects and a `meta.pagination` block.
+
+### Success `200`
+
+```json
+{
+  "data": [
+    {
+      "id": 301,
+      "event_type": "click",
+      "timestamp": "2026-06-07T14:22:10.000Z",
+      "click_id": "cust_42_1749305730000",
+      "session_id": "sess_1749305730000",
+      "page_url": "https://example.com/pricing?aff=PARTNER123",
+      "referrer_url": "https://twitter.com",
+      "geo_country": "US",
+      "geo_region": "CA",
+      "geo_city": "San Francisco",
+      "device_type": "desktop",
+      "device_os": "macOS",
+      "browser_name": "Chrome",
+      "converted": false,
+      "createdAt": "2026-06-07T14:22:10.512Z"
+    },
+    {
+      "id": 87,
+      "event_type": "lead",
+      "timestamp": "2026-06-06T09:11:42.000Z",
+      "click_id": "cust_42_1749218702000",
+      "customer_key": "usr_abc123",
+      "session_id": "sess_1749218702000",
+      "page_url": "https://example.com/signup",
+      "converted": false,
+      "createdAt": "2026-06-06T09:11:42.301Z"
+    },
+    {
+      "id": 15,
+      "event_type": "conversion",
+      "timestamp": "2026-06-05T16:45:00.000Z",
+      "click_id": "cust_42_1749131100000",
+      "amount_cents": 9900,
+      "currency": "USD",
+      "sale_type": "payment",
+      "payment_status": "paid",
+      "processor_event_id": "txn_abc123",
+      "is_recurring": false,
+      "createdAt": "2026-06-05T16:45:01.000Z"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 10,
+      "pageCount": 3,
+      "total": 28
+    }
+  }
+}
+```
+
+### Field notes
+
+- `event_type` is a normalized field added by the server: `"click"`, `"lead"`, or `"conversion"`.
+- `timestamp` is a normalized field set to the source event's native time field (`click_timestamp`, `lead_timestamp`, or `sale_date`).
+- Test events (`is_test: true`) are excluded from all three tables before merging.
+- The response `total` reflects the merged in-memory count after applying filters, not a direct DB count.
+
+---
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `404` | `programId` does not match any program |
+| `403` | Caller does not have `tracking:list` access for the program |
+| `500` | Unexpected server error |

@@ -1,0 +1,124 @@
+---
+title: Track Click
+description: Record an affiliate click event when a visitor lands via a referral link
+---
+
+`POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter, creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
+
+This endpoint is called automatically by `affitor-tracker.js`. You only need to call it directly if you are building a custom tracker integration.
+
+---
+
+## Auth
+
+No API key is required. This endpoint is public — the referral link embedded in `affiliate_url` is the only credential needed.
+
+---
+
+## Request
+
+`POST https://api.affitor.com/api/v1/track/click`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `affiliate_url` | `string` | **Yes** | Full URL including the `?aff=` query parameter, e.g. `https://yoursite.com?aff=PARTNER123` |
+| `page_url` | `string` | No | Canonical page URL where the click occurred |
+| `page_title` | `string` | No | `document.title` at time of click |
+| `referrer_url` | `string` | No | `document.referrer` — where the visitor came from |
+| `session_id` | `string` | No | Browser session identifier |
+| `user_agent` | `string` | No | User agent string; falls back to the HTTP `User-Agent` header |
+| `screen_resolution` | `string` | No | Screen dimensions, e.g. `1920x1080` |
+| `viewport_size` | `string` | No | Browser viewport dimensions, e.g. `1280x800` |
+| `language` | `string` | No | Browser language code, e.g. `en-US` |
+| `timezone` | `string` | No | IANA timezone string, e.g. `America/New_York` |
+| `existing_click_id` | `string` | No | Previously issued `click_id` to reuse instead of generating a new one |
+| `additional_data` | `object` | No | Pass `{ "test_mode": true, "program_id": 1 }` to create a test event that does not affect production attribution |
+
+### Example request body
+
+```json
+{
+  "affiliate_url": "https://yoursite.com/pricing?aff=PARTNER123",
+  "page_url": "https://yoursite.com/pricing",
+  "page_title": "Pricing — YourSite",
+  "referrer_url": "https://blog.example.com/post",
+  "session_id": "sess_abc123",
+  "screen_resolution": "1920x1080",
+  "viewport_size": "1280x800",
+  "language": "en-US",
+  "timezone": "America/New_York"
+}
+```
+
+---
+
+## Response
+
+### Success
+
+```json
+{
+  "success": true,
+  "click_id": "cust_42_1715000000000",
+  "partner_code": "PARTNER123",
+  "cookie_window_days": 60
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | `true` on success |
+| `click_id` | `string` | Unique identifier for this click/customer relationship — store in a first-party cookie and pass to lead/sale calls |
+| `partner_code` | `string` | The short partner code resolved from the referral link |
+| `cookie_window_days` | `number` | Attribution window in days set by the program; `click_id` remains valid for this many days |
+
+### Test mode response
+
+When `additional_data.test_mode` is `true`:
+
+```json
+{
+  "success": true,
+  "message": "Test click event tracked successfully",
+  "data": {
+    "eventId": 101,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+---
+
+## Errors
+
+| Status | Condition |
+|--------|-----------|
+| `400 Bad Request` | `affiliate_url` is missing |
+| `400 Bad Request` | `affiliate_url` cannot be parsed as a URL |
+| `400 Bad Request` | No `?aff=` parameter found in `affiliate_url` |
+| `400 Bad Request` | No referral link found matching the `aff` value |
+| `400 Bad Request` | Referral link configuration is invalid (missing partner or program) |
+| `200` (with `success: false`) | Referral link exists but has `status: inactive` |
+| `500 Internal Server Error` | Unexpected server error |
+
+---
+
+## What happens on success
+
+1. The `aff` value is extracted from `affiliate_url` and matched to a referral link.
+2. If `existing_click_id` is provided and matches an existing customer, that customer record is reused. Otherwise a new customer record is created with `customer_status: click`.
+3. A click event is created in `affiliate_click_events` with geo, device, and browser data derived server-side.
+4. The referral link's `clicks` counter and `last_clicked` timestamp are updated.
+5. The partner-program click metrics are incremented.
+6. `click_id`, `partner_code`, and `cookie_window_days` are returned for the caller to store in a cookie.
+
+---
+
+## Next steps
+
+After a click is tracked:
+
+- [Lead Tracking](/advertisers/tracking/lead-tracking-signup/) — identify the customer when they sign up
+- [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/) — record a sale against the same customer
+- [Testing Integration](/advertisers/tracking/testing-integration/) — verify the full flow end-to-end
