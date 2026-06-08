@@ -2,7 +2,7 @@
   "title": "Getting Started",
   "root": true,
   "pages": [
-    "what-is-affitor",
+    "[Introduction](/)",
     "how-it-works",
     "pricing-performance-model",
     "glossary"

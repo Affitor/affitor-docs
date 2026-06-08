@@ -16,6 +16,12 @@ const config = {
         destination: '/:path*',
         permanent: true,
       },
+      {
+        // intro content now lives at the root landing
+        source: '/getting-started/what-is-affitor',
+        destination: '/',
+        permanent: true,
+      },
     ];
   },
 };
