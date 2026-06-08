@@ -22,7 +22,8 @@ export function TabNav() {
   })();
 
   return (
-    <nav className="flex items-center gap-6 px-5 h-11 border-b border-fd-border bg-fd-background/80 backdrop-blur-md overflow-x-auto">
+    <nav className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
+      <div className="flex items-center gap-6 px-5 h-11 max-w-[1536px] mx-auto overflow-x-auto">
       {TABS.map((tab, i) => {
         const active = i === activeIdx;
         return (
@@ -40,6 +41,7 @@ export function TabNav() {
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }
