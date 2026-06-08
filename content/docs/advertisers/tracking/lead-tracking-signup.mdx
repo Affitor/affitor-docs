@@ -3,19 +3,19 @@ title: Lead Tracking (Signup)
 description: Track referred signups with the browser helper or the server-side lead API
 ---
 
-Lead tracking connects a signup to the affiliate click that drove it. This is the step that turns anonymous referral traffic into an identified customer record.
+Lead tracking connects a signup to the affiliate click that drove it — turning anonymous referral traffic into an identified customer record.
 
 ---
 
 ## What Lead Tracking Does
 
-When signup tracking succeeds, Affitor can:
+When signup tracking succeeds, Affitor:
 
-1. link the signup to the tracked click/customer relationship
-2. store your internal customer identifier for later payment attribution
-3. move the customer journey forward from click → lead
+1. links the signup to the tracked click/customer relationship
+2. stores your internal customer identifier for later payment attribution
+3. advances the customer journey from click → lead
 
-Use these names consistently:
+Use the same customer identifier across all three contexts:
 
 | Context | Field |
 |--------|-------|
@@ -31,15 +31,15 @@ Before tracking a signup:
 
 - [x] the visitor arrived through an affiliate-tracked flow
 - [x] the tracker created a click/customer relationship first
-- [x] your signup flow has a stable internal user/customer ID to send to Affitor
+- [x] your signup flow has a stable internal user/customer ID to pass to Affitor
 
-A tracked click usually means the browser already has `affitor_click_id` from the pageview/click step.
+A tracked click means the browser already has `affitor_click_id` from the pageview/click step.
 
 ---
 
 ## Option A — Browser-side `signup()`
 
-Use this when signup completes in the browser and the tracker script is already loaded.
+Use this when signup completes in the browser and the tracker script is loaded on the page.
 
 ### Basic example
 
@@ -89,15 +89,15 @@ document.getElementById('signup-form').addEventListener('submit', async function
 
 ### When to use browser-side signup
 
-- your frontend knows when signup succeeded
-- the tracker is already installed on the page
+- your frontend knows when signup succeeds
+- the tracker is installed on the page
 - you want the simplest supported implementation
 
 ---
 
 ## Option B — Server-side Lead API
 
-Use this when account creation happens on your backend or you want your server to send the lead event.
+Use this when account creation happens on your backend, or when you want your server to send the lead event.
 
 ### Endpoint
 
@@ -119,11 +119,7 @@ Content-Type: application/json
 
 ### Rules
 
-Outside test mode, provide at least one of:
-- `click_id`
-- `customer_key`
-
-For reliable downstream payment attribution, you should normally send **both** when available.
+Outside test mode, provide at least one of `click_id` or `customer_key`. Send **both** whenever possible for reliable downstream payment attribution.
 
 ### Response
 
@@ -185,13 +181,13 @@ requests.post(
 | `signup(customerKey, email)` | frontend/browser signup flows | no Bearer token in your integration |
 | `POST /api/v1/track/lead` | backend-driven signup flows | Bearer program API key recommended |
 
-Both modes should ultimately identify the same customer with the same internal ID.
+Both modes must identify the same customer with the same internal ID.
 
 ---
 
 ## Test Mode
 
-You can create a test lead event without affecting production attribution.
+Create a test lead event to verify your integration without affecting production attribution.
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/lead \
@@ -208,9 +204,9 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 
 ### Test mode behavior
 
-- creates a test lead event with `is_test: true`
+- creates a test lead event marked `is_test: true`
 - does not create a real production lead/customer transition
-- can be verified through dashboard/test-event tooling
+- verifiable through dashboard/test-event tooling
 
 ### Test mode response
 
@@ -232,31 +228,31 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 
 ### Lead not attributed
 
-Check:
-- the visitor first came through a tracked affiliate click
+Check that:
+- the visitor came through a tracked affiliate click
 - `customerKey` / `customer_key` matches your real internal user ID
 - `affitor_click_id` was available when expected
-- you are not accidentally testing only in debug mode
+- you are not testing only in debug mode
 
 ### Wrong identifier used later in payments
 
-This is a common cause of broken attribution. The same internal ID must line up across:
+Mismatched identifiers are the most common cause of broken attribution. The same internal ID must be used across:
 - `signup(customerKey, email)`
 - `customer_key` in sale API calls
 - `affitor_customer_key` in Stripe metadata
 
 ### Duplicate signup tracking
 
-Prevent by:
-- calling signup tracking only after account creation succeeds once
-- avoiding duplicate frontend submissions
-- deduplicating your own signup flow before retrying tracking calls
+To prevent duplicates:
+- call signup tracking only after account creation succeeds
+- guard against duplicate frontend submissions
+- deduplicate your signup flow before retrying tracking calls
 
 ---
 
 ## What to Do Next
 
-After lead tracking works, set up sale tracking:
+Once lead tracking is working, set up sale tracking:
 
 - [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/)
 - [3-Step Integration Guide](/advertisers/tracking/quickstart-integration/)

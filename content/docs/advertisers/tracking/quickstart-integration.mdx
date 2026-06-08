@@ -3,7 +3,7 @@ title: 3-Step Integration Guide
 description: Get Affitor tracking live with the supported click, signup, and sale flows
 ---
 
-Get Affitor tracking live in three steps: clicks → signups → sales. The first two steps establish attribution; the third step records revenue.
+Three steps get Affitor tracking live: clicks → signups → sales. Steps 1 and 2 establish attribution; step 3 records revenue.
 
 ## Before You Start
 
@@ -26,7 +26,7 @@ Use one naming scheme consistently:
 
 ## Step 1 — Install the Tracker
 
-Add the Affitor tracker to every page where affiliate traffic can land.
+Add the tracker to every page where affiliate traffic can land.
 
 :::caution[Debug mode is required for dashboard Test buttons]
 The dashboard wizard's "Test Click Tracking" and "Test Lead Tracking" buttons only succeed while the page is loaded with `data-affitor-debug="true"`. While verifying your integration, temporarily flip the attribute to `"true"`. Switch it back to `"false"` before going live — debug mode emits console logs and fires synthetic probes that should not run in production.
@@ -61,11 +61,11 @@ Visit your site through a real affiliate link or enable debug mode while testing
 
 ## Step 2 — Track Signups
 
-After a signup succeeds, tell Affitor which internal user/customer was created.
+After signup succeeds, tell Affitor which internal user was created.
 
 ### Option A — Browser-side helper
 
-Use this when your signup flow already runs in the browser and the tracker is loaded.
+Use this when your signup flow runs in the browser and the tracker is already loaded.
 
 ```html
 <script>
@@ -96,7 +96,7 @@ document.getElementById('signup-form').addEventListener('submit', async function
 
 ### Option B — Server-side lead API
 
-Use this when your signup logic lives on your backend or you want your server to own the tracking call.
+Use this when signup logic lives on your backend or you want the server to own the tracking call.
 
 ```bash
 POST https://api.affitor.com/api/v1/track/lead
@@ -133,8 +133,8 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 - For reliable payment attribution later, always send a stable internal customer ID:
   - `customerKey` in `signup()`
   - `customer_key` in the API
-- Browser-side `signup()` is the easiest supported path for most teams
-- Server-side API is best when signup completion happens on your backend
+- Browser-side `signup()` is the easiest path for most teams
+- Server-side API is best when signup completes on your backend
 
 **Response:**
 
@@ -149,11 +149,11 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 
 ## Step 3 — Track Sales
 
-Once a customer pays, choose **one** supported revenue-tracking path.
+When a customer pays, choose **one** revenue-tracking path.
 
 ### Option A — Sale API (works with any payment provider)
 
-Send a server-to-server request after payment succeeds.
+Send a server-to-server request once payment succeeds.
 
 **Endpoint:** `POST https://api.affitor.com/api/v1/track/sale`
 
@@ -224,7 +224,7 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 
 ### Option B — Stripe Checkout metadata (Bill Flow)
 
-If you already use Stripe Checkout, keep taking payment in your own Stripe account and attach Affitor metadata to the checkout session.
+If you already use Stripe Checkout, keep taking payment in your own Stripe account — just attach Affitor metadata to the checkout session.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -272,7 +272,7 @@ const session = await stripe.checkout.sessions.create({
 - **One-time payments** are attributed from Stripe checkout metadata and webhook processing
 - **Subscriptions and renewals** rely on `invoice.payment_succeeded`
 - If `subscription_data.metadata` is missing, renewal attribution can fail
-- Public recommended fields are:
+- Required metadata fields:
   - `affitor_click_id`
   - `affitor_customer_key`
   - `program_id`
@@ -286,13 +286,13 @@ const session = await stripe.checkout.sessions.create({
 | **Sale API** | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
 | **Stripe metadata + webhook** | Existing Stripe Checkout integration using Bill Flow |
 
-Use the Sale API when your backend already knows exactly when revenue is finalized. Use Stripe metadata when you want Affitor to attribute sales directly from your Stripe webhook flow.
+Use the Sale API when your backend controls the revenue event. Use Stripe metadata when you want Affitor to attribute sales directly from your Stripe webhook flow.
 
 ---
 
 ## You're Done
 
-Once all three steps are working, your integration is live:
+All three steps working means your integration is live:
 
 | Step | Event | Outcome |
 |------|-------|---------|

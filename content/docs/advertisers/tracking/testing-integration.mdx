@@ -3,13 +3,11 @@ title: Testing Integration
 description: Verify click, signup, and sale tracking before going live
 ---
 
-Test each layer of the integration before launch:
+Before going live, verify each layer in order to confirm that your identifiers, metadata, and revenue path line up correctly:
 
 1. click tracking
 2. signup/lead tracking
 3. sale tracking
-
-The goal is to confirm that your identifiers, metadata, and revenue path line up correctly.
 
 ---
 
@@ -17,7 +15,7 @@ The goal is to confirm that your identifiers, metadata, and revenue path line up
 
 ### Tracker debug mode
 
-Enable debug mode in the tracker install you are using.
+Enable debug mode in your tracker install.
 
 **Script tag:**
 
@@ -46,7 +44,7 @@ When testing with real affiliate links, remember that a real `?aff=` flow can st
 
 ### Browser-side signup test
 
-After a successful signup in a tracked browser session:
+After a successful signup in a tracked browser session, call:
 
 ```javascript
 await window.affitor.signup('user_123', 'user@example.com');
@@ -154,7 +152,7 @@ For subscriptions, also confirm the same values exist in `subscription_data.meta
 
 ## 4. Verify Test Events Were Received
 
-After sending test lead or test sale events, you can query the test-event checker.
+After sending test events, query the test-event checker to confirm they were received.
 
 ```bash
 curl -X POST https://api.affitor.com/api/tracking/check-test-events \
@@ -216,12 +214,12 @@ Usually caused by:
 
 ### Dashboard status is confusing
 
-Runtime uses a mix of:
+The dashboard combines:
 - test event presence for click/lead verification
 - Stripe connection/configuration state for payment setup
 - real sale events for broader integration completeness
 
-So treat dashboard status, test-event checks, and Stripe webhook delivery logs as complementary signals.
+Treat dashboard status, test-event checks, and Stripe webhook delivery logs as complementary signals — no single source is the full picture.
 
 ---
 

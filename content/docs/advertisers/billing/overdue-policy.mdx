@@ -47,7 +47,7 @@ Pause is triggered automatically the first time a commission invoice passes its 
 ### What does not change while paused
 
 - **Existing tracking links** continue to resolve. Affitor never breaks partner URLs while you resolve billing.
-- **Click and lead events** continue to be recorded for attribution accounting. Whether those events accrue commission for the paused period is determined by your commission rules at the time the sale settles.
+- **Click and lead events** continue to be recorded for attribution accounting. Whether those events accrue commission depends on your commission rules at the time the sale settles.
 - **Partner data** — referrals, audience, and historic commissions are preserved in full.
 - **Stripe Connect and customer-facing checkout** continue to work. Pause is a billing state, not a checkout state.
 
@@ -72,20 +72,20 @@ sequenceDiagram
     Wire to the Wise account shown on the invoice page. Always include the invoice number in the transfer reference so we can match the payment.
   </FlowCard>
   <FlowCard step="2" title="Affitor reconciles the payment">
-    The invoice is marked paid, typically within 24 hours of the funds landing.
+    Your invoice is marked paid, typically within 24 hours of the funds landing.
   </FlowCard>
   <FlowCard step="3" title="Your program returns to active">
     The audit log records the unpause with the invoice number. No manual action required.
   </FlowCard>
 </FlowGrid>
 
-If you've already paid but the program is still paused after 24 hours, contact billing — the most common cause is a missing invoice number on the transfer reference.
+If you've paid but the program is still paused after 24 hours, contact billing — the most common cause is a missing invoice number in the transfer reference.
 
 ---
 
 ## How to pay an invoice
 
-Affitor currently bills through Wise wire transfers. Each invoice page shows the destination account, beneficiary, and the exact amount due.
+Affitor bills through Wise wire transfers. Each invoice page shows the destination account, beneficiary, and the exact amount due.
 
 | Field | Where to find it |
 |-------|------------------|

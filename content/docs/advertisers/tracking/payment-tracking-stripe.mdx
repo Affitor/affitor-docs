@@ -3,7 +3,7 @@ title: Payment Tracking
 description: Track completed sales with the Sale API or Stripe metadata in Bill Flow
 ---
 
-Payment tracking records revenue after a customer pays. Affitor currently supports two public sale-tracking paths:
+Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
 
 1. **Sale API** — your backend calls Affitor when revenue is finalized
 2. **Stripe metadata + webhook (Bill Flow)** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
@@ -17,7 +17,7 @@ Payment tracking records revenue after a customer pays. Affitor currently suppor
 | **Sale API** | custom backend, any payment provider, Paddle/LemonSqueezy/manual revenue events |
 | **Stripe metadata + webhook** | existing Stripe Checkout integration |
 
-If you already know exactly when a paid conversion happens on your server, use the Sale API. If you already use Stripe Checkout and want Affitor to attribute revenue from Stripe webhooks, use Bill Flow metadata.
+Use the Sale API when you control the exact moment revenue is finalized on your server. Use Bill Flow metadata when you already use Stripe Checkout and want Affitor to attribute revenue from webhook events.
 
 ---
 
@@ -94,7 +94,7 @@ Use the Sale API if you want one server-controlled source of truth for revenue e
 
 ## Option B — Stripe Metadata + Webhook (Bill Flow)
 
-In Bill Flow, the advertiser keeps charging customers through their own Stripe account. Affitor does **not** become merchant of record. Instead, Affitor attributes the conversion through Stripe metadata and webhook processing, then bills through its invoice workflow.
+In Bill Flow, you keep charging customers through your own Stripe account — Affitor does **not** become merchant of record. Affitor attributes the conversion through Stripe metadata and webhook processing, then bills through its invoice workflow.
 
 ### Recommended metadata fields
 
@@ -165,7 +165,7 @@ const session = await stripe.checkout.sessions.create({
 
 ## Pay-as-you-go / Repeated One-Time Purchases
 
-Some products charge customers per usage event — no subscription object, just independent checkout sessions. Examples: API credit top-ups, usage-based batches billed separately, metered add-ons.
+Some products charge per usage event rather than via a subscription — independent checkout sessions for things like API credit top-ups, usage-based batches, or metered add-ons.
 
 ### How it works
 
@@ -178,9 +178,9 @@ Affitor only uses `invoice.payment_succeeded` for recurring subscription renewal
 
 ### Attribution across multiple purchases
 
-The first purchase is straightforward — if the customer clicked an affiliate link recently, `affitor_click_id` is still in their browser cookie.
+The first purchase is straightforward — if the customer clicked an affiliate link recently, `affitor_click_id` is still in the browser cookie.
 
-Later purchases may arrive weeks or months after the last click. The cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
+Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
 
 **Required metadata on every checkout — including repeat purchases:**
 
@@ -204,17 +204,17 @@ const session = await stripe.checkout.sessions.create({
 
 ### Pre-requisite: signup tracking
 
-Cross-purchase attribution requires an affiliate-customer record, which is created when the signup tracker fires at user registration:
+Cross-purchase attribution requires an affiliate-customer record. That record is created when the signup tracker fires at user registration:
 
 ```js
 affitor.signup({ customer_key: currentUser.id });
 ```
 
-If signup tracking was not set up or did not fire for a given user, no customer record exists and later purchases will not be attributed.
+If signup tracking was not set up or did not fire for a user, no customer record exists and later purchases cannot be attributed.
 
 ### Attribution does not expire
 
-Once an affiliate-customer record is linked to a partner, the link persists indefinitely. There is no time-based cut-off on the customer-to-partner relationship.
+Once an affiliate-customer record is linked to a partner, that link persists indefinitely — there is no time-based cut-off on the customer-to-partner relationship.
 
 Your tier configuration may include a `duration_months` cap (for example, "pay commission for 12 months after signup"). That is a **commission duration limit** — it controls how long a partner earns on a customer, not whether purchases are recognized.
 
@@ -230,7 +230,7 @@ Your tier configuration may include a `duration_months` cap (for example, "pay c
 
 ## How Affitor Resolves Attribution from Stripe
 
-When a Stripe event arrives, Affitor attempts attribution through a fallback chain.
+When a Stripe event arrives, Affitor resolves attribution through a fallback chain.
 
 ### Simplified lookup order
 
@@ -248,7 +248,7 @@ This is why the best production setup is:
 
 ## Compatibility Notes
 
-The runtime still accepts some legacy metadata aliases for backward compatibility, such as older click/customer-key field names. Public docs should **not** use them for new integrations.
+The runtime accepts legacy metadata aliases for backward compatibility, such as older click/customer-key field names. Do **not** use them in new integrations.
 
 For new implementations, use only:
 - `affitor_click_id`
@@ -259,7 +259,7 @@ For new implementations, use only:
 
 ## Test Mode for Sale API
 
-You can send a test sale event without creating a real commission or platform fee.
+Send a test sale event without creating a real commission or platform fee.
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/sale \

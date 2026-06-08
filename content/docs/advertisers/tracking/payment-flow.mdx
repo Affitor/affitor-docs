@@ -3,7 +3,7 @@ title: Payment Flow
 description: End-to-end flow from affiliate click to attributed revenue and payout operations
 ---
 
-This page shows how attribution moves from click → signup → sale in the current public Affitor model.
+Understand how attribution moves from click → signup → sale in the current public Affitor model.
 
 ---
 
@@ -22,9 +22,9 @@ https://yoursite.com?aff=PARTNER123
 The tracker detects `?aff=` and creates the click/customer relationship.
 
 **What happens:**
-- click is recorded
+- Click is recorded
 - `affitor_click_id` is stored in a first-party cookie
-- the visit is linked to the correct partner/program
+- Visit is linked to the correct partner/program
 
 ### 3. Customer signs up
 
@@ -39,8 +39,8 @@ if (window.affitor) {
 ```
 
 **What matters here:**
-- your internal identifier is stored for future matching
-- that same identifier should later be reused as:
+- Your internal identifier is stored for future matching
+- Reuse that same identifier as:
   - `customer_key` in the Sale API
   - `affitor_customer_key` in Stripe metadata
 
@@ -77,9 +77,7 @@ For subscriptions, also include the same fields in `subscription_data.metadata`.
 
 ### 5. Affitor attributes the sale
 
-Affitor resolves the customer/partner relationship from the data available.
-
-It can use a combination of:
+Affitor resolves the customer/partner relationship using any combination of:
 - click ID
 - customer email matching
 - Stripe customer ID
@@ -87,9 +85,7 @@ It can use a combination of:
 
 ### 6. Commission and platform records are created
 
-When attribution succeeds, Affitor records the sale and creates the commission flow.
-
-From there, commissions move through review / hold / payout operations according to the program configuration.
+When attribution succeeds, Affitor records the sale and creates the commission flow. Commissions then move through review / hold / payout operations according to your program configuration.
 
 ---
 
@@ -97,10 +93,10 @@ From there, commissions move through review / hold / payout operations according
 
 In the current public Bill Flow model:
 
-1. **you** collect payment from the customer in your own Stripe account
+1. **You** collect payment from the customer in your own Stripe account
 2. **Affitor** attributes the conversion using Stripe metadata + webhook events
 3. **Affitor** bills through its invoice workflow for validated partner commission + platform fee obligations
-4. partner payouts continue through Affitor's payout operations
+4. **Affitor** continues partner payouts through its payout operations
 
 :::note
 Affitor is not the merchant of record in this Bill Flow model.
@@ -118,7 +114,7 @@ For one-time Stripe Checkout payments, attribution starts from checkout session 
 
 For subscriptions, the initial and recurring commission flow depends on invoice processing.
 
-That is why recurring setups must include:
+Recurring setups must therefore include:
 - `metadata`
 - `subscription_data.metadata`
 

@@ -3,11 +3,11 @@ title: CLI Command Reference
 description: Complete reference for all npx affitor commands, flags, and options.
 ---
 
-Full reference for the `npx affitor` CLI.
+Every `npx affitor` command, flag, and option in one place.
 
 ## Global Flags
 
-These flags work with every command:
+Available on every command:
 
 | Flag | Description |
 |---|---|
@@ -66,7 +66,7 @@ npx affitor init \
 
 ## `affitor setup stripe`
 
-Connect your Stripe account for automatic payment tracking.
+Connect your Stripe account so payments are tracked automatically.
 
 ```bash
 npx affitor setup stripe
@@ -104,7 +104,7 @@ npx affitor setup stripe
 
 ## `affitor status`
 
-Show program health: tracking, Stripe connection, recent events.
+Check program health — tracking status, Stripe connection, and recent events.
 
 ```bash
 npx affitor status
@@ -136,7 +136,7 @@ npx affitor status
 
 ## `affitor test [event-type]`
 
-Send a test tracking event to verify your integration.
+Fire a test tracking event to confirm your integration is working end to end.
 
 ```bash
 npx affitor test click    # Test click event
@@ -150,13 +150,13 @@ npx affitor test sale     # Test sale event
 | `lead` | Signup/lead tracking |
 | `sale` | Payment/sale tracking |
 
-Test events are marked with `is_test: true` and appear in your dashboard with a test badge.
+Test events are flagged `is_test: true` and shown in your dashboard with a test badge.
 
 ---
 
 ## Config File
 
-The CLI stores configuration in `.affitor/config.json`:
+Configuration is stored in `.affitor/config.json`:
 
 ```json
 {
