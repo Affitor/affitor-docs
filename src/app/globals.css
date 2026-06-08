@@ -206,6 +206,9 @@ article pre {
 article pre,
 article pre code {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Light base text so untokened/plain code (e.g. ASCII diagrams) is never
+     dark-on-dark. Shiki's per-token inline colors still win for highlighted code. */
+  color: var(--aff-code-text);
 }
 
 /* Inline code — minimal chip, mono carries it */
@@ -312,7 +315,9 @@ a[href*="/edit/main/"]:hover {
   background: var(--color-fd-muted) !important;
 }
 
-/* ── Prev/Next navigation cards — flat, border-only, Emil-compliant lift ── */
+/* ── Content cards (Fumadocs <Card>) — flat, border-only, Emil-compliant lift.
+   NOTE: Fumadocs also tags heading self-anchors with data-card, so the reset
+   below scopes the box OUT of headings (otherwise every title gets framed). ── */
 a[data-card] {
   border-radius: var(--aff-radius);
   border: 1px solid var(--color-fd-border);
@@ -322,6 +327,17 @@ a[data-card] {
 a[data-card]:hover {
   border-color: var(--aff-border-strong);
   transform: translateY(-1px);
+}
+/* Heading self-anchors carry data-card too — never box / lift them */
+article :where(h1, h2, h3, h4, h5, h6) a[data-card] {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: none;
+}
+article :where(h1, h2, h3, h4, h5, h6) a[data-card]:hover {
+  border: 0;
+  transform: none;
 }
 
 /* ── Callout/Admonition refinements ── */
