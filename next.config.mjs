@@ -22,6 +22,12 @@ const config = {
         destination: '/',
         permanent: true,
       },
+      {
+        // glossary moved under Support
+        source: '/getting-started/glossary',
+        destination: '/support/glossary',
+        permanent: true,
+      },
     ];
   },
 };

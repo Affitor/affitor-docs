@@ -18,7 +18,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   const editUrl = `${GITHUB_REPO}/edit/main/${filePath}`;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }}>
+    <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
