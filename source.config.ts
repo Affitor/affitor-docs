@@ -29,5 +29,15 @@ export const changelog = defineCollections({
 export default defineConfig({
   mdxOptions: {
     remarkPlugins: [remarkMermaid],
+    // Dark code blocks in BOTH light & dark page modes — pair a dark Shiki
+    // theme (light text) with the dark code surface so text never goes
+    // dark-on-dark. (Fumadocs' default dual github-light/dark put DARK text in
+    // light mode, which is invisible on our forced-dark code background.)
+    rehypeCodeOptions: {
+      themes: {
+        light: 'github-dark',
+        dark: 'github-dark',
+      },
+    },
   },
 });
