@@ -3,12 +3,6 @@
   "root": true,
   "pages": [
     "overview",
-    "---SDKs (Beta)---",
-    "sdks",
-    "agent-integration",
-    "---Concepts---",
-    "attribution",
-    "errors",
     "---Tracking API---",
     "track-click",
     "track-lead",
@@ -17,6 +11,12 @@
     "---Program API---",
     "status",
     "events",
-    "performance"
+    "performance",
+    "---Concepts---",
+    "attribution",
+    "errors",
+    "---SDKs (Beta)---",
+    "sdks",
+    "agent-integration"
   ]
 }

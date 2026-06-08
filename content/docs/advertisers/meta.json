@@ -10,9 +10,6 @@
     "quickstart/define-commission",
     "quickstart/commission-approval-cash-flow",
     "quickstart/payouts",
-    "---CLI---",
-    "cli/quickstart",
-    "cli/commands",
     "---Tracking---",
     "tracking/quickstart-integration",
     "tracking/tracking-overview",
@@ -22,6 +19,9 @@
     "tracking/payment-flow",
     "tracking/testing-integration",
     "---Billing---",
-    "billing/overdue-policy"
+    "billing/overdue-policy",
+    "---CLI---",
+    "cli/quickstart",
+    "cli/commands"
   ]
 }
