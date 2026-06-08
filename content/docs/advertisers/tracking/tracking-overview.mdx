@@ -3,7 +3,7 @@ title: Tracking Overview
 description: How Affitor links clicks, signups, and sales together
 ---
 
-Affitor tracking connects three events into one attribution chain:
+Affitor tracking links three events into one attribution chain:
 
 - **click** — a visitor arrives through an affiliate link
 - **signup/lead** — you identify the customer after registration
@@ -13,13 +13,13 @@ Affitor tracking connects three events into one attribution chain:
 
 ## The Core Model
 
-Every successful integration has the same shape:
+Every successful integration follows the same three-step shape:
 
-1. a tracked affiliate visit creates a click/customer relationship
-2. signup tracking attaches your internal user ID to that relationship
-3. sale tracking records revenue against the same customer/partner relationship
+1. A tracked affiliate visit creates a click/customer relationship.
+2. Signup tracking attaches your internal user ID to that relationship.
+3. Sale tracking records revenue against the same customer/partner relationship.
 
-That is why identifier consistency matters more than any single code snippet.
+Identifier consistency matters more than any single code snippet.
 
 ---
 
@@ -42,11 +42,11 @@ That is why identifier consistency matters more than any single code snippet.
 
 ### 1. Click tracking
 
-Install the tracker so affiliate visits are detected automatically.
+Install the tracker so affiliate visits are detected automatically:
 
-- detects `?aff=`
-- stores `affitor_click_id`
-- creates the initial relationship Affitor needs for attribution
+- Detects `?aff=`
+- Stores `affitor_click_id`
+- Creates the initial relationship Affitor needs for attribution
 
 Guide: [Pageview Tracker](/advertisers/tracking/pageview-tracker-click/)
 
@@ -99,7 +99,7 @@ Affitor public docs currently describe:
 
 ### Why the signup step matters
 
-The click cookie is strong, but the internal customer ID is what lets Affitor keep attribution working more reliably across later payment events, especially when payment happens after signup or on a backend-controlled path.
+The click cookie is reliable, but the internal customer ID is what keeps attribution working across later payment events — especially when payment happens after signup or on a backend-controlled path.
 
 ---
 
@@ -107,17 +107,17 @@ The click cookie is strong, but the internal customer ID is what lets Affitor ke
 
 ### One-time payment
 
-Either:
-- send a Sale API event after payment succeeds
-- or attach Stripe metadata for Bill Flow
+Choose either:
+- Send a Sale API event after payment succeeds.
+- Attach Stripe metadata for Bill Flow.
 
 ### Subscription payment
 
 If you use Stripe subscriptions:
-- include metadata on the checkout session
-- include the same metadata on `subscription_data.metadata`
+- Include metadata on the checkout session.
+- Include the same metadata on `subscription_data.metadata`.
 
-Without the subscription metadata, renewals may not be attributable.
+Without subscription metadata, renewals may not be attributable.
 
 ---
 

@@ -34,7 +34,7 @@ That cookie value is later reused as:
 | Method | Best for | Benefits |
 |--------|----------|----------|
 | **npm SDK** | React, Next.js, JS/TS apps | Promise-based loading, TypeScript support |
-| **Script tag** | static HTML, CMS sites, no-build installs | copy-paste setup |
+| **Script tag** | Static HTML, CMS sites, no-build installs | Copy-paste setup, no build step required |
 
 ---
 
@@ -79,7 +79,7 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID');
 | Option | Type | Description |
 |--------|------|-------------|
 | `programId` | `string \| number` | required program ID |
-| `debug` | `boolean` | verbose debug/testing logs |
+| `debug` | `boolean` | Enable verbose console logs for testing |
 | `env` | `'production' \| 'uat' \| 'local'` | environment preset |
 | `scriptUrl` | `string` | custom script URL override |
 
@@ -114,7 +114,7 @@ https://yoursite.com?aff=PARTNER123
 https://yoursite.com/pricing?aff=PARTNER123
 ```
 
-When that parameter is present, the tracker can create the click/customer relationship used later by signup and sale tracking.
+When that parameter is present, the tracker records the click and creates the customer relationship used by signup and sale attribution.
 
 ---
 
@@ -141,13 +141,13 @@ const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 ### What to verify
 
 Open your browser console and network tab, then confirm:
-- the tracker loads successfully
-- cookies can be written/read
-- Affitor debug messages appear
-- pageview/test-click activity appears in the dashboard or test-event tooling
+- The tracker loads without errors
+- Cookies can be written and read
+- Affitor debug messages appear in the console
+- Pageview or test-click activity appears in the dashboard or test-event tooling
 
 :::caution
-Debug mode helps with test verification, but a real affiliate landing flow using a real `?aff=` value can still create real attribution data. Do not mix synthetic tests and production affiliate links carelessly.
+Debug mode helps with test verification, but a real affiliate landing flow using a real `?aff=` value still creates real attribution data. Do not mix synthetic tests and production affiliate links.
 :::
 
 ---
@@ -157,24 +157,24 @@ Debug mode helps with test verification, but a real affiliate landing flow using
 ### No click data appears
 
 Check:
-- tracker script loaded successfully
-- the page was visited with a valid `?aff=` parameter when testing real attribution
-- your program ID is correct
-- CSP or browser extensions are not blocking the script
+- The tracker script loaded successfully
+- The page was visited with a valid `?aff=` parameter
+- Your program ID is correct
+- CSP rules or browser extensions are not blocking the script
 
 ### Cookies are missing
 
 Check:
-- the site is served over HTTPS in production
-- browser privacy tooling is not blocking cookies
-- the affiliate landing page actually executed the tracker
+- The site is served over HTTPS in production
+- Browser privacy tools are not blocking cookies
+- The affiliate landing page executed the tracker before the visitor continued
 
 ### Later signup/sale tracking fails
 
-Usually this means one of these happened:
-- click tracking never happened first
-- the browser session lost `affitor_click_id`
-- signup/payment identifiers do not match your internal customer ID consistently
+This usually means one of the following:
+- Click tracking did not run before the signup or sale event
+- The browser session lost `affitor_click_id` between landing and conversion
+- Signup/payment identifiers do not consistently match your internal customer ID
 
 ---
 

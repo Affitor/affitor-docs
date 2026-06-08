@@ -3,10 +3,10 @@ title: CLI Quickstart
 description: Set up your affiliate program in 3 commands with npx affitor.
 ---
 
-Create an affiliate program, connect Stripe, and start tracking -- all from your terminal in under 5 minutes.
+Get your affiliate program running in under 5 minutes -- program creation, Stripe webhooks, and live tracking all from your terminal.
 
 :::tip
-The CLI is the fastest way to set up Affitor. If you prefer a UI, use the [dashboard quickstart](/advertisers/quickstart/create-account) instead.
+Prefer a UI? Use the [dashboard quickstart](/advertisers/quickstart/create-account) instead.
 :::
 
 ## Why CLI?
@@ -48,14 +48,14 @@ After confirming, the CLI creates your program and generates:
 ```
 
 :::tip[Works with any AI coding tool]
-The `AGENTS.md` file follows the open standard supported by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and 16+ AI tools. Your AI assistant reads this file and knows how to integrate Affitor tracking into your codebase automatically.
+`AGENTS.md` follows the open standard supported by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and 16+ AI tools. Your AI assistant reads it and integrates Affitor tracking into your codebase automatically.
 :::
 
 ---
 
 ## Step 2 -- Add Click Tracking
 
-Copy the script tag from the CLI output and paste it into your site's `<head>`:
+Paste the script tag from the CLI output into your site's `<head>`:
 
 ```html
 <script src="https://api.affitor.com/js/affitor-tracker.js"
@@ -65,7 +65,7 @@ Copy the script tag from the CLI output and paste it into your site's `<head>`:
 
 Replace `YOUR_PROGRAM_ID` with the program ID from step 1.
 
-This auto-detects `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (window set by your program — 90 days by default).
+The script auto-detects `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (90-day window by default, set in your program).
 
 ---
 
@@ -116,7 +116,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 
 ## Step 5 -- Test Your Integration
 
-Send test events to verify everything works:
+Send test events to verify your integration:
 
 ```bash
 npx affitor test click
@@ -134,7 +134,7 @@ npx affitor status
 
 ## Non-Interactive Mode
 
-For CI/CD pipelines and AI agents, use `--no-interactive --json`:
+For CI/CD and AI agents, pass `--no-interactive --json` to skip prompts and get machine-readable output:
 
 ```bash
 npx affitor init \
@@ -148,7 +148,7 @@ npx affitor init \
   --json
 ```
 
-Output is valid JSON that AI agents can parse directly:
+Output is valid JSON, ready for AI agents to parse:
 
 ```json
 {
@@ -167,6 +167,6 @@ Output is valid JSON that AI agents can parse directly:
 
 :::warning[Common mistakes]
 - Running `npx affitor init` in a directory that already has `.affitor/config.json` -- delete it first or use a different directory.
-- Forgetting to add the tracking script to your site after running init -- the CLI creates the program but does not modify your code.
-- Using an expired API key -- run `npx affitor init` again to get a new one.
+- Skipping the tracking script -- the CLI creates the program but does not modify your code.
+- Using an expired API key -- re-run `npx affitor init` to get a new one.
 :::
