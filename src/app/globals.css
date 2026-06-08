@@ -311,8 +311,10 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 /* ── Right TOC ("On this page") — muted inactive, ONE clear active (Kyma-style) ── */
 #nd-toc a,
 [data-toc] a {
-  padding: 4.5px 0 !important;
-  line-height: 1.45 !important;
+  display: block;
+  padding: 7px 0 !important;
+  margin: 1px 0 !important;
+  line-height: 1.5 !important;
   font-size: 13px;
   color: var(--color-fd-muted-foreground) !important;
   font-weight: 400 !important;

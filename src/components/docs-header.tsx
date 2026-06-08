@@ -9,7 +9,7 @@ export function DocsHeader() {
   const { setOpenSearch } = useSearchContext();
 
   return (
-    <header className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
+    <header className="bg-fd-background/80 backdrop-blur-md">
       <div className="flex h-14 items-center gap-4 px-5 max-w-[1536px] mx-auto">
       {/* Left: Logo */}
       <Link href="/" className="flex items-center gap-2 shrink-0">
