@@ -1,0 +1,140 @@
+---
+title: Track Refund
+description: Reverse a commission when a sale is refunded
+---
+
+`POST /api/v1/track/refund`
+
+Reverses the affiliate commission tied to a previously tracked sale. A full refund (or when `refund_amount_cents` is omitted) sets the commission status to `reversed`; a partial refund sets it to `refunded` and deducts a proportional amount. This is the non-Stripe counterpart to the Stripe refund webhook — both use the same underlying reversal logic.
+
+---
+
+## Authentication
+
+All requests must include your program API key as a Bearer token.
+
+```http
+Authorization: Bearer YOUR_PROGRAM_API_KEY
+Content-Type: application/json
+```
+
+The key is scoped to a single program. The refund lookup is restricted to sales that belong to the authenticated program.
+
+---
+
+## Request
+
+### Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `transaction_id` | string | **Yes** | The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record. |
+| `refund_amount_cents` | integer | No | Refund amount in cents. Omit or set to `0` to trigger a full refund. Must be a positive integer when provided. |
+| `refund_reason` | string | No | Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications. |
+
+### Example request body
+
+```json
+{
+  "transaction_id": "txn_abc123",
+  "refund_amount_cents": 5000,
+  "refund_reason": "Customer requested cancellation"
+}
+```
+
+Full refund (amount omitted):
+
+```json
+{
+  "transaction_id": "txn_abc123"
+}
+```
+
+---
+
+## Response
+
+### Success — commission reversed or refunded
+
+```json
+{
+  "success": true,
+  "status": "reversed",
+  "deductionAmount": 25.00,
+  "commission_id": 88
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Always `true` on a 200 response. |
+| `status` | string | `"reversed"` (full refund), `"refunded"` (partial), or `"skipped"` (commission already in a terminal state). |
+| `deductionAmount` | number | Dollar amount deducted from the partner's commission balance. Present when `status` is `reversed` or `refunded`. |
+| `commission_id` | integer | ID of the affected commission record. |
+
+### Success — sale has no commission
+
+```json
+{
+  "success": true,
+  "status": "no_commission",
+  "message": "Sale has no commission to reverse"
+}
+```
+
+### Already-processed refund (idempotent)
+
+```json
+{
+  "success": true,
+  "status": "skipped",
+  "reason": "already reversed",
+  "commission_id": 88
+}
+```
+
+---
+
+## Errors
+
+| Status | When |
+|--------|------|
+| 400 | `transaction_id` is missing from the request body. |
+| 401 | `Authorization` header is missing, malformed, or the API token is invalid. |
+| 404 | No sale record found for the given `transaction_id` in the authenticated program. |
+| 500 | Internal error during commission reversal. |
+
+---
+
+## Side Effects
+
+When a commission is reversed or refunded, Affitor:
+
+- transitions the commission to `reversed` or `refunded` status
+- deducts the proportional commission amount from the partner's and partner-program's balance (clamped at zero unless the commission was already paid, in which case the balance can go negative)
+- sends an in-app notification to the partner
+- sends a manual-review warning to the advertiser if the commission had already been paid out
+
+These side effects are fire-and-forget and do not affect the HTTP response.
+
+---
+
+## Example
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/refund \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "txn_abc123",
+    "refund_amount_cents": 5000,
+    "refund_reason": "Customer requested cancellation"
+  }'
+```
+
+---
+
+## Related
+
+- [Track Sale](/api-reference/track-sale) — record the original sale
+- [Payment Tracking](/advertisers/tracking/payment-tracking-stripe/) — Stripe webhook alternative

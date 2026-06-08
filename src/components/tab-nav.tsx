@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 type Tab = { title: string; href: string; match: (p: string) => boolean };
 
 const TABS: Tab[] = [
-  { title: 'Getting Started', href: '/', match: (p) => p === '/' || ['/how-it-works', '/pricing-performance-model', '/glossary'].some((x) => p.startsWith(x)) },
+  { title: 'Getting Started', href: '/', match: (p) => p === '/' || ['/how-it-works', '/pricing-performance-model'].some((x) => p.startsWith(x)) },
   { title: 'For Advertisers', href: '/advertisers/quickstart/create-account', match: (p) => p.startsWith('/advertisers') },
-  { title: 'FAQ', href: '/faq', match: (p) => p.startsWith('/faq') },
-  { title: 'Support', href: '/support', match: (p) => p.startsWith('/support') },
+  { title: 'API Reference', href: '/api-reference/overview', match: (p) => p.startsWith('/api-reference') },
+  { title: 'Support', href: '/support', match: (p) => p.startsWith('/support') || p.startsWith('/faq') },
   { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
 ];
 

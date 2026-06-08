@@ -1,0 +1,16 @@
+{
+  "title": "API Reference",
+  "root": true,
+  "pages": [
+    "overview",
+    "---Tracking API---",
+    "track-click",
+    "track-lead",
+    "track-sale",
+    "track-refund",
+    "---Program API---",
+    "status",
+    "events",
+    "performance"
+  ]
+}

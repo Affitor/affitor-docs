@@ -1,0 +1,175 @@
+---
+title: GET /tracking/performance/:programId
+description: Retrieve daily performance aggregates and period-over-period trend metrics for a program
+---
+
+Returns daily aggregated metrics (clicks, leads, conversions, revenue, partners, commissions) for a program, along with period-over-period trend comparisons. This endpoint is used by the Affitor dashboard performance chart.
+
+---
+
+## Endpoint
+
+`GET /api/tracking/performance/:programId`
+
+---
+
+## Authentication
+
+Requests must be authenticated. The authenticated user must be an active workspace member of the requested program.
+
+| Header | Value |
+|--------|-------|
+| `Authorization` | Session token (Affitor dashboard session) |
+
+An unauthenticated request returns `401`. A request from a user who is not a workspace member of the program returns `403`.
+
+---
+
+## Path Parameter
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `programId` | integer | Yes | ID of the affiliate program |
+
+---
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `period` | string | No | Preset time window. One of `7d`, `30d`, `90d`, `all`. Defaults to `7d`. Ignored when `dateFrom` and `dateTo` are provided. |
+| `dateFrom` | string (ISO 8601) | No | Start of a custom date range. Must be used together with `dateTo`. |
+| `dateTo` | string (ISO 8601) | No | End of a custom date range. Must be used together with `dateFrom`. |
+
+When `dateFrom` and `dateTo` are both present, the `period` parameter is ignored. The previous comparison period is automatically calculated as an equal-length window immediately before the custom range.
+
+---
+
+## Response
+
+HTTP `200` with the following shape:
+
+```json
+{
+  "data": [
+    {
+      "date": "2024-06-01",
+      "period": "2024-06-01",
+      "clicks": 42,
+      "leads": 5,
+      "conversions": 2,
+      "revenue": 199.98,
+      "partners": 1,
+      "sales": 0,
+      "commission": 20.00
+    },
+    {
+      "date": "2024-06-02",
+      "period": "2024-06-02",
+      "clicks": 18,
+      "leads": 2,
+      "conversions": 0,
+      "revenue": 0.00,
+      "partners": 0,
+      "sales": 0,
+      "commission": 0.00
+    }
+  ],
+  "metrics": {
+    "totalClicks": 60,
+    "totalLeads": 7,
+    "totalConversions": 2,
+    "totalRevenue": 199.98,
+    "conversionRate": 3.33,
+    "averageOrderValue": 99.99,
+    "totalPartners": 1,
+    "totalSales": 2,
+    "totalPartnersCommission": 20.00,
+    "clicksTrend": { "trend": 15.0, "trendDirection": "up" },
+    "leadsTrend": { "trend": 0, "trendDirection": "stable" },
+    "conversionsTrend": { "trend": 100, "trendDirection": "up" },
+    "revenueTrend": { "trend": 100, "trendDirection": "up" },
+    "partnersTrend": { "trend": 0, "trendDirection": "stable" },
+    "salesTrend": { "trend": 100, "trendDirection": "up" },
+    "commissionTrend": { "trend": 100, "trendDirection": "up" }
+  },
+  "meta": {
+    "period": "7d",
+    "dateFrom": "2024-05-25T00:00:00.000Z",
+    "dateTo": "2024-06-01T23:59:59.999Z",
+    "previousPeriod": {
+      "dateFrom": "2024-05-18T00:00:00.000Z",
+      "dateTo": "2024-05-24T23:59:59.999Z"
+    }
+  }
+}
+```
+
+### `data` array
+
+Each entry covers one calendar day within the requested range. Days with no activity are included with all counts set to `0`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | string (YYYY-MM-DD) | Calendar date for the row |
+| `period` | string (YYYY-MM-DD) | Same value as `date` |
+| `clicks` | integer | Real (non-test) affiliate click events on this date |
+| `leads` | integer | Customers whose `signup_date` falls on this date and whose status is `lead` or `conversion` |
+| `conversions` | integer | Customers whose `first_purchase_date` falls on this date and whose status is `conversion` |
+| `revenue` | number | Total sale revenue in dollars from paid sale events on this date |
+| `partners` | integer | Partner-program records created on this date |
+| `sales` | integer | Always `0` (Affitor Pay checkout removed; revenue comes from sale events) |
+| `commission` | number | Total commission amount in dollars for commissions created on this date |
+
+### `metrics` object
+
+Aggregated totals and trend comparisons for the full requested period.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalClicks` | integer | Total real click events in the period |
+| `totalLeads` | integer | Total lead-status customers in the period |
+| `totalConversions` | integer | Total conversion-status customers in the period |
+| `totalRevenue` | number | Total revenue in dollars (rounded to 2 decimal places) |
+| `conversionRate` | number | `(totalConversions / totalClicks) * 100`, rounded to 2 decimal places. `0` if no clicks. |
+| `averageOrderValue` | number | `totalRevenue / totalConversions`, rounded to 2 decimal places. `0` if no conversions. |
+| `totalPartners` | integer | Total partner-program records created in the period |
+| `totalSales` | integer | Total paid sale events in the period |
+| `totalPartnersCommission` | number | Total commission amount in dollars (rounded to 2 decimal places) |
+| `clicksTrend` | object | Trend vs previous equal-length period (see below) |
+| `leadsTrend` | object | Trend for leads |
+| `conversionsTrend` | object | Trend for conversions |
+| `revenueTrend` | object | Trend for revenue |
+| `partnersTrend` | object | Trend for partners |
+| `salesTrend` | object | Trend for sale count |
+| `commissionTrend` | object | Trend for commission amount |
+
+Each trend object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `trend` | number | Absolute percentage change, rounded to 1 decimal place |
+| `trendDirection` | string | `"up"`, `"down"`, or `"stable"` |
+
+When the previous period value is `0` and the current value is greater than `0`, `trend` is `100` and `trendDirection` is `"up"`. When both are `0`, `trend` is `0` and `trendDirection` is `"stable"`.
+
+### `meta` object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `period` | string | The `period` query param value used (or `"all"` for default) |
+| `dateFrom` | string (ISO 8601) | Actual start of the current period used in the query |
+| `dateTo` | string (ISO 8601) | Actual end of the current period used in the query |
+| `previousPeriod.dateFrom` | string (ISO 8601) | Start of the comparison period |
+| `previousPeriod.dateTo` | string (ISO 8601) | End of the comparison period |
+
+---
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `401 Unauthorized` | No authenticated session |
+| `403 Forbidden` | Authenticated user is not an active workspace member of `programId` |
+| `404 Not Found` | Program with the given `programId` does not exist |
+| `500 Internal Server Error` | Unexpected server error |
