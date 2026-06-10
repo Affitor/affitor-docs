@@ -5,7 +5,9 @@ description: Record an attributed sale and create the partner commission from yo
 
 Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
 
-```bash
+## Endpoint
+
+```
 POST https://api.affitor.com/api/v1/track/sale
 Authorization: Bearer YOUR_PROGRAM_API_KEY
 Content-Type: application/json
@@ -15,47 +17,112 @@ Content-Type: application/json
 
 ## Authentication
 
-All requests require a program API key sent as a Bearer token in the `Authorization` header.
+All requests require a program API key sent as a Bearer token in the `Authorization` header. The API key is found in your program settings in the Affitor dashboard.
 
 ```
 Authorization: Bearer YOUR_PROGRAM_API_KEY
 ```
 
-The API key is found in your program settings in the Affitor dashboard.
-
 ---
 
 ## Request Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `transaction_id` | string | **Yes** | Your unique payment identifier. Used for duplicate detection — re-sending the same value returns 409. |
-| `amount_cents` | integer | **Yes** | Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer. |
-| `customer_key` | string | No | Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. |
-| `click_id` | string | No | The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided. |
-| `currency` | string | No | ISO 4217 currency code. Defaults to `USD`. |
-| `sale_type` | string | No | `"payment"` (default) or `"subscription"`. |
-| `line_items` | object | No | Arbitrary line-item detail to store with the sale record. |
-| `is_recurring` | boolean | No | `true` if this is a recurring billing charge. Defaults to `false`. |
-| `subscription_id` | string | No | Your subscription identifier. Required for proper recurring commission attribution. |
-| `subscription_interval` | string | No | `"monthly"`, `"quarterly"`, or `"annual"`. |
-| `product_id` | string | No | Your product identifier. Used for per-product commission policy matching. |
-
-At least one of `customer_key` or `click_id` must match an existing customer record so Affitor can resolve attribution.
+<ParamList>
+  <ParamField name="transaction_id" type="string" required>
+    Your unique payment identifier. Used for duplicate detection — re-sending the same value returns 409.
+  </ParamField>
+  <ParamField name="amount_cents" type="integer" required>
+    Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer.
+  </ParamField>
+  <ParamField name="customer_key" type="string" requirement="conditional">
+    Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. At least one of `customer_key` or `click_id` must match an existing customer record.
+  </ParamField>
+  <ParamField name="click_id" type="string" requirement="conditional">
+    The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
+  </ParamField>
+  <ParamField name="currency" type="string">
+    ISO 4217 currency code. Defaults to `USD`.
+  </ParamField>
+  <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
+    `"payment"` (default) or `"subscription"`.
+  </ParamField>
+  <ParamField name="line_items" type="object">
+    Arbitrary line-item detail to store with the sale record.
+  </ParamField>
+  <ParamField name="is_recurring" type="boolean">
+    `true` if this is a recurring billing charge. Defaults to `false`.
+  </ParamField>
+  <ParamField name="subscription_id" type="string">
+    Your subscription identifier. Required for proper recurring commission attribution.
+  </ParamField>
+  <ParamField name="subscription_interval" type="string" enum={["monthly", "quarterly", "annual"]}>
+    `"monthly"`, `"quarterly"`, or `"annual"`.
+  </ParamField>
+  <ParamField name="product_id" type="string">
+    Your product identifier. Used for per-product commission policy matching.
+  </ParamField>
+</ParamList>
 
 ---
 
 ## Request Body Example
 
-```json
-{
-  "transaction_id": "txn_abc123",
-  "customer_key": "usr_9876",
-  "amount_cents": 4900,
-  "currency": "USD",
-  "sale_type": "payment"
-}
-```
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST https://api.affitor.com/api/v1/track/sale \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "transaction_id": "txn_abc123",
+    "customer_key": "usr_9876",
+    "amount_cents": 4900,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/track/sale', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_PROGRAM_API_KEY',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    transaction_id: 'txn_abc123',
+    customer_key: 'usr_9876',
+    amount_cents: 4900,
+    currency: 'USD',
+    sale_type: 'payment',
+  }),
+});
+const data = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+response = requests.post(
+    'https://api.affitor.com/api/v1/track/sale',
+    headers={
+        'Authorization': 'Bearer YOUR_PROGRAM_API_KEY',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'transaction_id': 'txn_abc123',
+        'customer_key': 'usr_9876',
+        'amount_cents': 4900,
+        'currency': 'USD',
+        'sale_type': 'payment',
+    },
+)
+data = response.json()`
+  },
+]} />
 
 ### Subscription example
 
@@ -75,18 +142,39 @@ At least one of `customer_key` or `click_id` must match an existing customer rec
 
 ---
 
-## Success Response
+## Response
 
-HTTP `200 OK`
-
-```json
-{
+<ResponseTabs items={[
+  {
+    status: 200,
+    label: "200 Attributed",
+    code: `{
   "success": true,
   "sale_id": 42,
   "commission_id": 17,
   "message": "Sale tracked successfully"
-}
-```
+}`
+  },
+  {
+    status: 200,
+    label: "200 Window Expired",
+    code: `{
+  "success": true,
+  "sale_id": 43,
+  "commission_id": null,
+  "message": "Sale tracked — attribution window expired, no commission created"
+}`
+  },
+  {
+    status: 409,
+    label: "409 Duplicate",
+    code: `{
+  "error": "Conflict",
+  "message": "transaction_id already recorded",
+  "statusCode": 409
+}`
+  },
+]} />
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -94,6 +182,14 @@ HTTP `200 OK`
 | `sale_id` | integer | ID of the created sale event record. |
 | `commission_id` | integer | ID of the created commission record. |
 | `message` | string | Human-readable confirmation. |
+
+<Callout type="info" title="Idempotency">
+  Re-sending the same `transaction_id` returns `409 Conflict` — Affitor does not create a duplicate sale. This is intentional: you can safely retry on network failure by checking for 409 before treating the call as failed.
+</Callout>
+
+<Callout type="warning" title="409 is not an error">
+  A `409` response means the sale was already recorded successfully. Do not retry a 409 — treat it as a successful prior call and continue your payment flow normally.
+</Callout>
 
 ---
 

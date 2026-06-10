@@ -11,6 +11,10 @@ import { FeatureCards, FeatureCard } from '@/components/mdx/feature-card';
 import { CommonMistakes } from '@/components/mdx/common-mistakes';
 import { RecommendedPath } from '@/components/mdx/recommended-path';
 import { VerifySuccess } from '@/components/mdx/verify-success';
+import { ParamList, ParamField } from '@/components/mdx/param-field';
+import { CodeGroup } from '@/components/mdx/code-group';
+import { ResponseTabs } from '@/components/mdx/response-tabs';
+import { Callout } from '@/components/mdx/callout';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -30,6 +34,11 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     CommonMistakes,
     RecommendedPath,
     VerifySuccess,
+    ParamList,
+    ParamField,
+    CodeGroup,
+    ResponseTabs,
+    Callout,
     ...components,
   };
 }

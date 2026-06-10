@@ -26,29 +26,50 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 
 ### Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `transaction_id` | string | **Yes** | The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record. |
-| `refund_amount_cents` | integer | No | Refund amount in cents. Omit or set to `0` to trigger a full refund. Must be a positive integer when provided. |
-| `refund_reason` | string | No | Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications. |
+<ParamList>
+  <ParamField name="transaction_id" type="string" required>
+    The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
+  </ParamField>
+  <ParamField name="refund_amount_cents" type="integer">
+    Refund amount in cents. Omit or set to `0` to trigger a full refund. Must be a positive integer when provided.
+  </ParamField>
+  <ParamField name="refund_reason" type="string">
+    Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
+  </ParamField>
+</ParamList>
 
 ### Example request body
 
-```json
-{
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST https://api.affitor.com/api/v1/track/refund \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "transaction_id": "txn_abc123",
+    "refund_amount_cents": 5000,
+    "refund_reason": "Customer requested cancellation"
+  }'`
+  },
+  {
+    label: "Full refund",
+    lang: "json",
+    code: `{
+  "transaction_id": "txn_abc123"
+}`
+  },
+  {
+    label: "Partial refund",
+    lang: "json",
+    code: `{
   "transaction_id": "txn_abc123",
   "refund_amount_cents": 5000,
   "refund_reason": "Customer requested cancellation"
-}
-```
-
-Full refund (amount omitted):
-
-```json
-{
-  "transaction_id": "txn_abc123"
-}
-```
+}`
+  },
+]} />
 
 ---
 
@@ -116,21 +137,6 @@ When a commission is reversed or refunded, Affitor:
 - sends a manual-review warning to the advertiser if the commission had already been paid out
 
 These side effects are fire-and-forget and do not affect the HTTP response.
-
----
-
-## Example
-
-```bash
-curl -X POST https://api.affitor.com/api/v1/track/refund \
-  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "transaction_id": "txn_abc123",
-    "refund_amount_cents": 5000,
-    "refund_reason": "Customer requested cancellation"
-  }'
-```
 
 ---
 
