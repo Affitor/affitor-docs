@@ -1,5 +1,5 @@
 ---
-title: Lead Tracking (Signup)
+title: Lead Tracking
 description: Track referred signups with the browser helper or the server-side lead API
 ---
 
@@ -145,7 +145,7 @@ app.post('/signup', async (req, res) => {
   await fetch('https://api.affitor.com/api/v1/track/lead', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.AFFITOR_API_TOKEN}`,
+      Authorization: `Bearer ${process.env.AFFITOR_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -165,7 +165,7 @@ app.post('/signup', async (req, res) => {
 requests.post(
     'https://api.affitor.com/api/v1/track/lead',
     headers={
-        'Authorization': f'Bearer {AFFITOR_API_TOKEN}',
+        'Authorization': f'Bearer {AFFITOR_API_KEY}',
         'Content-Type': 'application/json',
     },
     json={
@@ -195,6 +195,7 @@ You can create a test lead event without affecting production attribution.
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "click_id": "test_lead_001",

@@ -1,0 +1,63 @@
+---
+title: Track Lead
+description: POST /api/v1/track/lead — tie a signup to a click with your internal customer ID.
+---
+
+```
+POST https://api.affitor.com/api/v1/track/lead
+```
+
+Ties a signup to a prior click. This is what makes later sales attributable by `customer_key` alone — from any device, with no cookie present.
+
+**Auth:** two modes.
+
+- **Server mode (recommended):** `Authorization: Bearer <PROGRAM_API_KEY>`. Read the `affitor_click_id` cookie server-side and send it with your internal user ID.
+- **Browser mode:** no Bearer token — used by [`window.affitor.signup()`](/advertisers/tracking/lead-tracking-signup); the click cookie proves attribution. Programs configured with `lead_auth: server_required` record browser leads as **provisional** only — attribution settles when your backend sends the server-side lead, or on the customer's first verified payment event.
+
+## Request body
+
+Either `click_id` or `customer_key` is required.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `click_id` | string | Conditional | Value of the `affitor_click_id` cookie |
+| `customer_key` | string | Conditional | Your internal, stable user ID — the join key for all future sales |
+| `email` | string | No | Hashed server-side before storage; never stored in plain text |
+| `session_id` | string | No | Your session identifier |
+| `page_url` | string | No | Page where the signup happened |
+| `additional_data` | object | No | `{ "test_mode": true, "program_id": "..." }`, optional `event_name` |
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "click_id": "cust_42_1714000000000",
+    "customer_key": "user_123",
+    "email": "user@example.com"
+  }'
+```
+
+## Response
+
+```json
+{ "success": true, "message": "Lead tracked successfully" }
+```
+
+Browser-mode lead on a `lead_auth: server_required` program:
+
+```json
+{
+  "success": true,
+  "provisional": true,
+  "message": "Lead recorded as provisional. This program requires server-side (Bearer) lead tracking to settle attribution."
+}
+```
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | Neither `click_id` nor `customer_key` provided; customer not found; customer belongs to a different program; customer status cannot transition to lead |
+| `401` | Bearer token present but invalid |
+| `500` | Unexpected error — safe to retry |

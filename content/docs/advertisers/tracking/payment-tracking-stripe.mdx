@@ -221,6 +221,45 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 
 ---
 
+## Refunds and Chargebacks
+
+When a tracked sale is refunded or disputed, report it so the associated commission is reversed before payout.
+
+### Option A — Refund API
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/refund \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "txn_abc123",
+    "refund_amount_cents": 5000,
+    "refund_reason": "customer_request"
+  }'
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `transaction_id` | Yes | The `transaction_id` of the **original sale** you reported via the Sale API |
+| `refund_amount_cents` | No | Partial refund amount. Omit for a full refund |
+| `refund_reason` | No | Free-text reason, stored for audit |
+
+### Behavior
+
+- **Full refund** (or `refund_amount_cents` omitted) — the commission is reversed
+- **Partial refund** — the commission is marked refunded for the partial amount
+- Reversal is idempotent: reporting the same refund twice does not double-reverse
+- Returns `404` if no sale matches `transaction_id` for your program
+- If the sale produced no commission, the call succeeds with `"status": "no_commission"`
+
+See the full [Track Refund reference](/advertisers/api-reference/track-refund) for response schemas.
+
+### Option B — Stripe webhook (Bill Flow)
+
+If you use Stripe metadata + webhook tracking, `charge.refunded` events are processed automatically — refunds and disputes reverse the related commission with no API call needed on your side.
+
+---
+
 ## Troubleshooting
 
 ### Sale API returns `401`

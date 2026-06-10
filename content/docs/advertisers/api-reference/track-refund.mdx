@@ -1,0 +1,60 @@
+---
+title: Track Refund
+description: POST /api/v1/track/refund — reverse a commission after a refund or chargeback.
+---
+
+```
+POST https://api.affitor.com/api/v1/track/refund
+```
+
+Reverses the commission for a previously tracked sale, keyed by the **original sale's** `transaction_id` (not the refund event's ID).
+
+When using [Stripe webhook tracking](/advertisers/tracking/payment-tracking-stripe), `charge.refunded` events trigger the same reversal automatically — no API call needed.
+
+**Auth:** `Authorization: Bearer <PROGRAM_API_KEY>` (required).
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `transaction_id` | string | Yes | The `transaction_id` of the **original sale** you reported via the Sale API |
+| `refund_amount_cents` | integer | No | Partial refund amount. Omit for a full refund |
+| `refund_reason` | string | No | Free-text reason, stored for audit |
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/refund \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "in_1QxYzABC",
+    "refund_amount_cents": 5000,
+    "refund_reason": "customer_request"
+  }'
+```
+
+## Behavior
+
+- **Full refund** (or `refund_amount_cents` omitted) — the commission is reversed.
+- **Partial refund** — the commission is marked refunded for the partial amount.
+- **Idempotent** — reporting the same refund twice does not double-reverse (atomic row-level claim).
+
+## Response
+
+```json
+{ "success": true, "commission_id": 456 }
+```
+
+Sale found but had no commission to reverse:
+
+```json
+{ "success": true, "status": "no_commission", "message": "Sale has no commission to reverse" }
+```
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | `transaction_id` missing |
+| `401` | Missing/malformed Authorization header, or invalid API key |
+| `404` | No sale matches `transaction_id` for your program |
+| `500` | Unexpected error — safe to retry |

@@ -1,0 +1,67 @@
+---
+title: Track Click
+description: POST /api/v1/track/click — record an affiliate click and mint a click ID.
+---
+
+```
+POST https://api.affitor.com/api/v1/track/click
+```
+
+Records an affiliate click. Normally fired by the [Affitor tracker script](/advertisers/tracking/pageview-tracker-click) when a visitor lands with `?aff=<partner-code>` — call it directly only for server-side or custom-client integrations.
+
+**Auth:** none. Attribution is proven by the partner short code inside `affiliate_url`.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `affiliate_url` | string | Yes | Full landing URL containing `?aff=<partner-short-code>` |
+| `page_url` | string | No | Current page URL |
+| `page_title` | string | No | Current page title |
+| `referrer_url` | string | No | `document.referrer` |
+| `session_id` | string | No | Your session identifier |
+| `user_agent` | string | No | Defaults to the request's `User-Agent` header |
+| `screen_resolution` | string | No | e.g. `1920x1080` |
+| `viewport_size` | string | No | e.g. `1440x900` |
+| `language` | string | No | e.g. `en-US` |
+| `timezone` | string | No | e.g. `America/New_York` |
+| `existing_click_id` | string | No | Pass the stored click ID on repeat clicks to reuse the customer record (last-click partner overwrite still applies) |
+| `additional_data` | object | No | `{ "test_mode": true, "program_id": "..." }` for [test mode](/advertisers/api-reference#test-mode) |
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/click \
+  -H "Content-Type: application/json" \
+  -d '{
+    "affiliate_url": "https://yoursite.com/pricing?aff=abc123",
+    "page_url": "https://yoursite.com/pricing?aff=abc123",
+    "page_title": "Pricing",
+    "referrer_url": "https://google.com",
+    "session_id": "sess_xyz_1234"
+  }'
+```
+
+## Response
+
+```json
+{
+  "success": true,
+  "click_id": "cust_42_1714000000000",
+  "partner_code": "abc123",
+  "cookie_window_days": 60
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `click_id` | Store this in a first-party cookie named `affitor_click_id` |
+| `partner_code` | The partner's short code that was credited |
+| `cookie_window_days` | Cookie lifetime in days — follows the program's attribution window (default 60) |
+
+An existing-but-inactive referral link returns HTTP `200` with `{ "success": false, "message": "Referral link is inactive" }`.
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | `affiliate_url` missing or unparseable; no `aff` parameter; referral link not found; invalid link configuration |
+| `500` | Unexpected error — safe to retry |

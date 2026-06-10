@@ -21,6 +21,12 @@
     "tracking/payment-tracking-stripe",
     "tracking/payment-flow",
     "tracking/testing-integration",
+    "---API Reference---",
+    "api-reference/index",
+    "api-reference/track-click",
+    "api-reference/track-lead",
+    "api-reference/track-sale",
+    "api-reference/track-refund",
     "---Billing---",
     "billing/overdue-policy"
   ]

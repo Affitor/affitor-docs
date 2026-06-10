@@ -3,6 +3,7 @@
 > Affitor is an affiliate growth platform for SaaS companies.
 > This file provides LLM-readable documentation for integrating Affitor.
 > Full docs: https://docs.affitor.com
+> OpenAPI spec: https://docs.affitor.com/openapi.yaml
 
 ## Pages
 
@@ -20,6 +21,11 @@
 - [Payment Tracking](https://docs.affitor.com/docs/advertisers/tracking/payment-tracking-stripe): Sale API or Stripe metadata for revenue attribution
 - [Payment Flow](https://docs.affitor.com/docs/advertisers/tracking/payment-flow): End-to-end payment attribution lifecycle
 - [Testing](https://docs.affitor.com/docs/advertisers/tracking/testing-integration): Verify tracking before going live
+- [API Introduction](https://docs.affitor.com/docs/advertisers/api-reference): Base URL, auth, errors, idempotency, test mode
+- [Track Click API](https://docs.affitor.com/docs/advertisers/api-reference/track-click): POST /api/v1/track/click reference
+- [Track Lead API](https://docs.affitor.com/docs/advertisers/api-reference/track-lead): POST /api/v1/track/lead reference
+- [Track Sale API](https://docs.affitor.com/docs/advertisers/api-reference/track-sale): POST /api/v1/track/sale reference
+- [Track Refund API](https://docs.affitor.com/docs/advertisers/api-reference/track-refund): POST /api/v1/track/refund reference
 - [FAQ](https://docs.affitor.com/docs/faq): Common questions about pricing, tracking, and integration
 
 ## Quick Integration
@@ -112,9 +118,12 @@ Use the same internal user ID everywhere:
 
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
+| `/api/v1/track/click` | POST | None | Track affiliate click |
 | `/api/v1/track/lead` | POST | Bearer API key | Track signup/lead |
 | `/api/v1/track/sale` | POST | Bearer API key | Track sale/payment |
-| Base URL: `https://api.affitor.com` | | | |
+| `/api/v1/track/refund` | POST | Bearer API key | Reverse commission on refund |
+
+Base URL: `https://api.affitor.com`. Full machine-readable spec: https://docs.affitor.com/openapi.yaml
 
 ## Conventions
 

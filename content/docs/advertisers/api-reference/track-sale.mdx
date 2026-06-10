@@ -1,0 +1,81 @@
+---
+title: Track Sale
+description: POST /api/v1/track/sale — report revenue; Affitor resolves the partner and creates the commission.
+---
+
+```
+POST https://api.affitor.com/api/v1/track/sale
+```
+
+Reports a payment. Affitor resolves the partner from the customer's click→lead attribution and computes the commission from your program's policy — **do not send a partner code or a pre-computed commission amount**.
+
+**Auth:** `Authorization: Bearer <PROGRAM_API_KEY>` (required).
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `transaction_id` | string | Yes | **Idempotency key** — unique per sale. Use your payment processor's invoice/charge ID |
+| `amount_cents` | integer | Yes | Gross sale amount in cents, positive |
+| `customer_key` | string | Conditional | Your internal user ID (preferred lookup). Provide this or `click_id` |
+| `click_id` | string | Conditional | Alternative lookup via the `affitor_click_id` cookie value |
+| `currency` | string | No | `USD` (default), `EUR`, `VND` |
+| `sale_type` | string | No | `payment` (default) or `subscription` |
+| `is_recurring` | boolean | No | `true` for subscription renewals (default `false`) |
+| `subscription_id` | string | No | Your processor's subscription ID |
+| `subscription_interval` | string | No | `monthly`, `quarterly`, or `annual` |
+| `product_id` | string | No | Used for per-product commission policies |
+| `line_items` | JSON | No | Optional structured line items |
+| `additional_data` | object | No | `{ "test_mode": true }` for [test mode](/advertisers/api-reference#test-mode) |
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "in_1QxYzABC",
+    "customer_key": "user_123",
+    "amount_cents": 2490,
+    "currency": "USD",
+    "sale_type": "subscription",
+    "is_recurring": true,
+    "subscription_id": "sub_xyz",
+    "subscription_interval": "monthly"
+  }'
+```
+
+## Response
+
+Attributed — sale and commission created:
+
+```json
+{
+  "success": true,
+  "sale_id": 123,
+  "commission_id": 456,
+  "message": "Sale tracked successfully"
+}
+```
+
+Attribution window expired — the sale is organic; nothing is created:
+
+```json
+{
+  "success": true,
+  "attributed": false,
+  "reason": "attribution_window_expired",
+  "click_age_days": 75,
+  "window_days": 60,
+  "sale_id": null,
+  "commission_id": null
+}
+```
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | Missing/invalid `transaction_id`; `amount_cents` not a positive number; customer not found; no attribution for this customer in this program; no partner-program relationship |
+| `401` | Missing/malformed Authorization header, or invalid API key |
+| `409` | Duplicate `transaction_id` — **treat as already recorded**, do not retry |
+| `500` | Unexpected error — safe to retry with the same `transaction_id` |

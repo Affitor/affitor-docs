@@ -1,0 +1,74 @@
+---
+title: API Introduction
+description: Base URL, authentication, errors, idempotency, and test mode for the Affitor Tracking API.
+---
+
+The Affitor Tracking API is a REST API for server-to-server attribution. It covers the full conversion funnel — clicks, leads, sales — plus refunds.
+
+| | |
+|---|---|
+| **Base URL** | `https://api.affitor.com` |
+| **Format** | JSON request and response bodies |
+| **Auth** | `Authorization: Bearer <PROGRAM_API_KEY>` |
+| **OpenAPI spec** | [`/openapi.yaml`](https://docs.affitor.com/openapi.yaml) |
+
+## Endpoints
+
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| [`POST /api/v1/track/click`](/advertisers/api-reference/track-click) | None | Record an affiliate click |
+| [`POST /api/v1/track/lead`](/advertisers/api-reference/track-lead) | Bearer (server mode) | Tie a signup to a click |
+| [`POST /api/v1/track/sale`](/advertisers/api-reference/track-sale) | Bearer | Report revenue, create commission |
+| [`POST /api/v1/track/refund`](/advertisers/api-reference/track-refund) | Bearer | Reverse a commission |
+
+## Authentication
+
+Server-to-server endpoints authenticate with your **program API key** as a Bearer token:
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ ... }'
+```
+
+The key lives in your advertiser dashboard under **Program Settings**. It is displayed masked (`affitor_abcd****wxyz`); if you don't have the full key stored, use **Regenerate** — only the workspace owner can regenerate, and the previous key stops working immediately.
+
+Store it as `AFFITOR_API_KEY` in your environment. Never expose it in client-side code — browser flows use the tracker script and `window.affitor.signup()`, which need no key.
+
+## Errors
+
+Errors return a JSON body with a human-readable message:
+
+```json
+{ "error": "Invalid API token" }
+```
+
+| Status | Meaning | What to do |
+|--------|---------|------------|
+| `400` | Validation failed (missing/invalid field, customer not found) | Fix the request; do not retry as-is |
+| `401` | Missing/malformed Authorization header, or invalid API key | Check the Bearer token |
+| `404` | Referenced resource not found (e.g. refund for unknown sale) | Verify the `transaction_id` |
+| `409` | Duplicate `transaction_id` | Treat as already recorded — **not** a retryable failure |
+| `500` | Unexpected server error | Safe to retry with the same `transaction_id` |
+
+## Idempotency
+
+`transaction_id` on the Sale API is the idempotency key — it is unique per sale across the platform. Use your payment processor's invoice or charge ID. Retrying a request after a network failure is always safe: a sale that was already recorded returns `409`.
+
+## Test mode
+
+Every endpoint accepts a test flag that creates isolated test events — flagged `is_test: true`, never touching production attribution, commissions, or metrics:
+
+```json
+{ "additional_data": { "test_mode": true, "program_id": "YOUR_PROGRAM_ID" } }
+```
+
+See [Testing Integration](/advertisers/tracking/testing-integration) for the end-to-end verification walkthrough.
+
+## Attribution rules
+
+- **Model:** last-click. A new `?aff=` click overwrites the previous partner.
+- **Window:** the program's attribution window (default **60 days**), anchored at the customer's first click. Sales outside the window return `attributed: false` and create nothing.
+- **Customer lifecycle:** `click → lead → conversion`. Status never regresses.
+- **Customer identity:** `customer_key` (your internal user ID) is the join key across lead and sale calls — keep it stable and identical everywhere. Emails are hashed server-side before storage.
