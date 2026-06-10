@@ -24,31 +24,59 @@ In server mode, the `Authorization` header is optional but recommended. When pre
 
 ### Headers
 
-| Header | Required | Value |
-|--------|----------|-------|
-| `Authorization` | Optional (required for server mode) | `Bearer <program_api_token>` |
-| `Content-Type` | Yes | `application/json` |
+<ParamList>
+  <ParamField name="Authorization" type="header" requirement="conditional">
+    `Bearer <program_api_token>` — required for server mode, optional for browser mode.
+  </ParamField>
+  <ParamField name="Content-Type" type="header" required>
+    Must be `application/json`.
+  </ParamField>
+</ParamList>
 
 ### Body fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `click_id` | string | Conditional | The `affitor_click_id` value from the affiliate click cookie. Required outside test mode unless `customer_key` is provided. |
-| `customer_key` | string | Conditional | Your internal customer or user ID. Required outside test mode unless `click_id` is provided. |
-| `email` | string | No | Customer email address. Used for hashed/masked attribution support. |
-| `additional_data` | object | No | Optional metadata. Supports `test_mode` (boolean) and `program_id` (number) and `event_name` (string). |
+<ParamList>
+  <ParamField name="click_id" type="string" requirement="conditional">
+    The `affitor_click_id` value from the affiliate click cookie. Required outside test mode unless `customer_key` is provided.
+  </ParamField>
+  <ParamField name="customer_key" type="string" requirement="conditional">
+    Your internal customer or user ID. Required outside test mode unless `click_id` is provided.
+  </ParamField>
+  <ParamField name="email" type="string">
+    Customer email address. Used for hashed/masked attribution support.
+  </ParamField>
+  <ParamField name="additional_data" type="object">
+    Optional metadata. Supports `test_mode` (boolean), `program_id` (number), and `event_name` (string).
+  </ParamField>
+</ParamList>
 
 Outside test mode, **at least one of** `click_id` or `customer_key` must be provided. Providing both is recommended for reliable downstream payment attribution.
 
 ### Request body example
 
-```json
-{
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST https://api.affitor.com/api/v1/track/lead \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "click_id": "cust_42_1234567890",
+    "customer_key": "usr_abc123",
+    "email": "user@example.com"
+  }'`
+  },
+  {
+    label: "JSON body",
+    lang: "json",
+    code: `{
   "click_id": "cust_42_1234567890",
   "customer_key": "usr_abc123",
   "email": "user@example.com"
-}
-```
+}`
+  },
+]} />
 
 ---
 

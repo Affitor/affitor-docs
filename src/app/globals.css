@@ -264,6 +264,12 @@ article blockquote {
   font-size: 0.9375rem;
   line-height: 1.55;
   font-style: normal;
+  /* Kill Tailwind prose curly quotes */
+  quotes: none;
+}
+article blockquote p::before,
+article blockquote p::after {
+  content: none;
 }
 article blockquote p { margin: 0; }
 article blockquote p + p { margin-top: 8px; }
@@ -816,4 +822,378 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--color-fd-muted-foreground);
+}
+
+/* ═══════════════════════════════════════════════════════
+   API Reference Components — Mintlify/Dub-grade visual layer
+   ParamList, ParamField, CodeGroup, ResponseTabs, Callout
+   ═══════════════════════════════════════════════════════ */
+
+/* ── <ParamList> + <ParamField> ── */
+.docs-param-list {
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--aff-radius);
+  overflow: hidden;
+  margin: 18px 0 24px;
+}
+
+.docs-param-row {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--color-fd-border);
+  background: var(--color-fd-card);
+}
+.docs-param-row:last-child {
+  border-bottom: none;
+}
+
+.docs-param-row-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.docs-param-name {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-fd-foreground);
+  letter-spacing: -0.01em;
+}
+
+.docs-param-type {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* Required/optional/conditional pills */
+.docs-param-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.docs-param-pill--required {
+  background: var(--aff-danger-bg);
+  color: var(--aff-danger-solid);
+}
+.docs-param-pill--conditional {
+  background: var(--aff-warn-bg);
+  color: var(--aff-warn-solid);
+}
+.docs-param-pill--optional {
+  background: var(--color-fd-muted);
+  color: var(--color-fd-muted-foreground);
+}
+
+.docs-param-desc {
+  font-size: 13px;
+  color: var(--color-fd-muted-foreground);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+/* inline code inside param desc */
+.docs-param-desc code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-fd-accent-foreground);
+  font-weight: 500;
+}
+.dark .docs-param-desc code {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--color-fd-accent-foreground);
+}
+
+.docs-param-enum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.docs-param-enum-chip {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-fd-muted);
+  color: var(--color-fd-muted-foreground);
+  border: 1px solid var(--color-fd-border);
+  font-weight: 500;
+}
+
+/* ── <CodeGroup> + <ResponseTabs> shared dark surface ── */
+.docs-code-group,
+.docs-response-group {
+  background: var(--aff-code-bg);
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--aff-radius);
+  overflow: hidden;
+  margin: 18px 0;
+}
+
+.docs-code-group-header,
+.docs-response-header {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  height: 36px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.docs-code-group-tabs,
+.docs-response-tabs {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Tab buttons */
+.docs-code-tab,
+.docs-resp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(199, 210, 230, 0.45);
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+  outline: none;
+}
+.docs-code-tab:hover,
+.docs-resp-tab:hover {
+  color: rgba(199, 210, 230, 0.75);
+}
+.docs-code-tab--active,
+.docs-resp-tab--active {
+  color: #c7d2e6;
+  background: rgba(255, 255, 255, 0.02);
+}
+/* Active underline indicator in accent */
+.docs-code-tab--active::after,
+.docs-resp-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-fd-primary);
+  border-radius: 1px 1px 0 0;
+}
+
+/* Status dot for ResponseTabs */
+.docs-resp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.docs-resp-dot--green  { background: #3fb950; }
+.docs-resp-dot--amber  { background: #f0883e; }
+.docs-resp-dot--red    { background: #f85149; }
+
+/* Copy button — right-aligned in header */
+.docs-code-group-actions {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.docs-code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(199, 210, 230, 0.5);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.docs-code-copy-btn:hover {
+  color: #c7d2e6;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.docs-code-copy-btn svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* Code body */
+.docs-code-group-body {
+  overflow-x: auto;
+}
+.docs-code-group-body pre {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.7 !important;
+  color: #c7d2e6 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 14px 18px !important;
+}
+.docs-code-group-body pre code {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* ── <Callout> — Mintlify-style with icon + label ── */
+.docs-callout {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--aff-radius);
+  border: 1px solid;
+  margin: 18px 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.docs-callout-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: flex;
+  align-items: flex-start;
+}
+.docs-callout-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+.docs-callout-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-callout-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  color: currentColor;
+}
+
+.docs-callout-text {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.docs-callout-text > :last-child { margin-bottom: 0; }
+
+/* Inline code inside callout */
+.docs-callout-text code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Variants — info */
+.docs-callout--info {
+  background: var(--aff-info-bg);
+  border-color: rgba(21, 93, 252, 0.2);
+  color: var(--aff-info-solid);
+}
+.docs-callout--info .docs-callout-text {
+  color: var(--aff-body);
+}
+.docs-callout--info .docs-callout-text code {
+  background: rgba(21, 93, 252, 0.08);
+  color: var(--aff-info-solid);
+}
+
+/* Variants — warning */
+.docs-callout--warning {
+  background: var(--aff-warn-bg);
+  border-color: rgba(214, 138, 24, 0.25);
+  color: var(--aff-warn-solid);
+}
+.docs-callout--warning .docs-callout-text {
+  color: var(--aff-body);
+}
+.docs-callout--warning .docs-callout-text code {
+  background: rgba(214, 138, 24, 0.1);
+  color: var(--aff-warn-solid);
+}
+
+/* Variants — error */
+.docs-callout--error {
+  background: var(--aff-danger-bg);
+  border-color: rgba(229, 72, 77, 0.2);
+  color: var(--aff-danger-solid);
+}
+.docs-callout--error .docs-callout-text {
+  color: var(--aff-body);
+}
+.docs-callout--error .docs-callout-text code {
+  background: rgba(229, 72, 77, 0.08);
+  color: var(--aff-danger-solid);
+}
+
+/* Variants — success */
+.docs-callout--success {
+  background: var(--aff-ok-bg);
+  border-color: rgba(21, 147, 94, 0.2);
+  color: var(--aff-ok-solid);
+}
+.docs-callout--success .docs-callout-text {
+  color: var(--aff-body);
+}
+.docs-callout--success .docs-callout-text code {
+  background: rgba(21, 147, 94, 0.08);
+  color: var(--aff-ok-solid);
+}
+
+/* Dark mode adjustments for callouts */
+.dark .docs-callout--info   { border-color: rgba(88, 129, 255, 0.25); }
+.dark .docs-callout--warning { border-color: rgba(214, 138, 24, 0.3); }
+.dark .docs-callout--error   { border-color: rgba(229, 72, 77, 0.25); }
+.dark .docs-callout--success { border-color: rgba(21, 147, 94, 0.25); }
+
+/* Dark mode param list */
+.dark .docs-param-row {
+  background: var(--color-fd-card);
+}
+.dark .docs-param-desc code {
+  background: rgba(255, 255, 255, 0.07);
 }

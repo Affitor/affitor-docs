@@ -19,25 +19,69 @@ No API key is required. This endpoint is public — the referral link embedded i
 
 `POST https://api.affitor.com/api/v1/track/click`
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `affiliate_url` | `string` | **Yes** | Full URL including the `?aff=` query parameter, e.g. `https://yoursite.com?aff=PARTNER123` |
-| `page_url` | `string` | No | Canonical page URL where the click occurred |
-| `page_title` | `string` | No | `document.title` at time of click |
-| `referrer_url` | `string` | No | `document.referrer` — where the visitor came from |
-| `session_id` | `string` | No | Browser session identifier |
-| `user_agent` | `string` | No | User agent string; falls back to the HTTP `User-Agent` header |
-| `screen_resolution` | `string` | No | Screen dimensions, e.g. `1920x1080` |
-| `viewport_size` | `string` | No | Browser viewport dimensions, e.g. `1280x800` |
-| `language` | `string` | No | Browser language code, e.g. `en-US` |
-| `timezone` | `string` | No | IANA timezone string, e.g. `America/New_York` |
-| `existing_click_id` | `string` | No | Previously issued `click_id` to reuse instead of generating a new one |
-| `additional_data` | `object` | No | Pass `{ "test_mode": true, "program_id": 1 }` to create a test event that does not affect production attribution |
+<ParamList>
+  <ParamField name="affiliate_url" type="string" required>
+    Full URL including the `?aff=` query parameter, e.g. `https://yoursite.com?aff=PARTNER123`
+  </ParamField>
+  <ParamField name="page_url" type="string">
+    Canonical page URL where the click occurred.
+  </ParamField>
+  <ParamField name="page_title" type="string">
+    `document.title` at time of click.
+  </ParamField>
+  <ParamField name="referrer_url" type="string">
+    `document.referrer` — where the visitor came from.
+  </ParamField>
+  <ParamField name="session_id" type="string">
+    Browser session identifier.
+  </ParamField>
+  <ParamField name="user_agent" type="string">
+    User agent string; falls back to the HTTP `User-Agent` header.
+  </ParamField>
+  <ParamField name="screen_resolution" type="string">
+    Screen dimensions, e.g. `1920x1080`.
+  </ParamField>
+  <ParamField name="viewport_size" type="string">
+    Browser viewport dimensions, e.g. `1280x800`.
+  </ParamField>
+  <ParamField name="language" type="string">
+    Browser language code, e.g. `en-US`.
+  </ParamField>
+  <ParamField name="timezone" type="string">
+    IANA timezone string, e.g. `America/New_York`.
+  </ParamField>
+  <ParamField name="existing_click_id" type="string">
+    Previously issued `click_id` to reuse instead of generating a new one.
+  </ParamField>
+  <ParamField name="additional_data" type="object">
+    Pass `{"test_mode": true, "program_id": 1}` to create a test event that does not affect production attribution.
+  </ParamField>
+</ParamList>
 
 ### Example request body
 
-```json
-{
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST https://api.affitor.com/api/v1/track/click \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "affiliate_url": "https://yoursite.com/pricing?aff=PARTNER123",
+    "page_url": "https://yoursite.com/pricing",
+    "page_title": "Pricing — YourSite",
+    "referrer_url": "https://blog.example.com/post",
+    "session_id": "sess_abc123",
+    "screen_resolution": "1920x1080",
+    "viewport_size": "1280x800",
+    "language": "en-US",
+    "timezone": "America/New_York"
+  }'`
+  },
+  {
+    label: "JSON body",
+    lang: "json",
+    code: `{
   "affiliate_url": "https://yoursite.com/pricing?aff=PARTNER123",
   "page_url": "https://yoursite.com/pricing",
   "page_title": "Pricing — YourSite",
@@ -47,8 +91,9 @@ No API key is required. This endpoint is public — the referral link embedded i
   "viewport_size": "1280x800",
   "language": "en-US",
   "timezone": "America/New_York"
-}
-```
+}`
+  },
+]} />
 
 ---
 
