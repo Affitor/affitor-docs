@@ -1,0 +1,580 @@
+openapi: 3.1.0
+info:
+  title: Affitor Tracking API
+  version: 1.0.0
+  description: |
+    Server-to-server tracking API for Affitor advertisers.
+
+    The integration is a three-step funnel:
+    1. **Click** — captured automatically by the Affitor tracker script (`?aff=` links), or reported server-side.
+    2. **Lead** — ties your internal customer ID (`customer_key`) to the click at signup.
+    3. **Sale** — reports revenue; Affitor resolves the partner and computes commission.
+
+    Refunds and chargebacks are reported via the Refund endpoint (or handled
+    automatically when using Stripe webhook tracking).
+
+    ## Authentication
+    Server-to-server calls use your **program API key** as a Bearer token:
+    `Authorization: Bearer <PROGRAM_API_KEY>`.
+    Find it in your advertiser dashboard under Program Settings (shown masked;
+    regenerating issues a new key and invalidates the old one immediately).
+
+    ## Test mode
+    Every endpoint accepts `additional_data: { "test_mode": true }` to create
+    isolated test events (`is_test: true`) that never touch production
+    attribution, commissions, or metrics.
+
+    ## Attribution rules
+    - Model: last-click. A new `?aff=` click overwrites the previous partner.
+    - Attribution window: program-level `attribution_window_days` (default 60).
+      Sales for customers whose first-click anchor is outside the window return
+      `attributed: false` and create nothing.
+    - Customer lifecycle: `click → lead → conversion` (status never regresses).
+  contact:
+    name: Affitor Support
+    url: https://docs.affitor.com/support/contact
+servers:
+  - url: https://api.affitor.com
+    description: Production
+security: []
+tags:
+  - name: Tracking
+    description: Click, lead, sale, and refund tracking
+
+paths:
+  /api/v1/track/click:
+    post:
+      operationId: trackClick
+      tags: [Tracking]
+      summary: Track a click
+      description: |
+        Records an affiliate click. Normally called by the Affitor tracker
+        script when a visitor lands with `?aff=<partner-code>`; can also be
+        called server-side. No authentication required — attribution is proven
+        by the `aff` short code inside `affiliate_url`.
+
+        On success, store the returned `click_id` in a first-party cookie named
+        `affitor_click_id` with a lifetime of `cookie_window_days` days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClickRequest'
+            examples:
+              production:
+                summary: Real click
+                value:
+                  affiliate_url: "https://yoursite.com/pricing?aff=abc123"
+                  page_url: "https://yoursite.com/pricing?aff=abc123"
+                  page_title: "Pricing"
+                  referrer_url: "https://google.com"
+                  session_id: "sess_xyz_1234"
+              test_mode:
+                summary: Test mode
+                value:
+                  additional_data:
+                    test_mode: true
+                    program_id: "YOUR_PROGRAM_ID"
+      responses:
+        '200':
+          description: |
+            Click recorded. Also returned with `success: false` (HTTP 200) when
+            the referral link exists but is inactive.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ClickResponse'
+                  - $ref: '#/components/schemas/TestModeResponse'
+              examples:
+                recorded:
+                  value:
+                    success: true
+                    click_id: "cust_42_1714000000000"
+                    partner_code: "abc123"
+                    cookie_window_days: 60
+                inactive_link:
+                  value:
+                    success: false
+                    message: "Referral link is inactive"
+        '400':
+          description: |
+            Validation error. Causes: missing `affiliate_url`, URL not
+            parseable, no `aff` parameter present, referral link not found, or
+            invalid referral link configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/track/lead:
+    post:
+      operationId: trackLead
+      tags: [Tracking]
+      summary: Track a lead (signup)
+      description: |
+        Ties a signup to a prior click. Two modes:
+
+        - **Server mode (recommended)** — send the Bearer program API key and
+          your internal user ID as `customer_key`. Read the `affitor_click_id`
+          cookie server-side and pass it as `click_id`.
+        - **Browser mode** — called by `window.affitor.signup(customerKey, email)`
+          with no Bearer token; the click cookie proves attribution. Programs
+          configured with `lead_auth: server_required` record browser leads as
+          **provisional** only — attribution settles when your backend sends
+          the server-side lead (or on the first verified payment event).
+
+        Either `click_id` or `customer_key` is required. The email, when
+        provided, is hashed server-side before storage.
+      security:
+        - bearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadRequest'
+            examples:
+              server_mode:
+                summary: Server mode (Bearer)
+                value:
+                  click_id: "cust_42_1714000000000"
+                  customer_key: "user_123"
+                  email: "user@example.com"
+              test_mode:
+                summary: Test mode
+                value:
+                  click_id: "test_lead_001"
+                  customer_key: "test_customer"
+                  additional_data:
+                    test_mode: true
+                    program_id: "YOUR_PROGRAM_ID"
+      responses:
+        '200':
+          description: Lead recorded (or recorded as provisional).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/LeadResponse'
+                  - $ref: '#/components/schemas/LeadProvisionalResponse'
+                  - $ref: '#/components/schemas/TestModeResponse'
+              examples:
+                tracked:
+                  value:
+                    success: true
+                    message: "Lead tracked successfully"
+                provisional:
+                  value:
+                    success: true
+                    provisional: true
+                    message: "Lead recorded as provisional. This program requires server-side (Bearer) lead tracking to settle attribution."
+        '400':
+          description: |
+            Validation error. Causes: neither `click_id` nor `customer_key`
+            provided; customer not found; customer belongs to a different
+            program than the authenticated one; customer status cannot
+            transition to lead.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/track/sale:
+    post:
+      operationId: trackSale
+      tags: [Tracking]
+      summary: Track a sale
+      description: |
+        Reports a payment. Affitor resolves the partner from the customer's
+        click→lead attribution and creates the commission — do not send a
+        partner code or a pre-computed commission amount.
+
+        `transaction_id` is the **idempotency key** (unique per platform): use
+        your payment processor's invoice/charge ID. A duplicate returns HTTP
+        409 — treat 409 as already-recorded, not as a retryable failure.
+
+        If the customer's attribution window has expired, the call succeeds
+        with `attributed: false` and creates no sale or commission (the sale is
+        organic).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+            examples:
+              one_time:
+                summary: One-time payment
+                value:
+                  transaction_id: "txn_abc123"
+                  customer_key: "user_123"
+                  amount_cents: 9999
+                  currency: "USD"
+                  sale_type: "payment"
+              subscription:
+                summary: Subscription renewal
+                value:
+                  transaction_id: "in_1QxYz..."
+                  customer_key: "user_123"
+                  amount_cents: 2490
+                  currency: "USD"
+                  sale_type: "subscription"
+                  is_recurring: true
+                  subscription_id: "sub_xyz"
+                  subscription_interval: "monthly"
+              test_mode:
+                summary: Test mode
+                value:
+                  additional_data:
+                    test_mode: true
+                  amount_cents: 9999
+                  currency: "USD"
+                  sale_type: "payment"
+      responses:
+        '200':
+          description: |
+            Sale processed. Either attributed (sale + commission created) or
+            explicitly not attributed (`attributed: false`, window expired).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SaleResponse'
+                  - $ref: '#/components/schemas/SaleNotAttributedResponse'
+                  - $ref: '#/components/schemas/TestModeResponse'
+              examples:
+                attributed:
+                  value:
+                    success: true
+                    sale_id: 123
+                    commission_id: 456
+                    message: "Sale tracked successfully"
+                window_expired:
+                  value:
+                    success: true
+                    attributed: false
+                    reason: "attribution_window_expired"
+                    click_age_days: 75
+                    window_days: 60
+                    sale_id: null
+                    commission_id: null
+        '400':
+          description: |
+            Validation error. Causes: missing/invalid `transaction_id`;
+            `amount_cents` not a positive number; customer not found; customer
+            has no attribution in this program; no partner-program
+            relationship.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Duplicate `transaction_id` — this sale was already recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Duplicate transaction_id. This sale has already been recorded."
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/track/refund:
+    post:
+      operationId: trackRefund
+      tags: [Tracking]
+      summary: Track a refund or chargeback
+      description: |
+        Reverses the commission for a previously tracked sale. Keyed by the
+        **original sale's** `transaction_id` (not the refund event's ID).
+
+        - Full refund (or `refund_amount_cents` omitted) — commission reversed.
+        - Partial refund — commission marked refunded for the partial amount.
+        - Reversal is idempotent: reporting the same refund twice does not
+          double-reverse (atomic row-level claim).
+
+        When using Stripe webhook tracking, `charge.refunded` events trigger
+        the same reversal automatically — no API call needed.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+            example:
+              transaction_id: "txn_abc123"
+              refund_amount_cents: 5000
+              refund_reason: "customer_request"
+      responses:
+        '200':
+          description: |
+            Refund processed, or sale found but had no commission to reverse
+            (`status: no_commission`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+              examples:
+                reversed:
+                  value:
+                    success: true
+                    commission_id: 456
+                no_commission:
+                  value:
+                    success: true
+                    status: "no_commission"
+                    message: "Sale has no commission to reverse"
+        '400':
+          description: '`transaction_id` is required.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No sale matches `transaction_id` for your program.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Sale not found for transaction_id"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Program API key from your advertiser dashboard (Program Settings).
+
+  responses:
+    Unauthorized:
+      description: Missing/malformed Authorization header, or invalid API token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid API token"
+    InternalError:
+      description: Unexpected server error. Safe to retry with the same idempotency key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message.
+      required: [error]
+
+    TestModeResponse:
+      type: object
+      description: Returned when `additional_data.test_mode` is true.
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            eventId: { type: integer }
+            programId: { type: [integer, 'null'] }
+            test_mode: { type: boolean, const: true }
+
+    AdditionalData:
+      type: object
+      description: Extension object. Set `test_mode: true` to create an isolated test event.
+      properties:
+        test_mode:
+          type: boolean
+        program_id:
+          type: [string, integer]
+          description: Required with `test_mode` on unauthenticated calls so the test event can be linked to your program.
+        event_name:
+          type: string
+          description: Optional label for the event (lead tracking).
+
+    ClickRequest:
+      type: object
+      properties:
+        affiliate_url:
+          type: string
+          format: uri
+          description: The full landing URL containing `?aff=<partner-short-code>`. Required (except in test mode).
+        page_url: { type: string, format: uri }
+        page_title: { type: string }
+        referrer_url: { type: string }
+        session_id: { type: string }
+        user_agent:
+          type: string
+          description: Falls back to the request's User-Agent header.
+        screen_resolution: { type: string, example: "1920x1080" }
+        viewport_size: { type: string, example: "1440x900" }
+        language: { type: string, example: "en-US" }
+        timezone: { type: string, example: "America/New_York" }
+        existing_click_id:
+          type: string
+          description: Pass the stored click ID when the same visitor clicks again to reuse the customer record (last-click partner overwrite still applies).
+        additional_data:
+          $ref: '#/components/schemas/AdditionalData'
+
+    ClickResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        click_id:
+          type: string
+          description: Store this in the `affitor_click_id` first-party cookie.
+          example: "cust_42_1714000000000"
+        partner_code: { type: string }
+        cookie_window_days:
+          type: integer
+          description: Cookie lifetime in days. Follows the program's attribution window (default 60).
+        message:
+          type: string
+          description: Present on non-recorded outcomes (e.g. inactive link).
+
+    LeadRequest:
+      type: object
+      description: Either `click_id` or `customer_key` is required.
+      properties:
+        click_id:
+          type: string
+          description: Value of the `affitor_click_id` cookie (read server-side).
+        customer_key:
+          type: string
+          description: Your internal, stable user ID. The join key for all future sales.
+        email:
+          type: string
+          format: email
+          description: Optional. Hashed server-side before storage; never stored in plain text.
+        session_id: { type: string }
+        page_url: { type: string }
+        click_ids:
+          type: array
+          items: { type: string }
+          description: Optional list of candidate click IDs from the tracker SDK (shadow attribution lane).
+        additional_data:
+          $ref: '#/components/schemas/AdditionalData'
+
+    LeadResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string, example: "Lead tracked successfully" }
+
+    LeadProvisionalResponse:
+      type: object
+      description: Browser-mode lead on a program with `lead_auth: server_required`.
+      properties:
+        success: { type: boolean }
+        provisional: { type: boolean, const: true }
+        message: { type: string }
+
+    SaleRequest:
+      type: object
+      required: [transaction_id, amount_cents]
+      properties:
+        transaction_id:
+          type: string
+          description: Idempotency key — unique per sale. Use your payment processor's invoice/charge ID. Duplicates return HTTP 409.
+        customer_key:
+          type: string
+          description: Your internal user ID (preferred lookup). Provide this or `click_id`.
+        click_id:
+          type: string
+          description: Alternative lookup via the `affitor_click_id` cookie value.
+        amount_cents:
+          type: integer
+          minimum: 1
+          description: Gross sale amount in cents.
+        currency:
+          type: string
+          enum: [USD, EUR, VND]
+          default: USD
+        sale_type:
+          type: string
+          enum: [payment, subscription]
+          default: payment
+        is_recurring:
+          type: boolean
+          default: false
+          description: True for subscription renewals.
+        subscription_id: { type: string }
+        subscription_interval:
+          type: string
+          enum: [monthly, quarterly, annual]
+        product_id:
+          type: string
+          description: Optional product identifier, used for per-product commission policies.
+        line_items:
+          description: Optional structured line items (JSON).
+        additional_data:
+          $ref: '#/components/schemas/AdditionalData'
+
+    SaleResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        sale_id: { type: integer }
+        commission_id: { type: integer }
+        message: { type: string, example: "Sale tracked successfully" }
+
+    SaleNotAttributedResponse:
+      type: object
+      description: The customer's first-click anchor is outside the attribution window — the sale is organic. Nothing is created.
+      properties:
+        success: { type: boolean }
+        attributed: { type: boolean, const: false }
+        reason: { type: string, example: "attribution_window_expired" }
+        click_age_days: { type: integer }
+        window_days: { type: integer }
+        sale_id: { type: 'null' }
+        commission_id: { type: 'null' }
+
+    RefundRequest:
+      type: object
+      required: [transaction_id]
+      properties:
+        transaction_id:
+          type: string
+          description: The ORIGINAL sale's `transaction_id` (not the refund event's ID).
+        refund_amount_cents:
+          type: integer
+          minimum: 1
+          description: Partial refund amount. Omit for a full refund.
+        refund_reason:
+          type: string
+          description: Free-text reason, stored for audit.
+
+    RefundResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        commission_id: { type: integer }
+        status:
+          type: string
+          description: '`no_commission` when the sale had no commission to reverse.'
+        message: { type: string }
