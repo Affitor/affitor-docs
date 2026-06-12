@@ -4,6 +4,10 @@
 > This file provides LLM-readable documentation for integrating Affitor.
 > Full docs: https://docs.affitor.com
 
+> **AI coding agents — integration entry point:** follow https://docs.affitor.com/skill.md.
+> It is a self-contained runbook for wiring click + lead + sale tracking and
+> verifying the integration end-to-end (synthetic chain + readiness polling).
+
 ## Getting Started
 
 - [What is Affitor?](https://docs.affitor.com/): Affiliate growth platform for SaaS with performance-based pricing and partner program management
@@ -232,11 +236,21 @@ Use the same internal user ID everywhere:
 
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
-| `/api/v1/track/lead` | POST | Bearer API key | Track signup/lead |
+| `/api/v1/track/click` | POST | none (public) | Record a click. No API key — attribution is proven by the `?aff=` short code inside `affiliate_url`. Normally fired by the browser tracker, not server-side. |
+| `/api/v1/track/lead` | POST | Bearer API key (server) or none (browser) | Track signup/lead. Browser mode (`window.affitor.signup`) uses the click cookie; server mode uses the Bearer key. |
 | `/api/v1/track/sale` | POST | Bearer API key | Track sale/payment |
-| `/api/v1/track/click` | POST | Bearer API key | Record a click event |
 | `/api/v1/track/refund` | POST | Bearer API key | Reverse a commission on refund |
-| Base URL: `https://api.affitor.com` | | | |
+| `/api/v1/cli/test-event` | POST | Bearer API key | Fire a synthetic click→lead→sale chain (`{"type":"chain"}`) to verify the pipeline |
+| `/api/v1/programs/me/readiness` | GET | Bearer API key | Poll the 5-gate readiness verdict until `integration_verified: true` |
+| Base URL: `https://api.affitor.com` (production; uat/staging differ — use the API base you were given) | | | |
+
+**Dashboard session-auth only (NOT key-authed — for the logged-in advertiser UI, not agent integration):**
+
+| Endpoint | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/tracking/status` | GET | dashboard session auth only | Integration step statuses for the dashboard |
+| `/api/tracking/events` | GET | dashboard session auth only | Paginated merged tracking events for the dashboard |
+| `/api/tracking/performance/:programId` | GET | dashboard session auth only | Daily performance aggregates for the dashboard |
 
 ## Conventions
 

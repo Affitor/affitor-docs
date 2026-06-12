@@ -40,6 +40,8 @@ security: []
 tags:
   - name: Tracking
     description: Click, lead, sale, and refund tracking
+  - name: Agent
+    description: Agent-facing verification surface — synthetic chain + readiness polling
 
 paths:
   /api/v1/track/click:
@@ -358,6 +360,164 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /api/v1/cli/test-event:
+    post:
+      operationId: testEvent
+      tags: [Agent]
+      summary: Fire a synthetic verification chain
+      description: |
+        Runs a synthetic **click → lead → sale** through the real attribution +
+        commission pipeline so an integration can be verified without a real
+        customer or real money. Every row created is `is_test: true` and is
+        excluded from earnings, analytics, payouts, and the readiness `live`
+        gate's real-event signal.
+
+        Send `{ "type": "chain" }`. The program is derived from the Bearer
+        program API key. Rate limited to **10 chains / program / hour** (HTTP
+        429 with `Retry-After`).
+
+        After a successful chain, poll `GET /api/v1/programs/me/readiness` until
+        `integration_verified: true`.
+
+        A legacy single-event shape (`{ "event_type": "click" | "lead" |
+        "sale" }`) also exists; it is a dumb insert (always `attributed:false`,
+        no commission) and does **not** verify integration — prefer the chain.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestEventRequest'
+            examples:
+              chain:
+                summary: Synthetic verification chain (recommended)
+                value:
+                  type: chain
+              legacy_single:
+                summary: Legacy single dumb-insert event
+                value:
+                  event_type: click
+      responses:
+        '200':
+          description: Chain executed (or legacy single event recorded).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestEventChainResponse'
+              example:
+                data:
+                  type: chain
+                  short_code: "afftest42"
+                  customer_key: "aff_test_ck_42_1714000000000_ab12cd"
+                  verdict:
+                    click: attributed
+                    lead: attributed
+                    sale: attributed
+                  attributed: true
+        '400':
+          description: Invalid `event_type` (legacy mode) or malformed body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          description: |
+            Synthetic-chain rate limit exceeded (max 10/program/hour). Respect
+            the `Retry-After` header and `retry_after_seconds`.
+          headers:
+            Retry-After:
+              schema: { type: integer }
+              description: Seconds to wait before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentError'
+              example:
+                error:
+                  status: 429
+                  code: rate_limited
+                  message: "Too many synthetic chains (max 10/program/hour)."
+                  retry_after_seconds: 1800
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/programs/me/readiness:
+    get:
+      operationId: getMyReadiness
+      tags: [Agent]
+      summary: Program readiness (5-gate verdict)
+      description: |
+        Returns a machine-verifiable readiness verdict for the program behind
+        the Bearer program API key (the program is derived from the key — there
+        is no `:id` in the path, so no IDOR and the agent never needs to know
+        its own program id).
+
+        Five gates — `profile · economics · payout · tracking · live` — each
+        `pass | fail | unknown`. `blocker` is the first failing gate; each
+        failing gate carries a `next_action` string the agent can act on. Poll
+        every `poll.retry_after_seconds` (default 5) until
+        `integration_verified: true`.
+
+        READ-ONLY: this endpoint writes nothing. Errors use the typed agent
+        envelope `{ error: { code, message, retry_after_seconds? } }`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: force_recheck
+          in: query
+          required: false
+          schema: { type: boolean }
+          description: Bypass the tracking-gate cache TTL (itself limited to 1 forced fetch / program / min).
+      responses:
+        '200':
+          description: Readiness verdict.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              example:
+                program_id: 42
+                state: integration_verified
+                integration_verified: true
+                blocker: null
+                gates:
+                  profile: { status: pass }
+                  economics: { status: pass }
+                  payout: { status: pass, mode: stripe }
+                  tracking: { status: pass, detail: receiving_events, checked_at: "2026-06-11T00:00:00.000Z" }
+                  live:
+                    status: pass
+                    test_chain: { click: attributed, lead: attributed, sale: attributed }
+                last_event_at: { click: null, lead: null, sale: null }
+                counts_24h: { clicks: 0, leads: 0, sales: 0 }
+                key_rotated_at: null
+                poll: { retry_after_seconds: 5 }
+        '401':
+          description: Missing/malformed Authorization header, or invalid API token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentError'
+              example:
+                error:
+                  code: invalid_key
+                  message: "Invalid API token."
+        '500':
+          description: Failed to compute readiness — back off and retry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentError'
+              example:
+                error:
+                  code: internal_error
+                  message: "Failed to compute readiness. Retry shortly."
+                  retry_after_seconds: 10
+
 components:
   securitySchemes:
     bearerAuth:
@@ -578,3 +738,147 @@ components:
           type: string
           description: '`no_commission` when the sale had no commission to reverse.'
         message: { type: string }
+
+    AgentError:
+      type: object
+      description: Typed agent error envelope so an agent can branch on `code`.
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Stable machine code (e.g. invalid_key, rate_limited, internal_error).
+            message: { type: string }
+            status: { type: integer }
+            retry_after_seconds:
+              type: integer
+              description: Present on retryable errors (e.g. rate limits, transient internal errors).
+          required: [code, message]
+      required: [error]
+
+    TestEventRequest:
+      type: object
+      description: |
+        Send `{ "type": "chain" }` to run the synthetic verification chain
+        (recommended). The legacy single-event shape (`event_type`) is a dumb
+        insert that does not verify integration.
+      properties:
+        type:
+          type: string
+          enum: [chain]
+          description: Run a synthetic click→lead→sale chain through the real pipeline.
+        event_type:
+          type: string
+          enum: [click, lead, sale]
+          description: Legacy single dumb-insert event (always unattributed, no commission).
+
+    TestEventChainResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type: { type: string, const: chain }
+            short_code:
+              type: string
+              description: The synthetic referral short code used for this program's fixture.
+            customer_key:
+              type: string
+              description: The synthetic customer key threaded through all three steps.
+            verdict:
+              $ref: '#/components/schemas/TestChainVerdict'
+            attributed:
+              type: boolean
+              description: True when the synthetic sale attributed (the chain's terminal success).
+
+    TestChainVerdict:
+      type: object
+      description: Per-step verdict for the synthetic chain.
+      properties:
+        click: { $ref: '#/components/schemas/TestChainStepStatus' }
+        lead: { $ref: '#/components/schemas/TestChainStepStatus' }
+        sale: { $ref: '#/components/schemas/TestChainStepStatus' }
+
+    TestChainStepStatus:
+      type: string
+      enum: [attributed, unattributed, wrong_partner, pending]
+
+    GateStatus:
+      type: string
+      enum: [pass, fail, unknown]
+
+    ReadinessResponse:
+      type: object
+      description: |
+        Machine-verifiable readiness verdict. Poll until
+        `integration_verified: true`. READ-ONLY.
+      properties:
+        program_id: { type: integer }
+        state:
+          type: string
+          enum: [draft, configuring, ready, integration_verified, live_verified]
+          description: |
+            State machine. `integration_verified` = all gates pass via the
+            synthetic chain (no real event yet) — the agent's goal.
+            `live_verified` = a real (non-test) event has flowed.
+        integration_verified:
+          type: boolean
+          description: True when `state` is `integration_verified` or `live_verified`.
+        blocker:
+          type: [string, 'null']
+          enum: [profile, economics, payout, tracking, live, null]
+          description: First failing gate in canonical order; null when all pass.
+        gates:
+          type: object
+          properties:
+            profile:
+              type: object
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                next_action: { type: string, description: "e.g. complete_program_profile" }
+            economics:
+              type: object
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                next_action: { type: string, description: "e.g. set_commission_policy" }
+            payout:
+              type: object
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                mode: { type: string, enum: [stripe, manual] }
+                next_action: { type: string, description: "e.g. surface_stripe_connect_url" }
+                endpoint: { type: string, description: "Stripe-connect URL endpoint when payout fails." }
+            tracking:
+              type: object
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                detail:
+                  type: string
+                  description: "e.g. tracker_installed | receiving_events"
+                checked_at: { type: [string, 'null'], format: date-time }
+                next_action: { type: string, description: "e.g. install_tracker_or_send_events" }
+            live:
+              type: object
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                test_chain: { $ref: '#/components/schemas/TestChainVerdict' }
+                next_action: { type: string, description: "e.g. run_synthetic_sale_chain" }
+        last_event_at:
+          type: object
+          description: Most recent REAL (non-test) event timestamp per type, or null.
+          properties:
+            click: { type: [string, 'null'], format: date-time }
+            lead: { type: [string, 'null'], format: date-time }
+            sale: { type: [string, 'null'], format: date-time }
+        counts_24h:
+          type: object
+          properties:
+            clicks: { type: integer }
+            leads: { type: integer }
+            sales: { type: integer }
+        key_rotated_at: { type: [string, 'null'], format: date-time }
+        poll:
+          type: object
+          properties:
+            retry_after_seconds: { type: integer, description: Seconds to wait between polls. }
