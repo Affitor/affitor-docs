@@ -4,6 +4,12 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  async rewrites() {
+    return [
+      // Pretty markdown URL: /<path>.md serves the raw MDX from the /md route.
+      { source: '/:path*.md', destination: '/md/:path*' },
+    ];
+  },
   async redirects() {
     return [
       {

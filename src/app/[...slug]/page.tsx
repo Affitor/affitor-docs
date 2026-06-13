@@ -4,6 +4,7 @@ import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
 import { DocsFooter } from '@/components/docs-footer';
+import { DocJsonLd } from '@/components/doc-json-ld';
 
 const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
 
@@ -19,6 +20,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
+      <DocJsonLd page={page} slug={params.slug} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
