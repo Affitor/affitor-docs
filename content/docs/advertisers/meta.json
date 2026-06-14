@@ -13,7 +13,7 @@
     "---Tracking---",
     "tracking/quickstart-integration",
     "tracking/tracking-overview",
-    "tracking/pageview-tracker-click",
+    "tracking/click-tracking",
     "tracking/lead-tracking-signup",
     "tracking/payment-tracking-stripe",
     "tracking/payment-flow",

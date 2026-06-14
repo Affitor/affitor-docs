@@ -28,6 +28,12 @@ const config = {
         destination: '/support/glossary',
         permanent: true,
       },
+      {
+        // tracker page renamed "Pageview Tracker" -> "Click Tracking"
+        source: '/advertisers/tracking/pageview-tracker-click',
+        destination: '/advertisers/tracking/click-tracking',
+        permanent: true,
+      },
     ];
   },
 };
