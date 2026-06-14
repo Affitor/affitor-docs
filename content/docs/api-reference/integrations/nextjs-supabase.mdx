@@ -6,7 +6,7 @@ description: "Add Affitor tracking to a Next.js app that uses Supabase Auth — 
 This guide covers the Supabase-specific signup step. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — refer there for full detail.
 
 :::note
-The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
@@ -17,7 +17,7 @@ The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-p
 
 ## 1. Capture the click
 
-Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `affitor-sdk`, create an `<AffitorInit />` client component that calls `init({ programId })` on mount, and render it once in your root layout.
+Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `@affitor/sdk`, create an `<AffitorInit />` client component that calls `init({ programId })` on mount, and render it once in your root layout.
 
 ## 2. Track the signup
 
@@ -28,7 +28,7 @@ Supabase Auth exposes `onAuthStateChange` — a client-side listener that fires 
 
 import { useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { signup } from 'affitor-sdk';
+import { signup } from '@affitor/sdk';
 
 export function AffitorAuthSync() {
   useEffect(() => {
@@ -88,7 +88,7 @@ If you need to track leads from a Supabase Edge Function or DB trigger, you must
 1. On the client, read the click ID before or during sign-up:
 
 ```tsx
-import { getClickId } from 'affitor-sdk';
+import { getClickId } from '@affitor/sdk';
 
 const clickId = getClickId(); // returns the affitor_click_id cookie value
 // Store clickId on the user's metadata or pass it through your sign-up flow.
@@ -101,11 +101,11 @@ await supabase.auth.signUp({
 });
 ```
 
-2. In your Edge Function, read the forwarded click ID and call `affitor-node`:
+2. In your Edge Function, read the forwarded click ID and call `@affitor/sdk/server`:
 
 ```ts
 // supabase/functions/on-signup/index.ts
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 
 const affitor = new Affitor({ apiKey: Deno.env.get('AFFITOR_API_KEY')! });
 

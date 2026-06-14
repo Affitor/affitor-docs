@@ -62,14 +62,14 @@ Install the tracker on pages where affiliate traffic lands.
 **SDK:**
 
 ```bash
-npm install affitor-sdk
+npm install @affitor/sdk
 ```
 
 ```tsx
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 export function AffitorInit() {
   useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
   return null;
