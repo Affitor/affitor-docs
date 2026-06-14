@@ -6,7 +6,7 @@ description: "Add Affitor tracking to a Next.js (App Router) app that uses Clerk
 This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
 
 :::note
-The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk` / `@affitor/sdk/server` packages are **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
@@ -17,7 +17,7 @@ The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-p
 
 ## 1. Capture the click
 
-Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `affitor-sdk`, create the `<AffitorInit />` client component, and render it in your root layout. Nothing changes for Clerk.
+Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `@affitor/sdk`, create the `<AffitorInit />` client component, and render it in your root layout. Nothing changes for Clerk.
 
 ## 2. Track the signup
 
@@ -37,7 +37,7 @@ Use Clerk's `useUser()` hook to access the signed-in user, then fire `signup()` 
 
 import { useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { signup } from 'affitor-sdk';
+import { signup } from '@affitor/sdk';
 
 export function AffitorSignup() {
   const { user, isLoaded } = useUser();
@@ -67,7 +67,7 @@ If you need to track signups server-side via Clerk's `user.created` webhook, you
 'use client';
 
 import { useSignUp } from '@clerk/nextjs';
-import { getClickId } from 'affitor-sdk';
+import { getClickId } from '@affitor/sdk';
 
 // during your sign-up form submit
 const { signUp } = useSignUp();
@@ -84,7 +84,7 @@ await signUp.update({
 ```ts
 // app/api/webhooks/clerk/route.ts
 import { Webhook } from 'svix';
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 

@@ -59,7 +59,7 @@ The file contains three verbatim integration sections an agent can copy directly
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 export function AffitorInit() {
   useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
   return null;
@@ -186,7 +186,7 @@ AGENTS.md instructs agents to follow these rules. They apply equally when you in
 
 ## Related
 
-- [SDK Reference](/api-reference/sdks/) — `affitor-sdk` package for React and Next.js
+- [SDK Reference](/api-reference/sdks/) — `@affitor/sdk` package for React and Next.js
 - [Track Lead](/api-reference/track-lead/) — full API contract for signup tracking
 - [Track Sale](/api-reference/track-sale/) — full API contract for sale/revenue tracking
 - [Get Tracking Status](/api-reference/status/) — verify integration health after setup
