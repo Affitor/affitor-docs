@@ -59,7 +59,7 @@
 ## API Reference
 
 - [API Reference Overview](https://docs.affitor.com/api-reference/overview): Base URL, authentication, request/response envelope, and available endpoints
-- [SDKs (Beta)](https://docs.affitor.com/api-reference/sdks): affitor-sdk (browser) + affitor-node (server) reference
+- [SDKs (Beta)](https://docs.affitor.com/api-reference/sdks): @affitor/sdk (browser) + @affitor/sdk/server (server) reference
 - [Agent Integration (Beta)](https://docs.affitor.com/api-reference/agent-integration): .affitor/AGENTS.md + skills.md the CLI generates for AI agents
 - [Attribution](https://docs.affitor.com/api-reference/attribution): How Affitor links clicks, signups, and sales for attribution
 - [Error Reference](https://docs.affitor.com/api-reference/errors): Error codes and troubleshooting guide
@@ -79,12 +79,12 @@
 
 ### Integrations
 
-- [Next.js](https://docs.affitor.com/api-reference/integrations/nextjs): Add Affitor tracking to a Next.js App Router app — clicks, signups, sales (affitor-sdk + Stripe integration)
+- [Next.js](https://docs.affitor.com/api-reference/integrations/nextjs): Add Affitor tracking to a Next.js App Router app — clicks, signups, sales (@affitor/sdk + Stripe integration)
 - [Next.js + Clerk](https://docs.affitor.com/api-reference/integrations/nextjs-clerk): Fire the signup from Clerk auth, with click-id forwarding for server webhooks
 - [Next.js + Supabase](https://docs.affitor.com/api-reference/integrations/nextjs-supabase): Fire the signup from Supabase Auth state changes
 - [Next.js + NextAuth](https://docs.affitor.com/api-reference/integrations/nextjs-nextauth): Fire the signup from NextAuth events.createUser, forwarding the click id
 - [Stripe integration](https://docs.affitor.com/api-reference/integrations/stripe): Attach affitor_click_id / affitor_customer_key / program_id metadata to Checkout Sessions; Affitor reads webhooks (one-time + subscription)
-- [Node / Express](https://docs.affitor.com/api-reference/integrations/node-express): Server-side tracking with affitor-node (trackLead / trackSale / trackRefund) + raw API
+- [Node / Express](https://docs.affitor.com/api-reference/integrations/node-express): Server-side tracking with @affitor/sdk/server (trackLead / trackSale / trackRefund) + raw API
 
 ## Support
 
@@ -96,14 +96,14 @@
 
 ## SDKs
 
-### affitor-sdk
+### @affitor/sdk
 
 Browser-side click tracking SDK. Install via npm or use the script tag.
 
 **npm install:**
 
 ```bash
-npm i affitor-sdk
+npm i @affitor/sdk
 ```
 
 **React usage:**
@@ -112,7 +112,7 @@ npm i affitor-sdk
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 export function AffitorInit() {
   useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
   return null;
@@ -136,7 +136,7 @@ signup(customerKey, email) // SDK
 await window.affitor.signup(userId, userEmail);
 ```
 
-### affitor-node
+### @affitor/sdk/server
 
 Server-side Node.js SDK for lead and sale tracking from your backend. See the [API Reference](https://docs.affitor.com/api-reference/overview) for direct API usage.
 
@@ -161,13 +161,13 @@ These files are designed to be consumed by AI agents performing automated integr
 </script>
 ```
 
-Or install via npm: `npm i affitor-sdk`
+Or install via npm: `npm i @affitor/sdk`
 
 ```tsx
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 export function AffitorInit() {
   useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
   return null;
