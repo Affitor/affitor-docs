@@ -1,22 +1,22 @@
 ---
 title: "Node / Express"
-description: "Server-side Affitor integration with affitor-node — track signups and sales from your Express backend."
+description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Express backend."
 ---
 
-This guide wires Affitor into a Node.js / Express app. Because Express is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `affitor-node`.
+This guide wires Affitor into a Node.js / Express app. Because Express is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`.
 
 :::note
-The `affitor-node` package is **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk/server` package is **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
 
 - Your **program ID** (dashboard → program settings)
 - A **program API key** for server-side calls (dashboard → API keys)
-- `affitor-node` installed in your backend
+- `@affitor/sdk` installed in your backend
 
 ```bash
-npm i affitor-node
+npm i @affitor/sdk
 ```
 
 ## 1. Capture the click (frontend)
@@ -54,7 +54,7 @@ Instantiate the SDK once (module-level or via a shared singleton) and call `trac
 
 ```js
 // lib/affitor.js
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 
 export const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY });
 ```
@@ -188,7 +188,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 ```
 
 :::note
-`customer_key` in the raw API, `customerExternalId` in `affitor-node`, and `affitor_customer_key` in Stripe metadata are all **the same value** — your stable internal user ID. Keep it consistent.
+`customer_key` in the raw API, `customerExternalId` in `@affitor/sdk/server`, and `affitor_customer_key` in Stripe metadata are all **the same value** — your stable internal user ID. Keep it consistent.
 :::
 
 ## Verify

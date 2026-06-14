@@ -6,7 +6,7 @@ description: "Add Affitor lead tracking to a Next.js app using NextAuth (Auth.js
 This guide covers the signup step when your Next.js app uses **NextAuth (Auth.js)** for authentication. Steps 1 (capture click) and 3 (track sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this page focuses on what is different: wiring the lead call to NextAuth's auth lifecycle without losing the click attribution.
 
 :::note
-The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk` / `@affitor/sdk/server` packages are **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
@@ -17,7 +17,7 @@ The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-p
 
 ## 1. Capture the click
 
-Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `affitor-sdk`, create an `AffitorInit` client component, and render it in your root layout. No changes needed for NextAuth.
+Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `@affitor/sdk`, create an `AffitorInit` client component, and render it in your root layout. No changes needed for NextAuth.
 
 ## 2. Track the signup
 
@@ -25,7 +25,7 @@ Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-captur
 
 NextAuth's `events.createUser` callback fires **on the server**, once per new user — it looks like the ideal place to call `trackLead`. It is — but with one important caveat:
 
-**The `affitor_click_id` is a first-party browser cookie.** A server-side callback has no access to it. If you call `affitor-node trackLead` from `events.createUser` without passing a `clickId`, the lead is recorded but has no partner to attribute to — the click attribution is lost.
+**The `affitor_click_id` is a first-party browser cookie.** A server-side callback has no access to it. If you call `@affitor/sdk/server trackLead` from `events.createUser` without passing a `clickId`, the lead is recorded but has no partner to attribute to — the click attribution is lost.
 
 ### Recommended: track client-side after sign-in
 
@@ -37,7 +37,7 @@ The most reliable path is to fire `signup()` from the **browser**, immediately a
 
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { signup } from 'affitor-sdk';
+import { signup } from '@affitor/sdk';
 
 export function AffitorAuthTracker() {
   const { data: session, status } = useSession();
@@ -92,7 +92,7 @@ If you need the lead recorded the moment the user row is created (before the cli
 
 ```tsx
 'use client';
-import { getClickId } from 'affitor-sdk';
+import { getClickId } from '@affitor/sdk';
 
 // In your sign-up form handler, read the click ID and include
 // it in the request or store it on the user's session/metadata.
@@ -103,7 +103,7 @@ const clickId = getClickId(); // returns the affitor_click_id cookie value
 
 ```ts
 // auth.ts (NextAuth config)
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 import type { NextAuthConfig } from 'next-auth';
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
