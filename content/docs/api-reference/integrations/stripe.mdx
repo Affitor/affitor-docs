@@ -6,7 +6,7 @@ description: "Canonical recipe for attributing Stripe payments to Affitor partne
 This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/api-reference/integrations/nextjs) or the framework guide for your stack.
 
 :::note
-The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
@@ -103,7 +103,7 @@ Supplying all three fields (`affitor_click_id`, `affitor_customer_key`, `program
 If you are not using Stripe Checkout, or you need to report a sale from a different payment provider, call the server SDK directly after the payment is confirmed:
 
 ```ts
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
 await affitor.trackSale({
@@ -132,7 +132,7 @@ This path requires a Bearer API key and is called from your server only — neve
   "Omitting `subscription_data.metadata` — the first payment attributes but every renewal is lost because Affitor reads the Subscription's own metadata for `invoice.payment_succeeded` events.",
   "Different customer IDs at signup vs checkout — `affitor_customer_key` must equal the `customerExternalId` / `customer_key` you sent at signup.",
   "Reading `affitor_click_id` from the wrong place on the server — it is a browser cookie, not a query param. Forward it from `req.cookies` or `cookies()` in your server handler.",
-  "Tracking a sale from the browser — sale tracking is server-side only. Stripe metadata and `affitor-node` both run on your server.",
+  "Tracking a sale from the browser — sale tracking is server-side only. Stripe metadata and `@affitor/sdk/server` both run on your server.",
   "Using a different `program_id` than the one in your `init()` call — all three metadata fields must reference the same program."
 ]} />
 

@@ -6,7 +6,7 @@ description: "Add Affitor tracking to a Next.js (App Router) app — clicks, sig
 This guide wires Affitor into a Next.js App Router app with the three moves every integration needs: **capture the click**, **track the signup**, **track the sale**.
 
 :::note
-The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
 :::
 
 ## Prerequisites
@@ -20,7 +20,7 @@ The `affitor-sdk` / `affitor-node` packages are **Beta**. The documented happy-p
 Install the browser SDK and initialize it once on the client. `init()` reads `?aff=` from the URL and stores a first-party `affitor_click_id` cookie. It is SSR-safe — `init()` is a no-op on the server.
 
 ```bash
-npm i affitor-sdk
+npm i @affitor/sdk
 ```
 
 Create a client component that runs `init()` on mount:
@@ -30,7 +30,7 @@ Create a client component that runs `init()` on mount:
 'use client';
 
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 
 export function AffitorInit() {
   useEffect(() => {
@@ -64,7 +64,7 @@ When a user finishes signing up, link them to their click. Call the browser help
 
 ```tsx
 'use client';
-import { signup } from 'affitor-sdk';
+import { signup } from '@affitor/sdk';
 
 // after your signup flow completes
 await signup(user.id, user.email); // email optional
@@ -74,7 +74,7 @@ Prefer to do it server-side (e.g. in a route handler or after a DB write)? Use t
 
 ```ts
 // server only
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
 await affitor.trackLead({
@@ -120,7 +120,7 @@ const session = await stripe.checkout.sessions.create({
 Report the finalized sale from your backend. Works with any payment provider.
 
 ```ts
-import Affitor from 'affitor-node';
+import Affitor from '@affitor/sdk/server';
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
 await affitor.trackSale({

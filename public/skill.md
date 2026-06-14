@@ -47,21 +47,19 @@ If signup uses `user.id` but checkout uses `user.email`, sales will not attribut
 
 ---
 
-## 3. Install the SDKs
+## 3. Install the SDK
 
-Use the **detected** package manager. Two real packages:
+Use the **detected** package manager. One package, two entry points:
 
-- **`affitor-sdk`** — browser/click + signup (`init`, `signup`, `getClickId`). SSR-safe (no-ops on the server).
-- **`affitor-node`** — server-side lead/sale/refund, Bearer-authenticated.
+- **`@affitor/sdk`** — browser/click + signup (`init`, `signup`, `getClickId`). SSR-safe (no-ops on the server).
+- **`@affitor/sdk/server`** — server-side lead/sale/refund, Bearer-authenticated.
 
 ```bash
-# browser tracking (any framework that bundles JS)
-npm i affitor-sdk
-# server tracking (Node backend / API routes / webhooks)
-npm i affitor-node
+# browser + server tracking (any framework that bundles JS / Node backend)
+npm i @affitor/sdk
 ```
 
-**Non-Node sites** (plain HTML, Rails, PHP, Django, etc.): skip `affitor-sdk` and use the script tag (§4c). Use raw HTTP `POST` (§6c) for server events instead of `affitor-node`.
+**Non-Node sites** (plain HTML, Rails, PHP, Django, etc.): skip `@affitor/sdk` and use the script tag (§4c). Use raw HTTP `POST` (§6c) for server events instead of `@affitor/sdk/server`.
 
 ---
 
@@ -75,7 +73,7 @@ Load the tracker on **every page** so `?aff=<code>` visits are captured into the
 // app/affitor-init.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 
 export function AffitorInit() {
   useEffect(() => {
@@ -103,7 +101,7 @@ import { AffitorInit } from './affitor-init';
 ```tsx
 // pages/_app.tsx (Pages Router) or src/main.tsx (Vite) — runs client-side
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 
 useEffect(() => {
   init({
@@ -134,7 +132,7 @@ Fire **once** when a user account is created, with the canonical `customerKey` (
 ### 5a. Browser (after the tracker script / `init` has run)
 
 ```javascript
-import { signup } from 'affitor-sdk';
+import { signup } from '@affitor/sdk';
 // in your post-registration success handler:
 await signup(user.id, user.email); // customerKey = user.id (same id used at sale)
 // script-tag equivalent:  await window.affitor.signup(user.id, user.email);
@@ -145,7 +143,7 @@ The browser call needs no API key — the click cookie proves attribution.
 ### 5b. Server (recommended — survives ad-blockers / SSR auth)
 
 ```ts
-import { Affitor } from 'affitor-node';
+import { Affitor } from '@affitor/sdk/server';
 const affitor = new Affitor({
   apiKey: process.env.AFFITOR_API_KEY!,
   apiUrl: process.env.AFFITOR_API_BASE, // = API_BASE; omit for prod
@@ -172,7 +170,7 @@ Pick the **first** mode that fits the brand's stack. Do not double-report the sa
 If the brand uses Stripe Checkout, you do **not** call a sale API. Inject two metadata fields when creating the Checkout Session; Affitor's Stripe webhook reads them and creates the sale + commission automatically.
 
 ```ts
-import { getClickId } from 'affitor-sdk'; // client: read the cookie click id
+import { getClickId } from '@affitor/sdk'; // client: read the cookie click id
 // pass clickId to your server when starting checkout, OR read the
 // affitor_click_id cookie server-side.
 
@@ -196,7 +194,7 @@ const session = await stripe.checkout.sessions.create({
 
 Missing `subscription_data.metadata` is the most common subscription-attribution bug — renewals lose the click id without it.
 
-### 6b. `affitor-node` at your payment webhook (Stripe-but-custom, or non-Checkout)
+### 6b. `@affitor/sdk/server` at your payment webhook (Stripe-but-custom, or non-Checkout)
 
 ```ts
 // in your payment-success / invoice-paid webhook handler:
@@ -345,7 +343,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 - **Missing `subscription_data.metadata`** — one-time payment attributes but renewals don't, because the click id never reaches the subscription.
 - **Firing the verify chain (§8) before the tracker is deployed** — readiness will report `tracking`/`live` failing and you'll chase a non-bug. Deploy first, verify last.
 - **Hardcoding `https://api.affitor.com`** when the founder gave a uat/staging `API_BASE` — events land in the wrong environment.
-- **Shipping the API key to the client** — `affitor-node` and the Bearer key are server-only; the browser uses `affitor-sdk` (no key).
+- **Shipping the API key to the client** — `@affitor/sdk/server` and the Bearer key are server-only; the browser uses `@affitor/sdk` (no key).
 - **Treating `409` (duplicate `transaction_id`) or `attributed: false` (window expired) as failures** — both are normal, expected outcomes.
 
 ---

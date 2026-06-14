@@ -43,14 +43,14 @@ That cookie value is later reused as:
 Install the tracker package:
 
 ```bash
-npm install affitor-sdk
+npm install @affitor/sdk
 ```
 
 ### React / Next.js
 
 :::warning
 
-**Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `affitor-sdk` uses browser APIs and cannot run in a Server Component. Create a client component that calls `init` and render it once in your layout.
+**Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `@affitor/sdk` uses browser APIs and cannot run in a Server Component. Create a client component that calls `init` and render it once in your layout.
 
 :::
 
@@ -58,7 +58,7 @@ npm install affitor-sdk
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 export function AffitorInit() {
   useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
   return null;
@@ -69,7 +69,7 @@ export function AffitorInit() {
 ### Any JS / TS app
 
 ```ts
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 
 init({ programId: 'YOUR_PROGRAM_ID' });
 ```
@@ -125,7 +125,7 @@ When that parameter is present, the tracker records the click and creates the cu
 **SDK:**
 
 ```ts
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 init({ programId: 'YOUR_PROGRAM_ID', debug: true });
 ```
 

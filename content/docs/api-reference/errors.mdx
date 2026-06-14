@@ -200,7 +200,7 @@ if (!response.ok) {
 Pass `debug: true` to `init()` to enable verbose console output. This sets `AffitorInitOptions.debug` on the tracker instance.
 
 ```ts
-import { init } from 'affitor-sdk';
+import { init } from '@affitor/sdk';
 
 init({
   programId: 123,
@@ -222,7 +222,7 @@ With `debug: true`, the SDK logs to the browser console using `[Affitor]` as the
 To check the current tracker state at any point:
 
 ```ts
-import { getData } from 'affitor-sdk';
+import { getData } from '@affitor/sdk';
 
 console.log(getData());
 // {
