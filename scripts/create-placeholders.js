@@ -150,7 +150,7 @@ This guide is currently being written. Check back soon for an introduction to Af
 This guide is currently being written. Check back soon for a comprehensive tracking overview.`
   },
   {
-    path: 'advertisers/tracking/pageview-tracker-click.mdx',
+    path: 'advertisers/tracking/click-tracking.mdx',
     title: 'Pageview Tracker (Click Tracking)',
     description: 'Implement click tracking to capture affiliate referrals.',
     content: `Learn how to implement click tracking to capture when users click on affiliate links.
