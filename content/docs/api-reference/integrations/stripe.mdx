@@ -98,6 +98,48 @@ Affitor processes two Stripe webhook events:
 
 Supplying all three fields (`affitor_click_id`, `affitor_customer_key`, `program_id`) on every checkout is the recommended default — it ensures Affitor can attribute the sale even if the click cookie expired or was blocked.
 
+## Subscription Renewals
+
+If you self-host the Stripe webhook and call `trackSale` yourself (rather than relying on Affitor's Connect webhook), renewals need their **own handler**. The first payment fires as `checkout.session.completed` — every subsequent renewal arrives as a separate `invoice.paid` event with `billing_reason: 'subscription_cycle'`. Without a dedicated `case`, every renewal commission is silently missed.
+
+Attribution rides on the `affitor_customer_key` you planted in `subscription_data.metadata` at checkout creation — Stripe copies that onto the Subscription, and Stripe stamps it onto every renewal invoice.
+
+Two nuances matter:
+
+- **Skip $0 renewals.** 100%-off coupons and fully credit-covered cycles produce `invoice.paid` events with `amount_paid` of `0`. The SDK rejects a non-positive amount, so guard against it.
+- **Stripe Basil metadata path.** Stripe API version Basil (`2025-03-31`+) moved `subscription_details` under `invoice.parent`. Pre-Basil accounts still expose it at the legacy top level (`invoice.subscription_details`). Read the Basil path first and fall back to the legacy one so the handler works on both.
+
+Add this as a separate `case` in the **same** Stripe webhook handler that processes `checkout.session.completed`:
+
+```ts
+case 'invoice.paid': {
+  const invoice = event.data.object;
+  // Only renewals — the first invoice is already counted at checkout.session.completed.
+  if (invoice.billing_reason !== 'subscription_cycle') break;
+  // Skip $0 renewals (100%-off coupons, fully credit-covered) — the SDK rejects a non-positive amount.
+  if (!invoice.amount_paid || invoice.amount_paid <= 0) break;
+  await affitor.trackSale({
+    // Stripe Basil (2025-03-31+) moved subscription_details under invoice.parent;
+    // read the Basil path first, fall back to the legacy top-level for pre-Basil accounts.
+    customerExternalId: invoice.parent?.subscription_details?.metadata?.affitor_customer_key
+      ?? invoice.subscription_details?.metadata?.affitor_customer_key,
+    amount: invoice.amount_paid,            // integer cents
+    invoiceId: invoice.id,                  // idempotency key — 409 = already recorded
+    isRecurring: true,
+    saleType: 'subscription',
+    // Basil relocated the subscription id under invoice.parent.subscription_details;
+    // fall back to the legacy top-level invoice.subscription for pre-Basil accounts.
+    subscriptionId: invoice.parent?.subscription_details?.subscription
+      ?? (typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id),
+  });
+  break;
+}
+```
+
+:::note
+This handler is only needed when you **self-host** sale tracking via `trackSale`. If you use Stripe Connect (Affitor's own webhook records the sale), renewals are autocaptured server-side — do **not** also call `trackSale`, or you will double-count.
+:::
+
 ## 4. Alternative: server-side tracking (non-Stripe)
 
 If you are not using Stripe Checkout, or you need to report a sale from a different payment provider, call the server SDK directly after the payment is confirmed:
