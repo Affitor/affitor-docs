@@ -1,0 +1,147 @@
+---
+title: MCP Server
+description: The @affitor/mcp Model Context Protocol server — let AI agents (Claude Desktop, Cursor) track clicks, leads, sales and refunds, generate per-stack integration plans, and self-verify attribution as tool calls.
+---
+
+`@affitor/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) **stdio server** for Affitor. It exposes Affitor's affiliate-tracking capabilities as MCP tools, so an AI agent — Claude Desktop, Cursor, or any MCP client — can report clicks, leads, sales and refunds, fetch a per-stack integration plan, and prove attribution works, all as native tool calls.
+
+Under the hood it wraps the consolidated server client [`@affitor/sdk/server`](/api-reference/sdks/) (the `Affitor` class). Authentication is your **program API key**, supplied via the `AFFITOR_API_KEY` environment variable.
+
+:::note
+The `@affitor/mcp` and `@affitor/sdk` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+---
+
+## Add it to your MCP client
+
+Add Affitor to your client's MCP server config — `claude_desktop_config.json` for Claude Desktop, or `.cursor/mcp.json` for Cursor:
+
+```json
+{
+  "mcpServers": {
+    "affitor": {
+      "command": "npx",
+      "args": ["-y", "@affitor/mcp"],
+      "env": {
+        "AFFITOR_API_KEY": "your_program_key"
+      }
+    }
+  }
+}
+```
+
+Restart your client and the `affitor_*` tools become available to the agent.
+
+### Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `AFFITOR_API_KEY` | Yes | Your Affitor **program API key** (Bearer). Server-side only — never ship it to a browser. |
+| `AFFITOR_API_URL` | No | API base override. Defaults to `https://api.affitor.com`. |
+
+If `AFFITOR_API_KEY` is not set, the server prints a clear message to stderr and exits.
+
+:::note
+The program API key is a server-side secret. The MCP server runs locally and reads it from your client config — it is never exposed to the browser or sent to the agent's model.
+:::
+
+---
+
+## Tools
+
+The server registers seven tools. Each returns the Affitor API's JSON payload as text content; a failed request (a thrown error or an `{ ok: false }` envelope) returns an MCP error result with the message.
+
+| Tool | Inputs | Description |
+|---|---|---|
+| `affitor_readiness` | `forceRecheck?: boolean` | Check this program's integration/onboarding readiness — returns a 5-gate verdict + `blocker` + `next_action`. Poll until `integration_verified` is true. |
+| `affitor_track_click` | `affiliateUrl?`, `pageUrl?`, `referrerUrl?`, `existingClickId?` (all optional strings) | Report a click (usually browser-side; public, no customer needed). |
+| `affitor_track_lead` | `customerExternalId?: string`, `clickId?: string`, `email?: string` (one of `customerExternalId` / `clickId` required) | Report a lead/signup. Binds the customer to the click so later sales attribute by `customerExternalId` alone. |
+| `affitor_track_sale` | `customerExternalId?` / `clickId?` (one required), `amount: number` (cents), `invoiceId: string`, `currency?`, `saleType?`, `isRecurring?`, `subscriptionId?`, `subscriptionInterval?` | Report a sale. Resolves attribution by `customerExternalId` (bound at lead time). |
+| `affitor_track_refund` | `invoiceId: string`, `refundAmountCents?: number`, `refundReason?: string` | Report a refund (omit amount = full → commission reversed; partial → refunded). Idempotent by `invoiceId`. |
+| `affitor_get_integration_plan` | `framework`, `provider`, `mode?` | Return the deterministic per-stack integration plan — install, checkout-metadata snippet, `trackSale` snippet + where to inject it, and the verify step. |
+| `affitor_run_verification` | _(none)_ | Fire the synthetic click → lead → sale verification chain through the real attribution pipeline (isolated `is_test` rows). |
+
+### Tracking tool inputs
+
+**`affitor_track_lead`** — one of `customerExternalId` / `clickId` is required:
+
+- `customerExternalId?: string` — your own user id; binds this customer to the click.
+- `clickId?: string` — Affitor click id (from the `affitor_click_id` cookie).
+- `email?: string` — the lead's email address.
+
+**`affitor_track_sale`** — one of `customerExternalId` / `clickId` is required:
+
+- `customerExternalId?: string` — your own user id; resolves attribution (no `clickId` needed once bound at lead time).
+- `clickId?: string` — Affitor click id.
+- `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
+- `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
+- `currency?: string` — ISO currency code (default `USD`).
+- `saleType?: "payment" | "subscription"` — one-off payment or subscription.
+- `isRecurring?: boolean` — whether this sale recurs (subscription renewal).
+- `subscriptionId?: string` — provider subscription id, if applicable.
+- `subscriptionInterval?: "monthly" | "quarterly" | "annual"` — billing interval for a subscription sale.
+
+**`affitor_track_refund`**:
+
+- `invoiceId: string` — the sale's idempotency key (the `invoiceId` you passed to `affitor_track_sale`).
+- `refundAmountCents?: number` — integer cents. Omit (or `0`) = full refund → commission reversed; partial → refunded.
+- `refundReason?: string` — optional human-readable refund reason.
+
+**`affitor_track_click`** — all optional:
+
+- `affiliateUrl?: string` — the affiliate/referral URL that was clicked.
+- `pageUrl?: string` — the landing page URL the click arrived on.
+- `referrerUrl?: string` — the HTTP referrer URL, if any.
+- `existingClickId?: string` — reuse an existing Affitor click id instead of minting a new one.
+
+---
+
+## `affitor_get_integration_plan`
+
+A **pure** tool: it reads the canonical recipe registry (`@affitor/recipes`) and returns the deterministic integration plan for a given stack. It never touches the network or the client — so the agent follows a fixed contract instead of guessing one.
+
+| Input | Values | Description |
+|---|---|---|
+| `framework` | `next-app`, `next-pages`, `fastify`, `express`, `node`, `unknown` | The detected app framework. Determines where `trackSale` is injected. |
+| `provider` | `stripe` (default), `polar`, `lemonsqueezy`, `paddle`, `unknown` | The detected payment provider. |
+| `mode` | `stripe_connect` (default), `s2s` | Payment-tracking mode. `stripe_connect` = Connect autocaptures the sale (metadata only, no `trackSale`); `s2s` = inject `trackSale` in your webhook. |
+
+The plan it returns includes:
+
+1. **install** — what to add (`npm i @affitor/sdk`).
+2. **metadata** — the checkout-session attribution snippet to plant at checkout creation (always required for Stripe).
+3. **sale** — the `trackSale` snippet and exactly where to inject it. For `mode: "stripe_connect"` this is `null` — Stripe Connect records the sale server-side, so the agent injects metadata only and must **not** also call `trackSale` (the double-count guard).
+4. **renewals** — for Stripe `s2s`, a separate `case 'invoice.paid'` handler so subscription renewals are not silently missed.
+5. **verify** — the self-verify step (synthetic chain → readiness gate).
+
+:::note
+Because the CLI (`affitor init` / `affitor onboard`), this MCP tool, and the public integration guides all read the same recipe registry, the integration contract can never drift between surfaces.
+:::
+
+---
+
+## `affitor_run_verification`
+
+The agent's **proof step**. It fires Affitor's synthetic click → lead → sale chain through the **real** attribution pipeline, writing isolated `is_test` rows that never create real commissions. Run it, then poll `affitor_readiness` until `integration_verified: true`.
+
+The recommended agent loop:
+
+1. Call `affitor_run_verification` to fire the chain.
+2. Call `affitor_readiness` and check `integration_verified`.
+3. If not yet verified, read the `blocker` and its gate's `next_action`, self-correct, and repeat.
+
+<Callout type="warning" title="Rate limit — back off, don't hammer">
+`affitor_run_verification` is rate-limited to **10 runs per program per hour**. On a `rate_limited` result, read `retry_after_seconds` and wait that long before retrying. A non-2xx (including a 429) returns the parsed error body with the HTTP status merged in, so the agent can read `retry_after_seconds` and back off rather than crash.
+</Callout>
+
+---
+
+## Related
+
+- [Agent Integration](/api-reference/agent-integration/) — how AI agents auto-install tracking from generated `AGENTS.md` instruction files.
+- [CLI Command Reference](/advertisers/cli/commands/) — `npx affitor onboard`, the one-shot equivalent of the MCP flow.
+- [SDK Reference](/api-reference/sdks/) — the `@affitor/sdk` package the MCP server wraps.
+- [Track Sale](/api-reference/track-sale/) — the full API contract behind `affitor_track_sale`.
+
+<NextStep title="Prefer a single command?" description="npx affitor onboard runs detect → install → inject → verify in one shot — the CLI equivalent of the MCP flow." href="/advertisers/cli/commands" />

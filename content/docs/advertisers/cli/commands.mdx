@@ -64,6 +64,65 @@ npx affitor init \
 
 ---
 
+## `affitor onboard`
+
+The recommended one-shot integration. Wires Affitor into this app end-to-end: detect the stack → install browser tracking → inject the Stripe sale call → verify. Run it from your project root after `affitor init`.
+
+```bash
+npx affitor onboard
+```
+
+This is the flagship path for AI coding agents: a single command that finds your framework and payment provider, applies the integration, and proves attribution works — instead of pasting snippets by hand.
+
+| Flag | Description | Default |
+|---|---|---|
+| `--api-key <key>` | Program API key — overrides the env var / `.affitor/.env` | (from config) |
+| `--yes` | Auto-confirm all diffs (apply every change without prompting) | `false` |
+| `--json` | Machine-readable output for agents; never auto-edits files | `false` |
+| `--no-interactive` | Skip prompts and apply changes without confirmation | `false` |
+
+An API key is required. `onboard` resolves it from `--api-key`, the `AFFITOR_API_KEY` env var, or `.affitor/.env` (written by `affitor init`). If none is found it exits non-zero with `no_api_key`.
+
+### What it does
+
+`onboard` runs four phases in order:
+
+1. **Detect** — inspects the project to identify the framework (Next.js app/pages router, Fastify, Express, plain Node) and the payment provider (Stripe, Polar, Lemon Squeezy, Paddle).
+2. **Browser tracking** — installs `@affitor/sdk` and wires the `<AffitorTracker />` component via a diff-preview, scaffolding `lib/affitor.ts` (the same install wizard `affitor init` uses).
+3. **Server sale** — locates your Stripe webhook handler and injects the `affitor.trackSale` call after the event is verified. It also persists `AFFITOR_API_KEY` into `.env` / `.env.local` (never overwriting an existing value).
+4. **Verify** — fires the synthetic click → lead → sale chain through the real attribution pipeline, then polls program readiness until `integration_verified` is reached.
+
+### Safety and idempotency
+
+`onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape isn't cleanly recognized, or no webhook is found, or the provider isn't Stripe, it degrades to **printing the exact snippets** for you to paste rather than guessing an edit site. Auto-edits to the Stripe handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).
+
+In `--json` mode `onboard` performs **no file edits** — it reports each step as `manual` so an agent drives the edits explicitly, then still fires the verification chain and polls readiness.
+
+### Example (agent / non-interactive)
+
+```bash
+npx affitor onboard --api-key affitor_xxx --yes --json
+```
+
+The JSON summary reports the per-step status and the final verdict:
+
+```json
+{
+  "program_id": "430",
+  "steps": [
+    { "step": "detect", "status": "ok", "detail": "framework=next-app, provider=stripe" },
+    { "step": "browser_tracking", "status": "skipped", "detail": "json mode" },
+    { "step": "server_sale", "status": "manual", "detail": "json mode (no auto-edit)" },
+    { "step": "env_key", "status": "manual", "detail": ".env: json mode (no auto-edit)" }
+  ],
+  "integration_verified": true
+}
+```
+
+If verification doesn't pass, the summary includes a `blocker` (the first failing readiness gate) and a `next_action` describing how to fix it. Re-run `affitor onboard` after resolving the blocker.
+
+---
+
 ## `affitor setup stripe`
 
 Connect your Stripe account so payments are tracked automatically.
