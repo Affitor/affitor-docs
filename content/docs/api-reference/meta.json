@@ -24,6 +24,7 @@
     "errors",
     "---SDKs (Beta)---",
     "sdks",
-    "agent-integration"
+    "agent-integration",
+    "mcp"
   ]
 }
