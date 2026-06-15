@@ -74,6 +74,35 @@ import { init } from '@affitor/sdk';
 init({ programId: 'YOUR_PROGRAM_ID' });
 ```
 
+### Astro
+
+Astro isn't React, so the React `<AffitorProvider>` shown above doesn't apply. Add the tracker from a client `<script>` in your shared layout:
+
+```astro
+---
+// src/layouts/Layout.astro
+---
+<head>
+  <!-- ... -->
+  <script>
+    import { init } from '@affitor/sdk';
+    init({ programId: 'YOUR_PROGRAM_ID' });
+  </script>
+</head>
+```
+
+Prefer a no-build install? Drop the [Script Tag](#script-tag) into the same `<head>` with Astro's `is:inline` directive, so Astro leaves the external script untouched:
+
+```astro
+<script
+  is:inline
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID">
+</script>
+```
+
+Track referred signups the same way — call `signup()` from a client `<script>` after the user authenticates. See [Lead Tracking (Signup)](/advertisers/tracking/lead-tracking-signup/).
+
 ### Useful options
 
 | Option | Type | Description |
