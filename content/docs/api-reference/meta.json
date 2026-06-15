@@ -19,6 +19,7 @@
     "integrations/nextjs-nextauth",
     "integrations/stripe",
     "integrations/node-express",
+    "integrations/fastify",
     "---Concepts---",
     "attribution",
     "errors",
