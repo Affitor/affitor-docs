@@ -1,0 +1,237 @@
+---
+title: "Fastify"
+description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Fastify backend, including a raw-body Stripe webhook."
+---
+
+This guide wires Affitor into a Fastify app. Because Fastify is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`. The sale is tracked from your Stripe webhook handler, which needs the **raw request body** for signature verification.
+
+:::note
+The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+:::
+
+## Prerequisites
+
+- Your **program ID** (dashboard → program settings)
+- A **program API key** for server-side calls (dashboard → API keys)
+- `@affitor/sdk` and `stripe` installed in your backend
+
+```bash
+npm i @affitor/sdk stripe
+```
+
+## 1. Capture the click (frontend)
+
+Add the Affitor script tag to every page of your frontend. It reads `?aff=` from the URL and stores the `affitor_click_id` as a first-party cookie automatically — no JS call required.
+
+```html
+<script
+  src="https://api.affitor.com/js/affitor-tracker.js"
+  data-affitor-program-id="YOUR_PROGRAM_ID"
+  defer
+></script>
+```
+
+When your signup form submits, read the click id and send it to your server along with the form data:
+
+```js
+// frontend — read the click id before submitting
+const clickId = window.affitor?.getClickId() ?? null;
+
+await fetch('/api/signup', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password, affitorClickId: clickId }),
+});
+```
+
+:::note
+The `affitor_click_id` lives in a **first-party browser cookie**. Your Fastify handlers run with no access to that cookie, so you must forward the click id from the client explicitly. Without it, the lead has no partner to attribute to.
+:::
+
+## 2. Track the signup
+
+Instantiate the SDK once (module-level or via a shared singleton) and call `trackLead` as soon as you create the user record.
+
+```js
+// lib/affitor.js
+import { Affitor } from '@affitor/sdk/server';
+
+export const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY });
+```
+
+```js
+// routes/signup.js
+import { affitor } from '../lib/affitor.js';
+import { createUser } from '../db/users.js';
+
+export default async function signupRoutes(fastify) {
+  fastify.post('/api/signup', async (request, reply) => {
+    const { email, password, affitorClickId } = request.body;
+
+    // 1. Create the user in your database
+    const user = await createUser({ email, password });
+
+    // 2. Track the lead with Affitor
+    const result = await affitor.trackLead({
+      customerExternalId: user.id, // stable internal ID — reuse at sale time
+      clickId: affitorClickId,     // forwarded from the browser (may be null)
+      email: user.email,           // optional but improves attribution
+    });
+
+    if (!result.ok) {
+      // Non-fatal — log and continue; the user is already created
+      request.log.error({ status: result.status, error: result.error }, '[affitor] trackLead failed');
+    }
+
+    return { userId: user.id };
+  });
+}
+```
+
+`customerExternalId` is your **stable internal user ID**. Use the exact same value when you track a sale — this is what links a partner's click to a commission.
+
+## 3. Attach Affitor metadata to the Checkout Session
+
+When you create a Stripe Checkout Session on your server, attach `affitor_click_id`, `affitor_customer_key`, and `program_id`. For subscriptions, plant the metadata in **two places** so renewals attribute correctly.
+
+```js
+// server — creating the Checkout Session
+const session = await stripe.checkout.sessions.create({
+  mode: 'subscription', // or 'payment'
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {                              // first payment (checkout.session.completed)
+    affitor_click_id: affitorClickId,      // forwarded from the browser
+    affitor_customer_key: user.id,         // SAME id used at signup
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  // REQUIRED for subscriptions — covers every renewal (invoice.paid)
+  subscription_data: {
+    metadata: {
+      affitor_click_id: affitorClickId,
+      affitor_customer_key: user.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
+
+## 4. Track the sale from the Stripe webhook
+
+Sales must always be tracked server-side — never from the browser. In Fastify, the Stripe webhook route needs the **raw request body** so `stripe.webhooks.constructEvent` can verify the signature. Fastify parses JSON by default, which corrupts the signature, so register a raw-body parser **scoped to the webhook route**.
+
+### Configure the raw body
+
+Add a content-type parser that hands Stripe the untouched `Buffer`. Keep it scoped so your other routes still get parsed JSON.
+
+```js
+// server.js
+import Fastify from 'fastify';
+
+const fastify = Fastify({ logger: true });
+
+// Capture the raw body as a Buffer for the Stripe webhook only.
+// Stripe signature verification fails if the body is parsed/re-serialized.
+fastify.addContentTypeParser(
+  'application/json',
+  { parseAs: 'buffer' },
+  (request, body, done) => {
+    if (request.routerPath === '/webhooks/stripe') {
+      // Leave the raw Buffer untouched for signature verification.
+      done(null, body);
+    } else {
+      try {
+        done(null, JSON.parse(body.toString()));
+      } catch (err) {
+        err.statusCode = 400;
+        done(err, undefined);
+      }
+    }
+  },
+);
+```
+
+:::note
+If you prefer not to override the global JSON parser, the [`fastify-raw-body`](https://github.com/Eomm/fastify-raw-body) plugin exposes `request.rawBody` on a per-route basis instead. Either way, the Stripe handler must receive the **unparsed** body.
+:::
+
+### The webhook handler
+
+```js
+// routes/stripe-webhook.js
+import Stripe from 'stripe';
+import { affitor } from '../lib/affitor.js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export default async function stripeWebhookRoutes(fastify) {
+  fastify.post('/webhooks/stripe', async (request, reply) => {
+    const signature = request.headers['stripe-signature'];
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        request.body, // the raw Buffer from the content-type parser above
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } catch (err) {
+      request.log.error({ err }, '[stripe] signature verification failed');
+      return reply.code(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        // Skip $0 / setup-mode sessions (free trials, $0 invoices) — the SDK rejects
+        // a non-positive amount, and there's no revenue to attribute yet.
+        if (session.amount_total && session.amount_total > 0) {
+          const result = await affitor.trackSale({
+            // Reads the SAME key the metadata step writes (session.metadata.affitor_customer_key);
+            // client_reference_id is only a fallback for brands that set it explicitly.
+            customerExternalId: session.metadata?.affitor_customer_key ?? session.client_reference_id,
+            amount: session.amount_total, // integer cents
+            invoiceId: session.id,        // idempotency key — duplicate returns 409
+          });
+
+          if (!result.ok && result.status !== 409) {
+            request.log.error({ status: result.status, error: result.error }, '[affitor] trackSale failed');
+          }
+        }
+        break;
+      }
+    }
+
+    return reply.code(200).send({ received: true });
+  });
+}
+```
+
+The `invoiceId` field acts as an idempotency key. If your webhook fires twice for the same payment, the second call returns `{ ok: false, status: 409 }` — handle it as a no-op, not an error.
+
+:::note
+The handler above tracks the **first** subscription payment (`checkout.session.completed`). Subscription **renewals** arrive as a different event (`invoice.paid`) and need their own `case` — see [Subscription Renewals](/api-reference/integrations/stripe#subscription-renewals) in the canonical Stripe guide.
+:::
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set in the browser"]}
+  network={["Your `/api/signup` handler calls `trackLead` and receives a 2xx response; at checkout, your `/webhooks/stripe` handler verifies the Stripe signature and calls `trackSale`"]}
+  dashboard={["The click, lead, and sale appear under your program's tracking events"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` in your `trackLead` / `trackSale` call to create test events without issuing real commissions"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Parsing the Stripe webhook body — Fastify's default JSON parser re-serializes the body and breaks signature verification. Register a raw-body parser scoped to `/webhooks/stripe`.",
+  "Not forwarding `affitorClickId` from the client — your Fastify handler has no access to the browser cookie, so the lead arrives with no partner attribution.",
+  "Different customer IDs at signup vs sale — `customerExternalId` / `affitor_customer_key` must be the exact same stable user ID everywhere.",
+  "Ignoring the 409 on `trackSale` — a duplicate `invoiceId` returns 409 by design; treat it as a no-op, not a failure.",
+  "Subscriptions missing `subscription_data.metadata` in Stripe — renewal invoices won't attribute to a partner.",
+  "Forgetting the `invoice.paid` renewal handler — `checkout.session.completed` only covers the first payment; every renewal is silently missed without it."
+]} />
+
+<NextStep title="Tracking Stripe sales?" description="See the canonical Stripe guide for one-time payments, subscription renewals, and the attribution fallback chain." href="/api-reference/integrations/stripe" />
