@@ -30,11 +30,9 @@ Use one naming scheme consistently:
 
 Add the tracker to every page where affiliate traffic can land.
 
-:::caution[Debug mode is required for dashboard Test buttons]
+:::tip[Verifying is one click]
 
-The dashboard wizard's "Test Click Tracking" and "Test Lead Tracking" buttons only succeed while the page is loaded with `data-affitor-debug="true"`. While verifying your integration, temporarily flip the attribute to `"true"`. Switch it back to `"false"` before going live — debug mode emits console logs and fires synthetic probes that should not run in production.
-
-"Test Lead Tracking" additionally requires an actual `window.affitor.signup(...)` call to fire while debug is on. Page load alone will not trigger a lead test. See [Testing Integration](/docs/advertisers/tracking/testing-integration) for the full walkthrough.
+Once the tracker is live on your public site, Affitor detects it automatically — no debug mode needed. To verify the full pipeline, use the **Run verification** button on the Share Program step (it runs a synthetic `click → signup → sale`). See [Testing Integration](/docs/advertisers/tracking/testing-integration).
 
 :::
 

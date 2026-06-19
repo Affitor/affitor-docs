@@ -11,7 +11,23 @@ Before going live, verify each layer in order to confirm that your identifiers, 
 
 ---
 
-## 1. Test Click Tracking
+## The easy way — Run verification
+
+You don't need to manually test each layer. Once your tracking code is live on your **public site**, Affitor **detects it automatically** (no debug mode required), and on the **Share Program** step the dashboard shows a **Run verification** button.
+
+**Run verification** fires a synthetic `click → signup → sale` through Affitor's real attribution + commission pipeline — no real customer, no real money — and shows you a per-step verdict. When the synthetic **sale** is attributed, your integration is verified and **Go Live** unlocks.
+
+This is the same check the agent runs with `affitor test` (and the MCP `affitor_run_verification` tool), so humans and agents verify the exact same way.
+
+:::tip
+Run verification needs an **active commission policy** (so the synthetic sale can produce a commission). Set your commission first, then run it. Limited to 10 runs/hour.
+:::
+
+The manual, per-layer checks below are **optional** — useful when you want to confirm a specific layer is firing in the browser.
+
+---
+
+## 1. Test Click Tracking (optional, manual)
 
 ### Tracker debug mode
 
