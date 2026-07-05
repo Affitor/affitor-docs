@@ -4,6 +4,17 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  async rewrites() {
+    return [
+      {
+        // Machine-readable markdown twin for every page: `<page-url>.md`
+        // returns the raw MDX body as text/markdown (Stripe/Vercel pattern).
+        // afterFiles by default, so real files in public/ (skill.md) still win.
+        source: '/:path*.md',
+        destination: '/llms.md/:path*',
+      },
+    ];
+  },
   async redirects() {
     return [
       {

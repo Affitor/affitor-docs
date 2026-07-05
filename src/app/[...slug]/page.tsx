@@ -24,7 +24,15 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
       <DocsBody>
         <MDX components={useMDXComponents({})} />
       </DocsBody>
-      <EditOnGitHub href={editUrl} />
+      <div className="flex flex-row flex-wrap items-center gap-4">
+        <EditOnGitHub href={editUrl} />
+        <a
+          href={`/${slugPath}.md`}
+          className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground"
+        >
+          View as Markdown
+        </a>
+      </div>
       <DocsFooter />
     </DocsPage>
   );
@@ -42,5 +50,9 @@ export async function generateMetadata(props: { params: Promise<{ slug: string[]
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: {
+      // machine-readable markdown twin of this page
+      types: { 'text/markdown': `/${params.slug.join('/')}.md` },
+    },
   };
 }

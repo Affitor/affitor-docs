@@ -1,6 +1,6 @@
 ---
 title: "Rewardful vs FirstPromoter: an honest comparison for SaaS (2026)"
-description: "Same $49 floor, different ceilings: revenue caps, API gating, and billing coverage decide this one. Every number verified against both live pricing pages on July 5, 2026."
+description: "Same $49 floor, different ceilings: revenue caps, API gating, and billing coverage decide this one. Every number verified against both live pricing pages on July 5, 2026 — plus Affitor, the $0/month option neither compare page mentions."
 date: '2026-07-05'
 category: Comparison
 image: /blog/covers/rewardful-vs-firstpromoter.png
@@ -87,6 +87,8 @@ Rewardful's comparison article and FirstPromoter's compare pages measure the two
 Attribution works differently too. Instead of a cookie window, [attribution rides Stripe metadata](https://docs.affitor.com/brand/tracking/tracking-overview): the click ID and customer key travel on the Stripe Checkout Session itself, anchored to a signup-based identity chain (click, then hashed email, then Stripe customer) that survives cookie loss.
 
 And the integration is agent-verifiable, shipped and live today, not roadmap: a `skill.md` runbook an AI agent can complete end to end, an `affitor` CLI, and a self-verify loop that fires a synthetic click, lead, and sale, then returns `integration_verified: true` from the readiness endpoint. As of the June 2026 audit, no other platform in this comparison ships an equivalent.
+
+Program operations follow the same keep-it-small idea: one flat partner table holds active partners, applications, and pending invites, and partner invites come pre-written from your program's real terms (commission rate, attribution window, payout threshold) — paste emails or import a CSV and send.
 
 Now the trade-offs, because this page promised them:
 

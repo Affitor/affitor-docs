@@ -22,7 +22,15 @@ export default function HomePage() {
         <DocsBody>
           <MDX components={useMDXComponents({})} />
         </DocsBody>
-        <EditOnGitHub href={editUrl} />
+        <div className="flex flex-row flex-wrap items-center gap-4">
+          <EditOnGitHub href={editUrl} />
+          <a
+            href="/index.md"
+            className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground"
+          >
+            View as Markdown
+          </a>
+        </div>
         <DocsFooter />
       </DocsPage>
     </DocsShell>
