@@ -1,0 +1,110 @@
+---
+title: The agent commerce stack is missing its attribution layer
+description: Agentic commerce standards decide how an agent pays. Affitor decides who earned the commission, and lets the agent prove it.
+date: '2026-07-05'
+category: Vision
+authors: ['Son Piaz, Founder']
+readTime: 8 min read
+---
+
+{/*
+  Publish-time checklist (CONTENT-MAP guardrails):
+  - Re-verify external stats before shipping: eMarketer $20.57B / 1.5% (Dec 2025
+    forecast), McKinsey $3-5T by 2030, protocol dates (ACP Sep 29 2025, AP2 Sep 16
+    2025 + FIDO Apr 28 2026, UCP Jan 11 2026). Last verified 2026-07-05 against
+    the sources cited inline.
+  - Gated on Open Question 3a (agent-native publishing GATE) per CONTENT-MAP.
+*/}
+
+In the space of a year, agentic commerce got its payments stack: three standards that decide how an AI agent pays, who authorized the purchase, and how merchants expose themselves to agents. Not one of them decides who gets paid for causing the sale.
+
+That is the missing layer, and it is the one Affitor builds. Agentic commerce standards decide how an agent pays. Affitor decides who earned the commission, and lets the agent prove it.
+
+Because that claim is easy to inflate, every section of this post carries a label: **SHIPPED**, **BETA**, or **VISION** for Affitor claims, **CONTEXT** where the facts are the industry's. Agents check receipts. You should too.
+
+## A payments stack materialized in twelve months
+
+**CONTEXT.** Three standards, three launches:
+
+- **ACP** (Agentic Commerce Protocol), from OpenAI and Stripe, launched September 29, 2025: payment execution inside AI surfaces.
+- **AP2** (Agent Payments Protocol), from Google, launched September 16, 2025 and donated to the FIDO Alliance on April 28, 2026: cryptographically signed mandates that prove who authorized a purchase.
+- **UCP** (Universal Commerce Protocol), announced January 11, 2026 at NRF and backed by Google, Shopify, Etsy, Wayfair, Target, and Walmart: discovery through post-purchase, including a `.well-known/ucp` merchant endpoint.
+
+"The standards are designed to stack, not to replace one another," as [DigitalApplied's merchant guide](https://www.digitalapplied.com/blog/agentic-commerce-standards-ucp-acp-ap2-2026-merchant-guide) puts it. Stacked, they solve checkout end to end: who pays, with what, under whose authority. That is real, useful infrastructure, and it shipped remarkably fast.
+
+What none of it solves is referral economics. When an agent recommends a product and the user buys, this stack can execute the payment and prove the mandate. It cannot tell the merchant which partner, publisher, or agent caused the sale, or what commission that work earned.
+
+## The funnel collapsed to a single interaction
+
+**CONTEXT.** In agent-mediated commerce, discovery and consideration happen inside the chat. Agents bypass browser-based tracking, and as [DigitalApplied's attribution guide](https://www.digitalapplied.com/blog/ai-agent-commerce-revenue-attribution-guide-2026) describes it, "the entire purchase funnel collapses to a single interaction." [MetaRouter](https://www.metarouter.io/post/agentic-commerce-trends-statistics) notes that AI agents "do not trigger client-side JavaScript." The pixel never fires. Often there is no click at all.
+
+The money at stake is not hypothetical. A December 2025 [EMARKETER forecast](https://www.emarketer.com/content/faq-on-agentic-commerce-how-brands-should-act-now-compete-ai-driven-landscape) puts AI platforms at 1.5% of US retail ecommerce in 2026, $20.57 billion, "nearly quadruple 2025 figures." McKinsey projects $3 to $5 trillion in global agentic commerce by 2030, "with up to $1 trillion in US B2C retail alone."
+
+Coverage calls server-side tracking "the only reliable solution" and puts full attribution maturity 18 to 24 months out. Affiliate marketing feels this first, because affiliate attribution was built on exactly the primitives agents skip: the click and the cookie.
+
+## The affiliate loop has five verbs
+
+**SHIPPED, PARTIAL, and VISION, verb by verb.** Every affiliate program, human-run or agent-run, is the same loop: discover a program, join it, promote it, attribute the sale, settle the commission. The claim here is not "agents will do commerce someday." It is that each verb is becoming an API call, and Affitor has already shipped the hard middle of the loop.
+
+<Mermaid chart={`flowchart LR
+  A[Discover] --> B[Join]
+  B --> C[Promote]
+  C --> D[Attribute]
+  D --> E[Settle]
+  E --> A
+`} />
+
+*The affiliate loop runs on five verbs, and the unglamorous one in the middle, attribution, is the verb agent commerce is missing.*
+
+1. **Discover: SHIPPED** for programs. The [openaffiliate.dev](https://openaffiliate.dev) API returns commission type, rate, duration, cookie window, and payout terms as structured JSON. An agent can query it today with zero install.
+2. **Join: PARTIAL.** Merchants create programs with `affitor init` today. Affiliate-side programmatic join and apply is not an agent API yet; that half is VISION.
+3. **Promote: SHIPPED as tooling.** 52 open-source skills across research, content, landing pages, distribution, and analytics (`npx skills add Affitor/affiliate-skills`). VISION as autonomy: a standing agent running that flywheel unattended.
+4. **Attribute: SHIPPED**, and it is the differentiated verb: signup-anchored, server-side tracking plus a synthetic verification chain the agent runs itself. The next section shows it.
+5. **Settle: SHIPPED as rails.** Commission hold, then Stripe Connect payout. VISION as verifiable settlement: signed claims and a deterministic winner, covered below.
+
+## What an agent can do today
+
+**SHIPPED** (with one Beta caveat, flagged where it applies). Start from discovery: `GET https://openaffiliate.dev/api/programs?q=...` returns live program terms. A real response today includes Framer at 50% recurring commission for 12 months with a 90-day cookie window, as fields, not prose.
+
+For integration, `npx affitor onboard` is a one-shot detect, install, inject, verify flow. The same contract is exposed to agents as an MCP server: `npx -y @affitor/mcp` registers seven tools, covering readiness, click, lead, sale, and refund tracking, the per-stack integration plan, and verification. `affitor_get_integration_plan` is a pure tool that reads the same recipe registry the CLI and the public guides read, so the integration contract cannot drift between surfaces.
+
+Then comes the part no other affiliate platform ships: proof. `affitor_run_verification` fires a synthetic click, lead, and sale chain through the real attribution pipeline, using isolated test rows that never create real commissions. The agent polls `affitor_readiness` until it reads `integration_verified: true`. If a gate fails, the response names the `blocker` and a `next_action`, so the agent self-corrects and reruns. The endpoint is rate-limited to 10 runs per program per hour, with `retry_after_seconds` telling the agent exactly how long to back off.
+
+```json title="npx affitor onboard --json (final summary)"
+{
+  "program_id": "430",
+  "steps": [
+    { "step": "detect", "status": "ok", "detail": "framework=next-app, provider=stripe" },
+    { "step": "browser_tracking", "status": "skipped", "detail": "json mode" },
+    { "step": "server_sale", "status": "manual", "detail": "app/api/webhooks/stripe/route.ts: json mode (no auto-edit)" },
+    { "step": "env_key", "status": "manual", "detail": ".env: json mode (no auto-edit)" }
+  ],
+  "integration_verified": true
+}
+```
+
+That last line is the whole pitch: the only affiliate platform an agent can integrate and verify end to end. Not "installed and hopefully working." Verified against the same pipeline that pays real commissions.
+
+:::note
+
+`@affitor/mcp` and `@affitor/sdk` are labeled **Beta** in our docs, meaning the documented happy path works. The CLI, the tracking API, the readiness gates, [skill.md](https://docs.affitor.com/skill.md), and the skills registry are shipped and live.
+
+:::
+
+## What proof of attribution looks like
+
+**VISION.** Everything in this section is a draft specification, not a product. VSAL, the Verifiable Signup Attribution Log, is Draft v0.2 with an in-browser verifier demo. Nothing here is shipped, and we will keep saying so until it is.
+
+The design: attribution anchored at signup, the moment the referred user registers, rather than at a click that may never happen inside an agent conversation. Every touchpoint becomes a signed claim in an append-only log. The winner is picked by a public deterministic function, not by whoever runs the log. Operators work Certificate-Transparency style, so the operator is not a trusted party. The non-goals are explicit: no blockchain settlement, no payment rails. In the spec's words, "VSAL decides who is owed, once, provably."
+
+Why bother? Picture two networks claiming the same customer. Today the brand arbitrates blindly and somebody eats the clawback. Under VSAL, both networks submit signed claims, a public function picks the winner, and anyone can audit the outcome without seeing PII. Commissions settle from proof, not trust.
+
+That is the settlement layer this stack still needs. AP2 can prove who authorized a payment. Nothing in agentic commerce yet proves who earned the commission.
+
+## Trust is one-shot with agents
+
+**Why the labels matter.** An agent that fails its first integration never defaults to you again. A human developer forgives a broken quickstart and files an issue. An agent records the failure and routes around you, permanently, at scale.
+
+That is why the honest SHIPPED, BETA, and VISION split above is not modesty, it is the strategy. Everything labeled SHIPPED, an agent can verify right now by firing the synthetic chain and reading `integration_verified` itself. Everything labeled VISION is labeled VISION because a platform whose entire pitch is verifiability cannot afford unverifiable marketing.
+
+If you run a SaaS and want the shipped part working today, point your agent at [skill.md](https://docs.affitor.com/skill.md) and let it integrate and verify on its own. If you want the seven tools and the readiness loop in detail, read the [MCP docs](/docs/api-reference/mcp).

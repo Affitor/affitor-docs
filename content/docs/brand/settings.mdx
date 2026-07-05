@@ -1,0 +1,135 @@
+---
+title: Manage program settings and your API key
+description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
+---
+
+Everything you configured in the [setup wizard](/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key without breaking tracking.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers and agent developers' },
+    { label: 'Time required', value: '5 minutes' },
+    { label: 'Prerequisites', value: 'An affiliate program created in the setup wizard' },
+    { label: 'Outcome', value: 'You can change program terms after launch and rotate your API key with zero tracking downtime' },
+  ]}
+/>
+
+## What lives in Settings
+
+Open your brand workspace and select **Settings** in the left menu. The page is organized as a checklist of sections:
+
+![Program Settings — the left rail lists Business Profile, Approval mode, Commission, Branding, Tracking & Integrations, Share Program, and the Developer API Key section](/docs/brand/settings.png)
+
+| Section | What you edit there |
+|---------|--------------------|
+| **Business Profile** | Program name, marketplace handle, website URL, logo |
+| **Approval mode** | How partner applications are handled — manual review or auto-accept |
+| **Commission** | Default commission type, rate, and hold period |
+| **Branding** | How your program page looks to partners in the marketplace |
+| **Tracking & Integrations** | Status of click, lead (signup), and payment tracking |
+| **Share Program** | A shareable link for recruiting partners |
+| **API Key** (under **Developer**) | The per-program secret key for server-side tracking calls |
+
+## Step 1: Edit program terms after launch
+
+Programs evolve — rates get adjusted, branding gets refreshed, approval policies tighten or loosen. None of this requires recreating the program.
+
+1. Select **Settings** in the left menu of your brand workspace.
+2. Choose the section you want to change: **Commission** for the default rate and hold period, **Approval mode** to switch between manual review and auto-accept, **Business Profile** for the program name, website, and logo, or **Branding** for your marketplace page.
+3. Make the change and save the section.
+
+:::tip
+
+The **Commission** section sets your program-wide default. To pay different rates to different sets of partners, [organize partners into groups](/brand/groups) — each group carries its own commission policy.
+
+:::
+
+## Step 2: Find your API key
+
+Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI, and AI agents all use this same key.
+
+1. Select **Settings** in the left menu.
+2. Under **Developer**, select **API Key**.
+
+The key is stored hashed and displays masked. The full value is revealed exactly once — at the moment it is generated. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
+
+Store the key as a server-side environment variable:
+
+```bash
+# .env — server-side only. Never ship this key to the browser.
+AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
+```
+
+:::note
+
+The **API Key** section also gives you a one-line instruction for an AI coding agent. It points the agent at [skill.md](https://docs.affitor.com/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/api-reference/agent-integration).
+
+:::
+
+## Step 3: Regenerate the key
+
+Rotate the key if it may have leaked, if it was committed to a repository, or as routine hygiene when a team member with key access leaves.
+
+:::caution
+
+Regenerating invalidates the old key immediately. Every integration still sending it starts receiving `401` responses until you deploy the new key. The new key's full value is shown one time only — copy it before you close the reveal.
+
+:::
+
+1. In **Settings** → **API Key**, regenerate the key.
+2. Copy the new key from the one-time reveal.
+3. Update `AFFITOR_API_KEY` everywhere the old key was stored — deployment environment, secret manager, CI — and redeploy.
+
+## Verify it worked
+
+Send a test-mode sale with the new key. It authenticates exactly like a real sale but creates no commission and no platform fee.
+
+Request — `POST /api/v1/track/sale`:
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "additional_data": { "test_mode": true },
+    "amount_cents": 9999,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": {
+    "eventId": 789,
+    "programId": 1,
+    "test_mode": true
+  }
+}
+```
+
+<VerifySuccess
+  network={[
+    "`POST /api/v1/track/sale` with the new key returns `200` and `\"success\": true` — the key authenticates",
+    "If you regenerated, the same request with the old key now returns `401` — rotation is complete",
+  ]}
+  dashboard={[
+    "The test event appears under your program's tracking events, flagged as a test — no commission is created",
+  ]}
+  ifNotWorking={[
+    "A `401` means the header is malformed or the key doesn't match an active program — copy the key again from **Settings** → **API Key** and check your env variable for trailing whitespace",
+    "See the [error reference](/api-reference/errors) for every `401` cause and fix",
+  ]}
+/>
+
+## Next steps
+
+<FeatureCards>
+  <FeatureCard icon="book" title="API Reference" href="/api-reference/overview">Base URL, auth modes, and every tracking endpoint your key unlocks.</FeatureCard>
+  <FeatureCard icon="zap" title="3-Step Integration Guide" href="/brand/tracking/quickstart-integration">Put the key to work: get clicks, signups, and sales tracking live end to end.</FeatureCard>
+  <FeatureCard icon="code" title="Agent Integration" href="/api-reference/agent-integration">Hand the one-line instruction to an AI coding agent and let it wire up tracking for you.</FeatureCard>
+</FeatureCards>

@@ -6,7 +6,9 @@ description: "Add Affitor tracking to a Next.js (App Router) app that uses Clerk
 This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
 
 :::note
+
 The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ## Prerequisites
@@ -54,7 +56,9 @@ export function AffitorSignup() {
 `user.id` is Clerk's stable `userId` — use this exact value as `customerExternalId` at sale time too.
 
 :::note
+
 Place `<AffitorSignup />` on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page is harmless — `signup()` is idempotent — but placing it on the post-signup destination keeps attribution tight.
+
 :::
 
 ### Option B — Clerk webhook (`user.created`)
@@ -115,7 +119,9 @@ export async function POST(req: Request) {
 ```
 
 :::note
+
 If `affitor_click_id` is `null` (the user arrived directly, not via an affiliate link), `trackLead` still records the lead — it just won't be attributed to a partner. That is the correct behavior.
+
 :::
 
 ## 3. Track the sale

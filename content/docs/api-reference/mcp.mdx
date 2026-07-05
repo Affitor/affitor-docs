@@ -8,7 +8,9 @@ description: The @affitor/mcp Model Context Protocol server — let AI agents (C
 Under the hood it wraps the consolidated server client [`@affitor/sdk/server`](/api-reference/sdks/) (the `Affitor` class). Authentication is your **program API key**, supplied via the `AFFITOR_API_KEY` environment variable.
 
 :::note
+
 The `@affitor/mcp` and `@affitor/sdk` packages are **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ---
@@ -43,7 +45,9 @@ Restart your client and the `affitor_*` tools become available to the agent.
 If `AFFITOR_API_KEY` is not set, the server prints a clear message to stderr and exits.
 
 :::note
+
 The program API key is a server-side secret. The MCP server runs locally and reads it from your client config — it is never exposed to the browser or sent to the agent's model.
+
 :::
 
 ---
@@ -116,7 +120,9 @@ The plan it returns includes:
 5. **verify** — the self-verify step (synthetic chain → readiness gate).
 
 :::note
+
 Because the CLI (`affitor init` / `affitor onboard`), this MCP tool, and the public integration guides all read the same recipe registry, the integration contract can never drift between surfaces.
+
 :::
 
 ---
