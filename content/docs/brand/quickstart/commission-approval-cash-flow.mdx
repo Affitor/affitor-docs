@@ -51,6 +51,18 @@ Checks include:
 
 ## Approval and Hold Workflow
 
+![The Commissions page tracks every commission through its lifecycle](/docs/brand/commissions.png)
+
+Every commission moves through the same lifecycle:
+
+<Mermaid chart={`flowchart LR
+  A[Sale tracked] --> B[Pending]
+  B -->|hold period ends| C[Approved]
+  B -->|refund or failed validation| X[Invalid]
+  C --> D[Invoiced to you]
+  D -->|you pay| E[Paid to partner]
+`} />
+
 Use review and hold settings to control when commissions become payable.
 
 ### Common uses

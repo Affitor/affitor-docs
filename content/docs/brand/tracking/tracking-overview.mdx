@@ -25,6 +25,17 @@ Identifier consistency matters more than any single code snippet.
 
 ## The Tracking Flow
 
+<Mermaid chart={`flowchart LR
+  V["Visitor clicks partner link (?aff=CODE)"] --> S[Your site]
+  S -->|SDK or script tag| CK[Click event]
+  S -->|signup| LD[Lead event]
+  ST[Stripe webhook or S2S API] --> SL[Sale event]
+  CK --> AT[Affitor attribution]
+  LD --> AT
+  SL --> AT
+  AT --> CM[Commission for the partner]
+`} />
+
 <Flow>
   <FlowStep>Partner shares link</FlowStep>
   <FlowStep>Customer clicks</FlowStep>

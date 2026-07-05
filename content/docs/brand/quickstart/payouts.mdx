@@ -16,6 +16,18 @@ Cleared commissions move through Affitor's payout workflow automatically. This p
 
 ## How payouts work
 
+<Mermaid chart={`flowchart LR
+  A[Customer pays you] --> B[Affitor attributes the sale]
+  B --> C[Commission approved after hold]
+  C --> D[Affitor invoices you]
+  D --> E[You pay the invoice]
+  E --> F[Affitor pays your partners]
+`} />
+
+![Billing — platform fee, outstanding balance, and your next invoice date](/docs/brand/billing.png)
+
+The platform fee follows the same principle: **$0 until your program earns its first $10,000 through affiliates, then 3.5% of affiliate-driven revenue.** You can see the fee accruing live on the Billing page.
+
 <Flow>
   <FlowStep>Sale attributed</FlowStep>
   <FlowStep>Commission created</FlowStep>

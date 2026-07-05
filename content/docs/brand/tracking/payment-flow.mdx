@@ -9,6 +9,20 @@ Understand how attribution moves from click → signup → sale in the current p
 
 ## End-to-End Flow
 
+<Mermaid chart={`sequenceDiagram
+  participant P as Partner
+  participant C as Customer
+  participant Y as Your site
+  participant A as Affitor
+  P->>C: Shares referral link (?aff=CODE)
+  C->>Y: Visits — the SDK stores the click
+  C->>Y: Signs up — lead event with the aff code
+  C->>Y: Pays (Stripe checkout)
+  Y->>A: Stripe webhook / S2S sale event
+  A->>A: Attributes the sale, creates the commission
+  A->>P: Commission appears (pending, then approved)
+`} />
+
 ### 1. Partner shares a referral link
 
 A partner promotes your product with a referral URL such as:
