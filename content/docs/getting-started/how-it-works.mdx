@@ -1,6 +1,6 @@
 ---
 title: "How Affitor Works"
-description: "See how Affitor runs from affiliate click to attributed revenue and payout operations."
+description: "From affiliate click to attributed revenue and payout: signup-anchored tracking via server-side API or Stripe metadata, with a verification loop you — or your AI agent — can run before launch."
 ---
 
 Affitor layers on top of your existing stack — your site, signup flow, and checkout stay unchanged. It adds tracking, attribution, commission calculation, and partner payout workflow.
@@ -36,6 +36,8 @@ Validated commissions move through review, hold, and payout operations for partn
 
 **Flexible integration paths** — Affitor supports browser-side signup tracking, server-side tracking vs Stripe integration, and server-side lead APIs.
 
+**Agent-completable integration** — `npx affitor onboard` (or the `@affitor/mcp` server for AI agents) detects your stack, installs tracking, and fires a synthetic click, lead, and sale through the live pipeline, returning `integration_verified: true` when the chain holds.
+
 **60-day default attribution window** — Affitor documents a 60-day default window for affiliate attribution.
 
 **Invoice billing model** — Advertisers charge customers through their own Stripe or payment setup. Affitor attributes conversions and manages billing and payout operations through its workflow.
@@ -46,3 +48,5 @@ Validated commissions move through review, hold, and payout operations for partn
   <FeatureCard icon="zap" title="Create Your Program" href="/brand/quickstart/create-account">Set up commission rules, partner approval criteria, and payout settings.</FeatureCard>
   <FeatureCard icon="card" title="Understand Pricing" href="/getting-started/pricing-performance-model">Learn how Affitor's performance-based pricing model works.</FeatureCard>
 </FeatureCards>
+
+Or start now: [create your program at affitor.com](https://affitor.com) — $0/month, with a 3.5% fee only after your first $10,000 in affiliate-driven revenue.

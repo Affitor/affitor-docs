@@ -23,6 +23,10 @@ export async function generateMetadata(props: {
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      // machine-readable markdown twin of this post
+      types: { 'text/markdown': `/blog/${slug}.md` },
+    },
     openGraph: {
       title: post.title,
       description: post.description,
