@@ -3,10 +3,12 @@ title: "Frequently Asked Questions"
 description: "Common questions about Affitor's pricing, tracking, commissions, and integration options."
 ---
 
+Quick answers about Affitor's pricing, tracking, commissions, and payouts, with links to the full guides where you need more depth.
+
 ## General
 
 ### What is Affitor?
-Affitor is an affiliate growth platform for SaaS companies. It tracks partner-driven clicks, signups, and sales, and manages commissions and payout operations in one workflow.
+Affitor is an AI-native affiliate marketing platform for SaaS companies. It tracks partner-driven clicks, signups, and sales, and manages commissions and payout operations in one workflow.
 
 ### Who is Affitor built for?
 Affitor is designed for SaaS teams that want to launch or scale a partner program without taking on the full operational burden themselves.
@@ -15,24 +17,37 @@ Affitor is designed for SaaS teams that want to launch or scale a partner progra
 Affitor differentiates on:
 - performance-based pricing
 - first-party tracking for click → signup → sale flows
-- support for Stripe integration or Server-side tracking
+- support for Stripe integration or server-side tracking
 - commission and payout operations in one workflow
+
+---
+
+## Accounts
+
+### Can I use a personal email address to sign up?
+Yes, but a business email is recommended for team management — a shared address like `partnerships@yourcompany.com` keeps access simple as the team grows. You can update your email later in account settings.
+
+### Is there a cost to create an advertiser account?
+No. Creating an account is free. The platform fee is $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only.
+
+### Do I need payment information to sign up?
+No. You connect your Stripe account later, when you set up your program and payment tracking.
 
 ---
 
 ## Pricing & Billing
 
 ### How much does Affitor cost?
-Affitor charges a **3.5% platform fee** on partner-generated revenue.
+The platform fee is **$0 until your program earns its first $10,000 through affiliates, then 3.5%** on affiliate-driven sales only.
 
 - no monthly subscription
 - no setup fee
 
 ### What about the $10K fee-free threshold?
-Affitor's pricing includes a **$10K fee-free threshold** on affiliate-driven revenue. Confirm your commercial terms directly with the Affitor team before a launch decision.
+The platform fee stays at $0 until your program's affiliate-driven revenue reaches $10,000. After that, the 3.5% fee applies to affiliate-driven sales only. It is never charged on the rest of your revenue or on the commissions you pay partners.
 
 ### When do I pay?
-In the **invoice billing** model, Affitor bills you through its invoice workflow after tracked conversions are validated. Confirm billing timing directly with the Affitor team if it affects your launch decision.
+Platform fees accrue per attributed sale and are billed through **monthly invoices**. You can download each invoice as a PDF and pay it with Stripe Checkout from your Billing tab. If an invoice goes unpaid, your program can be paused — see the [overdue policy](/brand/billing/overdue-policy).
 
 ### Does Affitor collect money from my customers?
 No. Affitor is **not** the merchant of record. You continue charging customers through your own Stripe or payment setup.
@@ -61,15 +76,15 @@ Use the same internal user/customer ID across all three.
 Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you already use Stripe Checkout and can attach Affitor metadata, you can integrate without replacing your existing payment stack.
 
 ### Does Affitor only work with Stripe?
-No. Stripe is the best-documented integration path, but Server-side tracking works with any backend/payment provider that can send revenue events after payment succeeds.
+No. Stripe is the best-documented integration path, but server-side tracking works with any backend/payment provider that can send revenue events after payment succeeds.
 
 ### How does attribution work?
 Affitor uses:
 - first-party tracking
-- last-click attribution
-- a documented 60-day default attribution window
+- a last-click, last-partner-wins attribution model
+- a 60-day default attribution window, configurable per program
 
-For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that identifier in sale tracking.
+The full model is documented in the [attribution reference](/api-reference/attribution). For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that identifier in sale tracking.
 
 ### What happens if the customer later pays on Stripe?
 With Stripe integration, Affitor attributes the sale from metadata and webhook events. For subscriptions, renewals also require `subscription_data.metadata` to be populated.
@@ -79,7 +94,7 @@ With Stripe integration, Affitor attributes the sale from metadata and webhook e
 ## Commissions & Payouts
 
 ### Who pays the partner?
-Affitor handles partner commissions and payouts after attributed conversions move through the commission lifecycle.
+Affitor handles partner commissions and payouts after attributed conversions move through the commission lifecycle. Partners request withdrawals through Affitor's payout workflow — bank transfer, PayPal, Stripe, or Wise — once their approved balance passes the program's payout threshold.
 
 ### What happens after a sale is attributed?
 At a high level:
@@ -103,7 +118,7 @@ Follow the manual docs flow in order:
 3. [Payment Tracking](/brand/tracking/payment-tracking-stripe)
 4. [Testing Integration](/brand/tracking/testing-integration)
 
-If your team prefers terminal-based setup, the [Affitor CLI](/brand/cli/quickstart/) is an alternative path for developer and agent-driven workflows.
+If your team prefers terminal-based setup, the [Affitor CLI](/brand/cli/quickstart) is an alternative path for developer and agent-driven workflows.
 
 ### Why do sales fail to attribute even though click tracking works?
 The most common causes are:

@@ -6,7 +6,9 @@ description: "Add Affitor tracking to a Next.js app that uses Supabase Auth — 
 This guide covers the Supabase-specific signup step. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — refer there for full detail.
 
 :::note
+
 The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ## Prerequisites
@@ -78,7 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 `signup(userId, email?)` fires `POST /api/v1/track/lead`. The `userId` here is `session.user.id` — the stable Supabase UUID. Use this exact value as `customerExternalId` everywhere: at sale time and in any Stripe metadata.
 
 :::note
+
 **Why client-side is the reliable default.** The `affitor_click_id` is a first-party browser cookie. A Supabase DB trigger or Edge Function runs with no access to that cookie, so it cannot supply the click ID on its own. The `onAuthStateChange` listener runs in the browser where the cookie exists, so attribution is automatic.
+
 :::
 
 ### Server-side option (DB trigger / Edge Function)

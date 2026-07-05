@@ -6,7 +6,9 @@ description: "Server-side Affitor integration with @affitor/sdk/server — track
 This guide wires Affitor into a Fastify app. Because Fastify is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`. The sale is tracked from your Stripe webhook handler, which needs the **raw request body** for signature verification.
 
 :::note
+
 The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ## Prerequisites
@@ -45,7 +47,9 @@ await fetch('/api/signup', {
 ```
 
 :::note
+
 The `affitor_click_id` lives in a **first-party browser cookie**. Your Fastify handlers run with no access to that cookie, so you must forward the click id from the client explicitly. Without it, the lead has no partner to attribute to.
+
 :::
 
 ## 2. Track the signup
@@ -153,7 +157,9 @@ fastify.addContentTypeParser(
 ```
 
 :::note
+
 If you prefer not to override the global JSON parser, the [`fastify-raw-body`](https://github.com/Eomm/fastify-raw-body) plugin exposes `request.rawBody` on a per-route basis instead. Either way, the Stripe handler must receive the **unparsed** body.
+
 :::
 
 ### The webhook handler
@@ -211,7 +217,9 @@ export default async function stripeWebhookRoutes(fastify) {
 The `invoiceId` field acts as an idempotency key. If your webhook fires twice for the same payment, the second call returns `{ ok: false, status: 409 }` — handle it as a no-op, not an error.
 
 :::note
+
 The handler above tracks the **first** subscription payment (`checkout.session.completed`). Subscription **renewals** arrive as a different event (`invoice.paid`) and need their own `case` — see [Subscription Renewals](/api-reference/integrations/stripe#subscription-renewals) in the canonical Stripe guide.
+
 :::
 
 ## Verify

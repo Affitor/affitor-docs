@@ -6,7 +6,9 @@ description: "Server-side Affitor integration with @affitor/sdk/server — track
 This guide wires Affitor into a Node.js / Express app. Because Express is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`.
 
 :::note
+
 The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ## Prerequisites
@@ -45,7 +47,9 @@ await fetch('/api/signup', {
 ```
 
 :::note
+
 The `affitor_click_id` lives in a **first-party browser cookie**. Your Express handlers run with no access to that cookie, so you must forward the click id from the client explicitly. Without it, the lead has no partner to attribute to.
+
 :::
 
 ## 2. Track the signup
@@ -94,7 +98,9 @@ export default router;
 `customerExternalId` is your **stable internal user ID**. Use the exact same value when you track a sale — this is what links a partner's click to a commission.
 
 :::note
+
 If you use a **server-side auth webhook** (e.g. a third-party identity provider firing a `user.created` event), that webhook runs with no browser context and therefore no `affitor_click_id`. In that case you must read `window.affitor.getClickId()` on the client at signup time, store the click id on the user record or pass it through your own API, and then forward `clickId` to `trackLead` from the webhook. The client-side path above is simpler and more reliable.
+
 :::
 
 ## 3. Track the sale
@@ -188,7 +194,9 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
 ```
 
 :::note
+
 `customer_key` in the raw API, `customerExternalId` in `@affitor/sdk/server`, and `affitor_customer_key` in Stripe metadata are all **the same value** — your stable internal user ID. Keep it consistent.
+
 :::
 
 ## Verify

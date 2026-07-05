@@ -94,6 +94,11 @@
 - [System Status](https://docs.affitor.com/support/status): Check current public status guidance and what to do if you suspect an issue
 - [Glossary](https://docs.affitor.com/support/glossary): Key terms used across Affitor docs
 
+## Blog
+
+- [How to start an affiliate program for your SaaS](https://docs.affitor.com/blog/how-to-start-saas-affiliate-program): Six decisions take you from no program to your first partner payout: commission, software, tracking, recruiting, payout terms, and what to measure
+- [The best Rewardful alternatives for SaaS in 2026](https://docs.affitor.com/blog/rewardful-alternatives): Five honest Rewardful alternatives for SaaS on Stripe: pricing verified July 2026, attribution trade-offs, and a straight answer on who should pick what
+
 ## SDKs
 
 ### @affitor/sdk

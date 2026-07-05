@@ -2,16 +2,18 @@
 title: 47 agent skills for affiliate workflows
 date: '2026-03-28'
 category: CLI
-benefit: Run common affiliate ops — onboarding partners, validating tracking, drafting outreach — directly from your AI assistant.
+authors: [son]
+benefit: Run common affiliate workflows — researching programs, drafting content, analyzing traffic — directly from your AI assistant.
 ---
 
-If you use Claude Code or another agent framework, the [affiliate-skills](https://github.com/Affitor/agent-skills) library now ships 47 ready-to-use skills.
+If you use Claude Code or another agent framework, the [affiliate-skills](https://github.com/Affitor/affiliate-skills) library now ships 47 ready-to-use skills across eight stages of affiliate work, research through analytics. One command installs the whole set:
 
-A few you might reach for first:
+```bash
+npx skills add Affitor/affiliate-skills
+```
 
-- `validate-tracking` — checks that an advertiser's pixel and webhook are firing correctly
-- `partner-outreach` — drafts a personalised invite for a creator using their public profile
-- `commission-calculator` — works out partner payouts under your current rules
-- `program-setup` — walks an advertiser through a full program configuration
+A few you might reach for first: `affiliate-program-search` queries the open program directory, `commission-calculator` scores what a program actually pays, and `competitor-spy` and `trending-content-scout` cover research.
 
-The library is open source and works against the public Affitor API.
+The library is open source and works with any AI that reads text — Claude Code, Cursor, Windsurf, ChatGPT, or Gemini CLI. *(Update, July 2026: the registry now counts 52 skills.)*
+
+[Browse the full skills library →](https://github.com/Affitor/affiliate-skills)

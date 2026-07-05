@@ -20,7 +20,9 @@ You don't need to manually test each layer. Once your tracking code is live on y
 This is the same check the agent runs with `affitor test` (and the MCP `affitor_run_verification` tool), so humans and agents verify the exact same way.
 
 :::tip
+
 Run verification needs an **active commission policy** (so the synthetic sale can produce a commission). Set your commission first, then run it. Limited to 10 runs/hour.
+
 :::
 
 The manual, per-layer checks below are **optional** — useful when you want to confirm a specific layer is firing in the browser.
@@ -51,7 +53,9 @@ Enable debug mode in your tracker install.
 - your dashboard shows test/debug activity for the pageview step
 
 :::caution
+
 When testing with real affiliate links, remember that a real `?aff=` flow can still create real attribution data. Use test/debug guidance carefully and avoid mixing production referral links into synthetic tests unless that is your intent.
+
 :::
 
 ---

@@ -38,7 +38,22 @@ export const changelog = defineCollections({
       'Bugfix',
     ]),
     benefit: z.string(),
+    authors: z.array(z.string()).optional(),
     sourcePR: z.string().url().optional(),
+    image: z.string().optional(),
+  }),
+});
+
+export const blog = defineCollections({
+  type: 'doc',
+  dir: 'content/blog',
+  schema: frontmatterSchema.extend({
+    // description doubles as the one-line dek + machine summary — required for blog
+    description: z.string(),
+    date: z.string(),
+    category: z.string(),
+    authors: z.array(z.string()),
+    readTime: z.string().optional(),
     image: z.string().optional(),
   }),
 });

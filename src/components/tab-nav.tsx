@@ -11,6 +11,7 @@ const TABS: Tab[] = [
   { title: 'For Partners', href: '/partners', match: (p) => p.startsWith('/partners') },
   { title: 'API Reference', href: '/api-reference/overview', match: (p) => p.startsWith('/api-reference') },
   { title: 'Support', href: '/support', match: (p) => p.startsWith('/support') || p.startsWith('/faq') },
+  { title: 'Blog', href: '/blog', match: (p) => p.startsWith('/blog') },
   { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
 ];
 

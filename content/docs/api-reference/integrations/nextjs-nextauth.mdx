@@ -6,7 +6,9 @@ description: "Add Affitor lead tracking to a Next.js app using NextAuth (Auth.js
 This guide covers the signup step when your Next.js app uses **NextAuth (Auth.js)** for authentication. Steps 1 (capture click) and 3 (track sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this page focuses on what is different: wiring the lead call to NextAuth's auth lifecycle without losing the click attribution.
 
 :::note
+
 The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
 :::
 
 ## Prerequisites
@@ -81,7 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 :::note
+
 `signup()` calls `POST /api/v1/track/lead`. Affitor deduplicates by `customerExternalId`, so calling it on every sign-in is safe — only the first call for a given ID creates a lead.
+
 :::
 
 ### Alternative: server-side via events.createUser with click-id forwarding
@@ -125,7 +129,9 @@ export const authConfig: NextAuthConfig = {
 ```
 
 :::note
+
 `user.affitorClickId` is illustrative — the forwarding mechanism depends on your auth flow. Common approaches: store the click ID in the sign-up form's hidden field and write it to a custom user attribute before `createUser` fires, or pass it through a custom `session` object. Without it, `clickId` is undefined and the lead will not be attributed to a partner.
+
 :::
 
 If you cannot reliably forward the click ID in your server webhook, **prefer the client-side path above.**

@@ -1,0 +1,124 @@
+---
+title: "The best Rewardful alternatives for SaaS in 2026"
+description: "Five honest Rewardful alternatives for SaaS on Stripe: pricing verified July 2026, attribution trade-offs, and a straight answer on who should pick what."
+date: "2026-07-05"
+category: Comparison
+authors: ["Son Piaz, Founder"]
+readTime: "10 min read"
+---
+
+SaaS teams leave Rewardful for three reasons: revenue caps that force plan upgrades as you grow, cookie-based attribution that drops conversions, and a feature ceiling around commissions, reporting, and fraud. If none of those hurt yet, keep Rewardful. It has the simplest setup in the category for a Stripe SaaS, a true 0% transaction fee, and a REST API on every tier, including the $49 plan. Plenty of programs never need more.
+
+This guide covers five alternatives worth shortlisting in 2026: Affitor, FirstPromoter, Tolt, Dub Partners, and PartnerStack. Every price below was checked against each vendor's live pricing page on July 5, 2026. Affiliate software pricing moves fast (two of these vendors materially changed their pricing pages in the three weeks before this was written), so treat the live pages as the source of truth.
+
+One disclosure before we start: we build Affitor. It is one of the five tools below, and this post tells you plainly where the others beat it.
+
+## Why teams outgrow Rewardful
+
+Rewardful's model is a flat subscription with revenue-capped tiers. Per [rewardful.com/pricing](https://www.rewardful.com/pricing): Starter is $49/mo for up to $7,500/mo in affiliate-generated revenue, with 1 campaign and up to 2 team members. Growth is $99/mo for up to $15,000/mo, with unlimited campaigns and a branded affiliate portal. Enterprise starts at $149/mo above that. There is no free tier. The 0% transaction fee is genuine: the subscription is all you pay.
+
+The caps are the first thing that bites. A program doing well crosses $7,500/mo in affiliate revenue and the tool's price doubles, not because you used more software but because your affiliates performed. Cross $15,000/mo and it steps again.
+
+The second issue is attribution. Rewardful tracks with cookies (first-touch or last-touch, selectable, with a 60-day default window). When the cookie is gone (cleared, blocked, expired, or the buyer switches devices), the referral is gone with it, and the affiliate who earned the sale does not get paid.
+
+The third is the feature ceiling, and it is real but narrower than competitors claim: no multi-tier or multi-level commissions, limited email functionality, basic fraud protection, limited reporting, and no postbacks.
+
+## What to evaluate in a replacement
+
+Three questions separate the five tools below faster than any feature checklist.
+
+**How does it charge?** Flat subscription, percentage of results, or both. Watch for double tolls: some tools charge a subscription and then add a fee on payouts or transactions on top.
+
+**What happens when the cookie dies?** Cookie-window tracking is the category default and its weakest point. Tools that anchor attribution to a durable identity (a signup, a Stripe customer record) survive cleared cookies and device switches; pure cookie models do not.
+
+**Can your coding agent do the integration?** In 2026 a lot of Stripe SaaS integration work is done by AI agents. An audit of the major tools in this category in June 2026 found none shipping an official MCP server or an agent-completable integration runbook with a self-verify loop. If that matters to you, it narrows the list quickly.
+
+## Affitor: pay nothing until your program pays you
+
+Affitor is our product, so here is the model stated plainly: $0/mo, $0 setup, and a 3.5% platform fee on affiliate-driven sales only. The fee is $0 until your program earns its first $10,000 through affiliates, then 3.5%. If your affiliates generate nothing, you pay nothing.
+
+Attribution is the architectural difference, not the pricing. Instead of a tracking cookie, Affitor anchors attribution to the signup: the click ID is joined to a hashed email at signup and then to the Stripe customer ID, riding Stripe Checkout metadata (`affitor_click_id`, `affitor_customer_key`) through to the sale. A cleared cookie after signup does not lose the referral, because the identity chain no longer depends on the cookie.
+
+The agent surface is live today, not a roadmap item: a `skill.md` runbook an agent can complete end to end, the `affitor` CLI, browser and server SDKs plus an MCP server (`@affitor/sdk` and `@affitor/mcp`, both labeled beta), and a self-verify loop that fires a synthetic click, lead, and sale through your live integration and returns `integration_verified: true` when the chain holds. You (or your agent) get proof the integration works before a single real affiliate joins.
+
+![Affitor advertiser dashboard: performance overview tracking revenue, partners, clicks, signups, and paid customers for one program](/docs/brand/dashboard.png)
+
+Now the honest part. A percentage fee means Affitor gets more expensive than a flat subscription as your program scales. At $15,000/mo in affiliate revenue, 3.5% is $525/mo while Rewardful's Growth plan is $99/mo. The crossover sits between roughly $1,400/mo and $2,800/mo in affiliate-driven revenue, depending on which Rewardful tier your volume would require. Below that (and before your first $10,000 total, when Affitor is free), the performance model wins. Above it, a flat subscription is cheaper on paper, if you stay within its caps. Run your own numbers before choosing.
+
+One more concession: Rewardful has the strongest brand recognition among indie hackers in this category, and Affitor does not have that history yet.
+
+**Rewardful:** $49 to $149+/mo from day one, 0% transaction fee, cookie attribution.
+**Affitor:** $0/mo, 3.5% on affiliate-driven sales after the first $10,000, signup-anchored attribution.
+
+## FirstPromoter: the feature-rich pick, but the API costs extra
+
+FirstPromoter is the most feature-complete of the sub-$100 tools: MRR-based commissions, tax form handling, fraud detection, and billing-provider coverage beyond Stripe and Paddle (Chargebee and others). If you bill through a provider Rewardful does not support, FirstPromoter is often the practical answer.
+
+Per [firstpromoter.com/pricing](https://firstpromoter.com/pricing): Starter is $49/mo for up to $5,000/mo in affiliate revenue, 3 campaigns, 1,000 affiliates, and no API. Business is $99/mo for up to $15,000/mo with unlimited campaigns and affiliates, API and webhooks, and tax forms. Enterprise starts at $149/mo. 14-day trial, no card required. No transaction fee is stated on the pricing page.
+
+Two things to weigh. The $5,000/mo cap on Starter is the lowest in this peer group, so upgrade pressure arrives earliest here. And the API and webhooks are paywalled to the $99 tier: the entry plan is dashboard-only, which rules out programmatic and agent-driven setups at $49. Tracking is a cookie-window model on the front end (`_fprom_*` cookies, 60-day default); conversions are recorded at signup, but identity does not ride Stripe metadata natively.
+
+**FirstPromoter:** API and webhooks from the $99 Business tier up.
+**Affitor:** API, CLI, and MCP access at $0/mo on every program.
+
+## Tolt: modern and unlimited, with a payout-fee nuance
+
+Tolt is the cleanest modern product in the Rewardful mold, and it removes the affiliate-count anxiety entirely: unlimited affiliates and referrals on every tier. Payout rails are the broadest here: PayPal, Wise, local bank transfer, crypto, and wire.
+
+Per [tolt.com/pricing](https://tolt.com/pricing): Basic is $69/mo for up to $10,000/mo in affiliate revenue with 2 programs and manual payouts only. Growth is $99/mo for up to $20,000/mo with 5 programs and automated payouts. Pro is $199/mo for up to $50,000/mo with unlimited programs. Note that software directories still show a stale $49 Basic price; the live page says $69.
+
+The nuance sits in the payout fees. Tolt markets 0% transaction fees, and that claim has a footnote: automated payouts carry a 2% processing fee, and the Basic tier avoids the fee only because its payouts are manual. At $99/mo Tolt gives you more revenue headroom than Rewardful's $99 tier ($20,000 vs $15,000 cap), which is a genuine edge at that price point.
+
+Attribution is cookie-based click tracking with a configurable window, the same fragility as Rewardful's. No API is surfaced on the pricing page, and no official MCP was found as of June 2026.
+
+**Tolt:** $69 to $199/mo, plus 2% on automated payouts.
+**Affitor:** $0/mo, one 3.5% fee on affiliate-driven sales after the first $10,000.
+
+## Dub Partners: developer-first, with a double toll
+
+Dub has the best developer experience in this list, and it is not close: SDKs in five languages, real-time webhooks, and docs built for programmatic use. Credit where due on architecture too: Dub's attribution is anchored to the signup lead rather than to a cookie window, which makes it the closest system to Affitor's model here. If you already run Dub for link infrastructure, adding Partners keeps links, analytics, and payouts in one platform.
+
+Per [dub.co/pricing](https://dub.co/pricing): Partners requires a paid plan. Business is $90/mo with partner payouts up to $2,500/mo at a 5% payout fee. Advanced is $300/mo with payouts up to $15,000/mo, also at 5%. Enterprise is custom, annual, with a 3% fee. These numbers are fresh: between June and July 2026, Business went from $75 to $90, Advanced from $250 to $300, and the Advanced payout fee from 3% to 5%.
+
+The toll structure is the trade-off. You pay the subscription and a 5% fee on every partner payout, and the payout caps meter your program's growth by tier: a Business-plan program cannot pay partners more than $2,500 in a month. Attribution records live inside Dub's network, with no third-party-verifiable record; the only MCP found in June 2026 was community-built and static-key, with no self-verify loop.
+
+**Dub Partners:** $90/mo plus a 5% fee on partner payouts, capped by tier.
+**Affitor:** $0/mo plus 3.5% on affiliate-driven sales after the first $10,000, no payout caps.
+
+## PartnerStack: the enterprise PRM, priced like one
+
+PartnerStack is not really a Rewardful substitute; it is a different category. It is a full partner-relationship-management suite: a B2B partner marketplace, lead and deal registration, MDF management, and partner training (LMS). If you run affiliates, resellers, and referral partners as one program at scale, it is the serious option on this page.
+
+The price reflects that. PartnerStack published pricing in mid-2026 after years of sales-gated quotes. Per [partnerstack.com/pricing](https://www.partnerstack.com/pricing): Launch starts at $1,000/mo paid annually, Growth at $1,520/mo paid annually, Enterprise is custom. That is a minimum commitment of roughly $12,000 per year, demo-led, with no self-serve signup. Attribution mechanics are not publicly documented, so we make no claims about them either way.
+
+For an early or mid-stage SaaS replacing a $49 tool, this is the wrong aisle. For a partnerships team that has outgrown affiliate-only motion, it is the right one.
+
+**PartnerStack:** from $1,000/mo billed annually, demo first, full PRM suite.
+**Affitor:** self-serve signup, $0/mo, affiliate programs only.
+
+## Every alternative at a glance
+
+:::note
+
+All prices verified against each vendor's live pricing page on July 5, 2026. Two vendors materially changed their pricing pages in the three weeks before publication. Check the live page before you commit.
+
+:::
+
+| Platform | Monthly price | Fees on top | Caps | Attribution | API and agent surface |
+|---|---|---|---|---|---|
+| **Affitor** | $0 | 3.5% on affiliate-driven sales after first $10K | None | Signup-anchored, rides Stripe metadata | API, CLI, MCP, agent self-verify loop |
+| **Rewardful** | $49 / $99 / $149+ | 0% | $7.5K / $15K per mo affiliate revenue | Cookie, 60-day default | REST API on all tiers |
+| **FirstPromoter** | $49 / $99 / $149+ | None stated | $5K / $15K per mo affiliate revenue | Cookie window, 60-day default | API and webhooks at $99+ |
+| **Tolt** | $69 / $99 / $199 | 2% on automated payouts | $10K / $20K / $50K per mo affiliate revenue | Cookie, configurable window | No API listed on pricing page |
+| **Dub Partners** | $90 / $300 / custom | 5% payout fee (3% Enterprise) | Payouts $2.5K / $15K per mo | Signup/lead-anchored | Strong API and SDKs |
+| **PartnerStack** | From $1,000 (annual) | None listed | Not published | Not publicly documented | Sales-led onboarding |
+
+No official MCP server was found for any of the five competitors as of the June 2026 audit.
+
+The short version: stay on Rewardful if its caps and cookie model do not hurt you yet. Pick FirstPromoter for billing providers beyond Stripe and Paddle or for tax forms. Pick Tolt for unlimited affiliates and broad payout rails at a flat price. Pick Dub Partners if you already live in Dub's link infrastructure and accept the payout fee. Pick PartnerStack when you are running a multi-type partner program with an enterprise budget. Pick Affitor if you want to pay only when your affiliates actually generate revenue, keep attribution alive after the cookie dies, or hand the whole integration to an agent and get back proof it works.
+
+## What's next
+
+If the performance model fits your stage, [create your program](https://affitor.com/welcome). It costs nothing to run until your affiliates have generated $10,000, so the way to evaluate Affitor is to launch with it.
+
+If you want to see how signup-anchored tracking works before you decide, [read the tracking docs](/brand/tracking/tracking-overview). The click, signup, and sale chain is documented end to end, including the verification call that proves your integration is live.

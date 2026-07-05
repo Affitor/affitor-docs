@@ -1,0 +1,127 @@
+---
+title: How to add an affiliate program to your Stripe SaaS
+description: Stripe has no native affiliate feature. Here is what Stripe actually provides, which tools fill the gap as of July 2026, and how to ship attribution that survives cookie loss, verified end to end.
+date: '2026-07-05'
+category: Guide
+authors: ["Son Piaz, Founder"]
+readTime: 8 min read
+---
+
+Stripe has no native affiliate feature. There is no referral link to hand a partner, no commission ledger, no payout schedule for the people who send you customers. If you want an affiliate program for your Stripe SaaS, you add a tracking and commission layer on top of Stripe, and every tool in this category is a version of that layer.
+
+The layer is smaller than you might expect, because Stripe already carries most of the load. It tells your backend the moment revenue happens, it lets you attach your own data to every payment, and it can even move money to third parties. What it never answers is the one question an affiliate program lives on: who caused this sale?
+
+This guide covers the whole path: what Stripe provides and what it leaves out, how attribution should work on a subscription business, an honest look at the tools available as of July 2026, and how to go from nothing to a verified integration in one command.
+
+## What Stripe gives you, and the piece it leaves out
+
+Three Stripe primitives matter for affiliate tracking:
+
+- **Metadata.** You can attach arbitrary key-value pairs to a Checkout Session and to the subscription it creates. Stripe carries them, unchanged, into every webhook event those objects generate. This is where attribution data can ride.
+- **Webhooks.** Events like `checkout.session.completed` and invoice payments tell your backend the exact moment revenue is finalized, and refund events tell you when it is clawed back. Commission math needs both.
+- **Connect.** Rails for paying money out to third parties, which is what a partner payout is.
+
+What Stripe does not have: referral links, click or signup tracking, partner accounts, commission calculation, or an affiliate dashboard. Every "Stripe affiliate software" product is an answer to that gap. They differ on two axes that matter: what you pay, and how durable their answer to "who caused this sale" is.
+
+## Attribution that survives cookie loss
+
+The standard model in this category works like this: your partner shares a link, a script on your site drops a cookie, and when a checkout completes, the sale is matched to whatever cookie is still present. The default attribution window on popular tools is 60 days.
+
+The failure mode is built in. Cookies get cleared, they expire, and they do not follow a customer who clicks a partner's link on a phone and buys at a desk two weeks later. When the cookie is gone at checkout, the sale goes unattributed, the partner goes unpaid, and partners who notice unpaid referrals stop promoting you.
+
+Affitor starts the same way, with a click cookie (`affitor_click_id`), but the attribution does not stay in the cookie. At signup, the click is bound server-side to the person: the click ID links to a hashed email, which links to the Stripe customer ID once the first payment lands. From that point, attribution follows identity, not the browser. The checkout carries the proof in Stripe metadata, and renewal invoices attribute from the Stripe customer record. If the cookie disappears after signup, nothing breaks.
+
+Wiring it is one metadata block on your Checkout Session:
+
+```js title="server/create-checkout.js"
+// clickId comes from the affitor_click_id cookie your frontend reads.
+// customer_key is your internal user ID. Use the SAME value here that
+// you send when you record the signup as a lead, or the chain breaks.
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: 'price_xxx', quantity: 1 }],
+  mode: 'subscription',
+  success_url: 'https://yoursite.com/success',
+  cancel_url: 'https://yoursite.com/cancel',
+  metadata: {
+    affitor_click_id: clickId,
+    affitor_customer_key: currentUser.id,
+    program_id: 'YOUR_PROGRAM_ID',
+  },
+  // Repeat the same values in subscription_data.metadata so
+  // renewal invoices stay attributed for the life of the subscription.
+  subscription_data: {
+    metadata: {
+      affitor_click_id: clickId,
+      affitor_customer_key: currentUser.id,
+      program_id: 'YOUR_PROGRAM_ID',
+    },
+  },
+});
+```
+
+You keep charging customers in your own Stripe account. Affitor never becomes the merchant of record; it reads the metadata and the webhook events and does the attribution and commission math from there. The full wiring, including the plain server-side path for non-Checkout setups, is in the [Stripe tracking docs](https://docs.affitor.com/brand/tracking/payment-tracking-stripe).
+
+## Your software options, honestly
+
+Disclosure first: we build Affitor, one of the tools below. Every price here comes from the vendor's own public pricing page, checked on July 5, 2026, so you can weigh our bias against their numbers.
+
+**Rewardful** is the default pick for a reason: the simplest setup in the category for Stripe SaaS, the strongest brand among indie hackers, a true 0% transaction fee, and a REST API on every tier including the $49 one. The trade-offs: tiers are capped by monthly affiliate revenue ($7,500 on the $49 Starter, $15,000 on the $99 Growth), so success forces upgrades, and attribution is cookie-based with a 60-day default window.
+
+**FirstPromoter** covers the most billing providers in this set (Stripe, Paddle, Recurly, Chargebee, Braintree) and adds MRR-based commissions and tax form handling. The trade-offs: the $49 tier has the lowest revenue cap in the peer group ($5,000 per month) and no API at all; API and webhooks start at $99.
+
+**Tolt** ships unlimited affiliates on every tier and the widest payout rails (PayPal, Wise, local bank, crypto, wire). The trade-offs: a $69 floor where the Basic tier is manual payouts only, and automated payouts from the Growth tier up carry a 2% processing fee.
+
+**Dub Partners** has the best developer experience in this list, with SDKs in five languages and real-time webhooks, and its attribution is signup and lead anchored, architecturally the closest to Affitor's approach here. The trade-offs: a double toll of $90 per month plus a 5% payout fee (3% on custom Enterprise), and payout caps by tier ($2,500 per month on Business, $15,000 on Advanced at $300 per month).
+
+**Affitor** charges no subscription: $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. Attribution is signup-anchored on Stripe metadata, as described above, and it is the only tool in this list an agent can integrate and verify end to end, which the next two sections show. The honest concession: if you need a partner marketplace, lead and deal registration, or enterprise PRM workflows, Affitor is not that. Look at PartnerStack (from $1,000 per month, paid annually) or impact.com (SaaS-usable tiers from $500 per month, plus a 2.5% transaction fee), both demo-gated.
+
+| Tool | Monthly floor | Extra fees | Attribution | API access |
+|---|---|---|---|---|
+| Affitor | $0 | 3.5%, only after your first $10,000 in affiliate revenue | Signup-anchored via Stripe metadata | All programs |
+| Rewardful | $49 | None (0% transaction fee) | Cookie, 60-day default | All tiers |
+| FirstPromoter | $49 | None stated | Cookie, 60-day default | $99 tier and up |
+| Tolt | $69 | 2% on automated payouts (Growth and up) | Cookie, configurable window | Not listed on the pricing page |
+| Dub Partners | $90 | 5% payout fee (3% on Enterprise) | Signup and lead anchored | Yes (SDKs in five languages) |
+
+:::caution
+
+Prices verified against each vendor's live pricing page on July 5, 2026. This market moves: in the three weeks before this page went up, one vendor named here raised its prices and another published pricing for the first time. Check the live page before you commit.
+
+:::
+
+## Set it up in minutes
+
+A working integration has three touchpoints: track the click in the browser, record the signup as a lead, and attach the metadata at checkout so the webhook can record the sale. You can wire each one by hand from the [tracking docs](https://docs.affitor.com/brand/tracking/tracking-overview), or run one command from your project root:
+
+`npx affitor onboard`
+
+It runs four phases in order. **Detect** inspects the project and identifies your framework (Next.js, Fastify, Express, plain Node) and payment provider. **Browser tracking** installs `@affitor/sdk` and wires the tracker component (the browser SDK is in beta; the documented happy path works). **Server sale** finds your Stripe webhook handler and injects the sale call after the event is verified. **Verify** fires the proof step described below.
+
+Two properties matter for trust. Every edit to payment code shows you a diff and asks before applying, and when the webhook shape is not cleanly recognized, `onboard` never guesses: it degrades to printing the exact snippets for you to paste. Re-running is safe, because steps already applied are skipped. For AI coding agents there is a `--json` mode that makes no file edits at all; the agent reads the plan, applies the changes itself, and still runs verification. The [CLI quickstart](https://docs.affitor.com/brand/cli/quickstart) covers the full flow.
+
+## Prove it works
+
+This is the step the rest of the category skips. Instead of making a live test purchase and watching a dashboard, Affitor fires a synthetic click, lead, and sale chain through the real attribution pipeline. The test rows are isolated and never create real commissions, and the run ends with a machine-readable verdict:
+
+```json title="npx affitor onboard --api-key affitor_xxx --yes --json"
+{
+  "program_id": "430",
+  "steps": [
+    { "step": "detect", "status": "ok", "detail": "framework=next-app, provider=stripe" },
+    { "step": "browser_tracking", "status": "skipped", "detail": "json mode" },
+    { "step": "server_sale", "status": "manual", "detail": "json mode (no auto-edit)" },
+    { "step": "env_key", "status": "manual", "detail": ".env: json mode (no auto-edit)" }
+  ],
+  "integration_verified": true
+}
+```
+
+`integration_verified: true` means a click was recorded, the lead attached to it, and the sale attributed with commission math applied, through the same pipeline your real traffic will use. If verification fails, the response names the first failing gate as a `blocker` with a `next_action` describing the fix, so you (or your agent) can correct and re-run. Verification is rate-limited to 10 runs per program per hour.
+
+This loop is shipped today in the CLI; the MCP server exposes the same tools in beta for agents that prefer tool calls over shell commands. As of our June 2026 audit, none of the other tools reviewed here ships a self-verify loop, which is why we describe Affitor as the only affiliate platform an agent can integrate and verify end to end. Launch day is the wrong time to discover your tracking never worked.
+
+## What's next
+
+You now have the whole picture: Stripe supplies the payment events and the metadata rails, a third-party layer answers "who caused this sale," and the durable way to answer it on a subscription business is to anchor attribution at signup, not in a cookie.
+
+[Create your program on Affitor](https://affitor.com). It costs $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. If you want to read the wiring before you sign up, start with the [Stripe tracking docs](https://docs.affitor.com/brand/tracking/payment-tracking-stripe).
