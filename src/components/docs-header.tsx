@@ -59,7 +59,7 @@ export function DocsHeader() {
           Dashboard
         </Link>
         <Link
-          href="/advertisers/quickstart/create-account"
+          href="/brand/quickstart/create-account"
           className="hidden sm:inline-flex items-center gap-1 h-8 rounded-md bg-fd-primary px-3.5 text-[13px] font-medium text-fd-primary-foreground transition-[opacity,transform] duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           Get Started

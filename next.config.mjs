@@ -7,6 +7,20 @@ const config = {
   async redirects() {
     return [
       {
+        // tracker page renamed BEFORE the audience-slug catch-all below —
+        // first match wins, and this one needs a different destination.
+        source: '/advertisers/tracking/pageview-tracker-click',
+        destination: '/brand/tracking/click-tracking',
+        permanent: true,
+      },
+      {
+        // audience slug renamed to match the app's /brand/* paths (old URLs
+        // are indexed by search/AI engines — keep them alive forever)
+        source: '/advertisers/:path*',
+        destination: '/brand/:path*',
+        permanent: true,
+      },
+      {
         source: '/docs',
         destination: '/',
         permanent: true,
@@ -26,12 +40,6 @@ const config = {
         // glossary moved under Support
         source: '/getting-started/glossary',
         destination: '/support/glossary',
-        permanent: true,
-      },
-      {
-        // tracker page renamed "Pageview Tracker" -> "Click Tracking"
-        source: '/advertisers/tracking/pageview-tracker-click',
-        destination: '/advertisers/tracking/click-tracking',
         permanent: true,
       },
     ];
