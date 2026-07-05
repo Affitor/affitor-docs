@@ -7,7 +7,7 @@ type Tab = { title: string; href: string; match: (p: string) => boolean };
 
 const TABS: Tab[] = [
   { title: 'Getting Started', href: '/', match: (p) => p === '/' || ['/how-it-works', '/pricing-performance-model'].some((x) => p.startsWith(x)) },
-  { title: 'For Advertisers', href: '/advertisers/quickstart/create-account', match: (p) => p.startsWith('/advertisers') },
+  { title: 'For Brands', href: '/brand/quickstart/create-account', match: (p) => p.startsWith('/brand') },
   { title: 'For Partners', href: '/partners', match: (p) => p.startsWith('/partners') },
   { title: 'API Reference', href: '/api-reference/overview', match: (p) => p.startsWith('/api-reference') },
   { title: 'Support', href: '/support', match: (p) => p.startsWith('/support') || p.startsWith('/faq') },
