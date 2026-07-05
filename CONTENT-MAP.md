@@ -609,3 +609,33 @@ llms.txt updated.
    "3 meanings of verified"). skill.md + llms.txt are now confirmed live — is the rest of the
    GATE closed so V1/G2 can ship? (b) Has the pricing-page step-vs-bracket copy fix shipped,
    so D3/B-series can state exact fee mechanics?
+
+---
+
+## 9. Tracking — weekly AI-visibility measurement
+
+Spec: `.content-factory/AI-RANK-redesign.md` Part D. Three lanes, reviewed together weekly:
+Brand Radar SOV = outcome · crawler/referral data = pipeline · probe file = diagnosis.
+
+1. **Self-hosted crawler tracking (shipped):** `src/middleware.ts` matches AI-crawler
+   user-agents (GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Bytespider,
+   CCBot, anthropic-ai, OAI-SearchBot) and fires a server-side PostHog `ai_crawler_hit`
+   event (props: `bot`, `path`). Key from `NEXT_PUBLIC_POSTHOG_KEY`; no-op when unset;
+   fire-and-forget with a 1s timeout — never blocks a response. Insight: weekly trend by
+   `bot` and by `path` (which posts are in the answer pool).
+2. **Monday manual probe ritual:** `scripts/ai-probe.md` — re-run the 8 buyer queries
+   (base / "2026" / "reddit" variants), record ranks, citations, and quoted sentences into
+   `.content-factory/tracking/probe-YYYY-MM-DD.md`.
+3. **Ahrefs Brand Radar (D1):** entities Affitor, Rewardful, FirstPromoter, Tolt,
+   PartnerStack, Dub (Partners). Prompts to track (the same 8 queries as the probe ritual):
+   1. "how to set up a Stripe affiliate program"
+   2. "Tolt vs Rewardful which is better"
+   3. "affiliate tracking software pricing comparison"
+   4. "best affiliate software for SaaS"
+   5. "best Rewardful alternatives"
+   6. "PartnerStack alternatives"
+   7. "how to start an affiliate program for my SaaS"
+   8. "Rewardful vs FirstPromoter"
+
+   Weekly export: share-of-voice per entity per AI surface (AI Overviews / ChatGPT /
+   Perplexity) + cited URLs, logged to `.content-factory/tracking/brand-radar-YYYY-WW.md`.

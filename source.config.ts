@@ -55,6 +55,16 @@ export const blog = defineCollections({
     authors: z.array(z.string()),
     readTime: z.string().optional(),
     image: z.string().optional(),
+    // AI-citability fields (AI-RANK-redesign.md A2/A7) — all optional, template-driven
+    // ISO date of last content refresh; drives dateModified in BlogPosting schema
+    // and the visible "Updated" label. Falls back to `date` when absent.
+    updated: z.string().optional(),
+    // FAQ section mirror -> FAQPage JSON-LD
+    faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+    // Tool names in ranked order (listicle posts) -> ItemList JSON-LD
+    tools: z.array(z.string()).optional(),
+    // How-to posts -> HowTo JSON-LD (steps derived from "Step N" H2 headings)
+    howto: z.boolean().optional(),
   }),
 });
 

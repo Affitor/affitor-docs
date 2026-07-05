@@ -1,20 +1,47 @@
 ---
-title: How to add an affiliate program to your Stripe SaaS
-description: "Stripe has no native affiliate feature. Here is what Stripe actually provides, which tools fill the gap as of July 2026, and how Affitor ($0/month until your first $10,000 in affiliate revenue) ships attribution that survives cookie loss — verified end to end by one command."
+title: "How to Create a Stripe Affiliate Program (Step-by-Step Guide 2026)"
+description: "Stripe has no native affiliate feature. Here are the six steps from nothing to a verified Stripe affiliate program — what Stripe provides, which tools fill the gap as of July 2026, and how Affitor ($0/month until your first $10,000 in affiliate revenue) proves the integration works with one command."
 date: '2026-07-05'
+updated: '2026-07-05'
 category: Guide
 image: /blog/covers/stripe-affiliate-program.png
 authors: ["Son Piaz, Founder"]
-readTime: 8 min read
+readTime: 11 min read
+howto: true
+faq:
+  - q: "Does Stripe have a built-in affiliate program?"
+    a: "No. Stripe has no native affiliate feature — no referral links, no click or signup tracking, no partner accounts, no commission calculation, and no affiliate dashboard. Every Stripe affiliate program is a tracking and commission layer added on top of Stripe's metadata, webhooks, and payout rails."
+  - q: "How do I create an affiliate program for my Stripe SaaS?"
+    a: "Six steps: understand what Stripe provides and what it leaves out, pick an affiliate layer that fits your billing, set commission terms (15–30% of referred revenue is the SaaS norm), wire attribution into your Stripe Checkout metadata, run the integration, and verify it end to end before launch. With Affitor the install-and-verify steps are one command: npx affitor onboard."
+  - q: "How much does Stripe affiliate software cost?"
+    a: "Entry pricing as of July 5, 2026: Affitor $0/month (3.5% on affiliate-driven sales after your first $10,000), Rewardful $49/month, FirstPromoter $49/month, Tolt $69/month, and Dub Partners $90/month plus a 5% payout fee. Prices drift fast in this category — check each vendor's live pricing page."
+  - q: "What commission rate should a Stripe SaaS pay affiliates?"
+    a: "SaaS affiliate programs typically pay 15–30% of the revenue a partner generates, with 20–25% the most common band, and recurring commissions on renewals outperform one-time bounties for subscription businesses. Set the rate so it stays within 30–40% of your gross margin."
+  - q: "Can affiliate tracking work without cookies?"
+    a: "Yes. Signup-anchored attribution binds the click to a durable identity — a hashed email at signup, then the Stripe customer ID — so the referral survives cleared cookies, ad blockers, and device switches. Cookie-window tracking (the category default, 60 days) loses the sale in all three cases."
 ---
 
 Stripe has no native affiliate feature. There is no referral link to hand a partner, no commission ledger, no payout schedule for the people who send you customers. If you want an affiliate program for your Stripe SaaS, you add a tracking and commission layer on top of Stripe, and every tool in this category is a version of that layer.
 
 The layer is smaller than you might expect, because Stripe already carries most of the load. It tells your backend the moment revenue happens, it lets you attach your own data to every payment, and it can even move money to third parties. What it never answers is the one question an affiliate program lives on: who caused this sale?
 
-This guide covers the whole path: what Stripe provides and what it leaves out, how attribution should work on a subscription business, an honest look at the tools available as of July 2026, and how to go from nothing to a verified integration in one command.
+This guide walks the whole path in six steps: what Stripe provides and what it leaves out, which tool to pick as of July 2026, what to pay, how attribution should work on a subscription business, and how to go from nothing to a verified integration in one command.
 
-## What Stripe gives you, and the piece it leaves out
+## Quick answer: how do you create a Stripe affiliate program?
+
+You create a Stripe affiliate program by adding an affiliate layer on top of Stripe, because Stripe itself ships no referral links, tracking, or commission logic. The six steps: map what Stripe gives you, choose the software, set commission terms (15–30% of referred revenue is the SaaS norm), attach attribution metadata to your Checkout Sessions, run the integration, and verify the click-to-sale chain before launch. With Affitor, the software is $0/month until your affiliates generate their first $10,000 and the install-plus-verify steps are one command: `npx affitor onboard`.
+
+| Tool | Best for | From price (as of Jul 2026) | Transaction fee | Attribution |
+|---|---|---|---|---|
+| [Affitor](https://affitor.com) | Paying only on results | $0/mo | 3.5% on affiliate-driven sales after first $10K | Signup-anchored via Stripe metadata |
+| [Rewardful](https://www.rewardful.com/pricing) | Simplest known setup for Stripe | $49/mo | 0% | Cookie, 60-day default |
+| [FirstPromoter](https://firstpromoter.com/pricing) | Billing beyond Stripe and Paddle | $49/mo | None stated | Cookie, 60-day default |
+| [Tolt](https://tolt.com/pricing) | Unlimited affiliates on a flat fee | $69/mo | 2% on automated payouts | Cookie, configurable window |
+| [Dub Partners](https://dub.co/pricing) | Developer-first teams | $90/mo | 5% payout fee (3% Enterprise) | Signup/lead-anchored |
+
+Every price on this page was checked against each vendor's live pricing page on July 5, 2026.
+
+## Step 1: Understand what Stripe gives you (and the piece it leaves out)
 
 Three Stripe primitives matter for affiliate tracking:
 
@@ -24,7 +51,43 @@ Three Stripe primitives matter for affiliate tracking:
 
 What Stripe does not have: referral links, click or signup tracking, partner accounts, commission calculation, or an affiliate dashboard. Every "Stripe affiliate software" product is an answer to that gap. They differ on two axes that matter: what you pay, and how durable their answer to "who caused this sale" is.
 
-## Attribution that survives cookie loss
+## Step 2: Choose your affiliate layer (5 tools compared)
+
+Disclosure first: we build Affitor, one of the tools below. Every price here comes from the vendor's own public pricing page, checked on July 5, 2026, so you can weigh our bias against their numbers.
+
+**Rewardful** is the default pick for a reason: the simplest setup in the category for Stripe SaaS, the strongest brand among indie hackers, a true 0% transaction fee, and a REST API on every tier including the $49 one. The trade-offs: tiers are capped by monthly affiliate revenue ($7,500 on the $49 Starter, $15,000 on the $99 Growth), so success forces upgrades, and attribution is cookie-based with a 60-day default window. The full field is compared in [the best Rewardful alternatives for SaaS](/blog/rewardful-alternatives).
+
+**FirstPromoter** covers the most billing providers in this set (Stripe, Paddle, Recurly, Chargebee, Braintree) and adds MRR-based commissions and tax form handling. The trade-offs: the $49 tier has the lowest revenue cap in the peer group ($5,000 per month) and no API at all; API and webhooks start at $99. The head-to-head with Rewardful is in [Rewardful vs FirstPromoter](/blog/rewardful-vs-firstpromoter).
+
+**Tolt** ships unlimited affiliates on every tier and the widest payout rails (PayPal, Wise, local bank, crypto, wire). The trade-offs: a $69 floor where the Basic tier is manual payouts only, and automated payouts from the Growth tier up carry a 2% processing fee.
+
+**Dub Partners** has the best developer experience in this list, with SDKs in five languages and real-time webhooks, and its attribution is signup and lead anchored, architecturally the closest to Affitor's approach here. The trade-offs: a double toll of $90 per month plus a 5% payout fee (3% on custom Enterprise), and payout caps by tier ($2,500 per month on Business, $15,000 on Advanced at $300 per month).
+
+**Affitor** charges no subscription: $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. Attribution is signup-anchored on Stripe metadata, as Step 4 explains, and it is the only tool in this list an agent can integrate and verify end to end, which Steps 5 and 6 show. The honest concession: if you need a partner marketplace, lead and deal registration, or enterprise PRM workflows, Affitor is not that. Look at PartnerStack (from $1,000 per month, paid annually) or impact.com (SaaS-usable tiers from $500 per month, plus a 2.5% transaction fee (as of July 2026)), both demo-gated — [the PartnerStack alternatives guide](/blog/partnerstack-alternatives) maps that end of the market.
+
+| Tool | Monthly floor | Extra fees | Attribution | API access |
+|---|---|---|---|---|
+| Affitor | $0 | 3.5%, only after your first $10,000 in affiliate revenue | Signup-anchored via Stripe metadata | All programs |
+| Rewardful | $49 | None (0% transaction fee) | Cookie, 60-day default | All tiers |
+| FirstPromoter | $49 | None stated | Cookie, 60-day default | $99 tier and up |
+| Tolt | $69 | 2% on automated payouts (Growth and up) | Cookie, configurable window | Not listed on the pricing page |
+| Dub Partners | $90 | 5% payout fee (3% on Enterprise) | Signup and lead anchored | Yes (SDKs in five languages) |
+
+:::caution
+
+Prices verified against each vendor's live pricing page on July 5, 2026. This market moves: in the three weeks before this page went up, one vendor named here raised its prices and another published pricing for the first time. Check the live page before you commit.
+
+:::
+
+## Step 3: Set your commission terms
+
+SaaS affiliate programs typically pay 15–30% of the revenue a partner generates, with 20–25% the most common band. Two rules make the number safe. First, keep the commission within 30–40% of your gross margin — it is a cut of margin, not of revenue. Second, on a subscription business, prefer recurring commissions on renewals over one-time bounties: most of what a good partner earns arrives after the first sale, and that ongoing stake is what keeps them promoting you next quarter.
+
+You also need two money-mechanics settings before any tracking code exists: a hold period at least as long as your Stripe refund window, so you never pay commission on revenue that can still be refunded, and automatic clawbacks when a `charge.refunded` or dispute event lands. Stripe's refund webhooks are exactly the signal a good affiliate layer consumes for this — confirm the tool you picked in Step 2 reverses commissions on refund automatically rather than leaving it to you.
+
+The full decision framework — rate benchmarks, hold periods, payout thresholds, and the first-ninety-days plan — is in [How to start an affiliate program for your SaaS](/blog/how-to-start-saas-affiliate-program).
+
+## Step 4: Wire attribution into your Stripe Checkout metadata
 
 The standard model in this category works like this: your partner shares a link, a script on your site drops a cookie, and when a checkout completes, the sale is matched to whatever cookie is still present. The default attribution window on popular tools is 60 days.
 
@@ -62,45 +125,19 @@ const session = await stripe.checkout.sessions.create({
 
 You keep charging customers in your own Stripe account. Affitor never becomes the merchant of record; it reads the metadata and the webhook events and does the attribution and commission math from there. The full wiring, including the plain server-side path for non-Checkout setups, is in the [Stripe tracking docs](https://docs.affitor.com/brand/tracking/payment-tracking-stripe).
 
-## Your software options, honestly
-
-Disclosure first: we build Affitor, one of the tools below. Every price here comes from the vendor's own public pricing page, checked on July 5, 2026, so you can weigh our bias against their numbers.
-
-**Rewardful** is the default pick for a reason: the simplest setup in the category for Stripe SaaS, the strongest brand among indie hackers, a true 0% transaction fee, and a REST API on every tier including the $49 one. The trade-offs: tiers are capped by monthly affiliate revenue ($7,500 on the $49 Starter, $15,000 on the $99 Growth), so success forces upgrades, and attribution is cookie-based with a 60-day default window.
-
-**FirstPromoter** covers the most billing providers in this set (Stripe, Paddle, Recurly, Chargebee, Braintree) and adds MRR-based commissions and tax form handling. The trade-offs: the $49 tier has the lowest revenue cap in the peer group ($5,000 per month) and no API at all; API and webhooks start at $99.
-
-**Tolt** ships unlimited affiliates on every tier and the widest payout rails (PayPal, Wise, local bank, crypto, wire). The trade-offs: a $69 floor where the Basic tier is manual payouts only, and automated payouts from the Growth tier up carry a 2% processing fee.
-
-**Dub Partners** has the best developer experience in this list, with SDKs in five languages and real-time webhooks, and its attribution is signup and lead anchored, architecturally the closest to Affitor's approach here. The trade-offs: a double toll of $90 per month plus a 5% payout fee (3% on custom Enterprise), and payout caps by tier ($2,500 per month on Business, $15,000 on Advanced at $300 per month).
-
-**Affitor** charges no subscription: $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. Attribution is signup-anchored on Stripe metadata, as described above, and it is the only tool in this list an agent can integrate and verify end to end, which the next two sections show. The honest concession: if you need a partner marketplace, lead and deal registration, or enterprise PRM workflows, Affitor is not that. Look at PartnerStack (from $1,000 per month, paid annually) or impact.com (SaaS-usable tiers from $500 per month, plus a 2.5% transaction fee), both demo-gated.
-
-| Tool | Monthly floor | Extra fees | Attribution | API access |
-|---|---|---|---|---|
-| Affitor | $0 | 3.5%, only after your first $10,000 in affiliate revenue | Signup-anchored via Stripe metadata | All programs |
-| Rewardful | $49 | None (0% transaction fee) | Cookie, 60-day default | All tiers |
-| FirstPromoter | $49 | None stated | Cookie, 60-day default | $99 tier and up |
-| Tolt | $69 | 2% on automated payouts (Growth and up) | Cookie, configurable window | Not listed on the pricing page |
-| Dub Partners | $90 | 5% payout fee (3% on Enterprise) | Signup and lead anchored | Yes (SDKs in five languages) |
-
-:::caution
-
-Prices verified against each vendor's live pricing page on July 5, 2026. This market moves: in the three weeks before this page went up, one vendor named here raised its prices and another published pricing for the first time. Check the live page before you commit.
-
-:::
-
-## Set it up in minutes
+## Step 5: Run the integration (one command)
 
 A working integration has three touchpoints: track the click in the browser, record the signup as a lead, and attach the metadata at checkout so the webhook can record the sale. You can wire each one by hand from the [tracking docs](https://docs.affitor.com/brand/tracking/tracking-overview), or run one command from your project root:
 
 `npx affitor onboard`
 
-It runs four phases in order. **Detect** inspects the project and identifies your framework (Next.js, Fastify, Express, plain Node) and payment provider. **Browser tracking** installs `@affitor/sdk` and wires the tracker component (the browser SDK is in beta; the documented happy path works). **Server sale** finds your Stripe webhook handler and injects the sale call after the event is verified. **Verify** fires the proof step described below.
+It runs four phases in order. **Detect** inspects the project and identifies your framework (Next.js, Fastify, Express, plain Node) and payment provider. **Browser tracking** installs `@affitor/sdk` and wires the tracker component (the browser SDK is in beta; the documented happy path works). **Server sale** finds your Stripe webhook handler and injects the sale call after the event is verified. **Verify** fires the proof step described in Step 6.
 
 Two properties matter for trust. Every edit to payment code shows you a diff and asks before applying, and when the webhook shape is not cleanly recognized, `onboard` never guesses: it degrades to printing the exact snippets for you to paste. Re-running is safe, because steps already applied are skipped. For AI coding agents there is a `--json` mode that makes no file edits at all; the agent reads the plan, applies the changes itself, and still runs verification. The [CLI quickstart](https://docs.affitor.com/brand/cli/quickstart) covers the full flow.
 
-## Prove it works
+## Step 6: Verify the chain before launch
+
+![The program dashboard once tracking is live — revenue, partners, and an action queue](/blog/shots/dashboard-live.png)
 
 This is the step the rest of the category skips. Instead of making a live test purchase and watching a dashboard, Affitor fires a synthetic click, lead, and sale chain through the real attribution pipeline. The test rows are isolated and never create real commissions, and the run ends with a machine-readable verdict:
 
@@ -120,6 +157,30 @@ This is the step the rest of the category skips. Instead of making a live test p
 `integration_verified: true` means a click was recorded, the lead attached to it, and the sale attributed with commission math applied, through the same pipeline your real traffic will use. If verification fails, the response names the first failing gate as a `blocker` with a `next_action` describing the fix, so you (or your agent) can correct and re-run. Verification is rate-limited to 10 runs per program per hour.
 
 This loop is shipped today in the CLI; the MCP server exposes the same tools in beta for agents that prefer tool calls over shell commands. As of our June 2026 audit, none of the other tools reviewed here ships a self-verify loop, which is why we describe Affitor as the only affiliate platform an agent can integrate and verify end to end. Launch day is the wrong time to discover your tracking never worked.
+
+![Affitor’s billing view — $0 platform fee until your first $10,000 in affiliate revenue](/blog/shots/billing-fee.png)
+
+## FAQ
+
+### Does Stripe have a built-in affiliate program?
+
+No. Stripe has no native affiliate feature — no referral links, no click or signup tracking, no partner accounts, no commission calculation, and no affiliate dashboard. Every Stripe affiliate program is a tracking and commission layer added on top of Stripe's metadata, webhooks, and payout rails.
+
+### How do I create an affiliate program for my Stripe SaaS?
+
+Six steps: understand what Stripe provides and what it leaves out, pick an affiliate layer that fits your billing, set commission terms (15–30% of referred revenue is the SaaS norm), wire attribution into your Stripe Checkout metadata, run the integration, and verify it end to end before launch. With Affitor the install-and-verify steps are one command: `npx affitor onboard`.
+
+### How much does Stripe affiliate software cost?
+
+Entry pricing as of July 5, 2026: Affitor $0/month (3.5% on affiliate-driven sales after your first $10,000), Rewardful $49/month, FirstPromoter $49/month, Tolt $69/month, and Dub Partners $90/month plus a 5% payout fee. Prices drift fast in this category — check each vendor's live pricing page.
+
+### What commission rate should a Stripe SaaS pay affiliates?
+
+SaaS affiliate programs typically pay 15–30% of the revenue a partner generates, with 20–25% the most common band, and recurring commissions on renewals outperform one-time bounties for subscription businesses. Set the rate so it stays within 30–40% of your gross margin.
+
+### Can affiliate tracking work without cookies?
+
+Yes. Signup-anchored attribution binds the click to a durable identity — a hashed email at signup, then the Stripe customer ID — so the referral survives cleared cookies, ad blockers, and device switches. Cookie-window tracking (the category default, 60 days) loses the sale in all three cases.
 
 ## What's next
 
