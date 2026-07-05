@@ -1,16 +1,49 @@
 ---
-title: "PartnerStack alternatives when you don't need a $12,000/year commitment (2026)"
+title: "Best PartnerStack Alternatives in 2026 (5 Tools Compared)"
 description: "PartnerStack now publishes its pricing: from $1,000 per month, paid annually. Here is what that buys, who should genuinely pay it, and five self-serve alternatives with pricing verified in July 2026."
 date: '2026-07-05'
+updated: '2026-07-05'
 category: Comparison
 image: /blog/covers/partnerstack-alternatives.png
 authors: ['Son Piaz, Founder']
-readTime: '10 min read'
+readTime: '12 min read'
+tools:
+  - "Affitor"
+  - "Rewardful"
+  - "FirstPromoter"
+  - "Tolt"
+  - "Dub Partners"
+faq:
+  - q: "How much does PartnerStack cost?"
+    a: "PartnerStack's Launch tier starts at $1,000 per month, paid annually, and its Growth tier at $1,520 per month, also paid annually (per its own pricing page as of July 5, 2026). That makes the minimum realistic commitment about $12,000 for year one, negotiated in a sales call — there is no self-serve signup."
+  - q: "What is the best PartnerStack alternative for SaaS?"
+    a: "Affitor is the best PartnerStack alternative for an early-stage SaaS: self-serve signup and $0/month until affiliates generate your first $10,000 in revenue, versus PartnerStack's roughly $12,000/year minimum commitment. If you genuinely run a multi-type partner program with a partner manager, PartnerStack itself may still be the right call."
+  - q: "Is there a free alternative to PartnerStack?"
+    a: "Affitor is the only tool in this comparison with no subscription: $0/month and $0 setup, with a 3.5% platform fee on affiliate-driven sales that begins only after your first $10,000 in affiliate revenue. Rewardful, FirstPromoter, Tolt, and Dub Partners all charge monthly floors of $49–$90 as of July 2026."
+  - q: "Does PartnerStack take a cut of partner payouts?"
+    a: "Its published pricing page lists subscription tiers only, and we could not verify third-party reports of an additional percentage cut against any official source. Judge PartnerStack on its published numbers: from $1,000/month paid annually as of July 5, 2026."
+  - q: "Which PartnerStack alternatives are self-serve?"
+    a: "All five alternatives on this page — Affitor, Rewardful, FirstPromoter, Tolt, and Dub Partners — have self-serve signup and month-to-month terms. PartnerStack is the only demo-led, annual-contract product in the set."
 ---
 
 PartnerStack starts at $1,000 per month, paid annually. That is roughly $12,000 committed for year one, agreed in a sales call, before your first partner sends a single click. If you run a multi-type partner program at scale, that price can be fair. If you are an early-stage SaaS founder who wants an affiliate program running this quarter, it is probably the wrong tool, and this page exists to help you pick the right one.
 
 One disclosure before anything else: we build [Affitor](https://affitor.com), one of the alternatives below. To keep this useful anyway, every price on this page comes from the vendor's own live pricing page, fetched on July 5, 2026, with a link so you can check it yourself. And we start by telling you when PartnerStack is the better choice.
+
+## Quick answer: what is the best PartnerStack alternative?
+
+Affitor is the best PartnerStack alternative for an early-stage SaaS: it is self-serve and costs $0/month until affiliates generate your first $10,000 in revenue, versus PartnerStack's roughly $12,000/year minimum commitment. Rewardful is the best flat-fee pick for Stripe SaaS, FirstPromoter covers the most billing providers, Tolt gives you unlimited affiliates on every tier, and Dub Partners suits developer-led teams. Keep PartnerStack on the table only if you run affiliates, resellers, and referral partners as one program with a partner manager.
+
+| Tool | Best for | From price (as of Jul 2026) | Transaction fee | Attribution |
+|---|---|---|---|---|
+| [Affitor](https://affitor.com) | Starting from zero on Stripe | $0/mo | 3.5% on affiliate-driven sales after first $10K | Signup-anchored via Stripe metadata |
+| [Rewardful](https://www.rewardful.com/pricing) | The known flat-fee default | $49/mo | 0% | Cookie, 60-day default |
+| [FirstPromoter](https://firstpromoter.com/pricing) | Billing beyond Stripe and Paddle | $49/mo | None stated | Cookie, 60-day default |
+| [Tolt](https://tolt.com/pricing) | Unlimited affiliates on a flat fee | $69/mo | 2% on automated payouts | Cookie, configurable window |
+| [Dub Partners](https://dub.co/pricing) | Developer-led teams | $90/mo | 5% payout fee (3% Enterprise) | Signup/lead-anchored |
+| [PartnerStack](https://www.partnerstack.com/pricing) | Enterprise multi-type programs | From $1,000/mo (paid annually) | None published | Not publicly documented |
+
+Every price on this page was checked against each vendor's live pricing page on July 5, 2026.
 
 ## What PartnerStack actually is
 
@@ -52,59 +85,117 @@ If you were priced out rather than sold short, the checklist flips. Judge altern
 
 **PartnerStack:** demo, contract, annual invoice, then onboarding. **The five below:** sign up, install, first tracked link the same day.
 
-## Affitor: pay nothing until your program pays you
+## 1. Affitor — best for starting from zero on Stripe
 
-**Pricing:** $0 per month, $0 setup. The platform fee is $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. Details are on the [pricing model page](/getting-started/pricing-performance-model). Against PartnerStack the contrast is simple: **PartnerStack** wants about $12,000 committed before your first affiliate sale; **Affitor** charges nothing until affiliates have brought you $10,000.
+![Affitor’s Partners view — active partners, applications, and invites in one table with live stats](/blog/shots/partners-table-live.png)
 
-**What stands out:**
+The performance-priced option: your cost is $0 until the program produces, then a single percentage of what it produces.
+
+### Key features
 
 - **Stripe-native attribution.** Tracking rides Stripe metadata on the Checkout Session, anchored to an identity chain created at signup (click, hashed email, Stripe customer). It survives cleared cookies because the durable record is the signup, not the cookie.
 - **Built for agents as well as humans, shipped today.** `npx affitor onboard` detects your stack, installs tracking, and verifies it. The verification is a synthetic click, lead, and sale chain that ends in `integration_verified: true`, so you know attribution works before launch. As of the June 2026 audit, no other platform on this page shipped an official MCP server or an agent-completable integration runbook with that kind of self-verify loop.
 - **Partner operations without a partner manager.** One flat partner table shows active partners, applications, and pending invites in a single view, and partner invites are pre-written from your program's real terms (commission rate, attribution window, payout threshold) — type emails or import a CSV and send.
 
-**Honest trade-offs:** Affitor is an affiliate layer, not a PRM. There is no deal registration, no LMS, no MDF management; if you need those, you are back in PartnerStack territory. It is built around Stripe, so if your billing runs elsewhere, FirstPromoter's broader billing coverage fits better. And the percentage model has a crossover point, so run the math for your scale: after the free $10,000, a program doing $3,000 per month in affiliate revenue pays about $105 to Affitor, already in flat-plan territory, and at $15,000 per month it pays $525 while Rewardful's $99 Growth tier still covers that revenue. The model is built to favor programs starting from zero; once affiliate revenue is consistently strong, a capped flat plan can be cheaper.
+### Pricing
+
+$0 per month, $0 setup. The platform fee is $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. Details are on the [pricing model page](/getting-started/pricing-performance-model). Against PartnerStack the contrast is simple: **PartnerStack** wants about $12,000 committed before your first affiliate sale; **Affitor** charges nothing until affiliates have brought you $10,000.
+
+### Pros & cons
+
+**Pros:** zero fixed cost, no revenue caps, attribution that survives cookie loss, and an integration an agent can complete and prove.
+
+**Cons:** Affitor is an affiliate layer, not a PRM. There is no deal registration, no LMS, no MDF management; if you need those, you are back in PartnerStack territory. It is built around Stripe, so if your billing runs elsewhere, FirstPromoter's broader billing coverage fits better. And the percentage model has a crossover point, so run the math for your scale: after the free $10,000, a program doing $3,000 per month in affiliate revenue pays about $105 to Affitor, already in flat-plan territory, and at $15,000 per month it pays $525 while Rewardful's $99 Growth tier still covers that revenue. The model is built to favor programs starting from zero; once affiliate revenue is consistently strong, a capped flat plan can be cheaper.
 
 **Fits:** Stripe-based SaaS starting an affiliate program from zero, and teams that want an integration an agent can complete and prove.
 
-## Rewardful: the default flat-fee pick for Stripe SaaS
+## 2. Rewardful — best flat-fee default for Stripe SaaS
 
-**Pricing:** per [rewardful.com/pricing](https://www.rewardful.com/pricing) as of July 5, 2026: Starter at $49/mo (up to $7,500/mo in affiliate revenue, 1 campaign, up to 2 team members), Growth at $99/mo (up to $15,000/mo, unlimited campaigns and team, branded portal), Enterprise at $149+/mo (over $15,000/mo, 1-click PayPal payouts). 0% transaction fee on every tier, a 14-day free trial, and 2 months free on annual billing. **PartnerStack:** $12,000 for year one. **Rewardful:** $588 for a year of Starter, cancelable monthly.
+The category's most recognized name, and the simplest setup for a Stripe SaaS.
 
-**What stands out:** the simplest setup in the category for Stripe SaaS, the strongest brand recognition among indie hackers, a genuine 0% transaction fee, and a REST API included even on the $49 plan.
+### Key features
 
-**Honest trade-offs:** it connects to Stripe and Paddle only. Attribution is cookie-based (first-touch or last-touch selectable, 60-day default window), which is fragile when cookies are cleared or the buyer switches devices. The revenue-capped tiers mean success forces upgrades, and you pay $49 from day one whether or not affiliates deliver.
+The simplest setup in the category for Stripe SaaS, the strongest brand recognition among indie hackers, a genuine 0% transaction fee, and a REST API included even on the $49 plan.
+
+### Pricing
+
+Per [rewardful.com/pricing](https://www.rewardful.com/pricing) as of July 5, 2026: Starter at $49/mo (up to $7,500/mo in affiliate revenue, 1 campaign, up to 2 team members), Growth at $99/mo (up to $15,000/mo, unlimited campaigns and team, branded portal), Enterprise at $149+/mo (over $15,000/mo, 1-click PayPal payouts). 0% transaction fee on every tier, a 14-day free trial, and 2 months free on annual billing. **PartnerStack:** $12,000 for year one. **Rewardful:** $588 for a year of Starter, cancelable monthly.
+
+### Pros & cons
+
+**Pros:** known quantity, fast setup, API from the first dollar, and a stated 0% transaction fee.
+
+**Cons:** it connects to Stripe and Paddle only. Attribution is cookie-based (first-touch or last-touch selectable, 60-day default window), which is fragile when cookies are cleared or the buyer switches devices. The revenue-capped tiers mean success forces upgrades, and you pay $49 from day one whether or not affiliates deliver. If you are weighing it against its closest rival, read [Rewardful vs FirstPromoter](/blog/rewardful-vs-firstpromoter); if you are weighing it against everything, read [the best Rewardful alternatives](/blog/rewardful-alternatives).
 
 **Fits:** Stripe or Paddle SaaS that wants the known, simple option and is comfortable with cookie-window attribution.
 
-## FirstPromoter: the broadest billing coverage
+## 3. FirstPromoter — best for billing beyond Stripe and Paddle
 
-**Pricing:** per [firstpromoter.com/pricing](https://firstpromoter.com/pricing) as of July 5, 2026: Starter at $49/mo (up to $5,000/mo in affiliate revenue, 3 campaigns, 1,000 affiliates, no API), Business at $99/mo (up to $15,000/mo, unlimited campaigns and affiliates, API and webhooks, tax forms), Enterprise starting at $149/mo. 14-day trial, no card required. **PartnerStack:** five billing figures deep before you see a dashboard. **FirstPromoter:** $588 a year at the floor.
+The broadest billing coverage in the set, with the deepest back office under $100.
 
-**What stands out:** native integrations with five billing providers (Stripe, Paddle, Recurly, Chargebee, Braintree), MRR-based commissions, tax form handling, and fraud detection. If your billing is not Stripe, this is the strongest flat-fee option here.
+### Key features
 
-**Honest trade-offs:** the $49 tier is dashboard-only; the API and webhooks are paywalled to $99 and up. Its $5,000/mo revenue cap is the lowest in this set, so upgrade pressure hits earliest. The front end is cookie-window tracking (`_fprom_*` cookies, 60-day default), and no official MCP was found as of June 2026.
+Native integrations with five billing providers (Stripe, Paddle, Recurly, Chargebee, Braintree), MRR-based commissions, tax form handling, and fraud detection. If your billing is not Stripe, this is the strongest flat-fee option here.
+
+### Pricing
+
+Per [firstpromoter.com/pricing](https://firstpromoter.com/pricing) as of July 5, 2026: Starter at $49/mo (up to $5,000/mo in affiliate revenue, 3 campaigns, 1,000 affiliates, no API), Business at $99/mo (up to $15,000/mo, unlimited campaigns and affiliates, API and webhooks, tax forms), Enterprise starting at $149/mo. 14-day trial, no card required. **PartnerStack:** five billing figures deep before you see a dashboard. **FirstPromoter:** $588 a year at the floor.
+
+### Pros & cons
+
+**Pros:** five billing rails, MRR-shaped commissions, tax paperwork handled inside the product.
+
+**Cons:** the $49 tier is dashboard-only; the API and webhooks are paywalled to $99 and up. Its $5,000/mo revenue cap is the lowest in this set, so upgrade pressure hits earliest. The front end is cookie-window tracking (`_fprom_*` cookies, 60-day default), and no official MCP was found as of June 2026.
 
 **Fits:** SaaS on Paddle, Chargebee, Recurly, or Braintree, and teams that want MRR-shaped commissions with tax paperwork handled.
 
-## Tolt: unlimited affiliates on every tier
+## 4. Tolt — best for unlimited affiliates
 
-**Pricing:** per [tolt.com/pricing](https://tolt.com/pricing) as of July 5, 2026: Basic at $69/mo (up to $10,000/mo in affiliate revenue, 2 programs, manual payouts only), Growth at $99/mo (up to $20,000/mo, 5 programs, auto payouts with a 2% processing fee), Pro at $199/mo (up to $50,000/mo), Enterprise custom above that. 14-day trial, no card required, 30-day refund. Note: aggregator sites still show a stale $49 Basic price; the live page says $69. **PartnerStack:** annual contract. **Tolt:** $828 a year at the floor, monthly terms.
+The modern flat-fee pick that removes affiliate-count limits entirely.
 
-**What stands out:** unlimited affiliates and referrals on every tier, more revenue headroom per dollar at $99 than Rewardful or FirstPromoter ($20K cap vs $15K), and wide payout rails: PayPal, Wise, local bank transfer, crypto, and wire, with automatic payouts from Growth up.
+### Key features
 
-**Honest trade-offs:** the $69 floor is the highest of the flat-fee trio, and the "0% transaction fees" marketing carries a nuance: automatic payouts have a 2% processing fee, and the Basic tier avoids it only by making all payouts manual. Attribution is cookie-based click tracking. No API is surfaced on the pricing page, and no official MCP was found as of June 2026.
+Unlimited affiliates and referrals on every tier, more revenue headroom per dollar at $99 than Rewardful or FirstPromoter ($20K cap vs $15K), and wide payout rails: PayPal, Wise, local bank transfer, crypto, and wire, with automatic payouts from Growth up.
+
+### Pricing
+
+Per [tolt.com/pricing](https://tolt.com/pricing) as of July 5, 2026: Basic at $69/mo (up to $10,000/mo in affiliate revenue, 2 programs, manual payouts only), Growth at $99/mo (up to $20,000/mo, 5 programs, auto payouts with a 2% processing fee), Pro at $199/mo (up to $50,000/mo), Enterprise custom above that. 14-day trial, no card required, 30-day refund. Note: aggregator sites still show a stale $49 Basic price; the live page says $69. **PartnerStack:** annual contract. **Tolt:** $828 a year at the floor, monthly terms.
+
+### Pros & cons
+
+**Pros:** no affiliate limits anywhere, global payout options, best headroom-per-dollar at the $99 tier.
+
+**Cons:** the $69 floor is the highest of the flat-fee trio, and the "0% transaction fees" marketing carries a nuance: automatic payouts have a 2% processing fee, and the Basic tier avoids it only by making all payouts manual. Attribution is cookie-based click tracking. No API is surfaced on the pricing page, and no official MCP was found as of June 2026.
 
 **Fits:** SaaS on Stripe, Paddle, or Chargebee that expects a large affiliate base early and wants global payout options.
 
-## Dub Partners: developer-first, priced like infrastructure
+## 5. Dub Partners — best for developer-led teams
 
-**Pricing:** per [dub.co/pricing](https://dub.co/pricing) as of July 5, 2026: Business at $90/mo (10K new links/mo, 250K tracked events, up to $2,500/mo in partner payouts at a 5% payout fee, 10 users), Advanced at $300/mo (50K links, 1M events, $15,000/mo in payouts at 5%), Enterprise custom on annual terms (payouts at 3%, SSO/SAML). Partners requires a paid plan. These numbers moved recently: between mid-June and early July 2026, Business went from $75 to $90, Advanced from $250 to $300, and the Advanced payout fee from 3% to 5%. Re-check the live page. **PartnerStack:** one big toll. **Dub:** two smaller ones, subscription plus a payout fee.
+Affiliate infrastructure priced and shaped like developer tooling.
 
-**What stands out:** the developer experience: SDKs in five languages, real-time webhooks, and agent-friendly documentation. Credit where due on tracking, too: Dub's attribution is lead/signup-anchored (the click is captured server-side and the durable record is the signup), which is architecturally the closest to Affitor's approach in this list. And you get link infrastructure, analytics, and partner payouts in one platform.
+### Key features
 
-**Honest trade-offs:** you pay twice: a $90/mo floor plus 5% of every partner payout (3% only on custom Enterprise). Payout caps meter your growth: $2,500/mo on Business means a successful program hits the ceiling fast. And attribution lives inside Dub's closed network; the only MCP found as of June 2026 was community-built and static-key, with no agent self-verify loop.
+The developer experience: SDKs in five languages, real-time webhooks, and agent-friendly documentation. Credit where due on tracking, too: Dub's attribution is lead/signup-anchored (the click is captured server-side and the durable record is the signup), which is architecturally the closest to Affitor's approach in this list. And you get link infrastructure, analytics, and partner payouts in one platform.
+
+### Pricing
+
+Per [dub.co/pricing](https://dub.co/pricing) as of July 5, 2026: Business at $90/mo (10K new links/mo, 250K tracked events, up to $2,500/mo in partner payouts at a 5% payout fee, 10 users), Advanced at $300/mo (50K links, 1M events, $15,000/mo in payouts at 5%), Enterprise custom on annual terms (payouts at 3%, SSO/SAML). Partners requires a paid plan. These numbers moved recently: between mid-June and early July 2026, Business went from $75 to $90, Advanced from $250 to $300, and the Advanced payout fee from 3% to 5%. Re-check the live page. **PartnerStack:** one big toll. **Dub:** two smaller ones, subscription plus a payout fee.
+
+### Pros & cons
+
+**Pros:** best-in-class SDKs and webhooks, signup/lead-anchored attribution, links + analytics + payouts in one product.
+
+**Cons:** you pay twice: a $90/mo floor plus 5% of every partner payout (3% only on custom Enterprise). Payout caps meter your growth: $2,500/mo on Business means a successful program hits the ceiling fast. And attribution lives inside Dub's closed network; the only MCP found as of June 2026 was community-built and static-key, with no agent self-verify loop.
 
 **Fits:** developer-led teams already using Dub for links, with budget for the subscription plus the payout fee.
+
+## Which one should you pick?
+
+**$0–500K ARR: Affitor, or Rewardful for a known flat cost.** A five-figure annual PRM contract at this stage is a category error. Affitor costs $0 until affiliates have generated $10,000; Rewardful is the familiar $49/mo default if you prefer a fixed bill.
+
+**$500K–5M ARR: pick by billing stack and volume.** On Stripe with steady affiliate revenue above roughly $1,400–$2,800/mo, a capped flat plan gets cheaper: Rewardful Growth or Tolt Growth at $99/mo. Off Stripe, FirstPromoter's five billing rails decide it. Developer-led teams already on Dub can justify the double toll for the tooling.
+
+**$5M+ ARR with multiple partner motions: PartnerStack.** This is the stage its pricing assumes: a partner manager on payroll, resellers and referral partners alongside affiliates, and marketplace distribution worth paying for. Book the demo with the checklist from this page in hand.
 
 ## Every option at a glance
 
@@ -125,6 +216,28 @@ Affiliate software pricing drifts fast. Two of the vendors above materially chan
 
 :::
 
+## FAQ
+
+### How much does PartnerStack cost?
+
+PartnerStack's Launch tier starts at $1,000 per month, paid annually, and its Growth tier at $1,520 per month, also paid annually (per its own pricing page as of July 5, 2026). That makes the minimum realistic commitment about $12,000 for year one, negotiated in a sales call — there is no self-serve signup.
+
+### What is the best PartnerStack alternative for SaaS?
+
+Affitor is the best PartnerStack alternative for an early-stage SaaS: self-serve signup and $0/month until affiliates generate your first $10,000 in revenue, versus PartnerStack's roughly $12,000/year minimum commitment. If you genuinely run a multi-type partner program with a partner manager, PartnerStack itself may still be the right call.
+
+### Is there a free alternative to PartnerStack?
+
+Affitor is the only tool in this comparison with no subscription: $0/month and $0 setup, with a 3.5% platform fee on affiliate-driven sales that begins only after your first $10,000 in affiliate revenue. Rewardful, FirstPromoter, Tolt, and Dub Partners all charge monthly floors of $49–$90 as of July 2026.
+
+### Does PartnerStack take a cut of partner payouts?
+
+Its published pricing page lists subscription tiers only, and we could not verify third-party reports of an additional percentage cut against any official source. Judge PartnerStack on its published numbers: from $1,000/month paid annually as of July 5, 2026.
+
+### Which PartnerStack alternatives are self-serve?
+
+All five alternatives on this page — Affitor, Rewardful, FirstPromoter, Tolt, and Dub Partners — have self-serve signup and month-to-month terms. PartnerStack is the only demo-led, annual-contract product in the set.
+
 ## What's next
 
-If PartnerStack's category is what you need, book their demo with the checklist from this page in hand. If you need an affiliate program without the commitment, [create your program on Affitor](https://affitor.com/welcome): it costs $0 until your program earns its first $10,000 through affiliates, then 3.5%. Then read [how Affitor tracking fits together](/brand/tracking/tracking-overview) to see the signup-anchored attribution model in detail before you install anything.
+If PartnerStack's category is what you need, book their demo with the checklist from this page in hand. If you need an affiliate program without the commitment, [create your program on Affitor](https://affitor.com/welcome): it costs $0 until your program earns its first $10,000 through affiliates, then 3.5%. Then read [how Affitor tracking fits together](/brand/tracking/tracking-overview) to see the signup-anchored attribution model in detail before you install anything — and if you are starting a program from scratch, [the six-step launch guide](/blog/how-to-start-saas-affiliate-program) covers everything beyond the software choice.

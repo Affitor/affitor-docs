@@ -1,14 +1,28 @@
 ---
-title: "Rewardful vs FirstPromoter: an honest comparison for SaaS (2026)"
+title: "Rewardful vs FirstPromoter: Which Is Best for SaaS in 2026?"
 description: "Same $49 floor, different ceilings: revenue caps, API gating, and billing coverage decide this one. Every number verified against both live pricing pages on July 5, 2026 — plus Affitor, the $0/month option neither compare page mentions."
 date: '2026-07-05'
+updated: '2026-07-05'
 category: Comparison
 image: /blog/covers/rewardful-vs-firstpromoter.png
 authors: ["Son Piaz, Founder"]
-readTime: "9 min read"
+readTime: "11 min read"
+faq:
+  - q: "Is Rewardful cheaper than FirstPromoter?"
+    a: "They cost the same on paper — both start at $49/month and step to $99 and $149+ (as of July 5, 2026) — but Rewardful gives you more for it at the entry tier: a $7,500/month affiliate-revenue cap versus FirstPromoter's $5,000/month, and API access that FirstPromoter reserves for its $99 plan. FirstPromoter gives you 3 campaigns at $49 where Rewardful allows 1."
+  - q: "Does FirstPromoter charge transaction fees?"
+    a: "FirstPromoter's pricing page does not state a transaction fee either way (as of July 5, 2026). Rewardful, by contrast, states a 0% transaction fee on every tier explicitly. Neither page shows any per-transaction charge on top of the subscription."
+  - q: "Which is better for a Stripe SaaS, Rewardful or FirstPromoter?"
+    a: "Rewardful is the better pick for most Stripe or Paddle SaaS: it has the simplest setup in the category, includes its REST API on the $49 tier, and gives 50% more affiliate-revenue headroom at the entry price. FirstPromoter wins when you bill through Chargebee, Recurly, or Braintree, or need MRR-based commissions and tax forms."
+  - q: "Does FirstPromoter have an API on the $49 plan?"
+    a: "No. FirstPromoter's $49 Starter tier is dashboard-only; the API and webhooks are gated to the $99 Business tier and up (as of July 5, 2026). Rewardful includes its REST API on every tier, including the $49 Starter."
+  - q: "Is there an alternative to both Rewardful and FirstPromoter?"
+    a: "Affitor drops the subscription both of them charge: $0/month with a 3.5% fee on affiliate-driven sales that starts only after your first $10,000 in affiliate revenue. It anchors attribution to the signup and Stripe customer record instead of a 60-day cookie, so referrals survive cookie loss."
+  - q: "How do Rewardful and FirstPromoter track referrals?"
+    a: "Both use cookie-based attribution with a 60-day default window: Rewardful lets you choose first-touch or last-touch credit, and FirstPromoter sets _fprom_* cookies with the conversion recorded at signup. Both share the same blind spot — when the cookie is cleared, blocked, or the buyer switches devices, the affiliate silently loses credit."
 ---
 
-Rewardful and FirstPromoter both charge $49 a month to start, both track affiliates with 60-day cookies by default, and both publish their own comparison pages for this exact search, each with an obvious favorite. This page is the version you would send a friend: the verified numbers, the trade-offs each vendor's page leaves out, and the one option neither of them mentions.
+Rewardful and FirstPromoter both charge $49 a month to start, both track affiliates with 60-day cookies by default, and both publish their own comparison pages for this exact search, each with an obvious favorite. This page is the version you would send a friend: the verified numbers, the trade-offs each vendor's page leaves out, a score per criterion, and the one option neither of them mentions.
 
 :::tip
 
@@ -16,7 +30,19 @@ Disclosure: we make [Affitor](https://affitor.com), which competes with both pro
 
 :::
 
-## Pricing: same floor, different ceilings
+## Quick answer: Rewardful or FirstPromoter?
+
+Rewardful is the better pick for most Stripe and Paddle SaaS in 2026: it includes its REST API on the $49 tier, states a 0% transaction fee plainly, and gives 50% more affiliate-revenue headroom at the entry price. Pick FirstPromoter if you bill through Chargebee, Recurly, or Braintree, or if you need MRR-based commissions and tax forms handled in-product. On the four criteria below, the rubric finishes Rewardful 2, FirstPromoter 1, with attribution a tie — and if you want to skip the subscription entirely, Affitor charges $0/month until your affiliates generate their first $10,000.
+
+| Tool | Best for | From price (as of Jul 2026) | Transaction fee | Attribution |
+|---|---|---|---|---|
+| [Rewardful](https://www.rewardful.com/pricing) | Stripe/Paddle SaaS wanting API access at $49 | $49/mo | 0%, stated on all tiers | Cookie, 60-day default, first- or last-touch |
+| [FirstPromoter](https://firstpromoter.com/pricing) | Billing beyond Stripe and Paddle; tax forms | $49/mo | None stated | Cookie (`_fprom_*`), 60-day default |
+| [Affitor](https://affitor.com) | Paying only on results | $0/mo | 3.5% after first $10K affiliate revenue | Signup-anchored via Stripe metadata |
+
+Every number on this page was checked against each vendor's live pricing page on July 5, 2026.
+
+## Pricing: Rewardful vs FirstPromoter — same floor, different ceilings
 
 Both ladders look identical from a distance: $49, then $99, then $149 and up. The differences live in what each rung caps and what it unlocks. Both vendors meter you by monthly *affiliate revenue*, meaning the revenue your affiliates generate, not your total revenue.
 
@@ -40,7 +66,9 @@ Look past the headline price and the entry tiers ration different things. Reward
 
 Two honest observations. First, FirstPromoter's $5,000/mo entry cap is the lowest in its peer group, so upgrade pressure arrives earliest: if your affiliates drive $6,000 in sales next month, you are over FirstPromoter's Starter cap and shopping for the $99 tier, while on Rewardful you are still $1,500 under the limit. Second, both ladders meter success. The better your program performs, the sooner you pay more, whether or not your margins moved.
 
-## Attribution and tracking: two cookie models
+**Verdict: Rewardful takes pricing** — 50% more affiliate-revenue headroom at the same $49, and the only transaction-fee policy stated in writing. **Score: Rewardful 1, FirstPromoter 0.**
+
+## Attribution: Rewardful vs FirstPromoter — two cookie models, one blind spot
 
 This criterion is closer to a tie than either vendor's marketing suggests.
 
@@ -52,23 +80,31 @@ A 60-day window is generous: a click on July 5 still credits the affiliate if th
 
 The shared weakness is that cookie-based attribution breaks on cookie loss, and the failure is silent. The buyer switches devices, clears cookies, or converts after the window closes; the affiliate loses credit, and no dashboard shows you the miss. Neither vendor is worse than the other here. It is the same model with the same blind spot, so do not let either compare page convince you tracking is the reason to switch between these two.
 
-## API and integrations: day-one API vs broader billing
+**Verdict: a tie** — the same 60-day cookie model with the same silent failure mode; tracking is not the reason to pick either. **Score: Rewardful 1, FirstPromoter 0, one tie.**
+
+## API and integrations: Rewardful vs FirstPromoter — day-one API vs broader billing
 
 **Rewardful** includes its REST API on every tier, including the $49 Starter. It is built for Stripe and Paddle billing, and its setup is the simplest in the category for a Stripe SaaS.
 
-**FirstPromoter** covers five billing providers, including Stripe, Paddle, and Chargebee, but gates the API and webhooks to the $99 Business tier. The $49 plan is dashboard-only.
+**FirstPromoter** covers five billing providers (Stripe, Paddle, Recurly, Chargebee, Braintree), but gates the API and webhooks to the $99 Business tier. The $49 plan is dashboard-only.
 
-That gives you two clean decision rules. If your integration is code-first and your budget is $49, Rewardful is the only one of the two that gives you an API at that price. If you bill through a provider Rewardful does not support, Rewardful is off the table and FirstPromoter is not.
+That gives you two clean decision rules. If your integration is code-first and your budget is $49, Rewardful is the only one of the two that gives you an API at that price. If you bill through a provider Rewardful does not support, Rewardful is off the table and FirstPromoter is not — billing fit overrides every other criterion on this page, because a tracker that cannot see your invoices tracks nothing.
 
 Worth knowing if you automate with AI agents: neither product ships an agent-completable integration path. As of the June 2026 audit, no official MCP server was found for either, and neither publishes a runbook an agent could execute and then verify on its own. Both APIs are human-developer surfaces.
 
-## Payouts and tax handling
+**Verdict: Rewardful takes the API criterion** — programmatic access from the first dollar, where FirstPromoter charges $99 to open the same door; but if your billing is not Stripe or Paddle, FirstPromoter wins this section by default. **Score: Rewardful 2, FirstPromoter 0, one tie.**
+
+## Payouts and tax: Rewardful vs FirstPromoter — the back office decides
 
 **FirstPromoter** has the deeper back office. Commissions can be MRR-based, which fits subscription pricing well. Tax form handling is included from the $99 Business tier, fraud detection is part of the product, and automatic payouts arrive on Enterprise.
 
 **Rewardful** keeps this surface smaller. On its pricing page, payout automation appears as 1-click PayPal payouts on the $149+ Enterprise tier, and no payout automation is listed below that.
 
+For a program with more than a handful of affiliates, the tax-form question is not cosmetic: someone has to collect the paperwork before payouts go out, and doing it in a spreadsheet is exactly the kind of chore that stops happening by month three.
+
 One caution while you research: FirstPromoter's own compare pages knock Rewardful for basic fraud protection and limited email functionality. Those claims come from a competitor's marketing page, so weigh them accordingly, and apply the same skepticism to the Affitor section below.
+
+**Verdict: FirstPromoter takes payouts and tax** — MRR-based commissions, in-product tax forms from $99, and fraud detection make it the stronger back office. **Final score: Rewardful 2, FirstPromoter 1, one tie.**
 
 ## Who should pick which
 
@@ -76,9 +112,11 @@ One caution while you research: FirstPromoter's own compare pages knock Rewardfu
 
 **Pick FirstPromoter if** you bill through Chargebee or another provider beyond Rewardful's Stripe/Paddle pair, want MRR-based commissions, or want tax forms handled inside the product instead of in a spreadsheet. It is also the only one of the two that gives you more than one campaign at $49, with three on Starter against Rewardful's one. Budget $99/mo from the start if you need the API, and expect to outgrow the $5,000/mo Starter cap first if you do not.
 
-Neither choice is a mistake at this price. Both are mature products aimed squarely at subscription SaaS, and for many teams the deciding factor is simply which billing provider they already use.
+Neither choice is a mistake at this price. Both are mature products aimed squarely at subscription SaaS, and for many teams the deciding factor is simply which billing provider they already use. If you are also weighing the rest of the field, [the best Rewardful alternatives for SaaS](/blog/rewardful-alternatives) compares five tools side by side.
 
 ## The option neither compare page mentions
+
+![Affitor’s Partners view — every partner, application, and invite in one table with live stats](/blog/shots/partners-table-live.png)
 
 Rewardful's comparison article and FirstPromoter's compare pages measure the two against each other and a few look-alikes. Neither mentions Affitor, so here is that section, written with the same rules as everything above.
 
@@ -86,7 +124,7 @@ Rewardful's comparison article and FirstPromoter's compare pages measure the two
 
 Attribution works differently too. Instead of a cookie window, [attribution rides Stripe metadata](https://docs.affitor.com/brand/tracking/tracking-overview): the click ID and customer key travel on the Stripe Checkout Session itself, anchored to a signup-based identity chain (click, then hashed email, then Stripe customer) that survives cookie loss.
 
-And the integration is agent-verifiable, shipped and live today, not roadmap: a `skill.md` runbook an AI agent can complete end to end, an `affitor` CLI, and a self-verify loop that fires a synthetic click, lead, and sale, then returns `integration_verified: true` from the readiness endpoint. As of the June 2026 audit, no other platform in this comparison ships an equivalent.
+And the integration is agent-verifiable, shipped and live today, not roadmap: a `skill.md` runbook an AI agent can complete end to end, an `affitor` CLI, and a self-verify loop that fires a synthetic click, lead, and sale, then returns `integration_verified: true` from the readiness endpoint. As of the June 2026 audit, no other platform in this comparison ships an equivalent. The full Stripe wiring is walked step by step in [How to create a Stripe affiliate program](/blog/stripe-affiliate-program).
 
 Program operations follow the same keep-it-small idea: one flat partner table holds active partners, applications, and pending invites, and partner invites come pre-written from your program's real terms (commission rate, attribution window, payout threshold) — paste emails or import a CSV and send.
 
@@ -108,8 +146,35 @@ Now the trade-offs, because this page promised them:
 | Payouts and tax | 1-click PayPal payouts on Enterprise | Tax forms from $99; auto payouts on Enterprise | Partner payouts via bank transfer, PayPal, Stripe, or Wise |
 | Trial | 14-day free trial | 14 days, no card required | Free until the first $10,000 in affiliate revenue |
 | Agent integration | No official MCP found (June 2026) | No official MCP found (June 2026) | `skill.md` runbook + self-verify loop returning `integration_verified: true` |
+| Rubric score | 2 of 4 criteria (pricing, API) | 1 of 4 (payouts and tax) | Not scored — different model |
 
 All Rewardful and FirstPromoter figures were verified against their live pricing pages on July 5, 2026. Pricing in this category moves fast, so treat any comparison page older than a few months, including this one, as a starting point rather than a quote.
+
+## FAQ
+
+### Is Rewardful cheaper than FirstPromoter?
+
+They cost the same on paper — both start at $49/month and step to $99 and $149+ (as of July 5, 2026) — but Rewardful gives you more for it at the entry tier: a $7,500/month affiliate-revenue cap versus FirstPromoter's $5,000/month, and API access that FirstPromoter reserves for its $99 plan. FirstPromoter gives you 3 campaigns at $49 where Rewardful allows 1.
+
+### Does FirstPromoter charge transaction fees?
+
+FirstPromoter's pricing page does not state a transaction fee either way (as of July 5, 2026). Rewardful, by contrast, states a 0% transaction fee on every tier explicitly. Neither page shows any per-transaction charge on top of the subscription.
+
+### Which is better for a Stripe SaaS, Rewardful or FirstPromoter?
+
+Rewardful is the better pick for most Stripe or Paddle SaaS: it has the simplest setup in the category, includes its REST API on the $49 tier, and gives 50% more affiliate-revenue headroom at the entry price. FirstPromoter wins when you bill through Chargebee, Recurly, or Braintree, or need MRR-based commissions and tax forms.
+
+### Does FirstPromoter have an API on the $49 plan?
+
+No. FirstPromoter's $49 Starter tier is dashboard-only; the API and webhooks are gated to the $99 Business tier and up (as of July 5, 2026). Rewardful includes its REST API on every tier, including the $49 Starter.
+
+### Is there an alternative to both Rewardful and FirstPromoter?
+
+Affitor drops the subscription both of them charge: $0/month with a 3.5% fee on affiliate-driven sales that starts only after your first $10,000 in affiliate revenue. It anchors attribution to the signup and Stripe customer record instead of a 60-day cookie, so referrals survive cookie loss.
+
+### How do Rewardful and FirstPromoter track referrals?
+
+Both use cookie-based attribution with a 60-day default window: Rewardful lets you choose first-touch or last-touch credit, and FirstPromoter sets `_fprom_*` cookies with the conversion recorded at signup. Both share the same blind spot — when the cookie is cleared, blocked, or the buyer switches devices, the affiliate silently loses credit.
 
 ## What's next
 
