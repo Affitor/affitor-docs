@@ -1,0 +1,137 @@
+---
+title: "Polar"
+description: "Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed."
+---
+
+This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor. The CLI generates all of it with one command.
+
+:::note
+
+The `@affitor/sdk` package is **Beta**. The documented happy-path works; report issues on GitHub.
+
+:::
+
+## Prerequisites
+
+- Your **program ID** and a **program API key** (run `npx affitor init`, or dashboard → program settings)
+- A Polar organization with checkout working in your app
+- A Polar **Organization Access Token** with the `webhooks:write` scope (Polar dashboard → Settings → Developers → New Token). Sandbox is a separate environment with its own tokens (`sandbox-api.polar.sh`).
+
+## Quick path: one command
+
+```bash
+npx affitor setup polar          # add --sandbox while testing
+```
+
+This creates the webhook endpoint on your Polar org (`order.paid` + `order.refunded`, delivered to `https://<your domain>/api/polar/webhook`), saves the signing secret to `.affitor/.env` and your app's `.env` as `POLAR_WEBHOOK_SECRET`, and — for Next.js App Router — generates the glue route below. It is idempotent and never overwrites an existing route; see the [CLI reference](/brand/cli/commands#affitor-setup-polar) for flags and the `--json` agent mode.
+
+The rest of this page documents what that command wires, plus the click/signup steps it does not cover.
+
+## 1. Capture clicks and track signups
+
+Identical to the framework integration — follow [Step 1](/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
+
+Keep the `userId` you send at signup (`signup(userId)` / `trackLead({ customerExternalId: userId })`) — you will plant it on every Polar checkout as `user_id`.
+
+## 2. Carry attribution into the checkout
+
+Polar copies checkout metadata onto the resulting Order **and** Subscription, so the webhook can resolve the partner days later. Two carriers work; use whichever fits your checkout:
+
+### Server-created Checkout Sessions
+
+```ts
+// When creating the Polar checkout server-side, attach metadata:
+metadata: {
+  affitor_click_id: affitorClickId,   // from the `affitor_click_id` cookie
+  user_id: user.id,                   // SAME stable id you used at signup
+}
+```
+
+### Checkout Links (zero server code)
+
+Append the click id to the link — Polar automatically copies a `?reference_id=` query param into the checkout's metadata, and it propagates to every resulting order, **renewals included**:
+
+```text
+https://buy.polar.sh/polar_cl_xxx?reference_id=<affitor_click_id>
+```
+
+If you use the `@polar-sh/nextjs` `Checkout` route handler instead, pass `customerExternalId` (your user id) and a URL-encoded `metadata` JSON query param — the adapter forwards both.
+
+## 3. The webhook glue route
+
+`affitor setup polar` generates `app/api/polar/webhook/route.ts` (Next.js App Router). The `Webhooks()` helper validates the Standard-Webhooks signature with `POLAR_WEBHOOK_SECRET` before any callback runs:
+
+```ts
+import { Webhooks } from '@polar-sh/nextjs';
+import { Affitor } from '@affitor/sdk/server';
+
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY ?? '' });
+
+export const POST = Webhooks({
+  webhookSecret: process.env.POLAR_WEBHOOK_SECRET!,
+  onOrderPaid: async (payload) => {
+    const order = payload.data;
+    // Skip $0 orders (free tiers, 100%-off) — no revenue to attribute.
+    if (!order.totalAmount || order.totalAmount <= 0) return;
+    const res = await affitor.trackSale({
+      customerExternalId: (order.metadata?.user_id as string | undefined)
+        ?? order.customer?.externalId ?? order.customerId,
+      clickId: (order.metadata?.affitor_click_id ?? order.metadata?.reference_id) as string | undefined,
+      amount: order.totalAmount,         // integer cents
+      currency: order.currency,
+      invoiceId: order.id,               // idempotency key — 409 = already recorded
+      saleType: order.subscriptionId ? 'subscription' : 'payment',
+      isRecurring: order.billingReason === 'subscription_cycle',
+      subscriptionId: order.subscriptionId ?? undefined,
+    });
+    if (!res.ok && res.status !== 409) {
+      console.error('[affitor] trackSale failed', res.status, res.error);
+    }
+  },
+  onOrderRefunded: async (payload) => {
+    const order = payload.data;
+    const res = await affitor.trackRefund({ invoiceId: order.id });
+    if (!res.ok) {
+      console.error('[affitor] trackRefund failed', res.status, res.error);
+    }
+  },
+});
+```
+
+:::note
+
+**Field names are the SDK's camelCase.** The `Webhooks()` helper (and `validateEvent` from `@polar-sh/sdk/webhooks`) parse the raw webhook JSON into typed objects: `order.totalAmount`, `order.subscriptionId`, `order.billingReason`. The wire format's snake_case names (`total_amount`, …) are `undefined` on the parsed payload — reading them silently loses the sale amount and attribution.
+
+:::
+
+**Attribution resolution.** Affitor resolves the partner from, in order: `clickId` (the planted `affitor_click_id`, or the checkout link's `reference_id`), then `customerExternalId` matched against the lead you tracked at signup. Supplying both is the recommended default.
+
+## Subscription renewals
+
+Nothing extra to wire: Polar fires `order.paid` on **every** billing cycle, and the metadata planted at checkout (or carried by `reference_id`) propagates to renewal orders. The handler above marks renewals precisely via `billingReason === 'subscription_cycle'` (first subscription payments arrive as `subscription_create`).
+
+## Refunds
+
+`order.refunded` delivers the updated order; `trackRefund({ invoiceId: order.id })` reverses the commission in full (idempotent by `invoiceId`). For **partial** refunds, pass the refunded amount instead: `trackRefund({ invoiceId, refundAmountCents: order.refundedAmount })`.
+
+## Verify
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["Complete a sandbox checkout — confirm Polar delivers `order.paid` to `/api/polar/webhook` (HTTP 200) and the order's metadata carries your `user_id` / `reference_id`"]}
+  dashboard={["The sale appears under your program's tracking events with the partner correctly attributed; re-delivering the same webhook is a no-op (Affitor answers 409)"]}
+  ifNotWorking={["Run `npx affitor test sale` (isolated `is_test` events, no real commissions), then `npx affitor status` — or poll readiness until `integration_verified`"]}
+/>
+
+## Common mistakes
+
+<CommonMistakes items={[
+  "Reading snake_case fields (`order.total_amount`) off the SDK-parsed payload — they are `undefined`; the parsed objects are camelCase (`order.totalAmount`).",
+  "Subscribing to `order.created` instead of `order.paid` — `order.created` fires before payment; you would record unpaid orders.",
+  "Forgetting `POLAR_WEBHOOK_SECRET` (or `AFFITOR_API_KEY`) in the deploy environment — the route validates every delivery with it, so webhooks fail after deploy even though local dev worked.",
+  "Mixing environments — sandbox and production are separate Polar environments with separate tokens AND separate webhook endpoints; re-run `affitor setup polar` (without `--sandbox`) at go-live.",
+  "Different user IDs at signup vs checkout — `metadata.user_id` must equal the `customerExternalId` you sent at signup, or sales stop attributing once the click cookie expires.",
+  "Calling trackSale from the browser — sale tracking is server-side only; the program API key must never ship to a client."
+]} />
+
+<NextStep title="Prefer the full CLI flow?" description="affitor onboard detects Polar, injects the sale call into an existing webhook route, and proves attribution with a synthetic chain." href="/brand/cli/commands#affitor-onboard" />
