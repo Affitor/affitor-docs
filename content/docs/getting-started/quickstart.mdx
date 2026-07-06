@@ -1,0 +1,106 @@
+---
+title: How to Use Affitor
+description: The end-to-end golden path — launch a program, install tracking, and run commissions through to payout.
+---
+
+This is the shortest path from zero to your first attributed commission. Each step links to the detailed guide, so use this page as your map and follow the links when you need depth.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'New advertisers setting up Affitor for the first time' },
+    { label: 'Time required', value: '~30 minutes of setup, then tracking runs on its own' },
+    { label: 'Prerequisites', value: 'Your product live, a signup flow, and a payment provider' },
+    { label: 'Outcome', value: 'A live program that attributes clicks, signups, and sales to partners and moves commissions to payout' },
+  ]}
+/>
+
+## The lifecycle at a glance
+
+<Flow>
+  <FlowStep caption="You define commissions, approval rules, and payout settings.">Launch a program</FlowStep>
+  <FlowStep caption="Approved partners share links that identify their traffic.">Partners promote</FlowStep>
+  <FlowStep caption="Clicks, signups, and sales are captured and attributed.">Track referrals</FlowStep>
+  <FlowStep caption="Attributed revenue creates a commission automatically.">Commission created</FlowStep>
+  <FlowStep caption="Review, hold, and pay out — all in one place.">Payout</FlowStep>
+</Flow>
+
+## Phase 1 — Launch your program
+
+Set up the program partners will join and get the API key your backend uses to report sales.
+
+<TaskCardGrid>
+  <TaskCard title="1. Create your account" href="/advertisers/quickstart/create-account">Set up your advertiser account and open the dashboard.</TaskCard>
+  <TaskCard title="2. Set up your program" href="/advertisers/quickstart/setup-program">Define program basics, branding, and what partners see.</TaskCard>
+  <TaskCard title="3. Define commissions" href="/advertisers/quickstart/define-commission">Choose how partners earn — signups, sales, or subscription payments.</TaskCard>
+  <TaskCard title="4. Create an API key" href="/advertisers/api-keys">Generate the program API key your server uses to authenticate tracking calls.</TaskCard>
+</TaskCardGrid>
+
+## Phase 2 — Install tracking
+
+Affitor attributes revenue from three signals across the customer journey. You install these once and they run continuously.
+
+<Flow>
+  <FlowStep caption="The tracker records first touch and sets the click cookie.">Click</FlowStep>
+  <FlowStep caption="Your signup flow ties a customer to the referring click.">Signup / lead</FlowStep>
+  <FlowStep caption="Your backend reports revenue so a commission can be created.">Sale</FlowStep>
+</Flow>
+
+Follow the [3-Step Integration Guide](/advertisers/tracking/quickstart-integration) to wire these up. Sales are always reported **server-side** with your program API key — here is the canonical call:
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST https://api.affitor.com/api/v1/track/sale \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "transaction_id": "txn_abc123",
+    "customer_key": "usr_9876",
+    "amount_cents": 4900,
+    "currency": "USD",
+    "sale_type": "payment"
+  }'`
+  }
+]} />
+
+<Callout type="info" title="One customer key end to end">
+The `customer_key` you send at signup must equal the one you send at sale. That single identifier is how Affitor links a sale back to the original click and credits the right partner.
+</Callout>
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["Your signup fires `POST /api/v1/track/lead` and your backend fires `POST /api/v1/track/sale`, both returning 2xx"]}
+  dashboard={["The click, lead, and sale appear under your program's tracking events"]}
+  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without generating commissions"]}
+/>
+
+## Phase 3 — Commissions and payouts
+
+Once a sale is attributed, Affitor creates the commission and moves it through your review and payout workflow.
+
+<TaskCardGrid>
+  <TaskCard title="Review performance" href="/advertisers/quickstart/view-performance">Monitor clicks, leads, sales, and per-partner performance once you are live.</TaskCard>
+  <TaskCard title="Validate commissions" href="/advertisers/quickstart/commission-approval-cash-flow">Understand how commissions are reviewed, held, and cleared.</TaskCard>
+  <TaskCard title="Run payouts" href="/advertisers/quickstart/payouts">Move cleared commissions through to partner payout.</TaskCard>
+</TaskCardGrid>
+
+## Your golden-path checklist
+
+<Checklist
+  items={[
+    { text: 'Advertiser account created', href: '/advertisers/quickstart/create-account' },
+    { text: 'Program configured with commissions', href: '/advertisers/quickstart/define-commission' },
+    { text: 'Program API key generated', href: '/advertisers/api-keys' },
+    { text: 'Click, signup, and sale tracking installed', href: '/advertisers/tracking/quickstart-integration' },
+    { text: 'First test sale verified in the dashboard', href: '/advertisers/quickstart/view-performance' },
+    { text: 'Payout workflow understood', href: '/advertisers/quickstart/payouts' },
+  ]}
+/>
+
+<NextStep
+  title="Open the advertiser quickstart"
+  description="Ready to configure everything in detail? Start with account creation and program setup."
+  href="/advertisers/quickstart"
+  ctaLabel="Open advertiser quickstart"
+/>
