@@ -7,10 +7,12 @@
     "quickstart/create-account",
     "quickstart/find-and-join-programs",
     "quickstart/get-your-referral-link",
+    "quickstart/promote-your-link",
     "---Earn---",
     "dashboard",
     "payouts",
     "refer-program",
+    "account-settings",
     "faq"
   ]
 }
