@@ -153,6 +153,13 @@ Group Rewards will let you assign different commission structures to different p
 
 ---
 
+## Verify it worked
+
+<VerifySuccess
+  dashboard={["Groups shows your group with the new rate in the Commission column", "Run a test-mode sale (`additional_data: { test_mode: true }`) — the commission appears under Commissions → Pending, computed at the group's rate"]}
+  ifNotWorking={["Partners inherit the policy of the group they are IN — check the partner's group on the Partners table before assuming the rate is wrong"]}
+/>
+
 ## What's Next
 
 - **[Commission Approval & Cash Flow](/brand/quickstart/commission-approval-cash-flow)** – How commissions are validated and paid

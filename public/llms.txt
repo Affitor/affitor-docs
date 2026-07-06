@@ -100,6 +100,7 @@
 
 All entries live on one page: https://docs.affitor.com/changelog
 
+- [Read honest affiliate-software comparisons on the new Affitor blog (2026-07-06)](https://docs.affitor.com/changelog): Twelve posts comparing the tools you're actually evaluating — every price dated "as of," competitor strengths conceded up front, and .md twins plus llms.txt so your AI assistant reads the same facts you do.
 - [Invite partners — with the email already written (2026-07-05)](https://docs.affitor.com/changelog): Recruit affiliates by email, CSV, or from your other programs — and send an invitation generated from your program's real terms instead of writing one from scratch.
 - [Faster, less noisy docs search (2026-04-25)](https://docs.affitor.com/changelog): Search now matches page titles only — no more wading through paragraph snippets to find what you need.
 - [Content Lab — write affiliate posts in one click (2026-04-20)](https://docs.affitor.com/changelog): Pick a program, get a publish-ready affiliate post in one click — free, 30 posts a day.

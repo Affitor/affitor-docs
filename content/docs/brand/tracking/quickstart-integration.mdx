@@ -294,6 +294,15 @@ Use server-side tracking when your backend controls the revenue event. Use Strip
 
 ---
 
+## Verify it worked
+
+<VerifySuccess
+  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  network={["Your signup handler's `trackLead` call returns 2xx; your Stripe webhook (or S2S call) fires `trackSale` on a test payment"]}
+  dashboard={["Click, lead, and sale all appear under your program's tracking events — or run `npx affitor onboard verify` to fire the whole synthetic chain in one command"]}
+  ifNotWorking={["Use `additional_data: { test_mode: true }` so test events never create real commissions"]}
+/>
+
 ## You're Done
 
 All three steps working means your integration is live:
