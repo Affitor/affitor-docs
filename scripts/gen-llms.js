@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const SITE = 'https://docs.affitor.com';
+// Blog is proxied at affitor.com/blog (multi-zone) — that's its canonical home.
+const BLOG_SITE = 'https://affitor.com/blog';
 
 // ---------------------------------------------------------------------------
 // Frontmatter (flat `key: value` lines only — all our content uses this shape)
@@ -141,7 +143,7 @@ const blog = walk(join(ROOT, 'content/blog'))
   .map((f) => {
     const fm = frontmatter(f);
     const slug = relative(join(ROOT, 'content/blog'), f).replace(/\.mdx?$/, '');
-    return { title: fm.title, desc: fm.description ?? '', date: fm.date ?? '', url: `${SITE}/blog/${slug}` };
+    return { title: fm.title, desc: fm.description ?? '', date: fm.date ?? '', url: `${BLOG_SITE}/${slug}` };
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
 

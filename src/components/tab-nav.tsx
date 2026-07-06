@@ -15,7 +15,13 @@ const TABS: Tab[] = [
   { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
 ];
 
-export function TabNav() {
+/**
+ * `docsBase` makes docs-section tabs absolute (blog pages pass
+ * 'https://docs.affitor.com' in production so tab links survive being proxied
+ * at affitor.com/blog). The Blog tab always stays relative — /blog/* is the
+ * one namespace that exists on both hosts.
+ */
+export function TabNav({ docsBase = '' }: { docsBase?: string }) {
   const pathname = usePathname() || '/';
   const activeIdx = (() => {
     // most specific match wins; Getting Started is the fallback
@@ -31,7 +37,7 @@ export function TabNav() {
         return (
           <Link
             key={tab.title}
-            href={tab.href}
+            href={tab.href === '/blog' ? tab.href : `${docsBase}${tab.href}`}
             className={`relative inline-flex items-center h-full text-[13.5px] font-medium whitespace-nowrap transition-colors ${
               active ? 'text-fd-foreground' : 'text-fd-muted-foreground hover:text-fd-foreground'
             }`}

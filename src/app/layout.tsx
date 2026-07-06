@@ -2,6 +2,7 @@ import './globals.css';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
+import { docsBase } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +32,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <RootProvider>{children}</RootProvider>
+        {/* Absolute search endpoint: blog pages are proxied at affitor.com/blog,
+            where a relative /api/search would hit the main app and 404. CORS
+            for this route is set in next.config.mjs. */}
+        <RootProvider search={{ options: { api: `${docsBase}/api/search` } }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

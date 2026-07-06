@@ -1,18 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { blog } from '@/../.source/server';
-import { DocsShell } from '@/components/docs-shell';
+import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
+import { BLOG_URL, docsBase } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Blog',
   description:
     'Essays, launches, and guides from the team building Affitor — affiliate infrastructure for the agent era.',
+  // Canonical home of the blog is the proxied affitor.com/blog zone.
+  alternates: { canonical: BLOG_URL },
   openGraph: {
     title: 'Affitor Blog',
     description:
       'Essays, launches, and guides from the team building Affitor.',
     type: 'website',
+    url: BLOG_URL,
   },
   twitter: {
     card: 'summary_large_image',
@@ -76,7 +80,7 @@ export default function BlogIndexPage() {
   const posts = [...blog].sort(byDateDesc);
 
   return (
-    <DocsShell>
+    <BlogShell>
       <div className="mx-auto w-full max-w-[1152px] px-6 py-16 md:py-24">
         <header className="mb-16 md:mb-20">
           <p className="text-[13px] font-medium uppercase tracking-[0.04em] text-fd-primary mb-3">
@@ -94,7 +98,7 @@ export default function BlogIndexPage() {
         {posts.length === 0 ? (
           <p className="text-[17px] leading-[28px] text-fd-muted-foreground">
             First post coming soon. Meanwhile, the{' '}
-            <Link href="/changelog" className="text-fd-primary font-medium hover:underline">
+            <Link href={`${docsBase}/changelog`} className="text-fd-primary font-medium hover:underline">
               changelog
             </Link>{' '}
             has everything we&rsquo;ve shipped.
@@ -107,6 +111,6 @@ export default function BlogIndexPage() {
           </div>
         )}
       </div>
-    </DocsShell>
+    </BlogShell>
   );
 }

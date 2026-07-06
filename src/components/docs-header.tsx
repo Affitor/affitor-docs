@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useSearchContext } from 'fumadocs-ui/contexts/search';
 
-export function DocsHeader() {
+/**
+ * `docsBase` makes docs-section links/assets absolute (blog pages pass
+ * 'https://docs.affitor.com' in production so the chrome survives being
+ * proxied at affitor.com/blog). Docs pages omit it and stay relative.
+ */
+export function DocsHeader({ docsBase = '' }: { docsBase?: string }) {
   const { setTheme, resolvedTheme } = useTheme();
   const { setOpenSearch } = useSearchContext();
 
@@ -12,9 +17,9 @@ export function DocsHeader() {
     <header className="bg-fd-background/80 backdrop-blur-md">
       <div className="flex h-14 items-center gap-4 px-5 max-w-[1536px] mx-auto">
       {/* Left: Logo */}
-      <Link href="/" className="flex items-center gap-2 shrink-0">
+      <Link href={`${docsBase}/`} className="flex items-center gap-2 shrink-0">
         <img
-          src="/affitor-logo.svg"
+          src={`${docsBase}/affitor-logo.svg`}
           alt="Affitor"
           style={{ height: '22px', width: 'auto' }}
         />
@@ -59,7 +64,7 @@ export function DocsHeader() {
           Dashboard
         </Link>
         <Link
-          href="/brand/quickstart/create-account"
+          href={`${docsBase}/brand/quickstart/create-account`}
           className="hidden sm:inline-flex items-center gap-1 h-8 rounded-md bg-fd-primary px-3.5 text-[13px] font-medium text-fd-primary-foreground transition-[opacity,transform] duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           Get Started
