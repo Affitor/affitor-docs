@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import FdLink from 'fumadocs-core/link';
 import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
+import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
 import { BLOG_URL, DOCS_URL, docsBase } from '@/lib/site';
@@ -236,6 +237,8 @@ export default async function BlogPostPage(props: {
         <div className="prose dark:prose-invert max-w-none text-[17px] leading-[28px] [&_p]:leading-[28px] [&_a]:text-fd-primary [&_a]:font-medium [&_a]:no-underline hover:[&_a]:underline [&_img]:rounded-lg [&_img]:border [&_img]:border-fd-border">
           <Body components={components} />
         </div>
+
+        <AskAiRow slug={slug} />
       </article>
     </BlogShell>
   );

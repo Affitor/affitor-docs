@@ -81,6 +81,13 @@ Partners manage their payout details inside the payout workflow; advertisers do 
 
 ---
 
+## Verify it worked
+
+<VerifySuccess
+  dashboard={["A test-mode sale produces a commission in Pending; when its hold period ends it moves to Approved", "Billing shows the platform-fee card ($0 until your first $10,000 through affiliates) and the Next invoice date"]}
+  ifNotWorking={["Commissions stuck in Pending usually mean the hold period has not elapsed — the per-program default is in your program settings"]}
+/>
+
 ## Refunds
 
 When a refund occurs, Affitor reconciles the commission through the payout workflow based on its current lifecycle state.

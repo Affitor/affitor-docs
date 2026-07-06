@@ -154,6 +154,26 @@ Once setup is complete, share your partner recruitment link so affiliates can ap
 
 ---
 
+## Verify it worked
+
+Reload **Settings** and confirm each choice survived the save — every tab (business details, approval mode, commission) saves separately:
+
+<VerifySuccess
+  dashboard={[
+    "Settings → Business details shows your company name, website URL, and logo",
+    "Settings → Approval mode shows Manual review or Auto-approve — whichever you picked",
+    "Settings → Commission shows your default rate and duration",
+    "The Quick start checklist in the top bar marks the program-details step complete, leaving tracking and sharing",
+  ]}
+  ifNotWorking={[
+    "A tab shows old values? Each tab saves on its own — reopen it, re-enter, and save that tab again",
+    "Set up with the CLI instead? Run npx affitor status from your project root — it prints your program card (name, domain, Program ID) plus Stripe state, and should match what Settings shows",
+    "Tracking steps still show as pending? That's expected — integration status is recalculated from real click, lead, and payment events, which you'll send in the tracking quickstart next",
+  ]}
+/>
+
+---
+
 <NextStep
   title="Install tracking"
   description="Once your program details are in place, move into the tracking quickstart to capture clicks, signups, and payments end to end."

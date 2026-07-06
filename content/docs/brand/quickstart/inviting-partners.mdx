@@ -58,6 +58,16 @@ Click **Send invite** — done.
 
 ---
 
+## Verify it worked
+
+Send one invite to your own email before the real batch:
+
+<VerifySuccess
+  browser={["Your inbox shows the invitation with your program's terms in the body and a working Accept button"]}
+  dashboard={["The Partners table shows the address with an Invited badge and a 30-day expiry; after you accept from the email, the row flips to Active and the partner detail shows a tracking link"]}
+  ifNotWorking={["A failed delivery is flagged on the invite row with the reason — hover the row and use Resend invite once fixed"]}
+/>
+
 ## Tips
 
 - **Groups first.** If you plan different commission tiers (e.g. VIPs vs. newsletter partners), create the groups before inviting, so each batch lands in the right one.
