@@ -66,7 +66,7 @@ npx affitor init \
 
 ## `affitor onboard`
 
-The recommended one-shot integration. Wires Affitor into this app end-to-end: detect the stack → install browser tracking → inject the Stripe sale call → verify. Run it from your project root after `affitor init`.
+The recommended one-shot integration. Wires Affitor into this app end-to-end: detect the stack → install browser tracking → inject the sale call (Stripe or Polar) → verify. Run it from your project root after `affitor init`.
 
 ```bash
 npx affitor onboard
@@ -89,12 +89,12 @@ An API key is required. `onboard` resolves it from `--api-key`, the `AFFITOR_API
 
 1. **Detect** — inspects the project to identify the framework (Next.js app/pages router, Fastify, Express, plain Node) and the payment provider (Stripe, Polar, Lemon Squeezy, Paddle).
 2. **Browser tracking** — installs `@affitor/sdk` and wires the `<AffitorTracker />` component via a diff-preview, scaffolding `lib/affitor.ts` (the same install wizard `affitor init` uses).
-3. **Server sale** — locates your Stripe webhook handler and injects the `affitor.trackSale` call after the event is verified. It also persists `AFFITOR_API_KEY` into `.env` / `.env.local` (never overwriting an existing value).
+3. **Server sale** — locates your payment webhook handler and injects the `affitor.trackSale` call after the event is verified: for Stripe, after `stripe.webhooks.constructEvent` in the `checkout.session.completed` case; for Polar, inside the `@polar-sh/nextjs` `Webhooks({ onOrderPaid })` callback (no webhook route yet? it points you at `affitor setup polar`). It also persists `AFFITOR_API_KEY` into `.env` / `.env.local` (never overwriting an existing value).
 4. **Verify** — fires the synthetic click → lead → sale chain through the real attribution pipeline, then polls program readiness until `integration_verified` is reached.
 
 ### Safety and idempotency
 
-`onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape isn't cleanly recognized, or no webhook is found, or the provider isn't Stripe, it degrades to **printing the exact snippets** for you to paste rather than guessing an edit site. Auto-edits to the Stripe handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).
+`onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape isn't cleanly recognized, or no webhook is found, or the provider has no auto-edit path (Lemon Squeezy, Paddle), it degrades to **printing the exact snippets** for you to paste rather than guessing an edit site. Auto-edits to the payment handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).
 
 In `--json` mode `onboard` performs **no file edits** — it reports each step as `manual` so an agent drives the edits explicitly, then still fires the verification chain and polls readiness.
 
@@ -154,10 +154,46 @@ npx affitor setup stripe
 |---|---|
 | `customer.created` | Lead tracking |
 | `checkout.session.completed` | Sale tracking |
-| `invoice.payment_succeeded` | Recurring commission |
+| `invoice.paid` | Recurring commission |
 | `invoice.payment_failed` | Failed payment alerts |
 | `charge.refunded` | Automatic commission clawback |
 | `customer.subscription.deleted` | Churn tracking |
+
+The endpoint is created on your Stripe account pointing at Affitor's global webhook ingest route (`https://api.affitor.com/api/webhook-distributor/stripe`).
+
+---
+
+## `affitor setup polar`
+
+Connect Polar (merchant of record — no Stripe account needed): creates the webhook endpoint on your Polar organization and generates the self-hosted glue route that reports every sale and refund to Affitor.
+
+```bash
+npx affitor setup polar
+```
+
+**What happens:**
+
+1. A webhook endpoint is created on your Polar org (events `order.paid` + `order.refunded`, format `raw`) pointing at your app — default `https://<your domain>/api/polar/webhook`
+2. The signing secret is saved to `.affitor/.env` (gitignored) and written as `POLAR_WEBHOOK_SECRET` into your app's `.env` / `.env.local`
+3. For Next.js (App Router), the glue route `app/api/polar/webhook/route.ts` is generated — it validates the Standard-Webhooks signature via `@polar-sh/nextjs` and calls `trackSale` / `trackRefund` from `@affitor/sdk/server`
+
+| Flag | Description |
+|---|---|
+| `--token <token>` | Polar Organization Access Token (or `POLAR_ACCESS_TOKEN` env; prompted otherwise) |
+| `--sandbox` | Use the Polar sandbox environment (`sandbox-api.polar.sh` — sandbox tokens are separate) |
+| `--url <url>` | Webhook delivery URL override |
+
+The token needs the `webhooks:write` scope (Polar dashboard → Settings → Developers → New Token).
+
+**Idempotent:** re-running reuses an endpoint that already delivers to the same URL (the signing secret is recovered from the Polar API), adds any missing events, and never overwrites an existing route file — run `affitor onboard` to inject the sale call into a route you wrote yourself.
+
+**Agent mode:** with `--json` no app files are edited; the output includes the full route (`route.path`, `route.source`, `route.deps`, `route.env`) plus `next_actions` so an agent applies it explicitly:
+
+```bash
+npx affitor setup polar --token $POLAR_ACCESS_TOKEN --sandbox --json
+```
+
+Renewals need nothing extra — Polar fires `order.paid` on every billing cycle and checkout metadata (including a checkout link's `?reference_id=`) propagates to those orders. See the [Polar integration guide](/api-reference/integrations/polar) for the full recipe.
 
 ---
 
@@ -219,7 +255,7 @@ Configuration is stored in `.affitor/config.json`:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "program_id": "430",
   "domain": "example.com",
   "commission": {
@@ -228,14 +264,15 @@ Configuration is stored in `.affitor/config.json`:
     "duration_months": 12
   },
   "cookie": {
-    "name": "_aff",
+    "name": "affitor_click_id",
     "duration_days": 90
   },
   "stripe_connected": false,
-  "api_key": "affitor_...",
   "api_url": "https://api.affitor.com"
 }
 ```
+
+Secrets (the program API key, and provider webhook secrets) are **not** stored in `config.json` — they live in `.affitor/.env` (`AFFITOR_API_KEY`, `AFFITOR_PROGRAM_ID`), which the CLI adds to `.gitignore`. Legacy v1 configs that carried an inline `api_key` are migrated automatically on the next CLI run.
 
 ---
 

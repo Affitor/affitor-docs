@@ -18,6 +18,7 @@
     "integrations/nextjs-supabase",
     "integrations/nextjs-nextauth",
     "integrations/stripe",
+    "integrations/polar",
     "integrations/node-express",
     "integrations/fastify",
     "---Concepts---",
