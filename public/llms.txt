@@ -55,7 +55,9 @@
 - [Get Your Referral Link](https://docs.affitor.com/partners/quickstart/get-your-referral-link): Find, copy, and share your tracked referral link — generated automatically when you join.
 - [Your Partner Dashboard](https://docs.affitor.com/partners/dashboard): Where to find your programs, performance, referred customers, and earnings.
 - [Getting Paid](https://docs.affitor.com/partners/payouts): How commissions turn into a payout — balances, payment methods, withdrawal, and timing.
+- [Account and Payout Settings](https://docs.affitor.com/partners/account-settings): Manage your profile, security, and the payout details that decide how you get paid.
 - [Partner FAQ](https://docs.affitor.com/partners/faq): Common questions about joining programs, referral links, tracking, and getting paid.
+- [Promote Your Link and Earn](https://docs.affitor.com/partners/quickstart/promote-your-link): Turn your referral link into commissions — where to share it, what converts, and how to read the results in your dashboard.
 - [Affitor Refer Program — Terms](https://docs.affitor.com/partners/refer-program): Official terms of the Affitor Refer Program: rewards, attribution rules, holds, clawbacks, and eligibility for referring a brand to Affitor.
 
 ## API & Agents
@@ -83,6 +85,7 @@
 
 ## Blog
 
+- [PartnerStack vs Rewardful: Which Should Your SaaS Pick in 2026?](https://affitor.com/blog/partnerstack-vs-rewardful): One costs $1,000/month, the other $49 — they aren't really the same tool. A straight comparison of the enterprise PRM versus the indie affiliate app, with every price verified against both live pages on July 5, 2026, plus Affitor, the $0/month option that starts where they both charge from day one.
 - [Affiliate Software Pricing Comparison 2026 (8 Tools, Verified July 2026)](https://affitor.com/blog/affiliate-software-pricing-comparison): Real 2026 pricing for eight affiliate platforms — Affitor, Rewardful, FirstPromoter, Tolt, Post Affiliate Pro, Dub Partners, impact.com, and PartnerStack — every number checked against the vendor's live pricing page on July 5, 2026, with 12-month cost math at three revenue levels.
 - [Best Affiliate Software for SaaS in 2026 (7 Tools Compared)](https://affitor.com/blog/best-affiliate-software-saas): Seven affiliate software tools for SaaS compared honestly — Affitor, Rewardful, FirstPromoter, Tolt, Dub Partners, PartnerStack, and impact.com: pricing verified July 2026, attribution trade-offs, and a straight pick for every ARR stage.
 - [Best FirstPromoter Alternatives for SaaS in 2026 (5 Tools Compared)](https://affitor.com/blog/firstpromoter-alternatives): Five honest FirstPromoter alternatives for SaaS — Affitor, Rewardful, Tolt, Dub Partners, and PartnerStack: pricing verified July 2026, attribution trade-offs, and a straight answer on who should pick what.
