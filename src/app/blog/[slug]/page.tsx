@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
+import type { ComponentProps } from 'react';
 import { notFound } from 'next/navigation';
+import FdLink from 'fumadocs-core/link';
 import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
-import { DocsShell } from '@/components/docs-shell';
+import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
+import { BLOG_URL, DOCS_URL, docsBase } from '@/lib/site';
 
 function getPost(slug: string) {
   return blog.find((post) => postSlug(post.info.path) === slug);
@@ -11,7 +14,22 @@ function getPost(slug: string) {
 
 type Post = NonNullable<ReturnType<typeof getPost>>;
 
-const SITE_URL = 'https://docs.affitor.com';
+// Assets (covers/screenshots) live on the docs host; the canonical page URL
+// lives on the proxied affitor.com/blog zone.
+const SITE_URL = DOCS_URL;
+
+/**
+ * MDX `a` override: root-relative links that aren't /blog/* point at docs
+ * sections — absolutize them so they survive the affitor.com/blog proxy
+ * instead of colliding with the main app's routes.
+ */
+function BlogPostLink({ href, ...props }: ComponentProps<typeof FdLink>) {
+  const resolved =
+    href && href.startsWith('/') && !href.startsWith('/blog')
+      ? `${docsBase}${href}`
+      : href;
+  return <FdLink href={resolved} {...props} />;
+}
 
 /** "Son Piaz, Founder" -> "Son Piaz" (role suffix is byline decoration, not the Person name). */
 function authorName(author: string) {
@@ -34,7 +52,7 @@ function tocTitleToText(title: unknown): string {
  * HowTo when `howto: true` (steps from "Step N" H2s in the TOC); BreadcrumbList always.
  */
 function buildJsonLd(post: Post, slug: string) {
-  const url = `${SITE_URL}/blog/${slug}`;
+  const url = `${BLOG_URL}/${slug}`;
   const dateModified = post.updated ?? post.date;
   const graph: object[] = [];
 
@@ -110,8 +128,8 @@ function buildJsonLd(post: Post, slug: string) {
   graph.push({
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://affitor.com' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: BLOG_URL },
       { '@type': 'ListItem', position: 3, name: post.title, item: url },
     ],
   });
@@ -134,6 +152,8 @@ export async function generateMetadata(props: {
     title: post.title,
     description: post.description,
     alternates: {
+      // Canonical home of every post is the proxied affitor.com/blog zone.
+      canonical: `${BLOG_URL}/${slug}`,
       // machine-readable markdown twin of this post
       types: { 'text/markdown': `/blog/${slug}.md` },
     },
@@ -141,9 +161,10 @@ export async function generateMetadata(props: {
       title: post.title,
       description: post.description,
       type: 'article',
+      url: `${BLOG_URL}/${slug}`,
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
-      ...(post.image ? { images: [{ url: post.image }] } : {}),
+      ...(post.image ? { images: [{ url: `${SITE_URL}${post.image}` }] } : {}),
     },
     twitter: {
       card: 'summary_large_image',
@@ -161,11 +182,11 @@ export default async function BlogPostPage(props: {
   if (!post) notFound();
 
   const Body = post.body;
-  const components = useMDXComponents({});
+  const components = useMDXComponents({ a: BlogPostLink });
   const jsonLd = buildJsonLd(post, slug);
 
   return (
-    <DocsShell>
+    <BlogShell>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger -- server-rendered schema; `<` escaped below
@@ -216,6 +237,6 @@ export default async function BlogPostPage(props: {
           <Body components={components} />
         </div>
       </article>
-    </DocsShell>
+    </BlogShell>
   );
 }
