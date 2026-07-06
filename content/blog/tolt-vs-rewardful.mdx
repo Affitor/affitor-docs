@@ -1,0 +1,196 @@
+---
+title: "Tolt vs Rewardful: Which Is Best for SaaS in 2026?"
+description: "Rewardful starts $20 cheaper and ships its API on the $49 tier; Tolt gives a third more headroom at $99 and automates global payouts. Every number verified against both live pricing pages on July 5, 2026 — plus Affitor, the $0/month option neither compare page mentions."
+date: '2026-07-05'
+updated: '2026-07-05'
+category: Comparison
+image: /blog/covers/tolt-vs-rewardful.png
+authors: ["Son Piaz, Founder"]
+readTime: "12 min read"
+faq:
+  - q: "Is Tolt cheaper than Rewardful?"
+    a: "No, not at the entry tier: Tolt starts at $69/month against Rewardful's $49/month (as of July 5, 2026). At the $99 tier the math flips — Tolt caps you at $20,000/month in affiliate revenue where Rewardful caps at $15,000/month, so Tolt gives a third more headroom for the same price. Ignore the software directories still showing Tolt Basic at $49; the live pricing page says $69."
+  - q: "Does Tolt charge transaction fees?"
+    a: "Tolt markets 0% transaction fees, with one nuance worth knowing: automated payouts carry a 2% processing fee, and the $69/month Basic tier avoids that fee only because its payouts are manual (per tolt.com/pricing as of July 5, 2026). Rewardful states a 0% transaction fee on every tier with no payout-fee asterisk."
+  - q: "Which is better for a Stripe SaaS, Tolt or Rewardful?"
+    a: "Rewardful is the better pick for most Stripe SaaS starting an affiliate program: it costs $20 less at entry, includes its REST API on the $49 tier, and its 0% fee has no payout asterisk. Tolt wins once payouts and program count decide it — unlimited affiliates on every tier, automated payouts to PayPal, Wise, local bank, crypto, or wire from $99, and more revenue headroom at that price."
+  - q: "Does Tolt have an API?"
+    a: "No API is surfaced on Tolt's pricing page (as of July 5, 2026), so treat programmatic access as something to confirm with Tolt directly before you commit. Rewardful includes its REST API on every tier, including the $49 Starter. Neither product ships an official MCP server or an agent-completable integration runbook (as of the June 2026 audit)."
+  - q: "Is there an alternative to both Tolt and Rewardful?"
+    a: "Affitor drops the subscription both of them charge: $0/month with a 3.5% fee on affiliate-driven sales that starts only after your first $10,000 in affiliate revenue. It anchors attribution to the signup and Stripe customer record instead of a cookie, so referrals survive cookie loss."
+  - q: "How do Tolt and Rewardful track referrals?"
+    a: "Both use cookie-based click attribution. Rewardful defaults to a 60-day window and lets you choose first-touch or last-touch credit; Tolt's window is configurable. Both share the same blind spot — when the cookie is cleared, blocked, or the buyer switches devices, the affiliate silently loses credit."
+---
+
+Tolt markets itself as the modern alternative to Rewardful, and Rewardful is the name every Tolt shopper is measuring against — so this is the most natural head-to-head in the category. Both are flat-subscription affiliate trackers built for Stripe SaaS, both track with cookies, and they sit $20 apart at the entry tier. This page is the version you would send a friend: the verified numbers, the trade-offs each vendor's marketing leaves out, a score per criterion, and the one option neither of them mentions.
+
+:::tip
+
+Disclosure: we make [Affitor](https://affitor.com), which competes with both products. Affitor gets one clearly marked section near the end of this page and one column in the summary table. Everything else comes from [Tolt's](https://tolt.com/pricing) and [Rewardful's](https://www.rewardful.com/pricing) own pricing pages, fetched July 5, 2026. Prices drift, so check the live pages before you buy.
+
+:::
+
+## Quick answer: Tolt or Rewardful?
+
+Rewardful is the better pick for most Stripe SaaS starting an affiliate program in 2026: it costs $20 less at entry, includes its REST API on the $49 tier, and its stated 0% transaction fee carries no payout-fee asterisk. Pick Tolt when payouts and program count decide it: unlimited affiliates on every tier, automated payouts to PayPal, Wise, local bank, crypto, or wire from the $99 tier, and a third more revenue headroom at that price. On the four criteria below, the rubric finishes Rewardful 2, Tolt 1, with attribution a tie — and if you want to skip the subscription entirely, Affitor charges $0/month until your affiliates generate their first $10,000.
+
+| Tool | Best for | From price (as of Jul 2026) | Transaction fee | Attribution |
+|---|---|---|---|---|
+| [Tolt](https://tolt.com/pricing) | Unlimited affiliates and global payout rails | $69/mo | 0% marketed; 2% fee on automated payouts | Cookie, configurable window |
+| [Rewardful](https://www.rewardful.com/pricing) | Stripe/Paddle SaaS wanting API access at $49 | $49/mo | 0%, stated on all tiers | Cookie, 60-day default, first- or last-touch |
+| [Affitor](https://affitor.com) | Paying only on results | $0/mo | 3.5% after first $10K affiliate revenue | Signup-anchored via Stripe metadata |
+
+Every number on this page was checked against each vendor's live pricing page on July 5, 2026.
+
+## Pricing: Tolt vs Rewardful — $20 apart at the door, different math at $99
+
+Both products sell a flat monthly subscription metered by *affiliate revenue* — the revenue your affiliates generate each month, not your total revenue. The ladders look similar from a distance; the differences live in the caps and the fine print.
+
+**Tolt** prices like this (per [tolt.com/pricing](https://tolt.com/pricing), as of July 5, 2026):
+
+| Tier | Price | Affiliate revenue cap | Programs | Payouts |
+|---|---|---|---|---|
+| Basic | $69/mo | $10,000/mo | 2 | Manual only |
+| Growth | $99/mo | $20,000/mo | 5 | Automated, 2% processing fee |
+| Pro | $199/mo | $50,000/mo | Unlimited | Automated, 2% processing fee |
+| Enterprise | Custom | $50,001+/mo | Custom | Custom |
+
+Affiliates and referrals are unlimited on every tier. The trial is 14 days with no card required, and there is a 30-day refund policy. No free tier. One housekeeping note: several software directories still list Tolt Basic at a stale $49 — the live page says $69, which is why every number here cites the vendor's own page.
+
+**Rewardful** uses the familiar three rungs (per [rewardful.com/pricing](https://www.rewardful.com/pricing), as of July 5, 2026):
+
+| Tier | Price | Affiliate revenue cap | Notable limits and unlocks |
+|---|---|---|---|
+| Starter | $49/mo | $7,500/mo | 1 campaign, up to 2 team members |
+| Growth | $99/mo | $15,000/mo | Unlimited campaigns and team, branded portal |
+| Enterprise | $149+/mo | Over $15,000/mo | Phone support, 1-click PayPal payouts |
+
+Rewardful states a 0% transaction fee on every tier, plainly, on the pricing page. There is a 14-day free trial (the page does not say whether a card is required, so we will not claim it either way), annual billing gets you two months free, and there is no free tier. The REST API is included on every tier — more on that below.
+
+Now the head-to-head math. At the entry rung, Rewardful is $20 cheaper in absolute terms; Tolt answers with a higher revenue cap ($10,000/mo against $7,500/mo) and unlimited affiliates where Rewardful's Starter allows 1 campaign and 2 team members. At the $99 rung, the value flips direction: Tolt's Growth caps at $20,000/mo where Rewardful's caps at $15,000/mo — a third more headroom for the same money.
+
+Then there is the fee print. Rewardful's 0% is unconditional. Tolt's "0% transaction fees" has a nuance its marketing does not lead with: automated payouts carry a 2% processing fee, and the $69 Basic tier avoids that fee only because its payouts are manual. Pay 2% for automation, or pay with your own time — either way, the true cost of Tolt is slightly more than the sticker once your program pays real commissions.
+
+And note that both ladders meter success: the better your affiliates perform, the sooner you cross a cap and get the upgrade email, whether or not your margins moved. If you want the cost picture across the whole category, [the affiliate software pricing comparison](/blog/affiliate-software-pricing-comparison) runs this math for six tools side by side.
+
+**Verdict: Rewardful takes pricing, narrowly** — a $20-lower floor, two months free on annual, and the only 0% fee with no payout asterisk; but if you expect to live at the $99 tier, Tolt's extra $5,000/month of headroom is the better buy. **Score: Rewardful 1, Tolt 0.**
+
+## Attribution: Tolt vs Rewardful — the same cookie, the same blind spot
+
+This criterion is closer to a tie than either vendor's positioning suggests, because both products use the same underlying model: cookie-based click attribution.
+
+**Rewardful** defaults to a 60-day window and lets you choose first-touch or last-touch credit. That choice matters more than it sounds: first-touch pays the affiliate whose link the buyer clicked first, which protects reviewers and content sites; last-touch pays the most recent click, which favors whoever touched the buyer on the way to checkout.
+
+**Tolt** is also cookie-based, with a configurable attribution window.
+
+For the common case — one browser, one device, a signup inside the window — both systems work fine. The shared weakness is that cookie attribution breaks on cookie loss, and the failure is silent. The buyer switches from laptop to phone, clears cookies, runs a blocker, or converts after the window closes; the affiliate loses credit, and no dashboard shows you the miss. Neither vendor is worse than the other here, so do not let a compare page convince you tracking is the reason to switch between these two.
+
+**Verdict: a tie** — the same cookie model with the same silent failure mode; attribution is not the reason to pick either. **Score: Rewardful 1, Tolt 0, one tie.**
+
+## API and integrations: Tolt vs Rewardful — one of them ships an API at $49
+
+**Rewardful** includes its REST API on every tier, including the $49 Starter. It is built for Stripe and Paddle billing, its setup is the simplest in the category for a Stripe SaaS, and it carries the strongest brand recognition among indie hackers — which matters when you search for integration examples at midnight.
+
+**Tolt** is a clean, modern product in the Stripe ecosystem, but no API is surfaced on its pricing page (as of July 5, 2026). That does not prove one is absent — it means programmatic access is not part of the published offer, and you should confirm it with Tolt directly before committing if your integration is code-first.
+
+That asymmetry gives you a clean decision rule: if you plan to automate anything — custom onboarding, commission logic, data syncs — Rewardful is the only one of the two that publishes an API as part of every plan, from the first dollar.
+
+Worth knowing if you automate with AI agents: neither product ships an agent-completable integration path. As of the June 2026 audit, no official MCP server was found for either, and neither publishes a runbook an agent could execute and then verify on its own. Both are human-developer surfaces.
+
+**Verdict: Rewardful takes the API criterion** — a published REST API on every tier against an offer where the pricing page surfaces none. **Score: Rewardful 2, Tolt 0, one tie.**
+
+## Payouts and program limits: Tolt vs Rewardful — global rails vs Enterprise-gated PayPal
+
+Here Tolt runs away with it.
+
+**Tolt** pays affiliates through PayPal, Wise, local bank transfer, crypto, or wire — genuinely global rails — with automated payouts from the $99 Growth tier up (that automation is where the 2% processing fee applies). Affiliates and referrals are unlimited on every tier, and the ladder scales from 2 programs on Basic to 5 on Growth to unlimited on Pro, which also adds a dedicated Slack channel.
+
+**Rewardful** keeps this surface small. On its pricing page, payout automation appears as 1-click PayPal payouts on the $149+ Enterprise tier, and no payout automation is listed below that. The Starter tier's limits are also tighter on the program side: 1 campaign and up to 2 team members at $49.
+
+For a program with more than a handful of affiliates, payout mechanics are not cosmetic. Someone has to send the money every month, and doing it by hand across PayPal and bank transfers is exactly the kind of chore that stops happening by month three. If your partners are international — and affiliate programs skew international fast — Tolt's rails cover cases Rewardful's page does not mention at any price.
+
+**Verdict: Tolt takes payouts and program limits** — five payout rails with automation from $99, unlimited affiliates everywhere, against PayPal-only automation gated to a $149+ tier. **Final score: Rewardful 2, Tolt 1, one tie.**
+
+## When to choose Tolt over Rewardful
+
+- **Your affiliates are global and you refuse to run payouts by hand.** Automated payouts to PayPal, Wise, local bank, crypto, or wire from $99/mo is the single clearest thing Tolt has that Rewardful does not, at any comparable price.
+- **You expect to live at the $99 tier.** $20,000/mo of affiliate-revenue headroom against Rewardful's $15,000/mo means your affiliates can grow a third further before the next upgrade email.
+- **You want many affiliates and more than one program.** Unlimited affiliates on every tier, and 2–5 programs at the lower rungs against Rewardful Starter's single campaign.
+- **You want an exit ramp.** A 14-day no-card trial plus a 30-day refund is the friendliest try-it policy of the two; Rewardful's page offers 14 days and stays silent on the card.
+
+If Tolt is winning this comparison for you but you still want to see the field, [the best Tolt alternatives for SaaS](/blog/tolt-alternatives) compares five tools against it.
+
+## When to choose Rewardful over Tolt
+
+- **You want the lowest flat price with an API.** $49/mo with the REST API included is the cheapest programmatic entry point between the two — Tolt surfaces no API on its pricing page at all.
+- **You want the fee print with no asterisk.** Rewardful's 0% transaction fee is stated on every tier, with no payout-processing fee attached to automation.
+- **You bill through Stripe or Paddle and want the fastest setup.** Rewardful's setup is the simplest in the category for Stripe SaaS, and its brand recognition means more tutorials, more integrations content, and more people who have hit your exact error message.
+- **You plan to pay annually.** Two months free on annual billing takes Growth from $1,188 to $990 a year; Tolt's page makes no equivalent published offer.
+
+If Rewardful is winning but you want to stress-test it, [the best Rewardful alternatives for SaaS](/blog/rewardful-alternatives) puts it against its strongest challengers.
+
+## The option neither compare page mentions
+
+![Affitor's Partners view — every partner, application, and invite in one table with live stats](/blog/shots/partners-table-live.png)
+
+Tolt positions itself against Rewardful, and Rewardful is the incumbent everyone measures against — but neither vendor's marketing mentions Affitor, so here is that section, written under the same rules as everything above.
+
+**Affitor** drops the subscription entirely. It costs $0/mo with $0 setup, and you pay nothing until your program earns its first $10,000 through affiliates — then 3.5% on affiliate-driven sales only. There is no tier ladder to outgrow because there are no tiers, and no revenue cap that turns your affiliates' good month into your upgrade email.
+
+Attribution works differently too. Instead of a cookie window, [attribution rides Stripe metadata](https://docs.affitor.com/brand/tracking/tracking-overview): the click ID and customer key travel on the Stripe Checkout Session itself, anchored to a signup-based identity chain (click, then hashed email, then Stripe customer) that survives cookie loss — the exact failure mode both tools above share.
+
+And the integration is agent-verifiable, shipped and live today: a `skill.md` runbook an AI agent can complete end to end, an `affitor` CLI, and a self-verify loop that fires a synthetic click, lead, and sale, then returns `integration_verified: true` from the readiness endpoint. As of the June 2026 audit, no other platform in this comparison ships an equivalent. The full Stripe wiring is walked step by step in [How to create a Stripe affiliate program](/blog/stripe-affiliate-program).
+
+Now the trade-offs, because this page promised them:
+
+- **Affitor is Stripe-native.** If you bill through Paddle, Rewardful supports it and Affitor does not.
+- **Percentage fees flip at scale.** Affitor is cheaper than Tolt until roughly $2,000/mo of affiliate-driven revenue against the $69 tier (about $2,800/mo against the $99 tiers), and free until your first $10,000 total. Above the crossover, a flat $69–$99 subscription is cheaper on paper — if you stay inside its caps. Paying $0 until the program works is cheaper for a new program that might earn nothing. Do the math for your own volume before choosing.
+
+## Every number at a glance
+
+| | Tolt | Rewardful | Affitor |
+|---|---|---|---|
+| Monthly price | $69 / $99 / $199 / custom | $49 / $99 / $149+ | $0 |
+| Platform fee | 0% marketed; 2% processing fee on automated payouts | 0% transaction fee, stated on all tiers | 3.5% on affiliate-driven sales after the first $10,000, which is fee-free |
+| Cap on the entry tier | $10,000/mo affiliate revenue | $7,500/mo affiliate revenue | No tiers |
+| Affiliates | Unlimited on every tier | 1 campaign, 2 team members on Starter | Unlimited |
+| API access | Not surfaced on the pricing page | All tiers, including $49 | Included, with CLI and agent runbook |
+| Attribution | Cookies, configurable window | Cookies, 60-day default, first- or last-touch | Signup-anchored via Stripe metadata, survives cookie loss |
+| Payouts | PayPal, Wise, local bank, crypto, wire; automated from $99 (2% fee); manual only on Basic | 1-click PayPal payouts on Enterprise ($149+) | Partner payouts via bank transfer, PayPal, Stripe, or Wise |
+| Trial | 14 days, no card; 30-day refund | 14-day free trial | Free until the first $10,000 in affiliate revenue |
+| Agent integration | No official MCP found (June 2026) | No official MCP found (June 2026) | `skill.md` runbook + self-verify loop returning `integration_verified: true` |
+| Rubric score | 1 of 4 criteria (payouts) | 2 of 4 (pricing, API) | Not scored — different model |
+
+All Tolt and Rewardful figures were verified against their live pricing pages on July 5, 2026. Pricing in this category moves fast — two vendors in the wider peer set materially changed their pricing pages in the three weeks before this was written — so treat any comparison older than a few months, including this one, as a starting point rather than a quote.
+
+## FAQ
+
+### Is Tolt cheaper than Rewardful?
+
+No, not at the entry tier: Tolt starts at $69/month against Rewardful's $49/month (as of July 5, 2026). At the $99 tier the math flips — Tolt caps you at $20,000/month in affiliate revenue where Rewardful caps at $15,000/month, so Tolt gives a third more headroom for the same price. Ignore the software directories still showing Tolt Basic at $49; the live pricing page says $69.
+
+### Does Tolt charge transaction fees?
+
+Tolt markets 0% transaction fees, with one nuance worth knowing: automated payouts carry a 2% processing fee, and the $69/month Basic tier avoids that fee only because its payouts are manual (per tolt.com/pricing as of July 5, 2026). Rewardful states a 0% transaction fee on every tier with no payout-fee asterisk.
+
+### Which is better for a Stripe SaaS, Tolt or Rewardful?
+
+Rewardful is the better pick for most Stripe SaaS starting an affiliate program: it costs $20 less at entry, includes its REST API on the $49 tier, and its 0% fee has no payout asterisk. Tolt wins once payouts and program count decide it — unlimited affiliates on every tier, automated payouts to PayPal, Wise, local bank, crypto, or wire from $99, and more revenue headroom at that price.
+
+### Does Tolt have an API?
+
+No API is surfaced on Tolt's pricing page (as of July 5, 2026), so treat programmatic access as something to confirm with Tolt directly before you commit. Rewardful includes its REST API on every tier, including the $49 Starter. Neither product ships an official MCP server or an agent-completable integration runbook (as of the June 2026 audit).
+
+### Is there an alternative to both Tolt and Rewardful?
+
+Affitor drops the subscription both of them charge: $0/month with a 3.5% fee on affiliate-driven sales that starts only after your first $10,000 in affiliate revenue. It anchors attribution to the signup and Stripe customer record instead of a cookie, so referrals survive cookie loss.
+
+### How do Tolt and Rewardful track referrals?
+
+Both use cookie-based click attribution. Rewardful defaults to a 60-day window and lets you choose first-touch or last-touch credit; Tolt's window is configurable. Both share the same blind spot — when the cookie is cleared, blocked, or the buyer switches devices, the affiliate silently loses credit.
+
+## What's next
+
+If you are choosing between the two names in the title, take both 14-day trials, wire up one real affiliate link in each, and watch two things: which dashboard your team actually opens in week two, and how each handles your first real payout run. The payout rails, the API, and the $99-tier caps will make the decision faster than any comparison page.
+
+If the $0-until-it-works model fits where your program is today, [create your program on Affitor](https://affitor.com) or [read how the performance pricing model works](https://docs.affitor.com/getting-started/pricing-performance-model).
