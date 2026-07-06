@@ -18,6 +18,7 @@
 - [How Affitor Works](https://docs.affitor.com/getting-started/how-it-works): From affiliate click to attributed revenue and payout: signup-anchored tracking via server-side API or Stripe metadata, with a verification loop you — or your AI agent — can run before launch.
 - [Pricing](https://docs.affitor.com/getting-started/pricing-performance-model): Affitor pricing: $0/month, $0 setup, 3.5% of partner-generated revenue — and your first $10,000 in affiliate-driven revenue is fee-free.
 - [Frequently Asked Questions](https://docs.affitor.com/faq): Common questions about Affitor's pricing, tracking, commissions, and integration options.
+- [How to Use Affitor](https://docs.affitor.com/getting-started/quickstart): The end-to-end golden path — launch a program, install tracking, and run commissions through to payout.
 - [Support](https://docs.affitor.com/support): Get help with Affitor, follow the fastest self-serve path, and know when to contact the team.
 - [Contact Us](https://docs.affitor.com/support/contact): Get in touch with the Affitor team for support, partnerships, or press inquiries.
 - [Glossary](https://docs.affitor.com/support/glossary): Common terms used across Affitor docs — server-side tracking, Stripe integration, invoice billing, and more
@@ -43,6 +44,7 @@
 - [Payment Tracking](https://docs.affitor.com/brand/tracking/payment-tracking-stripe): Track completed sales with server-side tracking or Stripe integration
 - [Payment Flow](https://docs.affitor.com/brand/tracking/payment-flow): End-to-end flow from affiliate click to attributed revenue and payout operations, covering server-side tracking and Stripe integration paths
 - [Testing Integration](https://docs.affitor.com/brand/tracking/testing-integration): Verify click, signup, and server-side tracking before going live
+- [API Keys & Tokens](https://docs.affitor.com/brand/api-keys): Get the program tracking token and Management API keys you need to track conversions and configure programs programmatically.
 - [Overdue Invoices & Program Pause Policy](https://docs.affitor.com/brand/billing/overdue-policy): How Affitor handles unpaid commission invoices, when programs pause, and how to resume.
 - [Organize partners into groups](https://docs.affitor.com/brand/groups): Create partner groups so different partners earn different rates, hold periods, and approval rules under one program.
 - [Manage program settings and your API key](https://docs.affitor.com/brand/settings): Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
@@ -79,6 +81,7 @@
 - [Next.js + NextAuth](https://docs.affitor.com/api-reference/integrations/nextjs-nextauth): Add Affitor lead tracking to a Next.js app using NextAuth (Auth.js) — handle the click-id cookie gap correctly.
 - [Next.js + Supabase Auth](https://docs.affitor.com/api-reference/integrations/nextjs-supabase): Add Affitor tracking to a Next.js app that uses Supabase Auth — clicks, signups, and sales.
 - [Node / Express](https://docs.affitor.com/api-reference/integrations/node-express): Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Express backend.
+- [Polar](https://docs.affitor.com/api-reference/integrations/polar): Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed.
 - [Stripe](https://docs.affitor.com/api-reference/integrations/stripe): Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring.
 - [GET /tracking/performance/:programId](https://docs.affitor.com/api-reference/performance): Retrieve daily performance aggregates and period-over-period trend metrics for a program
 - [Get Tracking Status](https://docs.affitor.com/api-reference/status): Returns integration step statuses and Stripe connection info for a program
