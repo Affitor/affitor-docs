@@ -18,6 +18,8 @@
     "tracking/payment-tracking-stripe",
     "tracking/payment-flow",
     "tracking/testing-integration",
+    "---API Access---",
+    "api-keys",
     "---Billing---",
     "billing/overdue-policy",
     "---CLI---",

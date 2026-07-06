@@ -1,0 +1,188 @@
+---
+title: API Keys & Tokens
+description: Get the program tracking token and Management API keys you need to track conversions and configure programs programmatically.
+---
+
+Affitor uses two different credentials. Knowing which one to use is the step between "program created" and "conversions tracked".
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Advertisers wiring up tracking or automating program setup' },
+    { label: 'Time required', value: '5 minutes' },
+    { label: 'Prerequisites', value: 'An advertiser account and at least one program' },
+    { label: 'Outcome', value: 'You know which key to send, where to get it, and how to rotate it safely' },
+  ]}
+/>
+
+## Two credentials, two jobs
+
+<FeatureCards>
+  <FeatureCard icon="zap" title="Program tracking token">
+    Prefix <code>aff_</code>. Authenticates server-side <strong>tracking</strong> calls (clicks, leads, sales, refunds) for a single program. This is the "program API key" referenced throughout the tracking guides.
+  </FeatureCard>
+  <FeatureCard icon="code" title="Management API key">
+    Prefix <code>affk_</code>. Authenticates the <strong>Management API</strong> so you can create, update, and publish programs programmatically — without a browser session.
+  </FeatureCard>
+</FeatureCards>
+
+:::note
+
+The prefixes are deliberately distinct (`aff_` vs `affk_`) so Affitor can tell the two key types apart from the `Authorization` header alone. Sending the wrong one returns `401`.
+
+:::
+
+---
+
+## Program tracking token (`aff_`)
+
+Every program gets a tracking token automatically when it is created. You send it as a Bearer token on tracking requests:
+
+```bash
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer aff_your_program_token" \
+  -H "Content-Type: application/json" \
+  -d '{ "transaction_id": "txn_abc123", "customer_key": "user_123", "amount_cents": 9999 }'
+```
+
+### Where to find it
+
+- **Dashboard** — open your program's settings; the token is shown masked (for example `aff_abcdefgh****wxyz`).
+- **API responses** — program read endpoints never return the raw token. They expose `api_token_masked` only, so a leaked read response can't be used to forge tracking calls.
+
+The full token is shown **once**, at the moment it is generated or regenerated. Store it in a secret manager or your backend environment (for example `AFFITOR_API_KEY`) — not in client-side code.
+
+### Rotate a compromised token
+
+Regenerating immediately invalidates the previous token and returns a new one exactly once:
+
+```bash
+curl -X POST \
+  https://api.affitor.com/api/advertiser/affiliate-programs/:id/regenerate-api-token \
+  -H "Authorization: Bearer affk_your_management_key"
+```
+
+```json
+{
+  "data": {
+    "api_token": "aff_the_new_full_token_shown_once",
+    "api_token_masked": "aff_abcdefgh****wxyz"
+  }
+}
+```
+
+:::warning
+
+Regenerating breaks any integration still using the old token. Update your backend environment before rotating in production.
+
+:::
+
+### At rest
+
+Tokens are stored as a SHA-256 hash and matched by hash on every tracking request, so the raw value is never persisted in a readable form after issuance.
+
+---
+
+## Management API key (`affk_`)
+
+Management API keys let scripts and internal tools drive Affitor without a logged-in browser session. Use them to automate program creation, updates, and go-live.
+
+### Create a key
+
+Call the endpoint while authenticated with your dashboard session. The full key is returned **once** — copy it immediately.
+
+```bash
+curl -X POST https://api.affitor.com/api/advertiser/api-keys \
+  -H "Authorization: Bearer <your_session_jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "CI deploy bot",
+    "scopes": ["program:read", "program:update"],
+    "program_scope": null,
+    "expires_at": null
+  }'
+```
+
+```json
+{
+  "data": {
+    "id": 7,
+    "name": "CI deploy bot",
+    "prefix": "affk_1a2b3c4d",
+    "scopes": ["program:read", "program:update"],
+    "program_scope": null,
+    "status": "active",
+    "key": "affk_the_full_key_shown_once",
+    "key_masked": "affk_1a2b3c…c4d5"
+  }
+}
+```
+
+<ParamList>
+  <ParamField name="name" type="string" required>
+    Human-readable label so you can recognise the key later.
+  </ParamField>
+  <ParamField name="scopes" type="string[]">
+    Allowed actions. Defaults to `["*"]` (all actions). See the scope table below.
+  </ParamField>
+  <ParamField name="program_scope" type="string[] | null">
+    Limit the key to specific program IDs. `null` (default) means every program the advertiser can access.
+  </ParamField>
+  <ParamField name="expires_at" type="datetime | null">
+    Optional expiry. After this time the key is rejected. `null` means no expiry.
+  </ParamField>
+</ParamList>
+
+### Available scopes
+
+| Scope | Grants |
+|-------|--------|
+| `*` | Every action below |
+| `program:list` | List your programs |
+| `program:read` | Read a single program |
+| `program:create` | Create a program |
+| `program:update` | Update program settings (including slug) |
+| `program:delete` | Delete a program |
+| `program:go_live` | Publish a program to the marketplace |
+| `program:regenerate-token` | Rotate a program's tracking token |
+| `dashboard:view` | Read dashboard summary and program aggregates |
+
+### Use a key
+
+Send it as a Bearer token on any `/api/advertiser/*` Management endpoint:
+
+```bash
+curl https://api.affitor.com/api/advertiser/affiliate-programs \
+  -H "Authorization: Bearer affk_your_management_key"
+```
+
+:::note
+
+Management endpoints accept **either** a dashboard session **or** an `affk_` key. Scripts should use an `affk_` key; the browser dashboard uses your session automatically.
+
+:::
+
+### Manage keys
+
+| Action | Endpoint |
+|--------|----------|
+| List (masked) | `GET /api/advertiser/api-keys` |
+| Update name / scopes / program scope | `PUT /api/advertiser/api-keys/:id` |
+| Revoke | `DELETE /api/advertiser/api-keys/:id` |
+
+Revoking is a soft action — it sets the key's status to `revoked` and rejects it from then on, while keeping the record for your audit trail. Keys are stored hashed; listing only ever returns the masked prefix, never the secret.
+
+---
+
+## Which key do I send?
+
+| Your task | Key to send |
+|-----------|-------------|
+| Track a conversion — clicks, leads, sales, refunds | Program tracking token (`aff_`) |
+| Configure programs from code — create, update, publish in a script or CI | Management API key (`affk_`) |
+
+<NextStep
+  title="Track your first conversion"
+  description="With your program tracking token in hand, wire up clicks, signups, and sales end to end."
+  href="/advertisers/tracking/quickstart-integration"
+  ctaLabel="Open tracking quickstart"
+/>
