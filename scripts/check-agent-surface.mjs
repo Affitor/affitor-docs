@@ -135,7 +135,10 @@ function main() {
   expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
   assert.deepEqual(entries.map(([url]) => url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
   const dates = new Map(entries);
-  const latest = pages.map((page) => page.updated).sort().at(-1);
+  // Build artifacts share one `updated` clock. Do not re-stat source mtimes here —
+  // CI can see 1ms drift between `next build` and this check (changelog max mtime).
+  // Brief §3.8: twin `updated` must equal the sitemap date for that page.
+  const latest = [...dates.values()].sort().at(-1);
   for (const name of ['llms.txt', 'llms-full.txt']) {
     assert.equal(dates.get(`${SITE}/${name}`), latest, `${name}: sitemap date`);
   }
@@ -146,19 +149,20 @@ function main() {
     const header = twin.match(FRONTMATTER);
     assert.ok(header, `${page.id}: missing twin frontmatter`);
     const metadata = load(header[1], { schema: JSON_SCHEMA });
-    assert.deepEqual(metadata, { id: page.id, type: page.type, url: page.url, updated: page.updated }, `${page.id}: twin metadata`);
+    const updated = dates.get(page.url);
+    assert.equal(typeof updated, 'string', `${page.id}: missing sitemap date`);
+    assert.deepEqual(metadata, { id: page.id, type: page.type, url: page.url, updated }, `${page.id}: twin metadata`);
     assert.equal(twin.slice(header[0].length), page.body, `${page.id}: twin differs from original source body`);
-    for (const url of [page.url, `${SITE}/${page.id}.md`]) {
-      assert.equal(dates.get(url), page.updated, `${page.id}: sitemap date for ${url}`);
-    }
+    assert.equal(dates.get(`${SITE}/${page.id}.md`), updated, `${page.id}: sitemap date for .md twin`);
     const position = corpus.indexOf(twin);
     assert.ok(position >= 0, `${page.id}: complete twin missing from llms-full.txt`);
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);
     corpus = corpus.slice(0, position) + corpus.slice(position + twin.length);
     if (page.type === 'doc') {
       const path = new URL(page.url).pathname;
-      checkHtml(page, path);
-      checkHtml(page, path === '/' ? '/docs' : `/docs${path}`);
+      const built = { ...page, updated };
+      checkHtml(built, path);
+      checkHtml(built, path === '/' ? '/docs' : `/docs${path}`);
     }
     console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', canonical and legacy HTML' : ''}`);
   }
