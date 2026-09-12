@@ -1,4 +1,3 @@
-import { statSync } from 'node:fs';
 import { source } from '@/lib/source';
 import { blog, changelog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
@@ -49,12 +48,13 @@ const DOCS_URL = 'https://docs.affitor.com';
 
 type DocPage = ReturnType<typeof source.getPages>[number];
 
-type AgentPage = {
+export type AgentPage = {
   id: string;
   type: 'doc' | 'blog' | 'changelog';
   url: string;
   markdownUrl: string;
-  updated: string;
+  /** Real content date from frontmatter. Omitted for docs — they have none. */
+  updated?: string;
 };
 
 function getDocMetadata(page: DocPage): AgentPage {
@@ -64,8 +64,17 @@ function getDocMetadata(page: DocPage): AgentPage {
     type: 'doc',
     url: `${DOCS_URL}${page.url}`,
     markdownUrl: `${DOCS_URL}/${id}.md`,
-    updated: statSync(page.data.info.fullPath).mtime.toISOString(),
   };
+}
+
+function newestChangelogDate(): string {
+  const dates = changelog.map((entry) => entry.date);
+  assertDates(dates, 'changelog');
+  return dates.sort().at(-1)!;
+}
+
+function assertDates(dates: string[], label: string) {
+  if (!dates.length) throw new Error(`No ${label} dates available`);
 }
 
 export function getAgentPages(): AgentPage[] {
@@ -73,12 +82,14 @@ export function getAgentPages(): AgentPage[] {
     ...source.getPages().map(getDocMetadata),
     ...blog.map((post): AgentPage => {
       const id = `blog/${postSlug(post.info.path)}`;
+      const updated = post.updated ?? post.date;
+      if (!updated) throw new Error(`Blog post ${id} missing date`);
       return {
         id,
         type: 'blog',
         url: `https://affitor.com/${id}`,
         markdownUrl: `${DOCS_URL}/${id}.md`,
-        updated: statSync(post.info.fullPath).mtime.toISOString(),
+        updated,
       };
     }),
     {
@@ -86,15 +97,14 @@ export function getAgentPages(): AgentPage[] {
       type: 'changelog',
       url: `${DOCS_URL}/changelog`,
       markdownUrl: `${DOCS_URL}/changelog.md`,
-      updated: new Date(Math.max(
-        ...changelog.map((entry) => statSync(entry.info.fullPath).mtimeMs),
-      )).toISOString(),
+      updated: newestChangelogDate(),
     },
   ];
 }
 
 export function getDocArticle(page: DocPage) {
   const metadata = getDocMetadata(page);
+  // Docs have no trustworthy content date — omit dateModified rather than invent one.
   return {
     id: metadata.id,
     jsonLd: JSON.stringify({
@@ -104,7 +114,6 @@ export function getDocArticle(page: DocPage) {
       identifier: metadata.id,
       headline: page.data.title,
       description: page.data.description,
-      dateModified: metadata.updated,
     }).replace(/</g, '\\u003c'),
   };
 }
@@ -116,11 +125,14 @@ export async function render(slug: string[]): Promise<string | null> {
   const id = slug.join('/') || 'index';
   const page = getAgentPages().find((entry) => entry.id === id);
   if (!page) throw new Error(`Missing agent metadata for ${id}`);
-  const frontmatter = Object.entries({
+  const fields: Record<string, string> = {
     id: page.id,
     type: page.type,
     url: page.url,
-    updated: page.updated,
-  }).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n');
+  };
+  if (page.updated) fields.updated = page.updated;
+  const frontmatter = Object.entries(fields)
+    .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+    .join('\n');
   return `---\n${frontmatter}\n---\n${body}`;
 }

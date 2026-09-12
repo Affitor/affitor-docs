@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loader } from 'fumadocs-core/source';
@@ -11,6 +11,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
 const SITE = 'https://docs.affitor.com';
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const read = (path) => readFileSync(path, 'utf8');
 const json = (path) => JSON.parse(read(path));
 
@@ -29,7 +30,6 @@ function document(file) {
     ...load(match[1], { schema: JSON_SCHEMA }),
     raw,
     file,
-    modified: statSync(file).mtime.toISOString(),
   };
 }
 
@@ -55,8 +55,10 @@ function inventory() {
     },
   }).getPages().map((page) => {
     const id = page.url.slice(1) || 'index';
+    assert.equal(page.data.date, undefined, `${id}: docs must not invent a date field`);
+    assert.equal(page.data.updated, undefined, `${id}: docs must not invent an updated field`);
     return {
-      id, type: 'doc', url: `${SITE}${page.url}`, updated: page.data.modified,
+      id, type: 'doc', url: `${SITE}${page.url}`,
       body: markdown(page.data, id), title: page.data.title, description: page.data.description,
     };
   });
@@ -64,17 +66,33 @@ function inventory() {
   const posts = walk(blogDir).filter((file) => /\.mdx?$/.test(file)).map((file) => {
     const data = document(file);
     const id = `blog/${relative(blogDir, file).replace(/\.mdx$/, '')}`;
-    return { id, type: 'blog', url: `https://affitor.com/${id}`, updated: data.modified, body: markdown(data, id) };
+    assert.equal(typeof data.date, 'string', `${id}: missing frontmatter date`);
+    assert.match(data.date, ISO_DAY, `${id}: date must be YYYY-MM-DD`);
+    if (data.updated !== undefined) {
+      assert.equal(typeof data.updated, 'string', `${id}: updated must be a string`);
+      assert.match(data.updated, ISO_DAY, `${id}: updated must be YYYY-MM-DD`);
+    }
+    return {
+      id, type: 'blog', url: `https://affitor.com/${id}`,
+      updated: data.updated ?? data.date,
+      sourceDate: data.updated ?? data.date,
+      body: markdown(data, id),
+    };
   });
   const changes = walk(join(ROOT, 'content/changelog')).filter((file) => /\.mdx?$/.test(file))
     .map(document).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   assert.ok(changes.length, 'Changelog source is empty');
+  for (const entry of changes) {
+    assert.equal(typeof entry.date, 'string', `${relative(ROOT, entry.file)}: missing date`);
+    assert.match(entry.date, ISO_DAY, `${relative(ROOT, entry.file)}: date must be YYYY-MM-DD`);
+  }
   const sections = changes.map((entry) =>
     `## ${entry.title} (${entry.date})\n\n> ${entry.benefit}\n\n${entry.raw.replace(FRONTMATTER, '').trim()}`,
   );
+  const changelogUpdated = changes.map((entry) => entry.date).sort().at(-1);
   return [...docs, ...posts, {
     id: 'changelog', type: 'changelog', url: `${SITE}/changelog`,
-    updated: changes.map((entry) => entry.modified).sort().at(-1),
+    updated: changelogUpdated, sourceDate: changelogUpdated,
     body: `# Affitor Changelog\n\n${sections.join('\n\n---\n\n')}\n`,
   }];
 }
@@ -98,11 +116,12 @@ function checkHtml(page, route) {
   const schema = schemas[0];
   for (const [key, expected] of Object.entries({
     '@context': 'https://schema.org', '@id': page.url, identifier: page.id,
-    headline: page.title, description: page.description, dateModified: page.updated,
+    headline: page.title, description: page.description,
   })) {
     assert.equal(typeof schema[key], 'string', `${route}: missing TechArticle ${key}`);
     assert.equal(schema[key], expected, `${route}: TechArticle ${key}`);
   }
+  assert.equal('dateModified' in schema, false, `${route}: docs TechArticle must omit dateModified`);
 }
 
 function main() {
@@ -128,19 +147,29 @@ function main() {
     const loc = [...match[1].matchAll(/<loc>([\s\S]*?)<\/loc>/g)];
     const lastmod = [...match[1].matchAll(/<lastmod>([\s\S]*?)<\/lastmod>/g)];
     assert.equal(loc.length, 1, 'Sitemap entry must have one loc');
-    assert.equal(lastmod.length, 1, 'Sitemap entry must have one lastmod');
-    return [decodeEntities(loc[0][1]), lastmod[0][1]];
+    assert.ok(lastmod.length <= 1, 'Sitemap entry must have at most one lastmod');
+    return {
+      url: decodeEntities(loc[0][1]),
+      lastmod: lastmod.length ? lastmod[0][1] : undefined,
+    };
   });
   const expectedUrls = pages.flatMap((page) => [page.url, `${SITE}/${page.id}.md`]);
   expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
-  assert.deepEqual(entries.map(([url]) => url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
-  const dates = new Map(entries);
-  // Build artifacts share one `updated` clock. Do not re-stat source mtimes here —
-  // CI can see 1ms drift between `next build` and this check (changelog max mtime).
-  // Brief §3.8: twin `updated` must equal the sitemap date for that page.
-  const latest = [...dates.values()].sort().at(-1);
+  assert.deepEqual(entries.map((entry) => entry.url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
+  const dates = new Map(entries.map((entry) => [entry.url, entry.lastmod]));
+  const datedPages = pages.filter((page) => page.updated);
+  const latest = datedPages.map((page) => page.updated).sort().at(-1);
   for (const name of ['llms.txt', 'llms-full.txt']) {
     assert.equal(dates.get(`${SITE}/${name}`), latest, `${name}: sitemap date`);
+  }
+
+  // Reject file-mtime / build-time ISO timestamps anywhere a content date appears.
+  const BUILD_TIME = /^\d{4}-\d{2}-\d{2}T/;
+  for (const entry of entries) {
+    if (entry.lastmod) {
+      assert.match(entry.lastmod, ISO_DAY, `${entry.url}: lastmod must be a real YYYY-MM-DD date`);
+      assert.doesNotMatch(entry.lastmod, BUILD_TIME, `${entry.url}: lastmod must not be build/mtime ISO`);
+    }
   }
 
   let corpus = artifact('/llms-full.txt', 'text/plain');
@@ -149,20 +178,39 @@ function main() {
     const header = twin.match(FRONTMATTER);
     assert.ok(header, `${page.id}: missing twin frontmatter`);
     const metadata = load(header[1], { schema: JSON_SCHEMA });
-    const updated = dates.get(page.url);
-    assert.equal(typeof updated, 'string', `${page.id}: missing sitemap date`);
-    assert.deepEqual(metadata, { id: page.id, type: page.type, url: page.url, updated }, `${page.id}: twin metadata`);
+    const htmlLastmod = dates.get(page.url);
+    const mdLastmod = dates.get(`${SITE}/${page.id}.md`);
+
+    if (page.type === 'doc') {
+      assert.equal(page.updated, undefined, `${page.id}: docs inventory must omit updated`);
+      assert.equal('updated' in metadata, false, `${page.id}: docs twin must omit updated`);
+      assert.equal(htmlLastmod, undefined, `${page.id}: docs sitemap HTML must omit lastmod`);
+      assert.equal(mdLastmod, undefined, `${page.id}: docs sitemap .md must omit lastmod`);
+      assert.deepEqual(metadata, { id: page.id, type: page.type, url: page.url }, `${page.id}: twin metadata`);
+    } else {
+      assert.equal(typeof page.sourceDate, 'string', `${page.id}: missing source frontmatter date`);
+      assert.equal(metadata.updated, page.sourceDate, `${page.id}: twin updated must equal source frontmatter`);
+      assert.equal(htmlLastmod, page.sourceDate, `${page.id}: sitemap lastmod must equal source frontmatter`);
+      assert.equal(mdLastmod, page.sourceDate, `${page.id}: .md sitemap lastmod must equal source frontmatter`);
+      assert.equal(metadata.updated, htmlLastmod, `${page.id}: twin updated must equal sitemap lastmod`);
+      assert.deepEqual(
+        metadata,
+        { id: page.id, type: page.type, url: page.url, updated: page.sourceDate },
+        `${page.id}: twin metadata`,
+      );
+      assert.match(metadata.updated, ISO_DAY, `${page.id}: updated must be YYYY-MM-DD`);
+      assert.doesNotMatch(metadata.updated, BUILD_TIME, `${page.id}: updated must not be build/mtime ISO`);
+    }
+
     assert.equal(twin.slice(header[0].length), page.body, `${page.id}: twin differs from original source body`);
-    assert.equal(dates.get(`${SITE}/${page.id}.md`), updated, `${page.id}: sitemap date for .md twin`);
     const position = corpus.indexOf(twin);
     assert.ok(position >= 0, `${page.id}: complete twin missing from llms-full.txt`);
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);
     corpus = corpus.slice(0, position) + corpus.slice(position + twin.length);
     if (page.type === 'doc') {
       const path = new URL(page.url).pathname;
-      const built = { ...page, updated };
-      checkHtml(built, path);
-      checkHtml(built, path === '/' ? '/docs' : `/docs${path}`);
+      checkHtml(page, path);
+      checkHtml(page, path === '/' ? '/docs' : `/docs${path}`);
     }
     console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', canonical and legacy HTML' : ''}`);
   }
@@ -188,7 +236,13 @@ function main() {
   for (const line of [
     `Sitemap: ${SITE}/sitemap.xml`, `Llms-Txt: ${SITE}/llms.txt`, `Llms-Full-Txt: ${SITE}/llms-full.txt`,
   ]) assert.ok(robots.split(/\r?\n/).includes(line), `robots.txt missing ${line}`);
-  console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
+
+  // Ensure the renderer no longer imports file mtime for content dates.
+  const agentMd = read(join(ROOT, 'src/lib/agent-md.ts'));
+  assert.equal(agentMd.includes('statSync'), false, 'agent-md.ts must not use statSync for content dates');
+  assert.equal(agentMd.includes('mtime'), false, 'agent-md.ts must not use mtime for content dates');
+
+  console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }
 
 try {
