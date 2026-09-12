@@ -1,4 +1,5 @@
 import { source } from '@/lib/source';
+import { getDocArticle } from '@/lib/agent-md';
 import {
   DocsPage,
   DocsBody,
@@ -19,13 +20,15 @@ export default async function Page(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  const article = getDocArticle(page);
   const MDX = page.data.body;
   const slugPath = params.slug?.join('/') ?? 'index';
   const filePath = `content/docs/${slugPath}.mdx`;
   const editUrl = `${GITHUB_REPO}/edit/main/${filePath}`;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full} tableOfContent={{ single: true }}>
+    <DocsPage data-page-id={article.id} toc={page.data.toc} full={page.data.full} tableOfContent={{ single: true }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>

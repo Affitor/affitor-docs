@@ -1,4 +1,5 @@
 import { source } from '@/lib/source';
+import { getDocArticle } from '@/lib/agent-md';
 import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
 import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { useMDXComponents } from '@/../mdx-components';
@@ -11,12 +12,14 @@ export default function HomePage() {
   const page = source.getPage([]);
   if (!page) return null;
 
+  const article = getDocArticle(page);
   const MDX = page.data.body;
   const editUrl = `${GITHUB_REPO}/edit/main/content/docs/index.mdx`;
 
   return (
     <DocsShell>
-      <DocsPage toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
+      <DocsPage data-page-id={article.id} toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         <DocsBody>
