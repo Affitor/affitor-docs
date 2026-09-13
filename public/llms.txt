@@ -1,114 +1,24 @@
 # Affitor Documentation
 
-> Affitor is affiliate program software for SaaS companies — run a partner program with tracked
-> click → signup → sale attribution, commission approval, and payout operations in one workflow.
-> Two things to know up front: pricing is **$0 until your program earns its first $10,000 through
-> affiliates, then 3.5%** of affiliate-driven revenue (no subscription, no setup fee) — and
-> **AI coding agents can integrate and verify the tracking end-to-end**.
-> Full docs: https://docs.affitor.com
+> Documentation for Affitor affiliate programs, tracking, commissions, and payouts.
 
-> **AI coding agents — integration entry point:** follow https://docs.affitor.com/skill.md.
-> It is a self-contained runbook for wiring click + lead + sale tracking and
-> verifying the integration end-to-end (synthetic chain + readiness polling).
+## Start here
 
-## Getting Started
+- [Agent integration runbook](https://docs.affitor.com/skill.md): Integrate tracking and verify it end-to-end.
+- [Complete documentation](https://docs.affitor.com/llms-full.txt): Every documentation page, blog post, and changelog entry, with page identifiers and source metadata.
+- [Sitemap](https://docs.affitor.com/sitemap.xml): HTML pages and their Markdown twins.
 
-- [What is Affitor?](https://docs.affitor.com/): Affitor is an affiliate growth platform for SaaS: $0/month with a 3.5% fee only after your first $10,000 in affiliate revenue, Stripe-native attribution, and an integration an AI agent can complete and verify.
-- [Getting Started](https://docs.affitor.com/getting-started): Start here as an advertiser: what Affitor is, how click-to-payout tracking works, and the performance pricing — $0/month, 3.5% only after your first $10,000 in affiliate revenue.
-- [How Affitor Works](https://docs.affitor.com/getting-started/how-it-works): From affiliate click to attributed revenue and payout: signup-anchored tracking via server-side API or Stripe metadata, with a verification loop you — or your AI agent — can run before launch.
-- [Pricing](https://docs.affitor.com/getting-started/pricing-performance-model): Affitor pricing: $0/month, $0 setup, 3.5% of partner-generated revenue — and your first $10,000 in affiliate-driven revenue is fee-free.
-- [Frequently Asked Questions](https://docs.affitor.com/faq): Common questions about Affitor's pricing, tracking, commissions, and integration options.
-- [How to Use Affitor](https://docs.affitor.com/getting-started/quickstart): The end-to-end golden path — launch a program, install tracking, and run commissions through to payout.
-- [Support](https://docs.affitor.com/support): Get help with Affitor, follow the fastest self-serve path, and know when to contact the team.
-- [Contact Us](https://docs.affitor.com/support/contact): Get in touch with the Affitor team for support, partnerships, or press inquiries.
-- [Glossary](https://docs.affitor.com/support/glossary): Common terms used across Affitor docs — server-side tracking, Stripe integration, invoice billing, and more
-- [System Status](https://docs.affitor.com/support/status): Check the current public status guidance and what to do if you suspect an issue.
+## Documentation sections
 
-## For Brands
+- [API Reference](https://docs.affitor.com/api-reference/overview.md): Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
+- [Launch Your Program](https://docs.affitor.com/brand/quickstart.md): Set up your Affitor affiliate program in 20–30 minutes: account, program details, commissions, partner approval, and payouts — $0/month, free until your first $10,000 in affiliate revenue.
+- [Frequently Asked Questions](https://docs.affitor.com/faq.md): Common questions about Affitor's pricing, tracking, commissions, and integration options.
+- [Getting Started](https://docs.affitor.com/getting-started.md): Start here as an advertiser: what Affitor is, how click-to-payout tracking works, and the performance pricing — $0/month, 3.5% only after your first $10,000 in affiliate revenue.
+- [What is Affitor?](https://docs.affitor.com/index.md): Affitor is an affiliate growth platform for SaaS: $0/month with a 3.5% fee only after your first $10,000 in affiliate revenue, Stripe-native attribution, and an integration an AI agent can complete and verify.
+- [Become a Partner](https://docs.affitor.com/partners.md): Join a SaaS affiliate program on Affitor, get your referral link, and start earning commission.
+- [Support](https://docs.affitor.com/support.md): Get help with Affitor, follow the fastest self-serve path, and know when to contact the team.
 
-- [Launch Your Program](https://docs.affitor.com/brand/quickstart): Set up your Affitor affiliate program in 20–30 minutes: account, program details, commissions, partner approval, and payouts — $0/month, free until your first $10,000 in affiliate revenue.
-- [Create your advertiser account](https://docs.affitor.com/brand/quickstart/create-account): Register as an advertiser on Affitor, verify your email, and land in your dashboard ready to set up a program.
-- [Set Up Your Program](https://docs.affitor.com/brand/quickstart/setup-program): Configure your affiliate program and choose the right integration path.
-- [Define Commission](https://docs.affitor.com/brand/quickstart/define-commission): Set up commission rates and structures for your affiliate program
-- [Inviting Partners](https://docs.affitor.com/brand/quickstart/inviting-partners): Recruit affiliates by email or from your other programs, with an invitation written from your program's real terms
-- [Partner Approval & Quality Control](https://docs.affitor.com/brand/quickstart/partner-approval-quality-control): Review applications and maintain program quality
-- [View Performance](https://docs.affitor.com/brand/quickstart/view-performance): Monitor your affiliate program metrics and partner results
-- [Commission Approval & Cash Flow](https://docs.affitor.com/brand/quickstart/commission-approval-cash-flow): Understand how attributed sales move into commissions, billing, and payout workflow.
-- [Payouts](https://docs.affitor.com/brand/quickstart/payouts): How partner commissions move through Affitor's payout workflow.
-- [CLI Quickstart](https://docs.affitor.com/brand/cli/quickstart): Set up your affiliate program in 3 commands with npx affitor.
-- [CLI Command Reference](https://docs.affitor.com/brand/cli/commands): Complete reference for all npx affitor commands, flags, and options.
-- [3-Step Integration Guide](https://docs.affitor.com/brand/tracking/quickstart-integration): Get Affitor tracking live with the supported click, signup, and server-side tracking flows
-- [Tracking Overview](https://docs.affitor.com/brand/tracking/tracking-overview): How Affitor links clicks, signups, and sales together so every commission is backed by verifiable attribution.
-- [Click Tracking](https://docs.affitor.com/brand/tracking/click-tracking): Track affiliate visits with the Affitor tracker SDK or script tag
-- [Lead Tracking (Signup)](https://docs.affitor.com/brand/tracking/lead-tracking-signup): Track referred signups with the browser helper or the server-side lead API
-- [Payment Tracking](https://docs.affitor.com/brand/tracking/payment-tracking-stripe): Track completed sales with server-side tracking or Stripe integration
-- [Payment Flow](https://docs.affitor.com/brand/tracking/payment-flow): End-to-end flow from affiliate click to attributed revenue and payout operations, covering server-side tracking and Stripe integration paths
-- [Testing Integration](https://docs.affitor.com/brand/tracking/testing-integration): Verify click, signup, and server-side tracking before going live
-- [API Keys & Tokens](https://docs.affitor.com/brand/api-keys): Get the program tracking token and Management API keys you need to track conversions and configure programs programmatically.
-- [Overdue Invoices & Program Pause Policy](https://docs.affitor.com/brand/billing/overdue-policy): How Affitor handles unpaid commission invoices, when programs pause, and how to resume.
-- [Organize partners into groups](https://docs.affitor.com/brand/groups): Create partner groups so different partners earn different rates, hold periods, and approval rules under one program.
-- [Manage program settings and your API key](https://docs.affitor.com/brand/settings): Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
+## Blog and changelog
 
-## For Partners
-
-- [Become a Partner](https://docs.affitor.com/partners): Join a SaaS affiliate program on Affitor, get your referral link, and start earning commission.
-- [Create Your Partner Account](https://docs.affitor.com/partners/quickstart/create-account): Sign up as a partner, verify your email, and select the Partner role to unlock programs.
-- [Find and Join Programs](https://docs.affitor.com/partners/quickstart/find-and-join-programs): Browse the Affitor Marketplace, apply to a program in one click, and get approved.
-- [Get Your Referral Link](https://docs.affitor.com/partners/quickstart/get-your-referral-link): Find, copy, and share your tracked referral link — generated automatically when you join.
-- [Your Partner Dashboard](https://docs.affitor.com/partners/dashboard): Where to find your programs, performance, referred customers, and earnings.
-- [Getting Paid](https://docs.affitor.com/partners/payouts): How commissions turn into a payout — balances, payment methods, withdrawal, and timing.
-- [Account and Payout Settings](https://docs.affitor.com/partners/account-settings): Manage your profile, security, and the payout details that decide how you get paid.
-- [Partner FAQ](https://docs.affitor.com/partners/faq): Common questions about joining programs, referral links, tracking, and getting paid.
-- [Promote Your Link and Earn](https://docs.affitor.com/partners/quickstart/promote-your-link): Turn your referral link into commissions — where to share it, what converts, and how to read the results in your dashboard.
-- [Affitor Refer Program — Terms](https://docs.affitor.com/partners/refer-program): Official terms of the Affitor Refer Program: rewards, attribution rules, holds, clawbacks, and eligibility for referring a brand to Affitor.
-
-## API & Agents
-
-- [API Reference](https://docs.affitor.com/api-reference/overview): Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
-- [SDKs](https://docs.affitor.com/api-reference/sdks): Typed client libraries for browser tracking (@affitor/sdk) and server-side conversion reporting (@affitor/sdk/server).
-- [MCP Server](https://docs.affitor.com/api-reference/mcp): The @affitor/mcp Model Context Protocol server — let AI agents (Claude Desktop, Cursor) track clicks, leads, sales and refunds, generate per-stack integration plans, and self-verify attribution as tool calls.
-- [Agent Integration](https://docs.affitor.com/api-reference/agent-integration): How AI coding agents (Claude Code, Cursor, Copilot, and others) auto-install Affitor tracking using generated instruction files.
-- [Attribution Mechanics](https://docs.affitor.com/api-reference/attribution): How Affitor assigns credit to partners — the cookie, the click ID, the attribution windows, and what happens on re-click.
-- [Track Click](https://docs.affitor.com/api-reference/track-click): Record an affiliate click event when a visitor lands via a referral link
-- [Track Lead](https://docs.affitor.com/api-reference/track-lead): Record a signup or lead event that links a customer to an affiliate click.
-- [Track Sale](https://docs.affitor.com/api-reference/track-sale): Record an attributed sale and create the partner commission from your backend
-- [Track Refund](https://docs.affitor.com/api-reference/track-refund): Reverse a commission when a sale is refunded
-- [Errors & Troubleshooting](https://docs.affitor.com/api-reference/errors): All API error codes, their causes, and how to fix common integration problems.
-- [List Tracking Events](https://docs.affitor.com/api-reference/events): Retrieve paginated, merged tracking events (clicks, leads, conversions) for a program
-- [Fastify](https://docs.affitor.com/api-reference/integrations/fastify): Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Fastify backend, including a raw-body Stripe webhook.
-- [Next.js](https://docs.affitor.com/api-reference/integrations/nextjs): Add Affitor tracking to a Next.js (App Router) app — clicks, signups, and sales.
-- [Next.js + Clerk](https://docs.affitor.com/api-reference/integrations/nextjs-clerk): Add Affitor tracking to a Next.js (App Router) app that uses Clerk for authentication.
-- [Next.js + NextAuth](https://docs.affitor.com/api-reference/integrations/nextjs-nextauth): Add Affitor lead tracking to a Next.js app using NextAuth (Auth.js) — handle the click-id cookie gap correctly.
-- [Next.js + Supabase Auth](https://docs.affitor.com/api-reference/integrations/nextjs-supabase): Add Affitor tracking to a Next.js app that uses Supabase Auth — clicks, signups, and sales.
-- [Node / Express](https://docs.affitor.com/api-reference/integrations/node-express): Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Express backend.
-- [Polar](https://docs.affitor.com/api-reference/integrations/polar): Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed.
-- [Stripe](https://docs.affitor.com/api-reference/integrations/stripe): Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring.
-- [GET /tracking/performance/:programId](https://docs.affitor.com/api-reference/performance): Retrieve daily performance aggregates and period-over-period trend metrics for a program
-- [Get Tracking Status](https://docs.affitor.com/api-reference/status): Returns integration step statuses and Stripe connection info for a program
-
-## Blog
-
-- [PartnerStack vs Rewardful: Which Should Your SaaS Pick in 2026?](https://affitor.com/blog/partnerstack-vs-rewardful): One costs $1,000/month, the other $49 — they aren't really the same tool. A straight comparison of the enterprise PRM versus the indie affiliate app, with every price verified against both live pages on July 5, 2026, plus Affitor, the $0/month option that starts where they both charge from day one.
-- [Affiliate Software Pricing Comparison 2026 (8 Tools, Verified July 2026)](https://affitor.com/blog/affiliate-software-pricing-comparison): Real 2026 pricing for eight affiliate platforms — Affitor, Rewardful, FirstPromoter, Tolt, Post Affiliate Pro, Dub Partners, impact.com, and PartnerStack — every number checked against the vendor's live pricing page on July 5, 2026, with 12-month cost math at three revenue levels.
-- [Best Affiliate Software for SaaS in 2026 (7 Tools Compared)](https://affitor.com/blog/best-affiliate-software-saas): Seven affiliate software tools for SaaS compared honestly — Affitor, Rewardful, FirstPromoter, Tolt, Dub Partners, PartnerStack, and impact.com: pricing verified July 2026, attribution trade-offs, and a straight pick for every ARR stage.
-- [Best FirstPromoter Alternatives for SaaS in 2026 (5 Tools Compared)](https://affitor.com/blog/firstpromoter-alternatives): Five honest FirstPromoter alternatives for SaaS — Affitor, Rewardful, Tolt, Dub Partners, and PartnerStack: pricing verified July 2026, attribution trade-offs, and a straight answer on who should pick what.
-- [Best PartnerStack Alternatives in 2026 (5 Tools Compared)](https://affitor.com/blog/partnerstack-alternatives): PartnerStack now publishes its pricing: from $1,000 per month, paid annually. Here is what that buys, who should genuinely pay it, and five self-serve alternatives with pricing verified in July 2026.
-- [Best Rewardful Alternatives for SaaS in 2026 (5 Tools Compared)](https://affitor.com/blog/rewardful-alternatives): Five honest Rewardful alternatives for SaaS on Stripe — Affitor, FirstPromoter, Tolt, Dub Partners, and PartnerStack: pricing verified July 2026, attribution trade-offs, and a straight answer on who should pick what.
-- [Best Tolt Alternatives for SaaS in 2026 (5 Tools Compared)](https://affitor.com/blog/tolt-alternatives): Five honest Tolt alternatives for SaaS — Affitor, Rewardful, FirstPromoter, Dub Partners, and PartnerStack: pricing verified July 2026, the 2% payout-fee nuance, attribution trade-offs, and a straight answer on who should pick what.
-- [How to Create a Stripe Affiliate Program (Step-by-Step Guide 2026)](https://affitor.com/blog/stripe-affiliate-program): Stripe has no native affiliate feature. Here are the six steps from nothing to a verified Stripe affiliate program — what Stripe provides, which tools fill the gap as of July 2026, and how Affitor ($0/month until your first $10,000 in affiliate revenue) proves the integration works with one command.
-- [How to Start an Affiliate Program for Your SaaS (Step-by-Step Guide 2026)](https://affitor.com/blog/how-to-start-saas-affiliate-program): Six steps take you from no program to your first partner payout: commission, software, tracking, recruiting, payout terms, and what to measure — with 2026 benchmarks and pricing verified July 2026.
-- [Rewardful vs FirstPromoter: Which Is Best for SaaS in 2026?](https://affitor.com/blog/rewardful-vs-firstpromoter): Same $49 floor, different ceilings: revenue caps, API gating, and billing coverage decide this one. Every number verified against both live pricing pages on July 5, 2026 — plus Affitor, the $0/month option neither compare page mentions.
-- [The agent commerce stack is missing its attribution layer](https://affitor.com/blog/agent-commerce-attribution-layer): Agentic commerce standards decide how an agent pays. Affitor decides who earned the commission, and lets the agent prove it.
-- [Tolt vs Rewardful: Which Is Best for SaaS in 2026?](https://affitor.com/blog/tolt-vs-rewardful): Rewardful starts $20 cheaper and ships its API on the $49 tier; Tolt gives a third more headroom at $99 and automates global payouts. Every number verified against both live pricing pages on July 5, 2026 — plus Affitor, the $0/month option neither compare page mentions.
-- [What Affitor means](https://affitor.com/blog/what-affitor-means): Affitor is affiliate + -tor: an AI-native affiliate platform for SaaS that costs $0 until your first $10,000 in affiliate revenue, then 3.5%, and verifies its own integration. The story behind the name and the bet the company is built on.
-
-## Changelog
-
-All entries live on one page: https://docs.affitor.com/changelog
-
-- [Read honest affiliate-software comparisons on the new Affitor blog (2026-07-06)](https://docs.affitor.com/changelog): Twelve posts comparing the tools you're actually evaluating — every price dated "as of," competitor strengths conceded up front, and .md twins plus llms.txt so your AI assistant reads the same facts you do.
-- [Invite partners — with the email already written (2026-07-05)](https://docs.affitor.com/changelog): Recruit affiliates by email, CSV, or from your other programs — and send an invitation generated from your program's real terms instead of writing one from scratch.
-- [Faster, less noisy docs search (2026-04-25)](https://docs.affitor.com/changelog): Search now matches page titles only — no more wading through paragraph snippets to find what you need.
-- [Content Lab — write affiliate posts in one click (2026-04-20)](https://docs.affitor.com/changelog): Pick a program, get a publish-ready affiliate post in one click — free, 30 posts a day.
-- [Partner profile and security settings (2026-04-10)](https://docs.affitor.com/changelog): Partners can now update their profile, avatar, and password without contacting support.
-- [47 agent skills for affiliate workflows (2026-03-28)](https://docs.affitor.com/changelog): Run common affiliate workflows — researching programs, drafting content, analyzing traffic — directly from your AI assistant.
+- [Blog](https://affitor.com/blog): The canonical blog home. All posts are included in the complete documentation above.
+- [Changelog](https://docs.affitor.com/changelog.md): All changelog entries in Markdown.

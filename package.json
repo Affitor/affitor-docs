@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/gen-llms.js",
     "build": "next build",
     "start": "next start",
     "check:pkgnames": "bash scripts/check-dead-package-names.sh",

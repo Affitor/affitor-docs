@@ -1,5 +1,36 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://docs.affitor.com/sitemap-index.xml
+Sitemap: https://docs.affitor.com/sitemap.xml
 Llms-Txt: https://docs.affitor.com/llms.txt
+Llms-Full-Txt: https://docs.affitor.com/llms-full.txt
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
