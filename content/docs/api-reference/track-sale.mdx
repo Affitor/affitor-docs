@@ -169,9 +169,13 @@ data = response.json()`
     status: 409,
     label: "409 Duplicate",
     code: `{
-  "error": "Conflict",
-  "message": "transaction_id already recorded",
-  "statusCode": 409
+  "data": null,
+  "error": {
+    "status": 409,
+    "name": "ConflictError",
+    "message": "Duplicate transaction_id. This sale has already been recorded.",
+    "details": {}
+  }
 }`
   },
 ]} />

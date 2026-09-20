@@ -11,12 +11,52 @@ This page covers every error response the tracking API can return and practical 
 
 ## Error response shape
 
-All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths — with one exception, [`api_key_rotation_required`](#api_key_rotation_required), where `error` is an object and you should read `error.code` instead.
+`error` is always an object, never a plain string. Interpolating `body.error` straight into a message prints `[object Object]` — read a field off it.
+
+There are two shapes, and which one you get depends on the endpoint.
+
+### Tracking endpoints
+
+`POST /api/v1/track/click`, `/lead`, `/sale`, and `/refund` return the platform envelope. Read `error.message`:
 
 ```json
 {
-  "error": "transaction_id is required and must be a string"
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "BadRequestError",
+    "message": "transaction_id is required and must be a string",
+    "details": {}
+  }
 }
+```
+
+`data` is `null` on every error. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `NotFoundError` (404), `ConflictError` (409), `InternalServerError` (500). This shape carries no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below.
+
+### Readiness endpoint
+
+`GET /api/v1/programs/me/readiness` returns the typed agent envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
+
+```json
+{
+  "error": {
+    "code": "invalid_key",
+    "message": "Invalid API token."
+  }
+}
+```
+
+### Handling both
+
+One error crosses the boundary: [`api_key_rotation_required`](#api_key_rotation_required). A program API key past its rotation deadline is refused with the typed envelope on **every** endpoint that key authenticates, tracking endpoints included.
+
+So read `error.code` first and fall back to `error.message` when it is absent:
+
+```ts
+const body = await response.json();
+const detail = body.error?.code
+  ? `${body.error.code}: ${body.error.message}`
+  : body.error?.message;
 ```
 
 ---
@@ -29,9 +69,13 @@ All error responses return JSON with an `"error"` string. There is no wrapper en
 |--------|-----------|---------|-----|
 | `401` | `Authorization` header missing or does not start with `Bearer ` | The request reached a server-authenticated endpoint without a valid header | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
 | `401` | Header present but token string is empty after trimming | Bearer prefix found but no token value followed it | Check for trailing spaces or an empty env variable |
-| `401` | Token does not match any `api_token` in the program table | Wrong key, revoked key, or key from a different program | Copy the API key from your program settings in the Affitor dashboard |
+| `401` | Token does not match any `api_token` in the program table | Wrong key, replaced key, or key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
 
-Endpoints that require a Bearer token: `POST /api/v1/track/sale`, `POST /api/v1/track/refund`. The lead endpoint accepts a Bearer token for server mode but does not require it for browser mode.
+The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
+
+`POST /api/v1/track/lead` accepts a Bearer token for server mode but does not require one, so it answers differently. A missing header — or a header whose token is empty after `Bearer ` — falls back to browser mode: the lead is recorded from the `click_id` rather than refused. Only a token that matches no program returns `401` there.
+
+The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true` and settles only once your backend sends the server-side lead.
 
 ---
 
@@ -83,7 +127,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 }
 ```
 
-This is the one error on this page returned as a nested `error` object instead of a flat string — read `error.code`, not `error`, when handling this response.
+This is the one error the tracking endpoints answer with the [typed agent envelope](#readiness-endpoint) rather than the platform one: no `data` key, and an `error.code` to branch on. Every other tracking error uses the platform envelope and carries no `code`.
 
 **Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
@@ -243,12 +287,11 @@ if (response.status === 409) {
 if (!response.ok) {
   // Unexpected error — log and alert
   const body = await response.json();
-  // `error` is a string on every error but `api_key_rotation_required`,
-  // where it is an object carrying the code you branch on.
-  const detail =
-    typeof body.error === 'string'
-      ? body.error
-      : `${body.error.code}: ${body.error.message}`;
+  // `error` is always an object. `code` is present only on the typed envelope
+  // (api_key_rotation_required here); the platform envelope has message only.
+  const detail = body.error?.code
+    ? `${body.error.code}: ${body.error.message}`
+    : body.error?.message;
   throw new Error(`Affitor error ${response.status}: ${detail}`);
 }
 ```

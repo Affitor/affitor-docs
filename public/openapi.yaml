@@ -290,7 +290,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Duplicate transaction_id. This sale has already been recorded."
+                data: null
+                error:
+                  status: 409
+                  name: ConflictError
+                  message: "Duplicate transaction_id. This sale has already been recorded."
+                  details: {}
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -356,7 +361,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Sale not found for transaction_id"
+                data: null
+                error:
+                  status: 404
+                  name: NotFoundError
+                  message: "Sale not found for transaction_id"
+                  details: {}
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -527,13 +537,22 @@ components:
 
   responses:
     Unauthorized:
-      description: Missing/malformed Authorization header, or invalid API token.
+      description: |
+        Missing/malformed Authorization header, or invalid API token.
+
+        A program API key that is past its rotation deadline is refused with
+        `AgentError` instead, carrying `error.code: api_key_rotation_required`.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: "Invalid API token"
+            data: null
+            error:
+              status: 401
+              name: UnauthorizedError
+              message: "Invalid API token"
+              details: {}
     InternalError:
       description: Unexpected server error. Safe to retry with the same idempotency key.
       content:
@@ -544,11 +563,40 @@ components:
   schemas:
     Error:
       type: object
+      description: |
+        Error envelope for the `/api/v1/track/*` and `/api/v1/cli/*` endpoints.
+
+        `error` is an OBJECT, not a string: interpolating `body.error` into a
+        message prints `[object Object]`. Read `error.message`.
+
+        Two other shapes exist. `/api/v1/programs/me/readiness` answers with
+        `AgentError`, and so does any endpoint authenticated by a program API
+        key once that key is past its rotation deadline — so branch on
+        `error.code` first and fall back to `error.message` when it is absent.
       properties:
+        data:
+          type: 'null'
+          description: Always `null` on an error.
         error:
-          type: string
-          description: Human-readable error message.
-      required: [error]
+          type: object
+          properties:
+            status:
+              type: integer
+              description: Repeats the HTTP status code.
+            name:
+              type: string
+              description: >-
+                Error class name for that status: BadRequestError (400),
+                UnauthorizedError (401), NotFoundError (404),
+                ConflictError (409), InternalServerError (500).
+            message:
+              type: string
+              description: Human-readable error message.
+            details:
+              type: object
+              description: Empty object on these endpoints.
+          required: [status, name, message]
+      required: [data, error]
 
     TestModeResponse:
       type: object
@@ -565,7 +613,7 @@ components:
 
     AdditionalData:
       type: object
-      description: Extension object. Set `test_mode: true` to create an isolated test event.
+      description: 'Extension object. Set `test_mode: true` to create an isolated test event.'
       properties:
         test_mode:
           type: boolean
@@ -647,7 +695,7 @@ components:
 
     LeadProvisionalResponse:
       type: object
-      description: Browser-mode lead on a program with `lead_auth: server_required`.
+      description: 'Browser-mode lead on a program with `lead_auth: server_required`.'
       properties:
         success: { type: boolean }
         provisional: { type: boolean, const: true }

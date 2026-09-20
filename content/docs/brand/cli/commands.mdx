@@ -23,13 +23,78 @@ Available on every command:
 
 ---
 
+## Which commands need a login session
+
+Two different credentials are in play, and mixing them up is the most common reason a command fails.
+
+| Credential | Where it lives | Which commands use it |
+|---|---|---|
+| Account session | `~/.affitor/credentials.json`, written by `affitor login` | `affitor init`, `affitor programs`, `affitor whoami` |
+| Program API key | `AFFITOR_API_KEY` in the environment or `.affitor/.env`, or `--api-key` | `affitor onboard`, `affitor status`, `affitor test`, `affitor setup stripe` |
+
+Run `affitor login` before the first group. Without a session, `init` and `programs` stop and exit non-zero (`not_logged_in` in `--json` mode) — they never fall back to a program API key.
+
+---
+
+## `affitor login`
+
+Log in to your Affitor account from the browser. Required before `affitor init` and `affitor programs`.
+
+```bash
+npx affitor login
+```
+
+The command prints a login URL and opens it, then waits while you sign in. Once the browser finishes, the session is written to `~/.affitor/credentials.json` and the token is good for 90 days.
+
+Takes no flags of its own. The session is per machine and per account, not per project, so you log in once and it covers every project directory.
+
+If you are already logged in, `login` reports the account and stops without starting a new session — run `affitor logout` first to switch accounts.
+
+---
+
+## `affitor logout`
+
+Remove the stored session from this machine.
+
+```bash
+npx affitor logout
+```
+
+---
+
+## `affitor whoami`
+
+Show which account the stored session belongs to, and when its token expires.
+
+```bash
+npx affitor whoami
+```
+
+With no session it exits non-zero. `whoami --json` instead prints `{"logged_in": false}` and exits `0`, so a script should read that field rather than the exit code.
+
+---
+
+## `affitor programs`
+
+List the affiliate programs on the logged-in account, with each program's ID, status, commission, and partner count.
+
+```bash
+npx affitor programs
+```
+
+Needs a login session. This is how you find a program ID without opening the dashboard.
+
+---
+
 ## `affitor init`
 
-Create a new affiliate program and generate config files.
+Create a **new** affiliate program and generate config files. Requires a login session — run `affitor login` first.
 
 ```bash
 npx affitor init
 ```
+
+`init` always creates a new program. It does not adopt a program you already have and it does not issue a replacement key for one: if a program's key stopped working, a workspace owner regenerates it in Affitor under Settings → API Key. Running `init` in a directory that already has `.affitor/config.json` stops without changing anything.
 
 | Flag | Description | Default |
 |---|---|---|
@@ -276,12 +341,18 @@ Secrets (the program API key, and provider webhook secrets) are **not** stored i
 
 ---
 
-## Error Messages
+## When a command fails
 
-| Error | Message |
-|---|---|
-| No config | `No Affitor config found. Run npx affitor init to set up your program.` |
-| Invalid API key | `API key expired or invalid. Run npx affitor init to get a new one.` |
-| Already configured | `Affitor already configured in this directory. Use npx affitor status to check.` |
-| Stripe OAuth cancelled | `Stripe authorization cancelled. Run npx affitor setup stripe to try again.` |
-| Network error | `Network error: <details>. Check your internet connection and try again.` |
+In `--json` mode, a failure prints a machine code on `error`.
+
+Do not branch on the exit code alone. `affitor status` exits `0` even when the API refuses the key, and `affitor onboard` exits `0` even when verification does not pass — read `error` from the JSON output, and `integration_verified` from `onboard --json`, to know what happened.
+
+| Condition | `--json` code | What to do |
+|---|---|---|
+| Not logged in | `not_logged_in` | `affitor init` and `affitor programs` need an account session. Run `affitor login`, then re-run the command |
+| No config in this directory | `no_config` | Run the command from the project root where you ran `affitor init`, or run `affitor init` to create a program here |
+| Already configured | `already_configured` | `affitor init` found an existing `.affitor/config.json` and changed nothing. Use `affitor status` to check that program. Do not run `init` to recover a key — it only ever creates a new program |
+| API key expired or invalid | no code — `error` is the API message, with the HTTP status on `status` | The key you sent matches no program, or it was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
+| Invalid event type | `invalid_event_type` | `affitor test` takes `click`, `lead`, or `sale` |
+| No API key for `onboard` | `no_api_key` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
+| Network error | `network_error` | The request never reached the API — check connectivity and retry |
