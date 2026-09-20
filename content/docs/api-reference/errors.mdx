@@ -45,7 +45,7 @@ Affitor can mark a specific program API key for mandatory rotation — for examp
 |--------|-------|
 | `Deprecation` | Unix timestamp of when the key was marked for rotation ([RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)) |
 | `Sunset` | HTTP-date of the rotation deadline, after which the key stops working ([RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) |
-| `Link` | `<https://docs.affitor.com/docs/api-reference/errors#api_key_rotation_required>; rel="deprecation"` |
+| `Link` | `<https://docs.affitor.com/api-reference/errors#api_key_rotation_required>; rel="deprecation"` |
 
 The JSON body also gains a `warnings` array. No existing field is removed or renamed:
 
@@ -58,7 +58,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
       "message": "This API key must be replaced by 2026-10-03.",
       "hint": "Create a new key in Affitor → Settings → API Key, then update AFFITOR_API_KEY on your server.",
       "rotate_by": "2026-10-03T00:00:00Z",
-      "docs_url": "https://docs.affitor.com/docs/api-reference/errors#api_key_rotation_required"
+      "docs_url": "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
     }
   ]
 }
@@ -76,7 +76,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
     "code": "api_key_rotation_required",
     "message": "This API key was retired on 2026-10-03.",
     "hint": "Create a new key in Affitor → Settings → API Key.",
-    "docs_url": "https://docs.affitor.com/docs/api-reference/errors#api_key_rotation_required"
+    "docs_url": "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
   }
 }
 ```
