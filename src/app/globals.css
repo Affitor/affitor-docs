@@ -711,6 +711,42 @@ article [data-card] {
 .docs-checklist a { color: var(--color-fd-primary); text-decoration: none; }
 .docs-checklist a:hover { opacity: 0.8; }
 
+/* Inline markdown inside string-prop blocks (<CommonMistakes>, <VerifySuccess>).
+   These sit in .not-prose, so the article typography rules never reach them. */
+.docs-common-mistakes code,
+.docs-verify-card code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--aff-body);
+  font-weight: 500;
+}
+.dark .docs-common-mistakes code,
+.dark .docs-verify-card code {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--aff-code-text);
+}
+.docs-common-mistakes strong,
+.docs-verify-card strong {
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+}
+.docs-common-mistakes a,
+.docs-verify-card a {
+  color: var(--color-fd-primary);
+  text-decoration: none;
+}
+.docs-common-mistakes a:hover,
+.docs-verify-card a:hover { opacity: 0.8; }
+.docs-common-mistakes a code,
+.docs-verify-card a code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
 /* Next step */
 .docs-next-step { display: flex; flex-direction: column; gap: 6px; }
 .docs-next-title { font-size: 15px; font-weight: 600; color: var(--color-fd-foreground); }

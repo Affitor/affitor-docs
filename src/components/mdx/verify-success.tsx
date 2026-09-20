@@ -1,3 +1,5 @@
+import { renderInlineMarkdown } from './inline-markdown';
+
 type Section = {
   title: string;
   items?: string[];
@@ -10,7 +12,7 @@ function VerifyCard({ title, items = [] }: Section) {
       <div className="docs-verify-title">{title}</div>
       <ul>
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>{renderInlineMarkdown(item)}</li>
         ))}
       </ul>
     </div>
