@@ -3,7 +3,7 @@ title: API key reference
 description: Which credential each Affitor call needs, where the program API key lives, how to replace it, and how mandatory rotation is signalled.
 ---
 
-Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key every integration guide, SDK, CLI command, and agent skill refers to.
+Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key the integration guides, the SDKs, the CLI's tracking setup, and the agent skill all refer to. CLI commands that create or list programs are different: they act as your account, so they authenticate with your CLI login rather than with this key.
 
 <PageMeta
   items={[
@@ -25,14 +25,14 @@ Affitor has one self-serve credential: the **program API key**. It authenticates
 | Visibility | Never returned by a read. The full value is shown only in the response to a regenerate request, so copy it there. |
 
 ```bash
-# Test mode: checks that the key authenticates, without recording a real sale or commission.
+# Test mode: checks that the key authenticates, without creating a real sale or commission.
 curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Authorization: Bearer $AFFITOR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "additional_data": { "test_mode": true } }'
 ```
 
-A `200` with `test_mode: true` in `data` means the key works. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/api-reference/track-sale).
+A `200` with `test_mode: true` in `data` means the key works. The call is not a no-op: it stores a sale event flagged as a test, writes a tracking log entry, and can move your integration checklist. It creates no commission and no platform fee. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/api-reference/track-sale).
 
 :::note
 
@@ -67,7 +67,7 @@ Program read endpoints never return the key. They expose `api_token_masked` only
 | `POST /api/v1/track/sale` | Yes |
 | `POST /api/v1/track/refund` | Yes |
 | `POST /api/v1/track/lead` — server mode | Yes. Sending the key is what makes the signup a server-attributed lead. |
-| `POST /api/v1/track/lead` — browser mode | No. The click cookie proves attribution instead. |
+| `POST /api/v1/track/lead` — browser mode | No. The click cookie carries the attribution. On a program that requires server-side lead tracking, a browser lead is stored as provisional — the response says `provisional: true` — and a server-mode call is what settles it. |
 | `POST /api/v1/track/click` | No. Click tracking is public. |
 
 Every endpoint above is documented in the [API reference](/api-reference/overview).
@@ -80,13 +80,13 @@ Regenerate the key if it may have leaked, if it was committed to a repository, o
 
 Only a **workspace owner** can generate or regenerate a program key. A member who tries is refused, so ask an owner to run it and to hand you the new value through your secret manager.
 
-1. In **Settings** → **API Key**, regenerate the key.
-2. Copy the new value from the one-time reveal.
-3. Update `AFFITOR_API_KEY` everywhere the old key was stored — deployment environment, secret manager, CI — and redeploy.
+1. Line up every place `AFFITOR_API_KEY` is stored — deployment environment, secret manager, CI — so you can update them the moment you have the new value.
+2. In **Settings** → **API Key**, regenerate the key. The old key stops working at that moment.
+3. Copy the new value from the one-time reveal, update those places, and redeploy.
 
 :::caution
 
-Regenerating invalidates the old key immediately. Every integration still sending it starts receiving `401` until you deploy the new one, so update your environment before rotating in production.
+The two keys never overlap. Regenerating replaces the key in place, and the new value does not exist until that request returns, so there is no way to deploy it in advance. Between the regenerate and the redeploy, calls still sending the old key get `401`. Pick a window where a short gap in server-side tracking is acceptable.
 
 :::
 
@@ -96,10 +96,10 @@ Regenerating invalidates the old key immediately. Every integration still sendin
 
 Affitor can mark a specific program key for mandatory rotation — for example after the key was exposed outside your control. Marking it sets a deadline, and the two sides of that deadline behave differently:
 
-- **Before the deadline**, the key keeps authenticating requests, so tracking continues while you swap it. Every response carries `Deprecation` and `Sunset` headers plus a `Link` header pointing at the error reference, and the JSON body gains a `warnings` array carrying the code `api_key_rotation_required` and the deadline.
+- **Before the deadline**, the key still authenticates requests, so tracking keeps running until you are ready to swap it. Every response to a call made with that key carries `Deprecation` and `Sunset` headers plus a `Link` header pointing at the error reference, and the JSON body gains a `warnings` array carrying the code `api_key_rotation_required` and the deadline.
 - **At or after the deadline**, the key stops working. Requests come back as `401` with the same code in `error.code`, and the three headers are still there. That response has no `warnings` array — the warning only exists while the key still works.
 
-Regenerate before the deadline if you want no interruption at all. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
+Replace the key before the deadline: past it, the old key is refused whether or not you are ready. Doing it early does not remove the changeover gap described under [Replace a key](#replace-a-key) — it only lets you choose when that gap happens. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
 
 Replacing the key clears the flag: regenerate it in **Settings** → **API Key** and the warnings stop.
 
@@ -119,16 +119,17 @@ If you only want an AI coding agent to install tracking for you, you do not need
 
 | Your task | Key to send |
 |---|---|
-| Track a conversion — clicks, leads, sales, refunds | Program API key (`aff_`), from **Settings** → **API Key** |
+| Report a sale, a refund, or a server-mode lead | Program API key (`aff_`), from **Settings** → **API Key** |
+| Record a click, or a browser-mode lead | No key — both are public calls. See [Which calls need it](#which-calls-need-it). |
 | Read or update programs on a brand's behalf via `/api/agent/v1/...` | Agent API key (`agt_`), issued by Affitor |
 
 ## Verify it worked
 
-Send a test-mode call with the key in hand: it exercises authentication without recording a real sale or commission. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
+Send a test-mode call with the key in hand: it goes through the same authentication as a real sale, then stops before any commission or platform fee is created. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
 
 <VerifySuccess
   network={[
-    "POST /api/v1/track/sale with additional_data.test_mode set to true returns 200 and test_mode: true in data — the key authenticates, and nothing real is recorded",
+    "POST /api/v1/track/sale with additional_data.test_mode set to true returns 200 and test_mode: true in data — the key authenticates. The event is stored flagged as a test, and no commission or platform fee is created",
     "After regenerating, the same test-mode request with the old key returns 401 — rotation is complete",
     "Read the status before the body: a 200 with no warnings array means this key is not flagged for mandatory rotation. A flagged key that is past its deadline returns 401 and carries no warnings array either, so warnings alone never proves a key is unflagged",
   ]}
