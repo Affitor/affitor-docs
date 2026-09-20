@@ -25,7 +25,7 @@ Available on every command:
 
 ## Which commands need a login session
 
-Two different credentials are in play, and mixing them up is the most common reason a command fails.
+Two different credentials are in play, and they are not interchangeable.
 
 | Credential | Where it lives | Which commands use it |
 |---|---|---|
@@ -343,16 +343,54 @@ Secrets (the program API key, and provider webhook secrets) are **not** stored i
 
 ## When a command fails
 
-In `--json` mode, a failure prints a machine code on `error`.
+A command that cannot do its job exits non-zero. Three outcomes are the exception, because they are results rather than failures, and each one is reported in the output instead:
 
-Do not branch on the exit code alone. `affitor status` exits `0` even when the API refuses the key, and `affitor onboard` exits `0` even when verification does not pass — read `error` from the JSON output, and `integration_verified` from `onboard --json`, to know what happened.
-
-| Condition | `--json` code | What to do |
+| Command | Reports a negative outcome with exit `0` | Read instead |
 |---|---|---|
-| Not logged in | `not_logged_in` | `affitor init` and `affitor programs` need an account session. Run `affitor login`, then re-run the command |
-| No config in this directory | `no_config` | Run the command from the project root where you ran `affitor init`, or run `affitor init` to create a program here |
-| Already configured | `already_configured` | `affitor init` found an existing `.affitor/config.json` and changed nothing. Use `affitor status` to check that program. Do not run `init` to recover a key — it only ever creates a new program |
-| API key expired or invalid | no code — `error` is the API message, with the HTTP status on `status` | The key you sent matches no program, or it was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
-| Invalid event type | `invalid_event_type` | `affitor test` takes `click`, `lead`, or `sale` |
-| No API key for `onboard` | `no_api_key` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
-| Network error | `network_error` | The request never reached the API — check connectivity and retry |
+| `affitor onboard` | Verification did not pass | `integration_verified` in the summary |
+| `affitor test` | The test event was not received | `received` in the JSON result |
+| `affitor whoami --json` | No session is stored | `logged_in` |
+
+### What `--json` puts on `error`
+
+`error` does not have one shape across the CLI. Check which of the three you are reading before you branch on it.
+
+| Shape | Where | Example |
+|---|---|---|
+| A machine code | Every check a command makes before it calls the API | `{"error": "not_logged_in"}` |
+| The API's message, with the HTTP status beside it | `init`, `status`, `test` when the API rejects the call | `{"error": "Invalid API token", "status": 401}` |
+| A code with the message in its own field | `setup stripe` | `{"error": "api_error", "message": "..."}` |
+
+`onboard` is different again: it always prints its summary object, and when the key is past its rotation deadline `error` there is an **object**, not a string:
+
+```json
+{
+  "program_id": "430",
+  "steps": [],
+  "integration_verified": false,
+  "error": { "code": "api_key_rotation_required", "message": "..." }
+}
+```
+
+That is the one place the CLI hands you the API's own error code. Branch on `error.code` there; elsewhere, compare `error` as a string.
+
+### Codes
+
+| Condition | `--json` code | Commands | What to do |
+|---|---|---|---|
+| Not logged in | `not_logged_in` | `init`, `programs` | Run `affitor login`, then re-run the command |
+| No config in this directory | `no_config` | `status`, `test`, `setup` | Run the command from the project root where you ran `affitor init`, or run `affitor init` to create a program here |
+| Already configured | `already_configured` | `init` | `init` found an existing `.affitor/config.json` and changed nothing. Use `affitor status` to check that program. Do not run `init` to recover a key — it only ever creates a new program |
+| Missing required options | `missing_options` | `init` with `--no-interactive` | Pass `--name`, `--domain`, `--commission-type` and `--commission-rate` |
+| Invalid event type | `invalid_event_type` | `test` | `affitor test` takes `click`, `lead`, or `sale` |
+| No API key | `no_api_key` | `onboard` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
+| API rejected the call | none — see the table above | `init`, `status`, `test`, `setup stripe` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
+| Stripe authorization failed | `stripe_oauth_error` | `setup stripe` | Read `message`, then run `affitor setup stripe` again |
+| No usable response | `network_error` | all API-calling commands | See below |
+| Anything else | `unexpected_error` | all commands | Re-run with `--verbose` and keep the output |
+
+### `network_error` does not mean the request was ignored
+
+The CLI reports `network_error` after three attempts when it never got a response it could read. That covers a connection that failed, and it also covers a response that arrived with a success status but a body the CLI could not parse — in which case the server may well have done the work.
+
+So treat the server state as unknown, not untouched. Before repeating anything that creates a record — a program, a sale, a test event — check whether it already exists with `affitor programs` or `affitor status`, or reuse the same `transaction_id` so the API's duplicate guard catches it.

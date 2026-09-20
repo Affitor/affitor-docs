@@ -13,11 +13,11 @@ This page covers every error response the tracking API can return and practical 
 
 `error` is always an object, never a plain string. Interpolating `body.error` straight into a message prints `[object Object]` — read a field off it.
 
-There are two shapes, and which one you get depends on the endpoint.
+There are two envelopes. Which one you get depends on what rejected the request, not only on which endpoint you called — the tracking endpoints can return either.
 
-### Tracking endpoints
+### The platform envelope
 
-`POST /api/v1/track/click`, `/lead`, `/sale`, and `/refund` return the platform envelope. Read `error.message`:
+Validation, auth, and conflict errors raised by the tracking and CLI endpoints themselves come back like this. Read `error.message`:
 
 ```json
 {
@@ -31,11 +31,11 @@ There are two shapes, and which one you get depends on the endpoint.
 }
 ```
 
-`data` is `null` on every error. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `NotFoundError` (404), `ConflictError` (409), `InternalServerError` (500). This shape carries no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below.
+`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `NotFoundError` (404), `ConflictError` (409), `InternalServerError` (500). It carries no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below.
 
-### Readiness endpoint
+### The typed envelope
 
-`GET /api/v1/programs/me/readiness` returns the typed agent envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
+Three things answer with a typed envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
 
 ```json
 {
@@ -46,11 +46,19 @@ There are two shapes, and which one you get depends on the endpoint.
 }
 ```
 
+You get it from:
+
+| Source | Where | Code |
+|--------|-------|------|
+| `GET /api/v1/programs/me/readiness` | all of its errors | `invalid_key` on a `401`, `internal_error` on a `500` |
+| [Rate limiting](#rate-limits-429) | every `/api/v1/track/*`, `/api/v1/cli/*` and readiness route | `rate_limited` |
+| [A retired API key](#api_key_rotation_required) | every endpoint that key authenticates | `api_key_rotation_required` |
+
+Only `code` and `message` are always present. The rest varies with the case: a rate limit adds `status` and `retry_after_seconds`, a retired key adds `hint` and `docs_url`, and a readiness `internal_error` adds `retry_after_seconds`.
+
 ### Handling both
 
-One error crosses the boundary: [`api_key_rotation_required`](#api_key_rotation_required). A program API key past its rotation deadline is refused with the typed envelope on **every** endpoint that key authenticates, tracking endpoints included.
-
-So read `error.code` first and fall back to `error.message` when it is absent:
+Read `error.code` first and fall back to `error.message` when it is absent:
 
 ```ts
 const body = await response.json();
@@ -75,7 +83,7 @@ The rows above apply to the endpoints that require a Bearer token: `POST /api/v1
 
 `POST /api/v1/track/lead` accepts a Bearer token for server mode but does not require one, so it answers differently. A missing header — or a header whose token is empty after `Bearer ` — falls back to browser mode: the lead is recorded from the `click_id` rather than refused. Only a token that matches no program returns `401` there.
 
-The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true` and settles only once your backend sends the server-side lead.
+The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true`. Such a lead settles on either of two events, whichever comes first: your backend sends the server-side lead, or the customer's first verified Stripe payment arrives — Affitor creates the lead from the `checkout.session.completed` webhook through the same path the lead endpoint uses.
 
 ---
 
@@ -127,7 +135,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 }
 ```
 
-This is the one error the tracking endpoints answer with the [typed agent envelope](#readiness-endpoint) rather than the platform one: no `data` key, and an `error.code` to branch on. Every other tracking error uses the platform envelope and carries no `code`.
+This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
 **Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
@@ -188,6 +196,46 @@ Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_i
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
 | `404` | `Sale not found for transaction_id` | Refund was attempted but no sale with that `transaction_id` exists in the program | Verify the `transaction_id` matches exactly what was sent to `/track/sale` and that the Bearer token is for the same program |
+
+---
+
+### Rate limits (429)
+
+Every `/api/v1/` endpoint below is rate limited per minute. The click and lead endpoints are bucketed by client IP, because they are called without a key; the rest are bucketed by API key, falling back to IP when no key is sent.
+
+| Endpoint | Limit per minute | Counted per |
+|----------|-----------------|-------------|
+| `POST /api/v1/track/click` | 60 | IP |
+| `POST /api/v1/track/lead` | 30 | IP |
+| `POST /api/v1/track/sale` and `POST /api/v1/track/refund` | 120 combined | API key |
+| `GET /api/v1/programs/me/readiness` | 30 | API key |
+| `/api/v1/cli/*` | 60 | API key |
+
+Every response on these routes carries the current budget, not just the ones that are refused:
+
+| Header | Value |
+|--------|-------|
+| `X-RateLimit-Limit` | The limit for this bucket |
+| `X-RateLimit-Remaining` | Requests left in the current window |
+| `X-RateLimit-Reset` | Unix timestamp in seconds when the window resets |
+| `Retry-After` | Seconds to wait. Sent only on a `429` |
+
+Over the limit, the request is refused with the [typed envelope](#the-typed-envelope) — no `data` key:
+
+```json
+{
+  "error": {
+    "status": 429,
+    "code": "rate_limited",
+    "message": "Too many requests.",
+    "retry_after_seconds": 42
+  }
+}
+```
+
+Wait `retry_after_seconds` (or read `Retry-After`) before retrying. The request is refused before it reaches the endpoint, so nothing was recorded and the retry is safe.
+
+The synthetic verification chain has a second, separate cap of 10 runs per program per hour. It reports the same `rate_limited` code on `POST /api/v1/cli/test-event`, with its own `retry_after_seconds`.
 
 ---
 
