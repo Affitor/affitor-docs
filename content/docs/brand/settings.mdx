@@ -74,7 +74,7 @@ Only a **workspace owner** can regenerate a program key. A member who tries is r
 
 :::caution
 
-The two keys never overlap. Regenerating replaces the key in place, and the new value does not exist until that request returns, so you cannot deploy it in advance. Between the regenerate and the redeploy, every integration still sending the old key gets `401` responses. Copy the new value before you close the reveal — it is shown one time only.
+The two keys never overlap. Regenerating replaces the key in place, and you receive the new value only in the regenerate response, so you cannot deploy it in advance. Between the regenerate and the redeploy, every integration still sending the old key gets `401` responses. Copy the new value before you close the reveal — it is shown one time only.
 
 :::
 
@@ -123,7 +123,7 @@ Expected response:
     "The test event appears under your program's tracking events, flagged as a test — no commission is created",
   ]}
   ifNotWorking={[
-    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline — regenerate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program — copy the key again from **Settings** → **API Key** and check your env variable for trailing whitespace",
+    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline — regenerate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program — check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner to regenerate the key (Step 3), copy it from the reveal, then update and redeploy",
     "See the [error reference](/api-reference/errors) for every `401` cause and fix",
   ]}
 />
