@@ -11,7 +11,7 @@ This page covers every error response the tracking API can return and practical 
 
 ## Error response shape
 
-All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths.
+All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths — with one exception, [`api_key_rotation_required`](#api_key_rotation_required), where `error` is an object and you should read `error.code` instead.
 
 ```json
 {
@@ -32,6 +32,58 @@ All error responses return JSON with an `"error"` string. There is no wrapper en
 | `401` | Token does not match any `api_token` in the program table | Wrong key, revoked key, or key from a different program | Copy the API key from your program settings in the Affitor dashboard |
 
 Endpoints that require a Bearer token: `POST /api/v1/track/sale`, `POST /api/v1/track/refund`. The lead endpoint accepts a Bearer token for server mode but does not require it for browser mode.
+
+---
+
+### `api_key_rotation_required`
+
+Affitor can mark a specific program API key for mandatory rotation — for example, after the key was exposed outside your control. A marked key keeps authenticating requests until its rotation deadline, so tracking is never interrupted, but every response signals the change so you or your agent can act ahead of time.
+
+**Before the deadline**, requests with a marked key still succeed and pick up three standard headers:
+
+| Header | Value |
+|--------|-------|
+| `Deprecation` | `@<Unix timestamp in seconds>` of when the key was marked for rotation, e.g. `Deprecation: @1789776000` ([RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)) |
+| `Sunset` | HTTP-date of the rotation deadline, after which the key stops working ([RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) |
+| `Link` | `<https://docs.affitor.com/api-reference/errors#api_key_rotation_required>; rel="deprecation"` |
+
+The JSON body also gains a `warnings` array. No existing field is removed or renamed:
+
+```json
+{
+  "success": true,
+  "warnings": [
+    {
+      "code": "api_key_rotation_required",
+      "message": "This API key must be replaced by 2026-10-03.",
+      "hint": "Create a new key in Affitor → Settings → API Key, then update AFFITOR_API_KEY on your server.",
+      "rotate_by": "2026-10-03T00:00:00.000Z",
+      "docs_url": "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
+    }
+  ]
+}
+```
+
+**After the deadline**, the key is retired and every request with it returns:
+
+| Status | Error code | Meaning | Fix |
+|--------|-----------|---------|-----|
+| `401` | `api_key_rotation_required` | The key passed its rotation deadline and no longer authenticates requests | Create a new key and update your integration |
+
+```json
+{
+  "error": {
+    "code": "api_key_rotation_required",
+    "message": "This API key was retired on 2026-10-03.",
+    "hint": "Create a new key in Affitor → Settings → API Key.",
+    "docs_url": "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
+  }
+}
+```
+
+This is the one error on this page returned as a nested `error` object instead of a flat string — read `error.code`, not `error`, when handling this response.
+
+**Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
 ---
 
@@ -189,7 +241,13 @@ if (response.status === 409) {
 if (!response.ok) {
   // Unexpected error — log and alert
   const body = await response.json();
-  throw new Error(`Affitor error ${response.status}: ${body.error}`);
+  // `error` is a string on every error but `api_key_rotation_required`,
+  // where it is an object carrying the code you branch on.
+  const detail =
+    typeof body.error === 'string'
+      ? body.error
+      : `${body.error.code}: ${body.error.message}`;
+  throw new Error(`Affitor error ${response.status}: ${detail}`);
 }
 ```
 
