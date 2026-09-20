@@ -1,188 +1,150 @@
 ---
-title: API Keys & Tokens
-description: Get the program tracking token and Management API keys you need to track conversions and configure programs programmatically.
+title: API key reference
+description: Which credential each Affitor call needs, where the program API key lives, how to replace it, and how mandatory rotation is signalled.
 ---
 
-Affitor uses two different credentials. Knowing which one to use is the step between "program created" and "conversions tracked".
+Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key the integration guides, the SDKs, the CLI's tracking setup, and the agent skill all refer to. CLI commands that create or list programs are different: they act as your account, so they authenticate with your CLI login rather than with this key.
 
 <PageMeta
   items={[
-    { label: 'Who this is for', value: 'Advertisers wiring up tracking or automating program setup' },
+    { label: 'Who this is for', value: 'Brands wiring up server-side tracking, and the agents doing it for them' },
     { label: 'Time required', value: '5 minutes' },
-    { label: 'Prerequisites', value: 'An advertiser account and at least one program' },
-    { label: 'Outcome', value: 'You know which key to send, where to get it, and how to rotate it safely' },
+    { label: 'Prerequisites', value: 'A brand account with at least one program. Generating or replacing a key also needs workspace owner access to that program.' },
+    { label: 'Outcome', value: 'You know which key to send, where to get it, how to replace it, and what a rotation warning means' },
   ]}
 />
 
-## Two credentials, two jobs
+## The program API key at a glance
 
-<FeatureCards>
-  <FeatureCard icon="zap" title="Program tracking token">
-    Prefix <code>aff_</code>. Authenticates server-side <strong>tracking</strong> calls (clicks, leads, sales, refunds) for a single program. This is the "program API key" referenced throughout the tracking guides.
-  </FeatureCard>
-  <FeatureCard icon="code" title="Management API key">
-    Prefix <code>affk_</code>. Authenticates the <strong>Management API</strong> so you can create, update, and publish programs programmatically — without a browser session.
-  </FeatureCard>
-</FeatureCards>
-
-:::note
-
-The prefixes are deliberately distinct (`aff_` vs `affk_`) so Affitor can tell the two key types apart from the `Authorization` header alone. Sending the wrong one returns `401`.
-
-:::
-
----
-
-## Program tracking token (`aff_`)
-
-Every program gets a tracking token automatically when it is created. You send it as a Bearer token on tracking requests:
+| Property | Value |
+|---|---|
+| Prefix | `aff_` |
+| Scope | One program. A key authenticates calls for the program it belongs to and nothing else. |
+| Sent as | `Authorization: Bearer <key>` |
+| Created | Automatically, when the program is created. A workspace owner can replace it at any time. |
+| Visibility | Never returned by a read. The full value is shown only in the response to a regenerate request, so copy it there. |
 
 ```bash
+# Test mode: checks that the key authenticates, without creating a real sale or commission.
 curl -X POST https://api.affitor.com/api/v1/track/sale \
-  -H "Authorization: Bearer aff_your_program_token" \
+  -H "Authorization: Bearer $AFFITOR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{ "transaction_id": "txn_abc123", "customer_key": "user_123", "amount_cents": 9999 }'
+  -d '{ "additional_data": { "test_mode": true } }'
 ```
 
-### Where to find it
-
-- **Dashboard** — open your program's settings; the token is shown masked (for example `aff_abcdefgh****wxyz`).
-- **API responses** — program read endpoints never return the raw token. They expose `api_token_masked` only, so a leaked read response can't be used to forge tracking calls.
-
-The full token is shown **once**, at the moment it is generated or regenerated. Store it in a secret manager or your backend environment (for example `AFFITOR_API_KEY`) — not in client-side code.
-
-### Rotate a compromised token
-
-Regenerating immediately invalidates the previous token and returns a new one exactly once:
-
-```bash
-curl -X POST \
-  https://api.affitor.com/api/advertiser/affiliate-programs/:id/regenerate-api-token \
-  -H "Authorization: Bearer affk_your_management_key"
-```
-
-```json
-{
-  "data": {
-    "api_token": "aff_the_new_full_token_shown_once",
-    "api_token_masked": "aff_abcdefgh****wxyz"
-  }
-}
-```
-
-:::warning
-
-Regenerating breaks any integration still using the old token. Update your backend environment before rotating in production.
-
-:::
-
-### At rest
-
-Tokens are stored as a SHA-256 hash and matched by hash on every tracking request, so the raw value is never persisted in a readable form after issuance.
-
----
-
-## Management API key (`affk_`)
-
-Management API keys let scripts and internal tools drive Affitor without a logged-in browser session. Use them to automate program creation, updates, and go-live.
-
-### Create a key
-
-Call the endpoint while authenticated with your dashboard session. The full key is returned **once** — copy it immediately.
-
-```bash
-curl -X POST https://api.affitor.com/api/advertiser/api-keys \
-  -H "Authorization: Bearer <your_session_jwt>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "CI deploy bot",
-    "scopes": ["program:read", "program:update"],
-    "program_scope": null,
-    "expires_at": null
-  }'
-```
-
-```json
-{
-  "data": {
-    "id": 7,
-    "name": "CI deploy bot",
-    "prefix": "affk_1a2b3c4d",
-    "scopes": ["program:read", "program:update"],
-    "program_scope": null,
-    "status": "active",
-    "key": "affk_the_full_key_shown_once",
-    "key_masked": "affk_1a2b3c…c4d5"
-  }
-}
-```
-
-<ParamList>
-  <ParamField name="name" type="string" required>
-    Human-readable label so you can recognise the key later.
-  </ParamField>
-  <ParamField name="scopes" type="string[]">
-    Allowed actions. Defaults to `["*"]` (all actions). See the scope table below.
-  </ParamField>
-  <ParamField name="program_scope" type="string[] | null">
-    Limit the key to specific program IDs. `null` (default) means every program the advertiser can access.
-  </ParamField>
-  <ParamField name="expires_at" type="datetime | null">
-    Optional expiry. After this time the key is rejected. `null` means no expiry.
-  </ParamField>
-</ParamList>
-
-### Available scopes
-
-| Scope | Grants |
-|-------|--------|
-| `*` | Every action below |
-| `program:list` | List your programs |
-| `program:read` | Read a single program |
-| `program:create` | Create a program |
-| `program:update` | Update program settings (including slug) |
-| `program:delete` | Delete a program |
-| `program:go_live` | Publish a program to the marketplace |
-| `program:regenerate-token` | Rotate a program's tracking token |
-| `dashboard:view` | Read dashboard summary and program aggregates |
-
-### Use a key
-
-Send it as a Bearer token on any `/api/advertiser/*` Management endpoint:
-
-```bash
-curl https://api.affitor.com/api/advertiser/affiliate-programs \
-  -H "Authorization: Bearer affk_your_management_key"
-```
+A `200` with `test_mode: true` in `data` means the key works. The call is not a no-op: it stores a sale event flagged as a test, writes a tracking log entry, and can move your integration checklist. It creates no commission and no platform fee. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/api-reference/track-sale).
 
 :::note
 
-Management endpoints accept **either** a dashboard session **or** an `affk_` key. Scripts should use an `affk_` key; the browser dashboard uses your session automatically.
+Keys issued before the short prefix was introduced do not start with `aff_`. Authentication is an exact match on the key itself, so those keys keep working; regenerating gives you an `aff_` key.
 
 :::
 
-### Manage keys
+---
 
-| Action | Endpoint |
-|--------|----------|
-| List (masked) | `GET /api/advertiser/api-keys` |
-| Update name / scopes / program scope | `PUT /api/advertiser/api-keys/:id` |
-| Revoke | `DELETE /api/advertiser/api-keys/:id` |
+## Where to find it
 
-Revoking is a soft action — it sets the key's status to `revoked` and rejects it from then on, while keeping the record for your audit trail. Keys are stored hashed; listing only ever returns the masked prefix, never the secret.
+1. Select **Settings** in the left menu of your program.
+2. Under **Developer**, select **API Key**.
+
+A program is given a key the moment it is created, but creating a program does not hand that value back to you. To get a key you can put in an environment variable, a workspace owner selects **Generate** — or **Regenerate**, if one was generated before — on the **API Key** tab. The full value appears in the response to that action, and only there. Copy it then and store it server-side:
+
+```bash
+# .env — server-side only. Never ship this key to the browser.
+AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
+```
+
+After that the tab shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/brand/settings).
+
+Program read endpoints never return the key. They expose `api_token_masked` only, so a leaked read response cannot be used to forge tracking calls. The value itself is returned in exactly one place: the response to the owner's own regenerate request.
+
+---
+
+## Which calls need it
+
+| Call | Key required |
+|---|---|
+| `POST /api/v1/track/sale` | Yes |
+| `POST /api/v1/track/refund` | Yes |
+| `POST /api/v1/track/lead` — server mode | Yes. Sending the key is what makes the signup a server-attributed lead. |
+| `POST /api/v1/track/lead` — browser mode | No. The click cookie carries the attribution. On a program that requires server-side lead tracking, a browser lead is stored as provisional — the response says `provisional: true` — and a server-mode call is what settles it. |
+| `POST /api/v1/track/click` | No. Click tracking is public. |
+
+Every endpoint above is documented in the [API reference](/api-reference/overview).
+
+---
+
+## Replace a key
+
+Regenerate the key if it may have leaked, if it was committed to a repository, or as routine hygiene when someone with key access leaves.
+
+Only a **workspace owner** can generate or regenerate a program key. A member who tries is refused, so ask an owner to run it and to hand you the new value through your secret manager.
+
+1. Line up every place `AFFITOR_API_KEY` is stored — deployment environment, secret manager, CI — so you can update them the moment you have the new value.
+2. In **Settings** → **API Key**, regenerate the key. The old key stops working at that moment.
+3. Copy the new value from the one-time reveal, update those places, and redeploy.
+
+:::caution
+
+The two keys never overlap. Regenerating replaces the key in place, and you receive the new value only in the regenerate response, so there is no way to deploy it in advance. Between the regenerate and the redeploy, calls still sending the old key get `401`. Pick a window where a short gap in server-side tracking is acceptable.
+
+:::
+
+---
+
+## When Affitor asks you to replace a key
+
+Affitor can mark a specific program key for mandatory rotation — for example after the key was exposed outside your control. Marking it sets a deadline, and the two sides of that deadline behave differently:
+
+- **Before the deadline**, the key still authenticates requests, so tracking keeps running until you are ready to swap it. Every response to a call made with that key carries `Deprecation` and `Sunset` headers plus a `Link` header pointing at the error reference, and the JSON body gains a `warnings` array carrying the code `api_key_rotation_required` and the deadline.
+- **At or after the deadline**, the key stops working. Requests come back as `401` with the same code in `error.code`, and the three headers are still there. That response has no `warnings` array — the warning only exists while the key still works.
+
+Replace the key before the deadline: past it, the old key is refused whether or not you are ready. Doing it early does not remove the changeover gap described under [Replace a key](#replace-a-key) — it only lets you choose when that gap happens. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
+
+Replacing the key clears the flag: regenerate it in **Settings** → **API Key** and the warnings stop.
+
+---
+
+## Agent API keys
+
+Separately from program keys, Affitor issues **agent API keys** (prefix `agt_`) to approved tools that read and update programs on a brand's behalf through the `/api/agent/v1/...` endpoints.
+
+These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. Each agent endpoint also requires a specific scope on the key, so a valid agent key is still refused where it was not granted that scope. If you are building an integration that needs one, [contact support](/support/contact).
+
+If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://docs.affitor.com/skill.md) with your program API key in the environment. See [Agent Integration](/api-reference/agent-integration).
 
 ---
 
 ## Which key do I send?
 
 | Your task | Key to send |
-|-----------|-------------|
-| Track a conversion — clicks, leads, sales, refunds | Program tracking token (`aff_`) |
-| Configure programs from code — create, update, publish in a script or CI | Management API key (`affk_`) |
+|---|---|
+| Report a sale, a refund, or a server-mode lead | Program API key (`aff_`), from **Settings** → **API Key** |
+| Record a click, or a browser-mode lead | No key — both are public calls. See [Which calls need it](#which-calls-need-it). |
+| Read or update programs on a brand's behalf via `/api/agent/v1/...` | Agent API key (`agt_`), issued by Affitor |
+
+## Verify it worked
+
+Send a test-mode call with the key in hand: it goes through the same authentication as a real sale, then stops before any commission or platform fee is created. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
+
+<VerifySuccess
+  network={[
+    "POST /api/v1/track/sale with additional_data.test_mode set to true returns 200 and test_mode: true in data — the key authenticates. The event is stored flagged as a test, and no commission or platform fee is created",
+    "After regenerating, the same test-mode request with the old key returns 401 — rotation is complete",
+    "Read the status before the body: a 200 with no warnings array means this key is not flagged for mandatory rotation. A flagged key that is past its deadline returns 401 and carries no warnings array either, so warnings alone never proves a key is unflagged",
+  ]}
+  dashboard={[
+    "Settings → API Key shows a masked value whose visible characters match the key your server sends",
+  ]}
+  ifNotWorking={[
+    "On a 401, read error.code first. api_key_rotation_required means the key passed its rotation deadline — regenerate it, because re-copying the same key will not bring it back. Any other 401 means the header is malformed or the key matches no program: check the Authorization: Bearer prefix and your environment variable for trailing whitespace",
+    "A rejected call to /api/agent/v1/... has more than one cause, so read the error message instead of inferring from the status. Check the key type — only an agt_ key authenticates agent endpoints, a program key never does — and check that the agent key was granted the scope that endpoint requires",
+  ]}
+/>
 
 <NextStep
   title="Track your first conversion"
-  description="With your program tracking token in hand, wire up clicks, signups, and sales end to end."
+  description="With your program API key in hand, wire up clicks, signups, and sales end to end."
   href="/brand/tracking/quickstart-integration"
   ctaLabel="Open tracking quickstart"
 />

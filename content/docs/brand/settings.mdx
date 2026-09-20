@@ -3,14 +3,14 @@ title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 ---
 
-Everything you configured in the [setup wizard](/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key without breaking tracking.
+Everything you configured in the [setup wizard](/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
 
 <PageMeta
   items={[
     { label: 'Who this is for', value: 'Advertisers and agent developers' },
     { label: 'Time required', value: '5 minutes' },
-    { label: 'Prerequisites', value: 'An affiliate program created in the setup wizard' },
-    { label: 'Outcome', value: 'You can change program terms after launch and rotate your API key with zero tracking downtime' },
+    { label: 'Prerequisites', value: 'An affiliate program created in the setup wizard. Generating or regenerating the API key also needs workspace owner access to that program.' },
+    { label: 'Outcome', value: 'You can change program terms after launch, and rotate your API key knowing exactly when the old one stops working' },
   ]}
 />
 
@@ -46,12 +46,12 @@ The **Commission** section sets your program-wide default. To pay different rate
 
 ## Step 2: Find your API key
 
-Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI, and AI agents all use this same key.
+Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI's tracking setup, and AI agents all use this same key. CLI commands that create or list programs act as your account instead, and authenticate with your CLI login.
 
 1. Select **Settings** in the left menu.
 2. Under **Developer**, select **API Key**.
 
-The key is stored hashed and displays masked. The full value is revealed exactly once — at the moment it is generated. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
+The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to an owner's **Generate** or **Regenerate** action on the **API Key** tab. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
 
 Store the key as a server-side environment variable:
 
@@ -70,15 +70,17 @@ The **API Key** section also gives you a one-line instruction for an AI coding a
 
 Rotate the key if it may have leaked, if it was committed to a repository, or as routine hygiene when a team member with key access leaves.
 
+Only a **workspace owner** can regenerate a program key. A member who tries is refused, so ask an owner to run it and to hand you the new value through your secret manager.
+
 :::caution
 
-Regenerating invalidates the old key immediately. Every integration still sending it starts receiving `401` responses until you deploy the new key. The new key's full value is shown one time only — copy it before you close the reveal.
+The two keys never overlap. Regenerating replaces the key in place, and you receive the new value only in the regenerate response, so you cannot deploy it in advance. Between the regenerate and the redeploy, every integration still sending the old key gets `401` responses. Copy the new value before you close the reveal — it is shown one time only.
 
 :::
 
-1. In **Settings** → **API Key**, regenerate the key.
-2. Copy the new key from the one-time reveal.
-3. Update `AFFITOR_API_KEY` everywhere the old key was stored — deployment environment, secret manager, CI — and redeploy.
+1. Line up every place `AFFITOR_API_KEY` is stored — deployment environment, secret manager, CI — so you can update them straight away.
+2. In **Settings** → **API Key**, regenerate the key. The old key stops working at that moment.
+3. Copy the new key from the one-time reveal, update those places, and redeploy.
 
 ## Verify it worked
 
@@ -121,7 +123,7 @@ Expected response:
     "The test event appears under your program's tracking events, flagged as a test — no commission is created",
   ]}
   ifNotWorking={[
-    "A `401` means the header is malformed or the key doesn't match an active program — copy the key again from **Settings** → **API Key** and check your env variable for trailing whitespace",
+    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline — regenerate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program — check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner to regenerate the key (Step 3), copy it from the reveal, then update and redeploy",
     "See the [error reference](/api-reference/errors) for every `401` cause and fix",
   ]}
 />
