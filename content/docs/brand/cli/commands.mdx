@@ -192,9 +192,19 @@ The JSON summary reports the per-step status and the final verdict:
 
 `detect` reports `ok`, `browser_tracking` reports `skipped` in `--json` mode, and the steps that would edit a file report `manual`.
 
-When verification does not pass, the summary carries `blocker` (the first failing readiness gate) and `next_action` **only if a readiness verdict came back**. If every readiness poll failed, both are `null` and the summary is dropped from the output rather than sent as null — so treat their absence as "not determined", not as "nothing is blocking". Re-run `affitor onboard` once you have resolved the blocker, or once the API is reachable again.
+Once `onboard` reaches the verification phase, `--json` always prints this summary. `program_id`, `steps` and `integration_verified` are always present, though `program_id` is `null` when no readiness verdict was obtained. `blocker`, `next_action` and `error` are omitted rather than sent as null, so read them with that in mind.
 
-`onboard` does not print this summary at all when it stops before running: with no API key it prints `{"error": "no_api_key"}` and exits non-zero.
+The only way to get no summary is for `onboard` to stop before it runs: with no API key it prints `{"error": "no_api_key"}` and exits non-zero.
+
+**What `integration_verified: false` means.** The verification chain and the readiness poll are separate: if the chain fails to run, `onboard` carries on polling anyway, so a chain failure never decides the verdict. Readiness does. Three cases produce `false`, and the other fields tell them apart:
+
+| Case | What the summary shows | What to do |
+|---|---|---|
+| Readiness answered, a gate has not passed | `blocker` and `next_action` name the gate | Resolve it and re-run `affitor onboard` |
+| No readiness verdict — every poll failed | No `blocker`, no `next_action`, no `error` | Nothing was determined. Check the API is reachable and re-run |
+| The API key is past its rotation deadline | `error.code` is `api_key_rotation_required` | Replace the key, then re-run |
+
+A readiness poll that succeeds after a failed chain still reports `integration_verified: true` — the chain is one way to generate events, not the thing being measured.
 
 ---
 
@@ -357,7 +367,7 @@ Branch on `error.code` there; elsewhere, compare `error` as a string.
 Two gaps are worth knowing before you build on this output:
 
 - **`login` and `programs` do not convert failures into JSON.** If the API call inside them fails, they surface the raw error rather than an `{"error": ...}` object, so a script should not assume parseable JSON from them.
-- **`onboard` does not report a lost connection as an error.** If the verification chain or every readiness poll fails, it still returns a summary with `integration_verified: false` and no `error` field. Not verified is not the same as verified-as-broken.
+- **`onboard` does not report a lost connection as an error.** If every readiness poll fails, it still prints a summary with `integration_verified: false` and no `error` field. Not verified is not the same as verified-as-broken — see [what that verdict means](#example-agent--non-interactive).
 
 ### Codes
 
@@ -369,7 +379,7 @@ Two gaps are worth knowing before you build on this output:
 | Missing required options | `missing_options` | `init` with `--no-interactive` | Pass `--name`, `--domain`, `--commission-type` and `--commission-rate` |
 | Invalid event type | `invalid_event_type` | `test` | `affitor test` takes `click`, `lead`, or `sale` |
 | No API key | `no_api_key` | `onboard` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
-| API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session expired — run `affitor login` again. Do **not** regenerate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
+| API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session is invalid or expired — run `affitor login` again. Do **not** regenerate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
 | API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
 | API rejected the call | `api_error`, with the API message on `message` and no `status` | `setup stripe` | Read `message`. A `401` here is a program-key problem, as in the row above |
 | Stripe authorization failed | `stripe_oauth_error` | `setup stripe` | Read `message`, then run `affitor setup stripe` again |
@@ -378,12 +388,12 @@ Two gaps are worth knowing before you build on this output:
 
 ### `network_error` does not mean the request was ignored
 
-The CLI retries a failed request up to three times before reporting `network_error`, so by the time you see it the call may already have been sent three times. (API errors, including `429`, are not retried — they surface on the first response.)
+The CLI makes at most three attempts in total — the first call plus two retries — before reporting `network_error`, so by the time you see it the request may already have been sent three times. (API errors, including `429`, are not retried; they surface on the first response.)
 
-`network_error` covers two different situations, and the CLI cannot tell them apart: a connection that never delivered the request, and a response that arrived with a success status but a body the CLI could not parse. In the second case the server did the work and only the reply was lost.
+`network_error` covers two different situations, and the CLI cannot tell them apart: a connection that never delivered the request, and a response that arrived with a success status but a body the CLI could not parse. In the second case the server may have done the work and only the reply was lost — a success status is not proof that the write completed.
 
 So treat the server state as **unknown, not untouched**, and verify the specific record before repeating anything that creates one:
 
 - **`init`** — run `affitor programs` and look for the program by name before running `init` again, or it will create a second one. There is no idempotency key on this call.
 - **`test`** — open your dashboard and look for the test event. The command sends no `transaction_id`, and the API generates a new event id on every call, so a repeat always writes another record.
-- **Sales you report yourself** through `POST /api/v1/track/sale` — resend the same `transaction_id`. The duplicate guard answers `409` for one already recorded, which is the one case here where a safe repeat is built in. A `409` confirms the sale exists; it does not confirm the commission was created, so check the sale in your dashboard if the first attempt may have failed partway.
+- **Ordinary sales you report yourself** through `POST /api/v1/track/sale` — resend the same `transaction_id`. The duplicate guard answers `409` for one already recorded, which is the one case here where a safe repeat is built in. A `409` confirms the sale exists; it does not confirm the commission was created, so check the sale in your dashboard if the first attempt may have failed partway. This does not extend to test-mode sales: a call carrying `additional_data.test_mode` is handled before the duplicate check and is not promised a `409`.
