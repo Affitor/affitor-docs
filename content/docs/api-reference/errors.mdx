@@ -11,7 +11,7 @@ This page covers every error response the tracking API can return and practical 
 
 ## Error response shape
 
-All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths.
+All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths — with one exception, [`api_key_rotation_required`](#api_key_rotation_required), where `error` is an object and you should read `error.code` instead.
 
 ```json
 {
@@ -43,7 +43,7 @@ Affitor can mark a specific program API key for mandatory rotation — for examp
 
 | Header | Value |
 |--------|-------|
-| `Deprecation` | Unix timestamp of when the key was marked for rotation ([RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)) |
+| `Deprecation` | `@<Unix timestamp in seconds>` of when the key was marked for rotation, e.g. `Deprecation: @1789776000` ([RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)) |
 | `Sunset` | HTTP-date of the rotation deadline, after which the key stops working ([RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) |
 | `Link` | `<https://docs.affitor.com/api-reference/errors#api_key_rotation_required>; rel="deprecation"` |
 
@@ -57,7 +57,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
       "code": "api_key_rotation_required",
       "message": "This API key must be replaced by 2026-10-03.",
       "hint": "Create a new key in Affitor → Settings → API Key, then update AFFITOR_API_KEY on your server.",
-      "rotate_by": "2026-10-03T00:00:00Z",
+      "rotate_by": "2026-10-03T00:00:00.000Z",
       "docs_url": "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
     }
   ]
