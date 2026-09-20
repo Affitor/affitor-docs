@@ -83,7 +83,9 @@ The rows above apply to the endpoints that require a Bearer token: `POST /api/v1
 
 `POST /api/v1/track/lead` accepts a Bearer token for server mode but does not require one, so it answers differently. A missing header — or a header whose token is empty after `Bearer ` — falls back to browser mode: the lead is recorded from the `click_id` rather than refused. Only a token that matches no program returns `401` there.
 
-The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true`. Such a lead settles on either of two events, whichever comes first: your backend sends the server-side lead, or the customer's first verified Stripe payment arrives — Affitor creates the lead from the `checkout.session.completed` webhook through the same path the lead endpoint uses.
+The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true`.
+
+Such a lead settles when your backend sends the server-side lead. A qualifying Stripe payment webhook can also settle it, through the same path the lead endpoint uses, but only when Affitor can resolve the customer from that event — one-off payments through `checkout.session.completed`, and subscriptions through `invoice.payment_succeeded`, because subscription checkouts are deliberately left to the invoice event. Send the server-side lead rather than relying on a payment to settle it.
 
 ---
 
@@ -235,7 +237,7 @@ Over the limit, the request is refused with the [typed envelope](#the-typed-enve
 
 Wait `retry_after_seconds` (or read `Retry-After`) before retrying. The request is refused before it reaches the endpoint, so nothing was recorded and the retry is safe.
 
-The synthetic verification chain has a second, separate cap of 10 runs per program per hour. It reports the same `rate_limited` code on `POST /api/v1/cli/test-event`, with its own `retry_after_seconds`.
+The synthetic verification chain has a second, separate cap of 10 runs per program per hour. It reports the same `rate_limited` code on `POST /api/v1/cli/test-event`, with its own `retry_after_seconds`. That one is checked inside the endpoint rather than in front of it, so the "nothing was recorded" guarantee above does not carry over: the chain's test fixture is prepared before the cap is consulted. No chain runs, but the fixture records for your program may have been created or refreshed.
 
 ---
 
@@ -336,7 +338,8 @@ if (!response.ok) {
   // Unexpected error — log and alert
   const body = await response.json();
   // `error` is always an object. `code` is present only on the typed envelope
-  // (api_key_rotation_required here); the platform envelope has message only.
+  // (rate_limited on a 429, api_key_rotation_required on a retired key);
+  // the platform envelope carries a message and no code.
   const detail = body.error?.code
     ? `${body.error.code}: ${body.error.message}`
     : body.error?.message;

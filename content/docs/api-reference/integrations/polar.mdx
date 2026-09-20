@@ -3,7 +3,7 @@ title: "Polar"
 description: "Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed."
 ---
 
-This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor. The CLI generates all of it with one command.
+This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor.
 
 :::note
 
@@ -15,17 +15,11 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 - Your **program ID** and a **program API key** (run `npx affitor init`, or dashboard → program settings)
 - A Polar organization with checkout working in your app
-- A Polar **Organization Access Token** with the `webhooks:write` scope (Polar dashboard → Settings → Developers → New Token). Sandbox is a separate environment with its own tokens (`sandbox-api.polar.sh`).
+- Access to your Polar organization's webhook settings. Sandbox is a separate environment with its own tokens and its own webhook endpoints (`sandbox-api.polar.sh`).
 
-## Quick path: one command
+## What you will set up
 
-```bash
-npx affitor setup polar          # add --sandbox while testing
-```
-
-This creates the webhook endpoint on your Polar org (`order.paid` + `order.refunded`, delivered to `https://<your domain>/api/polar/webhook`), saves the signing secret to `.affitor/.env` and your app's `.env` as `POLAR_WEBHOOK_SECRET`, and — for Next.js App Router — generates the glue route below. It is idempotent and never overwrites an existing route; see the [CLI reference](/brand/cli/commands#affitor-setup-polar) for flags and the `--json` agent mode.
-
-The rest of this page documents what that command wires, plus the click/signup steps it does not cover.
+In your Polar organization, add a webhook endpoint delivering `order.paid` and `order.refunded` to a route in your own app — `https://<your domain>/api/polar/webhook` in the examples below — and store the signing secret Polar gives you as `POLAR_WEBHOOK_SECRET`. The rest of this page is the route that receives those deliveries, plus the click and signup steps that come before it.
 
 ## 1. Capture clicks and track signups
 
@@ -59,7 +53,7 @@ If you use the `@polar-sh/nextjs` `Checkout` route handler instead, pass `custom
 
 ## 3. The webhook glue route
 
-`affitor setup polar` generates `app/api/polar/webhook/route.ts` (Next.js App Router). The `Webhooks()` helper validates the Standard-Webhooks signature with `POLAR_WEBHOOK_SECRET` before any callback runs:
+Create `app/api/polar/webhook/route.ts` (Next.js App Router). The `Webhooks()` helper validates the Standard-Webhooks signature with `POLAR_WEBHOOK_SECRET` before any callback runs:
 
 ```ts
 import { Webhooks } from '@polar-sh/nextjs';
@@ -129,9 +123,9 @@ Nothing extra to wire: Polar fires `order.paid` on **every** billing cycle, and 
   "Reading snake_case fields (`order.total_amount`) off the SDK-parsed payload — they are `undefined`; the parsed objects are camelCase (`order.totalAmount`).",
   "Subscribing to `order.created` instead of `order.paid` — `order.created` fires before payment; you would record unpaid orders.",
   "Forgetting `POLAR_WEBHOOK_SECRET` (or `AFFITOR_API_KEY`) in the deploy environment — the route validates every delivery with it, so webhooks fail after deploy even though local dev worked.",
-  "Mixing environments — sandbox and production are separate Polar environments with separate tokens AND separate webhook endpoints; re-run `affitor setup polar` (without `--sandbox`) at go-live.",
+  "Mixing environments — sandbox and production are separate Polar environments with separate tokens AND separate webhook endpoints; add the production endpoint and its own signing secret at go-live.",
   "Different user IDs at signup vs checkout — `metadata.user_id` must equal the `customerExternalId` you sent at signup, or sales stop attributing once the click cookie expires.",
   "Calling trackSale from the browser — sale tracking is server-side only; the program API key must never ship to a client."
 ]} />
 
-<NextStep title="Prefer the full CLI flow?" description="affitor onboard detects Polar, injects the sale call into an existing webhook route, and proves attribution with a synthetic chain." href="/brand/cli/commands#affitor-onboard" />
+<NextStep title="Check the whole chain end to end?" description="affitor onboard fires a synthetic click, lead and sale through the real attribution pipeline, then polls readiness until it passes." href="/brand/cli/commands#affitor-onboard" />
