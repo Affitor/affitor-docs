@@ -11,12 +11,60 @@ This page covers every error response the tracking API can return and practical 
 
 ## Error response shape
 
-All error responses return JSON with an `"error"` string. There is no wrapper envelope on error paths — with one exception, [`api_key_rotation_required`](#api_key_rotation_required), where `error` is an object and you should read `error.code` instead.
+`error` is always an object, never a plain string. Interpolating `body.error` straight into a message prints `[object Object]` — read a field off it.
+
+There are two envelopes. Which one you get depends on what rejected the request, not only on which endpoint you called — the tracking endpoints can return either.
+
+### The platform envelope
+
+Validation, auth, and conflict errors raised by the tracking and CLI endpoints themselves come back like this. Read `error.message`:
 
 ```json
 {
-  "error": "transaction_id is required and must be a string"
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "BadRequestError",
+    "message": "transaction_id is required and must be a string",
+    "details": {}
+  }
 }
+```
+
+`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `NotFoundError` (404), `ConflictError` (409), `InternalServerError` (500). It carries no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below.
+
+### The typed envelope
+
+Three things answer with a typed envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
+
+```json
+{
+  "error": {
+    "code": "invalid_key",
+    "message": "Invalid API token."
+  }
+}
+```
+
+You get it from:
+
+| Source | Where | Code |
+|--------|-------|------|
+| `GET /api/v1/programs/me/readiness` | all of its errors | `invalid_key` on a `401`, `internal_error` on a `500` |
+| [Rate limiting](#rate-limits-429) | every `/api/v1/track/*`, `/api/v1/cli/*` and readiness route | `rate_limited` |
+| [A retired API key](#api_key_rotation_required) | every endpoint that key authenticates | `api_key_rotation_required` |
+
+Only `code` and `message` are always present. The rest varies with the case: a rate limit adds `status` and `retry_after_seconds`, a retired key adds `hint` and `docs_url`, and a readiness `internal_error` adds `retry_after_seconds`.
+
+### Handling both
+
+Read `error.code` first and fall back to `error.message` when it is absent:
+
+```ts
+const body = await response.json();
+const detail = body.error?.code
+  ? `${body.error.code}: ${body.error.message}`
+  : body.error?.message;
 ```
 
 ---
@@ -29,9 +77,15 @@ All error responses return JSON with an `"error"` string. There is no wrapper en
 |--------|-----------|---------|-----|
 | `401` | `Authorization` header missing or does not start with `Bearer ` | The request reached a server-authenticated endpoint without a valid header | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
 | `401` | Header present but token string is empty after trimming | Bearer prefix found but no token value followed it | Check for trailing spaces or an empty env variable |
-| `401` | Token does not match any `api_token` in the program table | Wrong key, revoked key, or key from a different program | Copy the API key from your program settings in the Affitor dashboard |
+| `401` | Token does not match any `api_token` in the program table | Wrong key, replaced key, or key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
 
-Endpoints that require a Bearer token: `POST /api/v1/track/sale`, `POST /api/v1/track/refund`. The lead endpoint accepts a Bearer token for server mode but does not require it for browser mode.
+The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
+
+`POST /api/v1/track/lead` accepts a Bearer token for server mode but does not require one, so it answers differently. A missing header — or a header whose token is empty after `Bearer ` — falls back to browser mode: the lead is recorded from the `click_id` rather than refused. Only a token that matches no program returns `401` there.
+
+The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true`.
+
+Such a lead settles when your backend sends the server-side lead. A qualifying Stripe payment webhook can also settle it, through the same path the lead endpoint uses, but only when Affitor can resolve the customer from that event — one-off payments through `checkout.session.completed`, and subscriptions through `invoice.payment_succeeded`, because subscription checkouts are deliberately left to the invoice event. Send the server-side lead rather than relying on a payment to settle it.
 
 ---
 
@@ -83,7 +137,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 }
 ```
 
-This is the one error on this page returned as a nested `error` object instead of a flat string — read `error.code`, not `error`, when handling this response.
+This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
 **Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
@@ -144,6 +198,46 @@ Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_i
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
 | `404` | `Sale not found for transaction_id` | Refund was attempted but no sale with that `transaction_id` exists in the program | Verify the `transaction_id` matches exactly what was sent to `/track/sale` and that the Bearer token is for the same program |
+
+---
+
+### Rate limits (429)
+
+Every `/api/v1/` endpoint below is rate limited per minute. The click and lead endpoints are bucketed by client IP, because they are called without a key; the rest are bucketed by API key, falling back to IP when no key is sent.
+
+| Endpoint | Limit per minute | Counted per |
+|----------|-----------------|-------------|
+| `POST /api/v1/track/click` | 60 | IP |
+| `POST /api/v1/track/lead` | 30 | IP |
+| `POST /api/v1/track/sale` and `POST /api/v1/track/refund` | 120 combined | API key |
+| `GET /api/v1/programs/me/readiness` | 30 | API key |
+| `/api/v1/cli/*` | 60 | API key |
+
+Every response on these routes carries the current budget, not just the ones that are refused:
+
+| Header | Value |
+|--------|-------|
+| `X-RateLimit-Limit` | The limit for this bucket |
+| `X-RateLimit-Remaining` | Requests left in the current window |
+| `X-RateLimit-Reset` | Unix timestamp in seconds when the window resets |
+| `Retry-After` | Seconds to wait. Sent only on a `429` |
+
+Over the limit, the request is refused with the [typed envelope](#the-typed-envelope) — no `data` key:
+
+```json
+{
+  "error": {
+    "status": 429,
+    "code": "rate_limited",
+    "message": "Too many requests.",
+    "retry_after_seconds": 42
+  }
+}
+```
+
+Wait `retry_after_seconds` (or read `Retry-After`) before retrying. The request is refused before it reaches the endpoint, so nothing was recorded and the retry is safe.
+
+The synthetic verification chain has a second, separate cap of 10 runs per program per hour. It reports the same `rate_limited` code on `POST /api/v1/cli/test-event`, with its own `retry_after_seconds`. That one is checked inside the endpoint rather than in front of it, so the "nothing was recorded" guarantee above does not carry over: the chain's test fixture is prepared before the cap is consulted. No chain runs, but the fixture records for your program may have been created or refreshed.
 
 ---
 
@@ -243,12 +337,12 @@ if (response.status === 409) {
 if (!response.ok) {
   // Unexpected error — log and alert
   const body = await response.json();
-  // `error` is a string on every error but `api_key_rotation_required`,
-  // where it is an object carrying the code you branch on.
-  const detail =
-    typeof body.error === 'string'
-      ? body.error
-      : `${body.error.code}: ${body.error.message}`;
+  // `error` is always an object. `code` is present only on the typed envelope
+  // (rate_limited on a 429, api_key_rotation_required on a retired key);
+  // the platform envelope carries a message and no code.
+  const detail = body.error?.code
+    ? `${body.error.code}: ${body.error.message}`
+    : body.error?.message;
   throw new Error(`Affitor error ${response.status}: ${detail}`);
 }
 ```

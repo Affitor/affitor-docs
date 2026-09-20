@@ -51,7 +51,7 @@ Your **program API key** (`api_token`) is found in the Affitor dashboard under y
 
 ## Response envelope
 
-All endpoints return JSON. A successful response always includes `"success": true`. Error responses include an `"error"` string.
+All endpoints return JSON. A successful tracking call includes `"success": true`; the readiness endpoint returns its verdict object instead, with no `success` field. On an error, `error` is an object — never a plain string.
 
 **Success shape:**
 
@@ -76,9 +76,17 @@ Sale and refund responses include additional IDs:
 
 ```json
 {
-  "error": "transaction_id is required and must be a string"
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "BadRequestError",
+    "message": "transaction_id is required and must be a string",
+    "details": {}
+  }
 }
 ```
+
+Read `error.message`, not `error` — interpolating the object prints `[object Object]`. The readiness endpoint uses a different envelope, and so does any endpoint refusing a key past its rotation deadline. Both shapes are laid out in the [error reference](/api-reference/errors#error-response-shape).
 
 ---
 
@@ -95,9 +103,23 @@ The primary integration surface. Writes to the v1 event tables (`affiliate_click
 | `POST` | `/api/v1/track/sale` | Record a completed sale and create a commission |
 | `POST` | `/api/v1/track/refund` | Reverse the commission for a previously tracked sale |
 
-### `/api/tracking/*` — Legacy tracking endpoints
+### `/api/tracking/*` — Dashboard endpoints
 
-Earlier `affitor-tracker.js` versions used paths under `/api/tracking/`. The v1 paths above are the current supported surface; `/api/tracking/` exists as a compatibility alias only.
+There is **no** `/api/tracking/` alias for click, lead, sale, or refund. The four `/api/v1/track/*` paths above are the only ones that accept tracking calls from your backend.
+
+The `/api/tracking/` paths that do exist back the Affitor dashboard, not a server-to-server integration. They authenticate with a signed-in dashboard session and require an active workspace membership on the program — taken from the path, or from `program_id` in the body on the two `POST` routes that have no path parameter. A Bearer program API key is not accepted on any of them:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/tracking/status/:programId` | [Integration status](/api-reference/status) for the program |
+| `GET` | `/api/tracking/events/:programId` | [Recent click, lead, and sale events](/api-reference/events) |
+| `GET` | `/api/tracking/performance/:programId` | [Aggregated performance metrics](/api-reference/performance) |
+| `GET` | `/api/tracking/readiness/:programId` | Readiness verdict for the program |
+| `POST` | `/api/tracking/test` | Create a test event from the dashboard verifier |
+| `POST` | `/api/tracking/check-test-events` | Check whether those test events landed |
+| `POST` | `/api/tracking/run-verification/:programId` | Run the synthetic click → lead → sale chain |
+
+To reach readiness from your own backend, call `GET /api/v1/programs/me/readiness` with your program API key instead — it derives the program from the key, so there is no program ID in the path.
 
 ---
 

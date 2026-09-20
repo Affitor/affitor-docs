@@ -82,6 +82,12 @@ const config = {
         destination: '/support/glossary',
         permanent: true,
       },
+      {
+        // the error reference is the page people guess at as /errors
+        source: '/errors',
+        destination: '/api-reference/errors',
+        permanent: true,
+      },
     ];
   },
 };
