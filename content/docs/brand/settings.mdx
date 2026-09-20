@@ -51,7 +51,7 @@ Every server-side call to the tracking API — sales, refunds, and server-mode l
 1. Select **Settings** in the left menu.
 2. Under **Developer**, select **API Key**.
 
-The key is stored hashed and displays masked. The full value is revealed exactly once — at the moment it is generated. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
+The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to generating or regenerating it. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
 
 Store the key as a server-side environment variable:
 
