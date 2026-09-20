@@ -241,7 +241,13 @@ if (response.status === 409) {
 if (!response.ok) {
   // Unexpected error — log and alert
   const body = await response.json();
-  throw new Error(`Affitor error ${response.status}: ${body.error}`);
+  // `error` is a string on every error but `api_key_rotation_required`,
+  // where it is an object carrying the code you branch on.
+  const detail =
+    typeof body.error === 'string'
+      ? body.error
+      : `${body.error.code}: ${body.error.message}`;
+  throw new Error(`Affitor error ${response.status}: ${detail}`);
 }
 ```
 
