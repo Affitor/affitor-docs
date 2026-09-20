@@ -9,7 +9,7 @@ Affitor has one self-serve credential: the **program API key**. It authenticates
   items={[
     { label: 'Who this is for', value: 'Brands wiring up server-side tracking, and the agents doing it for them' },
     { label: 'Time required', value: '5 minutes' },
-    { label: 'Prerequisites', value: 'A brand account with at least one program' },
+    { label: 'Prerequisites', value: 'A brand account with at least one program. Generating or replacing a key also needs workspace owner access to that program.' },
     { label: 'Outcome', value: 'You know which key to send, where to get it, how to replace it, and what a rotation warning means' },
   ]}
 />
@@ -21,15 +21,18 @@ Affitor has one self-serve credential: the **program API key**. It authenticates
 | Prefix | `aff_` |
 | Scope | One program. A key authenticates calls for the program it belongs to and nothing else. |
 | Sent as | `Authorization: Bearer <key>` |
-| Created | Automatically, when the program is created. You replace it at any time. |
-| Visibility | Shown in full exactly once, at the moment it is generated. Masked everywhere after that. |
+| Created | Automatically, when the program is created. A workspace owner can replace it at any time. |
+| Visibility | Never returned by a read. The full value is shown only in the response to a regenerate request, so copy it there. |
 
 ```bash
+# Test mode: checks that the key authenticates, without recording a real sale or commission.
 curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Authorization: Bearer $AFFITOR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{ "transaction_id": "txn_abc123", "customer_key": "user_123", "amount_cents": 9999 }'
+  -d '{ "additional_data": { "test_mode": true } }'
 ```
+
+A `200` with `test_mode: true` in `data` means the key works. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/api-reference/track-sale).
 
 :::note
 
@@ -44,16 +47,16 @@ Keys issued before the short prefix was introduced do not start with `aff_`. Aut
 1. Select **Settings** in the left menu of your program.
 2. Under **Developer**, select **API Key**.
 
-The key displays masked, for example `aff_abcdefgh****wxyz`. The full value is revealed once — right after it is generated — so copy it then and store it server-side:
+A program is given a key the moment it is created, but creating a program does not hand that value back to you. To get a key you can put in an environment variable, a workspace owner selects **Generate** — or **Regenerate**, if one was generated before — on the **API Key** tab. The full value appears in the response to that action, and only there. Copy it then and store it server-side:
 
 ```bash
 # .env — server-side only. Never ship this key to the browser.
 AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 ```
 
-If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/brand/settings).
+After that the tab shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/brand/settings).
 
-Program read endpoints never return the raw key. They expose `api_token_masked` only, so a leaked read response cannot be used to forge tracking calls. At rest the key is stored as a SHA-256 hash and matched by hash on every request, so the raw value is never persisted in readable form after issuance.
+Program read endpoints never return the key. They expose `api_token_masked` only, so a leaked read response cannot be used to forge tracking calls. The value itself is returned in exactly one place: the response to the owner's own regenerate request.
 
 ---
 
@@ -75,6 +78,8 @@ Every endpoint above is documented in the [API reference](/api-reference/overvie
 
 Regenerate the key if it may have leaked, if it was committed to a repository, or as routine hygiene when someone with key access leaves.
 
+Only a **workspace owner** can generate or regenerate a program key. A member who tries is refused, so ask an owner to run it and to hand you the new value through your secret manager.
+
 1. In **Settings** → **API Key**, regenerate the key.
 2. Copy the new value from the one-time reveal.
 3. Update `AFFITOR_API_KEY` everywhere the old key was stored — deployment environment, secret manager, CI — and redeploy.
@@ -89,12 +94,12 @@ Regenerating invalidates the old key immediately. Every integration still sendin
 
 ## When Affitor asks you to replace a key
 
-Affitor can mark a specific program key for mandatory rotation — for example after the key was exposed outside your control. While it is marked, the key keeps authenticating requests, so tracking is never interrupted, but every response tells you to replace it:
+Affitor can mark a specific program key for mandatory rotation — for example after the key was exposed outside your control. Marking it sets a deadline, and the two sides of that deadline behave differently:
 
-- `Deprecation` and `Sunset` headers, plus a `Link` header pointing at the error reference
-- a `warnings` array in the JSON body carrying the code `api_key_rotation_required` and the deadline
+- **Before the deadline**, the key keeps authenticating requests, so tracking continues while you swap it. Every response carries `Deprecation` and `Sunset` headers plus a `Link` header pointing at the error reference, and the JSON body gains a `warnings` array carrying the code `api_key_rotation_required` and the deadline.
+- **At or after the deadline**, the key stops working. Requests come back as `401` with the same code in `error.code`, and the three headers are still there. That response has no `warnings` array — the warning only exists while the key still works.
 
-After the deadline the key stops working and the same code comes back as a `401`. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
+Regenerate before the deadline if you want no interruption at all. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
 
 Replacing the key clears the flag: regenerate it in **Settings** → **API Key** and the warnings stop.
 
@@ -104,7 +109,7 @@ Replacing the key clears the flag: regenerate it in **Settings** → **API Key**
 
 Separately from program keys, Affitor issues **agent API keys** (prefix `agt_`) to approved tools that read and update programs on a brand's behalf through the `/api/agent/v1/...` endpoints.
 
-These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. If you are building an integration that needs one, [contact support](/support/contact).
+These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. Each agent endpoint also requires a specific scope on the key, so a valid agent key is still refused where it was not granted that scope. If you are building an integration that needs one, [contact support](/support/contact).
 
 If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://docs.affitor.com/skill.md) with your program API key in the environment. See [Agent Integration](/api-reference/agent-integration).
 
@@ -119,20 +124,20 @@ If you only want an AI coding agent to install tracking for you, you do not need
 
 ## Verify it worked
 
-Send a test call with the key in hand. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
+Send a test-mode call with the key in hand: it exercises authentication without recording a real sale or commission. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
 
 <VerifySuccess
   network={[
-    "POST /api/v1/track/sale with your key returns 200 — the key authenticates",
-    "After regenerating, the same request with the old key returns 401 — rotation is complete",
-    "No warnings array in the response body means this key is not flagged for mandatory rotation",
+    "POST /api/v1/track/sale with additional_data.test_mode set to true returns 200 and test_mode: true in data — the key authenticates, and nothing real is recorded",
+    "After regenerating, the same test-mode request with the old key returns 401 — rotation is complete",
+    "Read the status before the body: a 200 with no warnings array means this key is not flagged for mandatory rotation. A flagged key that is past its deadline returns 401 and carries no warnings array either, so warnings alone never proves a key is unflagged",
   ]}
   dashboard={[
     "Settings → API Key shows a masked value whose visible characters match the key your server sends",
   ]}
   ifNotWorking={[
-    "A 401 means the header is malformed or the key matches no active program — copy the key again and check your environment variable for trailing whitespace",
-    "A 403 on an /api/agent/v1/... call means you sent a program key where an agent key is required",
+    "On a 401, read error.code first. api_key_rotation_required means the key passed its rotation deadline — regenerate it, because re-copying the same key will not bring it back. Any other 401 means the header is malformed or the key matches no program: check the Authorization: Bearer prefix and your environment variable for trailing whitespace",
+    "A rejected call to /api/agent/v1/... has more than one cause, so read the error message instead of inferring from the status. Check the key type — only an agt_ key authenticates agent endpoints, a program key never does — and check that the agent key was granted the scope that endpoint requires",
   ]}
 />
 
