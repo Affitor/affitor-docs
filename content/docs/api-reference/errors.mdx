@@ -47,7 +47,9 @@ Affitor can mark a specific program API key for mandatory rotation — for examp
 | `Sunset` | HTTP-date of the rotation deadline, after which the key stops working ([RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) |
 | `Link` | `<https://docs.affitor.com/api-reference/errors#api_key_rotation_required>; rel="deprecation"` |
 
-The JSON body also gains a `warnings` array. No existing field is removed or renamed:
+The JSON body also gains a `warnings` array. No existing field is removed or renamed.
+
+`warnings` sits at the top level of the response body. On endpoints that wrap their payload in `data`, it is a sibling of `data`, not a field inside it, so read it before you unwrap:
 
 ```json
 {
