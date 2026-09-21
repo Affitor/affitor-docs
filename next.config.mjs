@@ -66,7 +66,14 @@ const config = {
         permanent: true,
       },
       {
-        source: '/docs/:path*',
+        // Page routes only. The negative lookahead keeps static files out: assets
+        // genuinely live under /docs (public/docs/brand/*.png), so stripping the
+        // prefix sent every screenshot to a 404. Measured 2026-09-20 on production:
+        // /docs/brand/dashboard.png -> 308 -> /brand/dashboard.png -> 404, and the
+        // same for applications, billing, commissions, groups and settings.
+        // scripts/check-agent-surface.mjs pins this so the rule cannot swallow
+        // assets again.
+        source: '/docs/:path((?!.*\\.[^/]+$).*)',
         destination: '/:path*',
         permanent: true,
       },

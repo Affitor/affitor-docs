@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loader } from 'fumadocs-core/source';
@@ -242,7 +242,49 @@ function main() {
   assert.equal(agentMd.includes('statSync'), false, 'agent-md.ts must not use statSync for content dates');
   assert.equal(agentMd.includes('mtime'), false, 'agent-md.ts must not use mtime for content dates');
 
+  const assets = checkContentAssets();
+
+  console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
+}
+
+/**
+ * Every absolute file reference in content (screenshots, downloads) must actually be
+ * served. Two ways it can fail, and both happened:
+ *   1. the file is not in public/ at that path;
+ *   2. a redirect eats the path before the static handler sees it.
+ * (2) is what broke all six brand screenshots: `/docs/:path*` -> `/:path*` turned
+ * /docs/brand/dashboard.png into /brand/dashboard.png, which is a 404. Assets live
+ * under public/docs, so the prefix is real for them and must not be stripped.
+ */
+function checkContentAssets() {
+  const FILE_REF = /!?\[[^\]]*\]\((\/[^)\s]+\.[a-z0-9]{2,5})\)/gi;
+  const refs = new Set();
+  for (const file of walk(join(ROOT, 'content'))) {
+    if (!/\.mdx?$/.test(file)) continue;
+    for (const match of read(file).matchAll(FILE_REF)) refs.add(match[1]);
+  }
+
+  // Prefix redirects that rewrite a whole subtree, e.g. '/docs/:path*' -> prefix '/docs'.
+  // A source carrying a regex guard (`:path(...)`) is deliberately narrowed, so it is
+  // not treated as a blanket prefix — that guard is exactly the fix being pinned here.
+  const config = read(join(ROOT, 'next.config.mjs'));
+  const prefixes = [...config.matchAll(/source:\s*'(\/[^']*?)\/:path\*'/g)].map((m) => m[1]);
+
+  for (const ref of refs) {
+    const path = ref.split(/[?#]/)[0];
+    assert.ok(
+      existsSync(join(ROOT, 'public', path)),
+      `content references ${path}, but public${path} does not exist`,
+    );
+    for (const prefix of prefixes) {
+      assert.ok(
+        path !== prefix && !path.startsWith(`${prefix}/`),
+        `redirect '${prefix}/:path*' swallows the asset ${path}; exclude file paths from that rule`,
+      );
+    }
+  }
+  return refs.size;
 }
 
 try {

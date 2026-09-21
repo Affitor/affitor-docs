@@ -28,7 +28,8 @@ For tracking / attribution / billing docs, the primary sources are usually:
 
 ## Current docs structure
 - content lives in `content/docs/`
-- docs app routes are served under `/docs/...`
+- docs app routes are served at the **root**, with no `/docs` prefix: `content/docs/api-reference/errors.mdx` is `https://docs.affitor.com/api-reference/errors`. `/docs/:path*` is a permanent redirect kept alive for old links (measured 2026-09-20: `/api-reference/errors` 200, `/docs/api-reference/errors` 308)
+- static files are the exception — they really do live under `/docs`, because they sit in `public/docs/` (for example `public/docs/brand/dashboard.png` is served at `/docs/brand/dashboard.png`)
 - app/router code lives in `src/app/`
 - Fumadocs config lives in `source.config.ts`
 - workflow sync guidance lives in `docs/workflow-sync-map.md`
@@ -36,7 +37,7 @@ For tracking / attribution / billing docs, the primary sources are usually:
 ## Rules
 1. **Runtime-first docs** — never invent behavior to fill gaps
 2. **Prefer public supported paths** — mention legacy aliases only as compatibility notes when runtime still accepts them
-3. **Keep pathing correct** — internal docs links should resolve under `/docs/...`
+3. **Keep pathing correct** — link pages at the root (`/api-reference/track-click`), not `/docs/...`, which only redirects. Reference files by where they sit in `public/`, so `public/docs/brand/x.png` is linked as `/docs/brand/x.png`. `scripts/check-agent-surface.mjs` fails the build if a file reference is missing from `public/` or is swallowed by a redirect
 4. **Do not revive removed features** — Affitor Pay is removed unless explicitly reintroduced in canonical runtime/docs
 5. **Avoid unsupported certainty** — if payout timing or business wording is ambiguous across canonicals, use conservative wording and note the dependency
 6. **Keep docs self-serve** — optimize for advertisers and agents implementing integrations without support calls
