@@ -16,7 +16,7 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
 ## The billing timeline
 
 <Flow>
-  <FlowStep>Sales attributed Mon–Sun</FlowStep>
+  <FlowStep>Commissions approved</FlowStep>
   <FlowStep>Invoice issued Mon 09:00 UTC</FlowStep>
   <FlowStep>Pay within 7 days → **paid:** Status: paid · **past due:** Status: overdue</FlowStep>
   <FlowStep>Program paused</FlowStep>
@@ -26,7 +26,7 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
 
 | Stage | When | What happens |
 |-------|------|--------------|
-| **Invoice issued** | Every Monday at 09:00 UTC | Invoice covers the prior Monday–Sunday commission period |
+| **Invoice issued** | Every Monday at 09:00 UTC | Invoice includes every approved commission not yet on an invoice, whenever it was approved. Its billing period (the prior Monday–Sunday) is a label and does not limit what it includes |
 | **Net terms** | 7 days from issue date | The default. Talk to your account contact if you need different terms |
 | **Overdue check** | Daily at 10:00 UTC | Invoices past their due date are marked overdue |
 | **Program paused** | Same overdue run | The program enters a paused state; an email is sent to the workspace owner |
