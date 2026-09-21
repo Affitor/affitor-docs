@@ -1,9 +1,9 @@
 ---
 title: Organize partners into groups
-description: Create partner groups so different partners earn different rates, hold periods, and approval rules under one program.
+description: Create partner groups so different partners earn different commission rates under one program.
 ---
 
-Every commission in Affitor is set per partner group: the group a partner belongs to decides their [commission rate](/brand/quickstart/define-commission), hold period, and [approval mode](/brand/quickstart/commission-approval-cash-flow). This guide shows you how to create a group, set its policy, and move partners into it — so you can run a VIP tier next to your standard rate without per-partner bookkeeping.
+Every commission in Affitor is set per partner group: the group a partner belongs to decides their [commission rate and duration](/brand/quickstart/define-commission). The hold period is set once for the whole program and applies to every group. This guide shows you how to create a group, set its policy, and move partners into it — so you can run a VIP tier next to your standard rate without per-partner bookkeeping.
 
 <PageMeta
   items={[
@@ -20,7 +20,7 @@ Every commission in Affitor is set per partner group: the group a partner belong
   <FlowStep caption="Name the tier you want to pay differently.">
     **Create a partner group**
   </FlowStep>
-  <FlowStep caption="Rate, hold period, and approval mode — the terms every member earns under.">
+  <FlowStep caption="Commission type, rate, and duration — the terms every member earns under.">
     **Set the group's commission policy**
   </FlowStep>
   <FlowStep caption="Members earn the group's rate from their next attributed sale.">
@@ -44,11 +44,12 @@ The new group appears as a row in the Partner Groups list, with its own partner 
 
 ## Step 2: Set the group's commission policy
 
-The policy is the contract every member of the group earns under. Open the new group's row menu (**⋯**) in the Groups list and edit its policy. Three settings make up the policy:
+The policy is the contract every member of the group earns under. Open the new group's row menu (**⋯**) in the Groups list and edit its policy. The policy sets the group's **commission rate**: what members earn per attributed result. Rate types and durations work exactly as described in [Set your commission](/brand/quickstart/define-commission); a group simply carries its own values.
 
-- **Commission rate** — what members earn per attributed result. Rate types and durations work exactly as described in [Set your commission](/brand/quickstart/define-commission); a group simply carries its own values.
-- **Hold period** — how long a new commission stays on hold before it can clear. Longer holds reduce refund risk; see [commission approval and cash flow](/brand/quickstart/commission-approval-cash-flow).
-- **Approval mode** — whether commissions that clear the hold approve automatically or wait for your manual review.
+Two settings are not part of a group's policy. They are set once for the whole program and apply to every group in it:
+
+- **Hold period** — how long a new commission stays on hold before it can clear. Set it under **Commission** in [program settings](/brand/settings). Longer holds reduce refund risk; see [commission approval and cash flow](/brand/quickstart/commission-approval-cash-flow).
+- **Commission approval** — there is no per-group approval mode. A commission approves automatically when the program's hold period ends, unless you approve, reject, or extend the hold on it first from the **Commissions** page. The **Approval mode** in program settings is for partner applications, not commissions.
 
 :::tip
 
@@ -69,7 +70,7 @@ From their next attributed sale, the partner's commissions are created under the
 
 ## Optional: Schedule a policy change
 
-Group policies are versioned. When you edit a group's rate, hold period, or approval mode, the update is recorded as a new policy version with its own effective date, and the previous version is preserved in the policy chain. Two things follow from that:
+Group policies are versioned. When you edit a group's commission terms, the update is recorded as a new policy version with its own effective date, and the previous version is preserved in the policy chain. Two things follow from that:
 
 - **You can change terms without rewriting history.** Existing commissions stay tied to the policy that was in effect when they were created, so your books stay auditable.
 - **You can schedule a change ahead of time.** Give the new policy a future effective date — for example, a rate increase you've announced to partners for next quarter — and the current policy stays in force until that date.
@@ -84,7 +85,7 @@ The proof is a commission at the new rate. After a partner in the group drives a
     "On the Commissions page, the newest commission from a partner in the group shows the group's rate — not the Default rate",
   ]}
   ifNotWorking={[
-    "Reopen the group's policy in Groups and confirm the rate, hold period, and approval mode saved",
+    "Reopen the group's policy in Groups and confirm the rate and duration saved",
     "Check the partner's current group on the Partners page — commissions follow the group the partner was in when the sale was attributed",
     "Remember that commissions created before the move keep their original policy; only new activity uses the new group's terms",
   ]}
