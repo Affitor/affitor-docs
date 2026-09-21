@@ -66,7 +66,24 @@ const config = {
         permanent: true,
       },
       {
-        source: '/docs/:path*',
+        // The markdown twins are a page surface, not a file in public/, so the
+        // rule below (which skips anything with an extension) would drop them.
+        // Keep the old /docs/<page>.md links alive: AI crawlers index these.
+        // Measured 2026-09-20 without this rule: /docs/api-reference/errors.md
+        // returned 404 instead of redirecting to /api-reference/errors.md.
+        source: '/docs/:path*.md',
+        destination: '/:path*.md',
+        permanent: true,
+      },
+      {
+        // Page routes only. The negative lookahead keeps static files out: assets
+        // genuinely live under /docs (public/docs/brand/*.png), so stripping the
+        // prefix sent every screenshot to a 404. Measured 2026-09-20 on production:
+        // /docs/brand/dashboard.png -> 308 -> /brand/dashboard.png -> 404, and the
+        // same for applications, billing, commissions, groups and settings.
+        // scripts/check-agent-surface.mjs pins this so the rule cannot swallow
+        // assets again.
+        source: '/docs/:path((?!.*\\.[^/]+$).*)',
         destination: '/:path*',
         permanent: true,
       },
