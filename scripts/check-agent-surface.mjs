@@ -259,10 +259,22 @@ function main() {
  */
 function checkContentAssets() {
   const FILE_REF = /!?\[[^\]]*\]\((\/[^)\s]+\.[a-z0-9]{2,5})\)/gi;
+  // Page links under /docs only redirect. They are not broken, but they cost a hop and
+  // they are how the wrong path keeps spreading, so the canonical root path is required.
+  // Asset paths are exempt: public/docs/... really is served at /docs/....
+  const PAGE_LINK = /(?:\]\(|href:\s*'|href=")(\/docs\/[^)'"\s]*)/g;
   const refs = new Set();
   for (const file of walk(join(ROOT, 'content'))) {
     if (!/\.mdx?$/.test(file)) continue;
-    for (const match of read(file).matchAll(FILE_REF)) refs.add(match[1]);
+    const body = read(file);
+    for (const match of body.matchAll(FILE_REF)) refs.add(match[1]);
+    for (const match of body.matchAll(PAGE_LINK)) {
+      const target = match[1].split(/[?#]/)[0];
+      if (/\.[a-z0-9]{2,5}$/i.test(target)) continue;
+      assert.fail(
+        `${relative(ROOT, file)} links ${target}; pages live at the root, so link ${target.replace(/^\/docs/, '') || '/'} instead`,
+      );
+    }
   }
 
   // Prefix redirects that rewrite a whole subtree, e.g. '/docs/:path*' -> prefix '/docs'.

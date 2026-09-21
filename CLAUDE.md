@@ -28,7 +28,7 @@ For tracking / attribution / billing docs, the primary sources are usually:
 
 ## Current docs structure
 - content lives in `content/docs/`
-- docs app routes are served at the **root**, with no `/docs` prefix: `content/docs/api-reference/errors.mdx` is `https://docs.affitor.com/api-reference/errors`. `/docs/:path*` is a permanent redirect kept alive for old links (measured 2026-09-20: `/api-reference/errors` 200, `/docs/api-reference/errors` 308)
+- docs app routes are served at the **root**, with no `/docs` prefix: `content/docs/api-reference/errors.mdx` is `https://docs.affitor.com/api-reference/errors`. a permanent page redirect under `/docs` keeps old links alive, for both HTML and the `.md` twins (measured 2026-09-20: `/api-reference/errors` 200, `/docs/api-reference/errors` 308, `/docs/api-reference/errors.md` 308)
 - static files are the exception — they really do live under `/docs`, because they sit in `public/docs/` (for example `public/docs/brand/dashboard.png` is served at `/docs/brand/dashboard.png`)
 - app/router code lives in `src/app/`
 - Fumadocs config lives in `source.config.ts`
