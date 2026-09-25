@@ -536,9 +536,22 @@ article [data-card] {
   margin-bottom: 12px;
 }
 
+/* ── Diagrams (Mermaid, <Flow>, <FlowGrid>): Build to Own Campus tokens ──
+   Tokens come from src/lib/diagram-theme.ts as --c-* variables on the root.
+   Campus is light-only, so every diagram sits on a --paper card in both themes. */
+.docs-diagram {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: var(--c-r-lg);
+  box-shadow: var(--c-sh);
+  color: var(--c-ink);
+  font-family: var(--c-font);
+}
+
 /* ── <Flow> — sequential pipeline timeline (replaces ASCII diagrams) ── */
 .docs-flow {
   margin: 20px 0;
+  padding: 20px 22px;
 }
 .docs-flow-stage {
   position: relative;
@@ -556,7 +569,7 @@ article [data-card] {
   top: 32px;
   bottom: 2px;
   width: 2px;
-  background: linear-gradient(var(--color-fd-border) 60%, transparent);
+  background: linear-gradient(var(--c-acc-line) 60%, transparent);
 }
 .docs-flow-node {
   position: relative;
@@ -569,8 +582,9 @@ article [data-card] {
   place-items: center;
   font-size: 13px;
   font-weight: 600;
-  background: var(--color-fd-accent);
-  color: var(--color-fd-primary);
+  background: var(--c-acc-soft);
+  border: 1px solid var(--c-acc-line);
+  color: var(--c-acc);
 }
 .docs-flow-content {
   padding-top: 4px;
@@ -578,19 +592,27 @@ article [data-card] {
 .docs-flow-text {
   font-size: 15px;
   line-height: 1.55;
-  color: var(--aff-body);
+  color: var(--c-ink);
 }
 .docs-flow-text strong {
-  color: var(--color-fd-foreground);
+  color: var(--c-ink);
   font-weight: 600;
+}
+.docs-flow-text a {
+  color: var(--c-acc);
+}
+.docs-flow-text code {
+  background: var(--c-line-2);
+  color: var(--c-ink-2);
 }
 .docs-flow-caption {
   font-size: 13px;
-  color: var(--color-fd-muted-foreground);
+  color: var(--c-muted);
   margin-top: 3px;
 }
 
 /* ── Shared card surface for grid/task/meta components ── */
+.docs-flow-grid { padding: 16px; }
 .docs-flow-grid,
 .docs-task-grid,
 .docs-meta-grid {
@@ -602,7 +624,6 @@ article [data-card] {
 .docs-task-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 .docs-meta-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 
-.docs-flow-card,
 .docs-task-card,
 .docs-meta-card {
   border: 1px solid var(--color-fd-border);
@@ -616,10 +637,15 @@ article [data-card] {
   text-decoration: none !important;
   color: inherit;
 }
-.docs-flow-card:hover,
 .docs-task-card:hover {
   border-color: var(--aff-border-strong);
   transform: translateY(-1px);
+}
+.docs-flow-card {
+  border: 1px solid var(--c-line);
+  border-radius: var(--c-r);
+  padding: 18px 20px;
+  background: var(--c-paper);
 }
 .docs-flow-step {
   display: inline-grid;
@@ -627,8 +653,9 @@ article [data-card] {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--color-fd-accent);
-  color: var(--color-fd-primary);
+  background: var(--c-acc-soft);
+  border: 1px solid var(--c-acc-line);
+  color: var(--c-acc);
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -637,7 +664,6 @@ article [data-card] {
 .docs-task-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-fd-foreground);
   margin-bottom: 5px;
   line-height: 1.4;
 }
@@ -646,8 +672,11 @@ article [data-card] {
 .docs-task-body {
   font-size: 13.5px;
   line-height: 1.55;
-  color: var(--color-fd-muted-foreground);
 }
+.docs-task-title { color: var(--color-fd-foreground); }
+.docs-task-body { color: var(--color-fd-muted-foreground); }
+.docs-flow-title { color: var(--c-ink); }
+.docs-flow-body { color: var(--c-muted); }
 
 /* ── Card-surface blocks (checklist / mistakes / next / recommended / verify) ── */
 .docs-checklist,
