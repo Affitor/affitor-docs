@@ -1,4 +1,5 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
+import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
 
 // AI-crawler tracking (AI-RANK-redesign.md, Part D2 lane 1).
 // AI crawlers don't execute JS, so client-side PostHog never sees them —
@@ -7,7 +8,7 @@ const AI_BOTS =
   /GPTBot|ClaudeBot|Claude-Web|PerplexityBot|Google-Extended|Bytespider|CCBot|anthropic-ai|OAI-SearchBot/i;
 
 export function middleware(req: NextRequest, event: NextFetchEvent) {
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || POSTHOG_PUBLIC_KEY;
   const match = req.headers.get('user-agent')?.match(AI_BOTS);
 
   if (key && match) {
