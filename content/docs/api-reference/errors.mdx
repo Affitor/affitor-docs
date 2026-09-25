@@ -5,7 +5,24 @@ description: All API error codes, their causes, and how to fix common integratio
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
-This page covers every error response the tracking API can return and practical fixes for the most common integration issues.
+This page covers every error response the tracking, readiness and CLI endpoints can return, and practical fixes for the most common integration issues.
+
+---
+
+## HTTP status codes
+
+Start from the status code. It tells you whose problem the request is and whether sending it again can help.
+
+| Status | Meaning | What to do | Retry? |
+|--------|---------|-----------|--------|
+| `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again. Exception: after `partnerId required to create commission` the sale is already stored, so a resend returns `409` | Not unchanged |
+| `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
+| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) | Use the key or account that owns the resource | No |
+| `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
+| `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
+| `410` | The endpoint is retired | Use the replacement named in `error.message` | No |
+| `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
+| `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
 ---
 
@@ -31,7 +48,12 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 }
 ```
 
-`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `NotFoundError` (404), `ConflictError` (409), `InternalServerError` (500). It carries no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below.
+`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), `GoneError` (410), `InternalServerError` (500). `error.details` is an empty object unless noted below.
+
+Most errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
+
+- A suspended account signing in to the CLI gets `error.details.code` set to [`ACCOUNT_BLOCKED`](#account_blocked).
+- A CLI `500` carries `error.details.request_id` — see [request IDs](#request-ids).
 
 ### The typed envelope
 
@@ -67,19 +89,43 @@ const detail = body.error?.code
   : body.error?.message;
 ```
 
+### Request IDs
+
+Responses from the tracking, readiness and CLI endpoints carry an `X-Request-ID` header, except `GET /api/v1/cli/status`: its `200`, `401` and `429` have no request ID, and only its `500` does.
+
+On a `500` from a CLI endpoint the same ID is also in the body, both at the end of `error.message` and in `error.details.request_id`. Tracking and readiness `500`s carry it only in the header.
+
+When you contact support about a failed request, include the `X-Request-ID`. It is how we find the log line for your request; the error message itself is deliberately generic.
+
 ---
 
 ## Error reference
 
 ### Authentication errors (401)
 
-| Status | Condition | Meaning | Fix |
-|--------|-----------|---------|-----|
-| `401` | `Authorization` header missing or does not start with `Bearer ` | The request reached a server-authenticated endpoint without a valid header | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
-| `401` | Header present but token string is empty after trimming | Bearer prefix found but no token value followed it | Check for trailing spaces or an empty env variable |
-| `401` | Token does not match any `api_token` in the program table | Wrong key, replaced key, or key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
+| Status | Error message | Condition | Fix |
+|--------|---------------|-----------|-----|
+| `401` | `Missing or malformed Authorization header. Expected: Bearer <token>` | `Authorization` header missing or does not start with `Bearer ` | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
+| `401` | `Missing API token` | Header present but the token is empty after trimming (sale only; refund answers `Invalid API token`) | Check for trailing spaces or an empty env variable |
+| `401` | `Invalid API token` | The token matches no program: a wrong key, a replaced key, or a key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
 
 The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Invalid API token",
+    "details": {}
+  }
+}
+```
+
+`GET /api/v1/programs/me/readiness` fails the same three checks with the [typed envelope](#the-typed-envelope) instead, always with `error.code` set to `invalid_key`. Its messages end with a period: `Missing or malformed Authorization header. Expected: Bearer <api_token>.`, `Missing API token.` and `Invalid API token.`
+
+The CLI's program-key routes word these differently; see [CLI endpoint errors](#cli-endpoint-errors).
 
 `POST /api/v1/track/lead` accepts a Bearer token for server mode but does not require one, so it answers differently. A missing header — or a header whose token is empty after `Bearer ` — falls back to browser mode: the lead is recorded from the `click_id` rather than refused. Only a token that matches no program returns `401` there.
 
@@ -183,6 +229,28 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 
 ---
 
+### Forbidden errors (403)
+
+| Status | Error message | Meaning | Fix |
+|--------|---------------|---------|-----|
+| `403` | `program_id does not match the API key` | A test-mode click or lead (`additional_data.test_mode`) sent both a Bearer key and an `additional_data.program_id`, and the two name different programs | Send the `program_id` of the program the key belongs to, or leave `program_id` out and let the key decide |
+
+This applies to `POST /api/v1/track/click` and `POST /api/v1/track/lead` in test mode only. A browser-mode test event with no key is not checked this way.
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "program_id does not match the API key",
+    "details": {}
+  }
+}
+```
+
+---
+
 ### Conflict errors (409)
 
 | Status | Error message | Meaning | Fix |
@@ -243,15 +311,148 @@ The synthetic verification chain has a second, separate cap of 10 runs per progr
 
 ### Server errors (500)
 
+A `500` means the request failed on our side. The message is deliberately generic — the detail goes to our logs under the response's [`X-Request-ID`](#request-ids), so include that ID when you contact support.
+
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `500` | `Click tracking failed` | Unhandled exception in click handler | Check server logs; usually a DB or network error |
-| `500` | `Lead tracking failed` | Unhandled exception in lead handler | Check server logs |
-| `500` | `Sale tracking failed` | Unhandled exception in sale handler | Check server logs |
-| `500` | `Refund tracking failed` | Unhandled exception in refund handler | Check server logs |
-| `500` | `Failed to create commission` (or commission service error message) | Commission creation step threw internally after the sale event was written | The sale record exists but has no commission — contact Affitor support with the `transaction_id` |
+| `500` | `Click tracking failed` | The click handler failed unexpectedly | Retry with backoff |
+| `500` | `Lead tracking failed` | The lead handler failed unexpectedly | Retry with backoff. If the first attempt did record the lead, the retry can answer `400` `Customer status cannot be updated to lead`, which is safe to ignore |
+| `500` | `Sale tracking failed` | The sale handler failed unexpectedly | Retry with backoff and the **same** `transaction_id`. If the first attempt recorded the sale, the retry answers `409`, so you cannot record it twice |
+| `500` | `Refund tracking failed` | The refund handler failed unexpectedly | Retry with backoff. If it persists, contact support with the `X-Request-ID` |
+| `500` | `Failed to create commission` | The sale event was written, but its commission was not created | Do not retry: the `transaction_id` is consumed and a retry answers `409`. Contact support with the `transaction_id` and the `X-Request-ID` |
+| `500` | `Failed to compute readiness. Retry shortly.` | `GET /api/v1/programs/me/readiness` failed. [Typed envelope](#the-typed-envelope), code `internal_error` | Wait `retry_after_seconds` (10), then poll again |
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 500,
+    "name": "InternalServerError",
+    "message": "Sale tracking failed",
+    "details": {}
+  }
+}
+```
+
+The readiness `500` uses the typed envelope:
+
+```json
+{
+  "error": {
+    "code": "internal_error",
+    "message": "Failed to compute readiness. Retry shortly.",
+    "retry_after_seconds": 10
+  }
+}
+```
 
 Metric update failures (step 10 in the sale flow) are logged as warnings and do not cause a 500 — the sale and commission are still created.
+
+For `500`s from the CLI endpoints, see [CLI endpoint errors](#cli-endpoint-errors).
+
+---
+
+### CLI endpoint errors
+
+The [Affitor CLI](/brand/cli/commands) talks to the `/api/v1/cli/*` endpoints. They answer in the [platform envelope](#the-platform-envelope), except the [rate limits](#rate-limits-429) and a [retired key](#api_key_rotation_required), which use the typed one. This section is about what the API returns; for the codes the CLI itself prints with `--json`, see [CLI commands](/brand/cli/commands).
+
+The routes authenticate in two different ways, and the fix for a `401` depends on which:
+
+- **Account session** — `init` and `programs` take the login token from `affitor login`. Fix a `401` by logging in again. Regenerating a program key does not help.
+- **Program API key** — `status` and `test-event` take the program's API key. Fix a `401` as in [authentication errors](#authentication-errors-401).
+
+#### Login (`/api/v1/cli/auth/*`)
+
+These routes run the browser login that `affitor login` starts. They take no credential.
+
+| Endpoint | Status | Error message | Meaning | Fix |
+|----------|--------|---------------|---------|-----|
+| `POST /auth/start` | `500` | `Failed to start auth session (request_id: <id>)` | The login session could not be created | Run `affitor login` again |
+| `POST /auth/callback` | `400` | `Missing required fields: state, id_token` | The body lacked the session `state` or the sign-in `id_token` | Complete sign-in from the link `affitor login` opened |
+| `POST /auth/callback` | `404` | `Session not found or already used` | No pending login session has that `state` | Run `affitor login` again for a fresh link |
+| `POST /auth/callback` | `400` | `Session expired` | The login link is older than 5 minutes | Run `affitor login` again and finish within 5 minutes |
+| `POST /auth/callback` | `403` | `Your account has been suspended.` | [`ACCOUNT_BLOCKED`](#account_blocked) | Contact Affitor support |
+| `POST /auth/callback` | `500` | `Auth callback failed (request_id: <id>)` | Sign-in could not be completed | Run `affitor login` again |
+| `GET /auth/poll` | `400` | `Missing state parameter` | The `state` query parameter was not sent | Poll with the `state` returned by `/auth/start` |
+| `GET /auth/poll` | `404` | `Session not found` | No login session has that `state` | Run `affitor login` again |
+| `GET /auth/poll` | `400` | `Session already consumed` | The login token was already handed out once | Run `affitor login` again. The token is returned only on the first poll after sign-in |
+| `GET /auth/poll` | `500` | `Failed to poll auth session (request_id: <id>)` | The poll failed on our side | Poll again |
+
+An expired session is not an error on `/auth/poll`: it answers `200` with `"data": { "status": "expired" }`.
+
+##### `ACCOUNT_BLOCKED`
+
+`POST /api/v1/cli/auth/callback` refuses to log in a suspended account. It is the one platform-envelope error with a stable code, in `error.details.code`:
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "Your account has been suspended.",
+    "details": {
+      "code": "ACCOUNT_BLOCKED"
+    }
+  }
+}
+```
+
+**Cause:** the Affitor account you signed in with is suspended. **Fix:** retrying or signing in again will not help. Contact Affitor support.
+
+#### Account-session routes (`init`, `programs`)
+
+| Endpoint | Status | Error message | Meaning | Fix |
+|----------|--------|---------------|---------|-----|
+| `POST /init` | `401` | ``Authentication required — run `affitor login` first`` | No Bearer login token was sent | Run `affitor login` |
+| `POST /init` | `401` | ``Invalid or expired token — run `affitor login` again`` | The login token is invalid or expired | Run `affitor login` again |
+| `POST /init` | `401` | ``User not found — run `affitor login` again`` | The token's account no longer exists | Run `affitor login` again |
+| `POST /init` | `403` | ``No advertiser found for this account — run `affitor login` again`` | The account has no brand profile yet | Run `affitor login` again; logging in creates one |
+| `POST /init` | `403` | `advertiser_id does not match the authenticated account` | The body named another account's `advertiser_id` | Leave `advertiser_id` out. It is taken from your login |
+| `POST /init` | `400` | `Missing required fields: name, domain, commission_type, commission_rate` | One of the four fields is missing | Send all four |
+| `POST /init` | `400` | `Invalid commission_type: <value>. Valid: percent, fixed, recurring_percent, recurring_fixed` | `commission_type` is not one of the four values | Use one of the listed values |
+| `POST /init` | `400` | `commission_rate must be a positive number` | `commission_rate` is not a number, or is zero or negative | Send a positive number, not a string |
+| `POST /init` | `500` | `Failed to create program (request_id: <id>)` | Program creation failed on our side | Run `affitor programs` before retrying, in case the program was created |
+| `GET /programs` | `401` | ``Missing Authorization header. Run `affitor login` first.`` | No Bearer login token was sent | Run `affitor login` |
+| `GET /programs` | `401` | ``Invalid or expired token. Run `affitor login` to refresh.`` | The login token is invalid or expired | Run `affitor login` again |
+| `GET /programs` | `401` | `User not found` | The token's account no longer exists | Run `affitor login` again |
+| `GET /programs` | `500` | `Failed to list programs (request_id: <id>)` | Listing failed on our side | Retry with backoff |
+
+#### Program-key routes (`status`, `test-event`)
+
+| Endpoint | Status | Error message | Meaning | Fix |
+|----------|--------|---------------|---------|-----|
+| both | `401` | `Missing or malformed Authorization header. Expected: Bearer <api_token>` | The `Authorization` header is missing or does not start with `Bearer ` | Send `Authorization: Bearer YOUR_PROGRAM_API_KEY` |
+| both | `401` | `Missing API token` | The token is empty after `Bearer ` | Check for an empty env variable |
+| both | `401` | `Invalid API key. To get a working key for the program you already have, ask a workspace owner of that program to open Affitor → Settings → API Key and click Regenerate, then replace the key you are sending with the new one.` | The key matches no program | Do as the message says. Running `affitor init` does not help: it creates a second program |
+| both | `401` | [`api_key_rotation_required`](#api_key_rotation_required) | The key is retired | Create a new key |
+| `GET /status` | `500` | `Failed to get status (request_id: <id>)` | Status lookup failed on our side | Retry with backoff |
+| `POST /test-event` | `400` | `Invalid event_type: <value>. Valid: click, lead, sale` | Single-event mode got a missing or unknown `event_type` | Send `click`, `lead` or `sale`, or `{"type": "chain"}` for the full chain |
+| `POST /test-event` | `429` | `Too many synthetic chains (max 10/program/hour).` | The chain cap was hit. Typed envelope, code `rate_limited` | Wait `retry_after_seconds`; see [rate limits](#rate-limits-429) |
+| `POST /test-event` | `500` | `Failed to run synthetic chain (request_id: <id>)` | The chain run failed on our side | Retry with backoff |
+| `POST /test-event` | `500` | `Failed to process test event (request_id: <id>)` | The test event failed on our side | Retry with backoff |
+
+#### Retired endpoint
+
+| Endpoint | Status | Error message | Fix |
+|----------|--------|---------------|-----|
+| `POST /stripe-connect` | `410` | `This endpoint is retired. Connect Stripe from the Affitor dashboard: open the program, go to Settings, and use Connect Stripe.` | Connect Stripe from the dashboard |
+
+A CLI `500` puts the request ID in the message and in `details`:
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 500,
+    "name": "InternalServerError",
+    "message": "Failed to get status (request_id: 9f2c4e1a7b3d5f60a8c2e4b6d8f0a1c3)",
+    "details": {
+      "request_id": "9f2c4e1a7b3d5f60a8c2e4b6d8f0a1c3"
+    }
+  }
+}
+```
 
 ---
 
