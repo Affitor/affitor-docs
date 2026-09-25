@@ -152,7 +152,7 @@ Use [partner groups](/brand/groups) to give different partner segments different
 ## Verify it worked
 
 <VerifySuccess
-  dashboard={["Groups shows your group with the new rate in the Commission column", "Test-mode sales (`additional_data: { test_mode: true }`) create no commission. To check the rate end to end, use Run verification (see [Testing Integration](/brand/tracking/testing-integration)) — the synthetic sale's commission appears under Commissions, computed at the group's rate"]}
+  dashboard={["Groups shows your group with the new rate in the Commission column", "Test-mode sales (`additional_data: { test_mode: true }`) create no commission. Run verification (see [Testing Integration](/brand/tracking/testing-integration)) checks that a click, lead and sale attribute end to end; its test commission is kept out of Commissions and partner earnings, so the rate itself shows on the first live sale"]}
   ifNotWorking={["Partners inherit the policy of the group they are IN — check the partner's group on the Partners table before assuming the rate is wrong"]}
 />
 
