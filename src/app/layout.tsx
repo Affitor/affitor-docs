@@ -3,6 +3,7 @@ import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { docsBase } from '@/lib/site';
+import { PostHog } from '@/components/posthog';
 
 export const metadata: Metadata = {
   title: {
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <RootProvider search={{ options: { api: `${docsBase}/api/search` } }}>
           {children}
         </RootProvider>
+        <PostHog />
       </body>
     </html>
   );
