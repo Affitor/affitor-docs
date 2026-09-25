@@ -102,11 +102,12 @@ Use one stable internal customer ID everywhere.
 
 ### Default model
 
-Affitor public docs currently describe:
+Defaults:
 - first-party cookie tracking
-- last-click attribution
-- **cookie window**: 90 days per program by default (how long a click stays attributable after the initial visit)
-- **attribution window**: 60 days by default (commission lookback — how far back a sale can be matched to a click)
+- **the first partner's click keeps the customer**: a later click from another partner in the same browser is logged but does not take the customer over
+- **attribution window**: 60 days per program by default, one setting. The click must be at most that many days older than the customer's signup (or their first payment, when no signup was recorded). It is checked once, at the first attributed payment; renewals are not re-checked. The same number is the cookie lifetime.
+
+See [Attribution Mechanics](/api-reference/attribution/) for details.
 
 ### Why the signup step matters
 
@@ -137,13 +138,13 @@ Without subscription metadata, renewals may not be attributable.
 ### Fastest path for Stripe Checkout teams (manual)
 
 1. install tracker
-2. call `signup(customerKey, email)`
+2. send the lead from your backend with `POST /api/v1/track/lead` and your program API key (a browser-only `signup()` lead stays provisional on new programs)
 3. attach Stripe metadata for payment + subscription flows
 
 ### Fastest path for custom backend teams (manual)
 
 1. install tracker
-2. call `signup(customerKey, email)` or server-side lead API
+2. send the lead from your backend with `POST /api/v1/track/lead` and your program API key
 3. send `POST /api/v1/track/sale` from your backend
 
 ---

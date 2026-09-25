@@ -108,7 +108,7 @@ Returns a `data` array of normalized event objects and a `meta.pagination` block
 - `event_type` is a normalized field added by the server: `"click"`, `"lead"`, or `"conversion"`.
 - `timestamp` is a normalized field set to the source event's native time field (`click_timestamp`, `lead_timestamp`, or `sale_date`).
 - Test events (`is_test: true`) are excluded from all three tables before merging.
-- The response `total` reflects the merged in-memory count after applying filters, not a direct DB count.
+- Each event type is read newest-first, capped at 3 × `pageSize` rows per type, then merged and paginated. `total` is the size of that merged set, not the full event count: it is at most 3 × `pageSize` for one event type (9 × `pageSize` for all three), and pages beyond it come back empty even when older events exist. Narrow the window with `dateFrom` / `dateTo` to reach older events.
 
 ---
 

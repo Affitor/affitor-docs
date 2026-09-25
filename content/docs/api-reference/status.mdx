@@ -54,6 +54,8 @@ This endpoint is protected by the `verify-program-access` workspace policy. The 
         "latestTestEvent": null
       },
       "payments": {
+        "paymentTrackingMode": "stripe_connect",
+        "methodReady": true,
         "stripeConnectionStatus": "connected",
         "isStripeConnected": true,
         "stripeAccountId": "acct_1AbCdEfGhIjKlMnO",
@@ -77,14 +79,16 @@ This endpoint is protected by the `verify-program-access` workspace policy. The 
 | `data.stepStatuses` | object | Status of each integration step: `"complete"` or `"pending"` |
 | `data.stepStatuses.pageview` | string | `"complete"` when at least one test click event exists for the program |
 | `data.stepStatuses.referrals` | string | `"complete"` when at least one test lead event exists for the program |
-| `data.stepStatuses.payments` | string | `"complete"` when the advertiser's Stripe account `stripeConnectionStatus` is `"connected"` |
+| `data.stepStatuses.payments` | string | `"complete"` when the program's Stripe connection `stripeConnectionStatus` is `"connected"`, **or** when the program uses server-to-server sale tracking (`paymentTrackingMode` is `"s2s"`) |
 | `data.statistics.pageview.testEventCount` | integer | Number of test click events found (up to 10) |
 | `data.statistics.pageview.hasTestEvents` | boolean | `true` if at least one test click event exists |
 | `data.statistics.pageview.latestTestEvent` | object \| null | ID and timestamps of the most recent test click event |
 | `data.statistics.referrals.testEventCount` | integer | Number of test lead events found (up to 10) |
 | `data.statistics.referrals.hasTestEvents` | boolean | `true` if at least one test lead event exists |
 | `data.statistics.referrals.latestTestEvent` | object \| null | ID and timestamps of the most recent test lead event |
-| `data.statistics.payments.stripeConnectionStatus` | string | Raw Stripe connection status from the advertiser record |
+| `data.statistics.payments.paymentTrackingMode` | string | `"stripe_connect"` (default) or `"s2s"` |
+| `data.statistics.payments.methodReady` | boolean | `true` when the payments step is complete |
+| `data.statistics.payments.stripeConnectionStatus` | string | Raw Stripe connection status of the program |
 | `data.statistics.payments.isStripeConnected` | boolean | `true` when `stripeConnectionStatus === "connected"` |
 | `data.statistics.payments.stripeAccountId` | string \| null | Stripe connected account ID (`acct_...`), or `null` if not connected |
 | `data.statistics.payments.chargesEnabled` | boolean | Whether the Stripe account can accept charges |

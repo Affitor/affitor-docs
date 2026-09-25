@@ -13,10 +13,20 @@ Records a lead event for a customer who signed up through an affiliate referral.
 
 | Mode | When to use | How |
 |------|-------------|-----|
-| **Server mode** | Backend-driven signups | `Authorization: Bearer <program_api_token>` |
-| **Browser mode** | Frontend signup flows, tracker already loaded | No `Authorization` header required — `click_id` proves attribution |
+| **Server mode** (recommended) | Your backend calls the API after a signup | `Authorization: Bearer <program_api_token>` |
+| **Browser mode** | The tracker's `signup()` call from the page | No `Authorization` header — the call carries only the `click_id` |
 
-In server mode, the `Authorization` header is optional but recommended. When present, Affitor validates the token against the program and cross-checks that the customer belongs to that program.
+The mode is decided by the header: a request with a valid Bearer key is server mode, and a request without one is browser mode. In server mode, Affitor validates the key and checks that the customer belongs to that program.
+
+### Lead auth policy
+
+Each program has a lead auth policy. **New programs default to server-verified leads** (`server_required`). Under that policy, a browser-mode lead is recorded as **provisional**:
+
+- the API still returns `200`, with `provisional: true` in the body
+- the lead does not settle attribution, does not save your `customer_key` on the customer, and does not count in partner metrics or pay a per-lead commission
+- it settles only when your backend sends the same lead with a Bearer key, or when a payment for that customer settles
+
+Programs created before this policy existed keep the older behavior, where a browser lead settles directly. Send leads from your server with a Bearer key so the lead settles under either policy.
 
 ---
 
@@ -26,7 +36,7 @@ In server mode, the `Authorization` header is optional but recommended. When pre
 
 <ParamList>
   <ParamField name="Authorization" type="header" requirement="conditional">
-    `Bearer <program_api_token>` — required for server mode, optional for browser mode.
+    `Bearer <program_api_token>` — send it for server mode. Without it, the call is treated as browser mode.
   </ParamField>
   <ParamField name="Content-Type" type="header" required>
     Must be `application/json`.
@@ -91,6 +101,18 @@ Outside test mode, **at least one of** `click_id` or `customer_key` must be prov
 }
 ```
 
+### Success — provisional browser lead (200)
+
+Returned for a browser-mode lead (no Bearer key) when the program requires server-verified leads. The lead is stored but not settled; see [Lead auth policy](#lead-auth-policy).
+
+```json
+{
+  "success": true,
+  "provisional": true,
+  "message": "Lead recorded as provisional. This program requires server-side (Bearer) lead tracking to settle attribution."
+}
+```
+
 ### Success — test mode (200)
 
 When `additional_data.test_mode` is `true`, the response includes the created event details:
@@ -126,7 +148,7 @@ When `additional_data.test_mode` is `true`, the response includes the created ev
 
 Send `additional_data.test_mode: true` to create a test lead event without affecting production attribution. In test mode:
 
-- a real Bearer token is not required
+- a Bearer key is not required to store the test event, but only a test event sent with your program API key counts toward integration verification
 - pass `additional_data.program_id` to associate the test event with a specific program
 - the event is created with `is_test: true`
 

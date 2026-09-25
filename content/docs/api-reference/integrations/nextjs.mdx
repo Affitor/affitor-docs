@@ -14,31 +14,27 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 ## Prerequisites
 
 - Your **program ID** (dashboard → program settings)
-- A **program API key** for server-side calls (sales)
+- A **program API key** for server-side calls (leads and sales)
 - A Next.js app on the **App Router**
 
 ## 1. Capture the click
 
-Install the browser SDK and initialize it once on the client. `init()` reads `?aff=` from the URL and stores a first-party `affitor_click_id` cookie. It is SSR-safe — `init()` is a no-op on the server.
+Install the SDK and load the tracker once on the client. The tracker reads `?aff=` from the URL and stores a first-party `affitor_click_id` cookie. `AffitorProvider` (from `@affitor/sdk/react`) loads it in the browser; on the server it does nothing and `useAffitor()` returns `null`.
 
 ```bash
 npm i @affitor/sdk
 ```
 
-Create a client component that runs `init()` on mount:
+Create a client component that wraps your app in the provider:
 
 ```tsx
-// app/affitor-init.tsx
+// app/affitor-provider.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
+import { AffitorProvider } from '@affitor/sdk/react';
 
-export function AffitorInit() {
-  useEffect(() => {
-    init({ programId: YOUR_PROGRAM_ID });
-  }, []);
-  return null;
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>;
 }
 ```
 
@@ -46,14 +42,13 @@ Render it once in your root layout:
 
 ```tsx
 // app/layout.tsx
-import { AffitorInit } from './affitor-init';
+import { Providers } from './affitor-provider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <AffitorInit />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
@@ -62,29 +57,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ## 2. Track the signup
 
-When a user finishes signing up, link them to their click. Call the browser helper with **your own stable user ID** — you'll reuse this exact value at sale time.
-
-```tsx
-'use client';
-import { signup } from '@affitor/sdk';
-
-// after your signup flow completes
-await signup(user.id, user.email); // email optional
-```
-
-Prefer to do it server-side (e.g. in a route handler or after a DB write)? Use the server SDK with your program API key:
+When a user finishes signing up, link them to their click from your server, with **your own stable user ID** — you'll reuse this exact value at sale time. Send it with the server SDK and your program API key (e.g. in a route handler or right after the DB write):
 
 ```ts
-// server only
+// server only — e.g. app/api/signup/route.ts
+import { cookies } from 'next/headers';
 import Affitor from '@affitor/sdk/server';
+
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
-await affitor.trackLead({
-  customerExternalId: user.id, // same ID you'll send at sale time
-  clickId,                     // affitor_click_id, forwarded from the cookie
-  email: user.email,           // optional
-});
+// after the user row is created
+const clickId = (await cookies()).get('affitor_click_id')?.value;
+if (clickId) {
+  await affitor.trackLead({
+    customerExternalId: user.id, // same ID you'll send at sale time
+    clickId,                     // affitor_click_id, forwarded from the cookie
+    email: user.email,           // optional
+  });
+}
 ```
+
+A lead needs the click: without a `clickId` (or a `customerExternalId` Affitor already knows), the API returns `400` and records nothing, which is expected for visitors who did not come through a partner link.
+
+:::note[Browser `signup()` is provisional on new programs]
+
+The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (from `useAffitor()` in `@affitor/sdk/react`). New programs require server-verified leads, so a browser-only signup is stored as **provisional**: the API returns `200` with `provisional: true`, but the lead does not settle, does not save your user ID, and does not count or pay per lead until your server sends the lead above or a payment settles. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
+
+:::
 
 ## 3. Track the sale
 
@@ -136,9 +135,9 @@ await affitor.trackSale({
 
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
-  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response"]}
+  network={["Your server's `trackLead()` call to `POST /api/v1/track/lead` returns 2xx without `provisional: true`"]}
   dashboard={["The click, lead, and sale appear under your program's tracking events"]}
-  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without commissions"]}
+  ifNotWorking={["Create a test lead from your server: `affitor.trackLead({ customerExternalId: 'test_customer', additionalData: { test_mode: true, program_id: YOUR_PROGRAM_ID } })`. For a test sale, call `POST /api/v1/track/sale` directly with your API key and `additional_data: { test_mode: true }` — the SDK's `trackSale()` cannot send it"]}
 />
 
 ## Common mistakes
@@ -146,7 +145,8 @@ await affitor.trackSale({
 <CommonMistakes items={[
   "Different customer IDs at signup vs sale — `affitor_customer_key` must equal the `customer_key`/`customerExternalId` you sent at signup.",
   "Subscriptions missing `subscription_data.metadata` — renewals won't attribute.",
-  "Calling init() on the server — it must run in a client component (it no-ops on the server).",
+  "Loading the tracker on the server — `AffitorProvider` and `loadAffitor()` must run in a client component (on the server they resolve to `null`).",
+  "Relying on the browser `signup()` alone — on new programs it stays provisional until your server sends the lead.",
   "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
 ]} />
 

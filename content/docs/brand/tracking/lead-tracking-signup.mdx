@@ -9,11 +9,13 @@ Lead tracking connects a signup to the affiliate click that drove it — turning
 
 ## What Lead Tracking Does
 
-When signup tracking succeeds, Affitor:
+When a lead settles, Affitor:
 
 1. links the signup to the tracked click/customer relationship
 2. stores your internal customer identifier for later payment attribution
 3. advances the customer journey from click → lead
+
+A lead sent from your server with your program API key settles right away. On new programs, a lead sent only from the browser is stored as provisional and does none of the above until it is confirmed (see [Lead auth policy](#lead-auth-policy)).
 
 Use the same customer identifier across all three contexts:
 
@@ -37,69 +39,9 @@ A tracked click means the browser already has `affitor_click_id` from the pagevi
 
 ---
 
-## Option A — Browser-side `signup()`
+## Option A — Server-side Lead API (recommended)
 
-Use this when signup completes in the browser and the tracker script is loaded on the page.
-
-### Basic example
-
-```javascript
-if (window.affitor) {
-  await window.affitor.signup('user_123', 'user@example.com');
-} else {
-  window.affitorQueue = window.affitorQueue || [];
-  window.affitorQueue.push(['signup', 'user_123', 'user@example.com']);
-}
-```
-
-### What the arguments mean
-
-| Argument | Required | Meaning |
-|----------|----------|---------|
-| `customerKey` | **Yes (recommended for all real integrations)** | your internal user/customer ID |
-| `email` | Recommended | customer email; used for hashed/masked attribution support |
-
-:::caution[Use a real internal identifier]
-
-The `customerKey` you pass here should be the same identifier you later use as:
-- `customer_key` in the tracking API
-- `affitor_customer_key` in Stripe metadata
-
-:::
-
-### Example inside a signup flow
-
-```javascript
-document.getElementById('signup-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const email = document.getElementById('email').value;
-
-  // Your own signup logic first
-  const result = await createAccount(email);
-
-  if (result.success) {
-    if (window.affitor) {
-      await window.affitor.signup(result.userId, email);
-    } else {
-      window.affitorQueue = window.affitorQueue || [];
-      window.affitorQueue.push(['signup', result.userId, email]);
-    }
-  }
-});
-```
-
-### When to use browser-side signup
-
-- your frontend knows when signup succeeds
-- the tracker is installed on the page
-- you want the simplest supported implementation
-
----
-
-## Option B — Server-side Lead API
-
-Use this when account creation happens on your backend, or when you want your server to send the lead event.
+Send the lead from your backend with your program API key. This is the path that settles the lead: new programs require server-verified leads (see [Lead auth policy](#lead-auth-policy)).
 
 ### Endpoint
 
@@ -176,14 +118,89 @@ requests.post(
 
 ---
 
+## Option B — Browser-side `signup()`
+
+Use this when signup completes in the browser and the tracker script is loaded on the page.
+
+:::warning[Browser leads are provisional on new programs]
+
+On programs that require server-verified leads (the default for new programs), a browser `signup()` call is recorded as **provisional**. It does not settle the lead, does not save your `customerKey` on the customer, and does not count in partner metrics or pay a per-lead commission. It settles only when your backend sends the same lead (Option A) or a payment for that customer settles. Use `signup()` alongside the server-side call, not instead of it.
+
+:::
+
+### Basic example
+
+```javascript
+if (window.affitor) {
+  await window.affitor.signup('user_123', 'user@example.com');
+} else {
+  window.affitorQueue = window.affitorQueue || [];
+  window.affitorQueue.push(['signup', 'user_123', 'user@example.com']);
+}
+```
+
+### What the arguments mean
+
+| Argument | Required | Meaning |
+|----------|----------|---------|
+| `customerKey` | **Yes (recommended for all real integrations)** | your internal user/customer ID |
+| `email` | Recommended | customer email; used for hashed/masked attribution support |
+
+:::caution[Use a real internal identifier]
+
+The `customerKey` you pass here should be the same identifier you later use as:
+- `customer_key` in the tracking API
+- `affitor_customer_key` in Stripe metadata
+
+:::
+
+### Example inside a signup flow
+
+```javascript
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+
+  // Your own signup logic first
+  const result = await createAccount(email);
+
+  if (result.success) {
+    if (window.affitor) {
+      await window.affitor.signup(result.userId, email);
+    } else {
+      window.affitorQueue = window.affitorQueue || [];
+      window.affitorQueue.push(['signup', result.userId, email]);
+    }
+  }
+});
+```
+
+### When to use browser-side signup
+
+- your frontend knows when signup succeeds
+- the tracker is installed on the page
+- you also send the lead from your backend (Option A), or your program allows browser leads
+
+---
+
 ## Browser Mode vs Server Mode
 
 | Mode | Best for | Auth |
 |------|----------|------|
-| `signup(customerKey, email)` | frontend/browser signup flows | no Bearer token in your integration |
-| `POST /api/v1/track/lead` | backend-driven signup flows | Bearer program API key recommended |
+| `POST /api/v1/track/lead` | backend-driven signup flows (recommended) | Bearer program API key **required** for the lead to settle |
+| `signup(customerKey, email)` | frontend/browser signup flows | no Bearer key; provisional on programs that require server-verified leads |
 
-Both modes must identify the same customer with the same internal ID.
+A call without a Bearer key is treated as browser mode, even when it comes from your server. Both modes must identify the same customer with the same internal ID.
+
+### Lead auth policy
+
+Each program has a lead auth policy. New programs default to **server-verified** leads (`server_required`):
+
+- a browser-mode lead returns `200` with `"provisional": true` and is stored, but it does not settle attribution, save `customer_key`, count in partner metrics, or pay a per-lead commission
+- the lead settles when your backend sends it with a Bearer key, or when a payment for that customer settles
+
+Programs created before this policy existed keep the older behavior, where a browser lead settles directly. The **Lead capture mode** line in your program's tracking settings shows which policy applies.
 
 ---
 
@@ -193,6 +210,7 @@ Create a test lead event to verify your integration without affecting production
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "click_id": "test_lead_001",
@@ -208,7 +226,7 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
 
 - creates a test lead event marked `is_test: true`
 - does not create a real production lead/customer transition
-- verifiable through dashboard/test-event tooling
+- counts toward integration verification only when sent with your program API key; without the Bearer header the event is stored but does not advance verification
 
 ### Test mode response
 

@@ -228,7 +228,7 @@ The handler above tracks the **first** subscription payment (`checkout.session.c
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set in the browser"]}
   network={["Your `/api/signup` handler calls `trackLead` and receives a 2xx response; at checkout, your `/webhooks/stripe` handler verifies the Stripe signature and calls `trackSale`"]}
   dashboard={["The click, lead, and sale appear under your program's tracking events"]}
-  ifNotWorking={["Send `additional_data: { test_mode: true }` in your `trackLead` / `trackSale` call to create test events without issuing real commissions"]}
+  ifNotWorking={["Create a test lead from your server: `affitor.trackLead({ customerExternalId: 'test_customer', additionalData: { test_mode: true, program_id: YOUR_PROGRAM_ID } })`. For a test sale, call `POST /api/v1/track/sale` directly with your API key and `additional_data: { test_mode: true }` — the SDK's `trackSale()` cannot send it"]}
 />
 
 ## Common mistakes

@@ -50,33 +50,36 @@ npm install @affitor/sdk
 
 :::warning
 
-**Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `@affitor/sdk` uses browser APIs and cannot run in a Server Component. Create a client component that calls `init` and render it once in your layout.
+**Next.js 13+ App Router:** `layout.tsx` is a Server Component by default. `@affitor/sdk` uses browser APIs and cannot run in a Server Component. Wrap your app in `AffitorProvider` from a client component and render it once in your layout.
 
 :::
 
 ```tsx
 // app/providers.tsx — client component
 'use client';
-import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
-export function AffitorInit() {
-  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
-  return null;
+import { AffitorProvider } from '@affitor/sdk/react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>;
 }
-// render <AffitorInit /> once in app/layout.tsx
+// wrap {children} with <Providers> once in app/layout.tsx
 ```
+
+Child components read the loaded tracker with `useAffitor()` from `@affitor/sdk/react`. It returns `null` while the tracker is loading and during server rendering.
 
 ### Any JS / TS app
 
 ```ts
-import { init } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 
-init({ programId: 'YOUR_PROGRAM_ID' });
+const affitor = await loadAffitor('YOUR_PROGRAM_ID');
 ```
+
+`loadAffitor()` loads the tracker script once and resolves to the tracker instance (the same object as `window.affitor`). It resolves to `null` during server rendering.
 
 ### Astro
 
-Astro isn't React, so the React `<AffitorProvider>` shown above doesn't apply. Add the tracker from a client `<script>` in your shared layout:
+Astro isn't React, so the React `<AffitorProvider>` shown above doesn't apply. Load the tracker from a client `<script>` in your shared layout:
 
 ```astro
 ---
@@ -85,8 +88,8 @@ Astro isn't React, so the React `<AffitorProvider>` shown above doesn't apply. A
 <head>
   <!-- ... -->
   <script>
-    import { init } from '@affitor/sdk';
-    init({ programId: 'YOUR_PROGRAM_ID' });
+    import { loadAffitor } from '@affitor/sdk';
+    loadAffitor('YOUR_PROGRAM_ID');
   </script>
 </head>
 ```
@@ -154,9 +157,11 @@ When that parameter is present, the tracker records the click and creates the cu
 **SDK:**
 
 ```ts
-import { init } from '@affitor/sdk';
-init({ programId: 'YOUR_PROGRAM_ID', debug: true });
+import { loadAffitor } from '@affitor/sdk';
+const affitor = await loadAffitor('YOUR_PROGRAM_ID', { debug: true });
 ```
+
+With React, pass `debug` to the provider: `<AffitorProvider programId="YOUR_PROGRAM_ID" debug>`.
 
 **Script tag:**
 
