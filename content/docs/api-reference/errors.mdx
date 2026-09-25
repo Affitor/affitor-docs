@@ -17,7 +17,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 |--------|---------|-----------|--------|
 | `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again. Exception: after `partnerId required to create commission` the sale is already stored, so a resend returns `409` | Not unchanged |
 | `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
-| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. A suspended account gets `403` only from the CLI login callback ([`ACCOUNT_BLOCKED`](#account_blocked)); other routes answer a suspended account with the same `401` as an invalid token | Use the key or account that owns the resource | No |
+| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
 | `410` | The endpoint is retired | Use the replacement named in `error.message` | No |
