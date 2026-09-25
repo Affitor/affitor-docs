@@ -173,7 +173,7 @@ This path requires a Bearer API key and is called from your server only — neve
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
   network={["At checkout, confirm the Stripe Session metadata contains `affitor_click_id`, `affitor_customer_key`, and `program_id`"]}
   dashboard={["The sale appears under your program's tracking events with the partner correctly attributed"]}
-  ifNotWorking={["Add `additional_data: { test_mode: true }` to a server-side `trackSale()` call to create test events without issuing real commissions"]}
+  ifNotWorking={["Send a test sale straight to `POST /api/v1/track/sale` with `additional_data: { test_mode: true }` (the SDK's `trackSale()` has no field for it); a test sale creates no commission"]}
 />
 
 ## Common mistakes
