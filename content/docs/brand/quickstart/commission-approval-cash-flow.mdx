@@ -76,6 +76,8 @@ Every commission moves through the same lifecycle:
   B -->|full refund| V[Reversed]
   C -->|weekly invoice| D[Invoiced]
   D -->|invoice marked paid| E[Collected]
+  class X,R,V do
+  class E ok
 `} />
 
 **Approved** is when the commission is added to the partner's balance. **Invoiced** and **Collected** track your side of the bill; they do not gate the partner's withdrawal.

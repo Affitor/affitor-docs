@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
+import { campusVars } from '@/lib/diagram-theme';
 
 export function FlowGrid({ children }: { children: ReactNode }) {
-  return <div className="docs-flow-grid not-prose">{children}</div>;
+  return <div className="docs-diagram docs-flow-grid not-prose" style={campusVars}>{children}</div>;
 }
 
 export function FlowCard({ step, title, children }: { step: string; title: string; children: ReactNode }) {

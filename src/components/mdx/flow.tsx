@@ -5,6 +5,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { campusVars } from '@/lib/diagram-theme';
 
 /**
  * <Flow> — a sequential pipeline timeline (numbered nodes + connector line).
@@ -20,7 +21,7 @@ import {
 export function Flow({ children }: { children: ReactNode }) {
   const steps = Children.toArray(children).filter(isValidElement) as ReactElement<FlowStepProps>[];
   return (
-    <div className="docs-flow not-prose">
+    <div className="docs-diagram docs-flow not-prose" style={campusVars}>
       {steps.map((child, i) => cloneElement(child, { _n: i + 1, key: i }))}
     </div>
   );
