@@ -33,6 +33,31 @@ NextAuth's `events.createUser` callback fires **on the server**, once per new us
 
 Send the lead from your own route handler, with your program API key. A request from the browser to your route handler carries the first-party `affitor_click_id` cookie, so the server can read it directly.
 
+Stock Auth.js sessions do not include `user.id`. Expose it once in your auth config, and add the type so `session.user.id` compiles:
+
+```ts
+// auth.ts
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  // ...your providers and adapter
+  callbacks: {
+    session({ session, user, token }) {
+      session.user.id = user?.id ?? token.sub ?? '';
+      return session;
+    },
+  },
+});
+
+// types/next-auth.d.ts
+import type { DefaultSession } from 'next-auth';
+declare module 'next-auth' {
+  interface Session {
+    user: { id: string } & DefaultSession['user'];
+  }
+}
+```
+
+Then the route:
+
 ```ts
 // app/api/affitor/lead/route.ts
 import { cookies } from 'next/headers';
@@ -41,10 +66,7 @@ import { auth } from '@/auth'; // your NextAuth (Auth.js) instance
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
-// Stock Auth.js sessions do not include `user.id`. Add it in your auth config:
-//   callbacks: { session({ session, user, token }) {
-//     session.user.id = user?.id ?? token.sub; return session; } }
-// Without it, this route always returns 204 and never sends the lead.
+// Needs the session callback above; without it session.user.id is empty and no lead is sent.
 export async function POST() {
   const session = await auth();
   const clickId = (await cookies()).get('affitor_click_id')?.value;

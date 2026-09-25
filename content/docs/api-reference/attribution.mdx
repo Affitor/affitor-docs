@@ -57,7 +57,7 @@ You can skip auto-detection by setting the cookie domain on the tracker script t
 ></script>
 ```
 
-The `@affitor/sdk` types do not include a cookie domain option (`loadAffitor()` and `init()` take only `programId`, `debug`, `env` and `scriptUrl`), so use the script attribute when you need one.
+The `@affitor/sdk` types do not include a cookie domain option (`loadAffitor()` takes `programId` plus `debug`, `env` and `scriptUrl`; `init()` takes only `programId` and `debug`), so use the script attribute when you need one.
 
 ---
 
