@@ -103,16 +103,20 @@ npx affitor init
 | `--commission-type <type>` | `percent`, `fixed`, `recurring_percent`, `recurring_fixed` | (prompted) |
 | `--commission-rate <rate>` | Commission rate (% or $) | Prompt pre-fills 40 for the percent types only; no default for the fixed types |
 | `--cookie-duration <days>` | Cookie window in days | 90, applied in both modes |
-| `--duration-months <months>` | Recurring commission duration in months. `0` means one-time (first purchase only), not lifetime. For lifetime, leave the flag out | Prompt pre-fills 12, and is only asked for the recurring types |
+| `--duration-months <months>` | Recurring commission duration in months, saved on the program (see the warning below) | Prompt pre-fills 12, and is only asked for the recurring types |
 | `--no-wizard` | Skip the auto-install wizard and print manual setup steps | — |
 
 The 40 and 12 above are values the prompt offers, not values the CLI falls back to.
 
 :::warning
 
-In `affitor` 0.4.1 the duration prompt and the summary printed after `init` label `0` as "lifetime". That label is wrong: Affitor stores `0` as a one-time commission that pays only on the first purchase. To create a lifetime commission, run `init` with `--no-interactive` and leave out `--duration-months`, or change the duration to lifetime in the dashboard after the program is created.
+`init` saves `--commission-type`, `--commission-rate` and `--duration-months` on the program, but it does not set what partners are paid. Payouts follow the program's **Default** partner group, which starts from Affitor's platform default commission. After `init`, open the program in the dashboard and set the commission on the Default group; that is the value used for every sale.
 
-::: With `--no-interactive` there is no prompt, so `--name`, `--domain`, `--commission-type` and `--commission-rate` must all be passed or the run stops with `missing_options`.
+In `affitor` 0.4.1 the duration prompt and the summary also label `0` as "lifetime". In Affitor, `0` means one-time (the first purchase, per product when the sale carries a product id) and an empty duration means lifetime.
+
+:::
+
+With `--no-interactive` there is no prompt, so `--name`, `--domain`, `--commission-type` and `--commission-rate` must all be passed or the run stops with `missing_options`.
 
 **Example (non-interactive):**
 

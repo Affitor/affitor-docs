@@ -72,7 +72,8 @@ Every commission moves through the same lifecycle:
   A[Sale tracked] --> B[Pending]
   B -->|hold period ends| C[Approved]
   B -->|you reject it| X[Rejected]
-  B -->|refund| R[Refunded]
+  B -->|partial refund| R[Refunded]
+  B -->|full refund| V[Reversed]
   C -->|weekly invoice| D[Invoiced]
   D -->|invoice marked paid| E[Collected]
 `} />
@@ -106,8 +107,8 @@ The program's hold period, set under **Commission** in [program settings](/brand
 
 What happens depends on where the commission is when the refund arrives:
 
-- **Pending** — the commission is refunded before it reaches the partner's balance.
-- **Approved or invoiced** — the commission amount is taken back from the partner's balance (never below zero).
+- **Pending** — nothing reaches the partner's balance. A full refund marks the commission **Reversed**, a partial one **Refunded**.
+- **Approved or invoiced** — the refunded share is taken back from the partner's balance (never below zero): all of the commission for a full refund, and the same fraction of it for a partial refund.
 - **Already collected** — Affitor deducts it from the partner's balance, which can go negative, and sends you a notification: reconciling with the partner is a manual step.
 
 Platform fees already billed are not refunded, and a refund does not lower the revenue total that counts toward your program's $10,000 fee-free tier. See [Track refund](/api-reference/track-refund) for the API details.
