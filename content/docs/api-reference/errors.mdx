@@ -15,13 +15,13 @@ Start from the status code. It tells you whose problem the request is and whethe
 
 | Status | Meaning | What to do | Retry? |
 |--------|---------|-----------|--------|
-| `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again | Not unchanged |
+| `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again. Exception: after `partnerId required to create commission` the sale is already stored, so a resend returns `409` | Not unchanged |
 | `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
-| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, an `advertiser_id` that is not yours, or a [suspended account](#account_blocked) | Use the key or account that owns the resource | No |
+| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. A suspended account gets `403` only from the CLI login callback ([`ACCOUNT_BLOCKED`](#account_blocked)); other routes answer a suspended account with the same `401` as an invalid token | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
 | `410` | The endpoint is retired | Use the replacement named in `error.message` | No |
-| `429` | [Rate limited](#rate-limits-429). Nothing was recorded | Wait `Retry-After` seconds, then retry | Yes, after the wait |
+| `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
 | `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
 ---
@@ -91,7 +91,7 @@ const detail = body.error?.code
 
 ### Request IDs
 
-Responses from the tracking, readiness and CLI endpoints carry an `X-Request-ID` header. The one exception is a successful `GET /api/v1/cli/status`, which has none; its `500` does.
+Responses from the tracking, readiness and CLI endpoints carry an `X-Request-ID` header, except `GET /api/v1/cli/status`: its `200`, `401` and `429` have no request ID, and only its `500` does.
 
 On a `500` from a CLI endpoint the same ID is also in the body, both at the end of `error.message` and in `error.details.request_id`. Tracking and readiness `500`s carry it only in the header.
 
