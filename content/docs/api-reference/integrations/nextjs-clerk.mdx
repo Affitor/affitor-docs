@@ -14,56 +14,22 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 ## Prerequisites
 
 - Your **program ID** (dashboard → program settings)
-- A **program API key** for server-side calls (sales)
+- A **program API key** for server-side calls (leads and sales)
 - A Next.js App Router app with **Clerk** configured
 
 ## 1. Capture the click
 
-Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `@affitor/sdk`, create the `<AffitorInit />` client component, and render it in your root layout. Nothing changes for Clerk.
+Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `@affitor/sdk`, create the client component that wraps your app in `<AffitorProvider>`, and render it in your root layout. Nothing changes for Clerk.
 
 ## 2. Track the signup
 
 The `affitor_click_id` is stored in a **first-party browser cookie**. A server-side Clerk webhook (`user.created`) runs with no access to that cookie, so it cannot supply the click ID on its own.
 
-**Two paths are available — the client-side path is the reliable default.**
+**Two paths are available. The webhook path (server-side, with your API key) is the one that settles the lead:** new programs require server-verified leads, and a lead sent only from the browser stays provisional. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
 
-### Option A — Client-side (recommended)
+### Option A — Clerk webhook (`user.created`, recommended)
 
-After Clerk completes sign-up, call `signup()` from a client component. The browser SDK reads the `affitor_click_id` cookie automatically — you do not need to pass it explicitly.
-
-Use Clerk's `useUser()` hook to access the signed-in user, then fire `signup()` once the user is available:
-
-```tsx
-// app/post-signup.tsx  — render this on your post-signup or onboarding page
-'use client';
-
-import { useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { signup } from '@affitor/sdk';
-
-export function AffitorSignup() {
-  const { user, isLoaded } = useUser();
-
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-    signup(user.id, user.primaryEmailAddress?.emailAddress);
-  }, [isLoaded, user]);
-
-  return null;
-}
-```
-
-`user.id` is Clerk's stable `userId` — use this exact value as `customerExternalId` at sale time too.
-
-:::note
-
-Place `<AffitorSignup />` on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page is harmless — `signup()` is idempotent — but placing it on the post-signup destination keeps attribution tight.
-
-:::
-
-### Option B — Clerk webhook (`user.created`)
-
-If you need to track signups server-side via Clerk's `user.created` webhook, you **must** forward the click ID yourself. The webhook fires with no browser context, so Affitor cannot attribute the lead without it.
+Track the signup server-side from Clerk's `user.created` webhook. You **must** forward the click ID yourself. The webhook fires with no browser context, so Affitor cannot attribute the lead without it.
 
 **Step 1.** On the client, read the click ID and store it on the Clerk user before sign-up completes (e.g. in a pre-submit handler or just before redirecting away from your sign-up form):
 
@@ -71,14 +37,16 @@ If you need to track signups server-side via Clerk's `user.created` webhook, you
 'use client';
 
 import { useSignUp } from '@clerk/nextjs';
-import { getClickId } from '@affitor/sdk';
+import { useAffitor } from '@affitor/sdk/react';
+
+// inside your sign-up form component
+const { signUp } = useSignUp();
+const affitor = useAffitor(); // null until the tracker has loaded
 
 // during your sign-up form submit
-const { signUp } = useSignUp();
-
 await signUp.update({
   unsafeMetadata: {
-    affitor_click_id: getClickId() ?? null,
+    affitor_click_id: affitor?.getClickId() ?? null,
   },
 });
 ```
@@ -120,7 +88,43 @@ export async function POST(req: Request) {
 
 :::note
 
-If `affitor_click_id` is `null` (the user arrived directly, not via an affiliate link), `trackLead` still records the lead — it just won't be attributed to a partner. That is the correct behavior.
+If `affitor_click_id` is `null` (the user arrived directly, not via an affiliate link), Affitor returns `400` and records nothing, because there is no click to link the lead to. That is expected for non-referred users; `trackLead` resolves with `ok: false` rather than throwing.
+
+:::
+
+### Option B — Client-side `signup()`
+
+After Clerk completes sign-up, call the tracker's `signup()` from a client component. The tracker reads the `affitor_click_id` cookie automatically — you do not need to pass it explicitly. On programs that require server-verified leads (the default for new programs), this lead is **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until the webhook path above sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use it alongside Option A, not instead of it.
+
+Use Clerk's `useUser()` hook to access the signed-in user and `useAffitor()` to access the tracker, then fire `signup()` once both are available:
+
+```tsx
+// app/post-signup.tsx  — render this on your post-signup or onboarding page
+'use client';
+
+import { useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useAffitor } from '@affitor/sdk/react';
+
+export function AffitorSignup() {
+  const { user, isLoaded } = useUser();
+  const affitor = useAffitor(); // null until the tracker has loaded
+
+  useEffect(() => {
+    if (!isLoaded || !user || !affitor) return;
+    const email = user.primaryEmailAddress?.emailAddress;
+    if (email) affitor.signup(user.id, email);
+  }, [isLoaded, user, affitor]);
+
+  return null;
+}
+```
+
+`user.id` is Clerk's stable `userId` — use this exact value as `customerExternalId` at sale time too.
+
+:::note
+
+Place `<AffitorSignup />` only on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page adds nothing: on programs that require server-verified leads, a repeat browser lead returns `200` with `provisional: true` and records nothing new, and on older programs where a browser lead settles directly, a repeat after the lead has settled is rejected with `400`.
 
 :::
 
@@ -132,15 +136,15 @@ Follow [Step 3 of the base Next.js guide](/api-reference/integrations/nextjs#3-t
 
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
-  network={["`signup()` fires `POST /api/v1/track/lead` with a 2xx response after Clerk sign-up"]}
+  network={["Your Clerk webhook's `trackLead()` call to `POST /api/v1/track/lead` returns 2xx without `provisional: true`"]}
   dashboard={["The click and lead appear under your program's tracking events, attributed to the partner"]}
-  ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without commissions", "If using the webhook path and leads are unattributed, confirm `affitor_click_id` is present in `unsafe_metadata` before the webhook fires"]}
+  ifNotWorking={["Create a test lead from your server: `affitor.trackLead({ customerExternalId: 'test_customer', additionalData: { test_mode: true, program_id: YOUR_PROGRAM_ID } })`", "If using the webhook path and leads are unattributed, confirm `affitor_click_id` is present in `unsafe_metadata` before the webhook fires"]}
 />
 
 ## Common mistakes
 
 <CommonMistakes items={[
-  "Using Option B (webhook) without forwarding the click ID — the `user.created` webhook has no browser cookie access, so leads arrive with no partner attribution.",
+  "Using Option A (webhook) without forwarding the click ID — the `user.created` webhook has no browser cookie access, so the lead call returns 400 and nothing is recorded.",
   "Different customer IDs at signup vs sale — `user.id` from Clerk must be used as `affitor_customer_key` and `customerExternalId` consistently.",
   "Reading `getClickId()` too late — call it before Clerk redirects away from the sign-up page, otherwise the value may not be available in the new page context.",
   "Calling `signup()` in a server component or route handler — it must run in a client component where the cookie is accessible.",

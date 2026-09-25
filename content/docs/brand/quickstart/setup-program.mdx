@@ -71,9 +71,9 @@ npm install @affitor/sdk
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 export function AffitorInit() {
-  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+  useEffect(() => { loadAffitor('YOUR_PROGRAM_ID'); }, []);
   return null;
 }
 // render <AffitorInit /> once in app/layout.tsx
