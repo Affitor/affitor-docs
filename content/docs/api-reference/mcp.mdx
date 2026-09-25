@@ -80,7 +80,7 @@ The server registers seven tools. Each returns the Affitor API's JSON payload as
 - `clickId?: string` — Affitor click id.
 - `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
 - `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
-- `currency?: string` — ISO currency code (default `USD`).
+- `currency?: string` — `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
 - `saleType?: "payment" | "subscription"` — one-off payment or subscription.
 - `isRecurring?: boolean` — whether this sale recurs (subscription renewal).
 - `subscriptionId?: string` — provider subscription id, if applicable.

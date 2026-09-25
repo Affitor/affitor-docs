@@ -3,14 +3,14 @@ title: Commission Approval & Cash Flow
 description: Understand how attributed sales move into commissions, billing, and payout workflow.
 ---
 
-This page traces the journey from an attributed sale through commission review, billing, and partner payout.
+This page traces the journey from an attributed sale through the commission hold, billing, and partner payout.
 
 <PageMeta
   items={[
     { label: 'Who this is for', value: 'Advertisers, ops, and finance-aware teams' },
     { label: 'Time required', value: '5–10 minutes' },
     { label: 'Prerequisites', value: 'A working understanding of sale tracking and your program commission rules' },
-    { label: 'Outcome', value: 'You understand how attributed sales move into billing, commission review, hold, and payout workflow' },
+    { label: 'Outcome', value: 'You understand how attributed sales move into commissions, the hold period, billing, and payout' },
   ]}
 />
 
@@ -31,9 +31,22 @@ This page traces the journey from an attributed sale through commission review, 
 3. Affitor attributes and validates the conversion.
 4. Commission is created according to your program rules.
 5. Advertiser billing is handled through Affitor's invoice workflow.
-6. Commission moves through review / hold / payout operations.
+6. Commission moves through the hold period and, once approved, into the partner's withdrawable balance.
 
-![Invoice billing](/images/bill-flow.png)
+Customer money never passes through Affitor. The money that does move through Affitor is the weekly invoice (approved commissions plus the platform fee), which you pay to Affitor LLC, and the partner withdrawals Affitor sends out:
+
+<Mermaid chart={`flowchart LR
+  A[Customer pays you] --> B[Affitor attributes the sale]
+  B --> C[Commission pending]
+  C -->|hold period ends| D[Commission approved]
+  D --> E[Partner balance credited]
+  E --> F[Partner requests a withdrawal]
+  F --> G[Affitor approves and sends it]
+  D --> H[Weekly invoice to you]
+  H --> I[You pay Affitor LLC]
+`} />
+
+The two branches after approval are independent: the partner's balance is credited when the commission is approved, not when you pay the invoice.
 
 ---
 
@@ -58,17 +71,21 @@ Every commission moves through the same lifecycle:
 <Mermaid chart={`flowchart LR
   A[Sale tracked] --> B[Pending]
   B -->|hold period ends| C[Approved]
-  B -->|refund or failed validation| X[Invalid]
-  C --> D[Invoiced to you]
-  D -->|you pay| E[Paid to partner]
+  B -->|you reject it| X[Rejected]
+  B -->|partial refund| R[Refunded]
+  B -->|full refund| V[Reversed]
+  C -->|weekly invoice| D[Invoiced]
+  D -->|invoice marked paid| E[Collected]
 `} />
+
+**Approved** is when the commission is added to the partner's balance. **Invoiced** and **Collected** track your side of the bill; they do not gate the partner's withdrawal.
 
 The program's hold period, set under **Commission** in [program settings](/brand/settings), controls when commissions become payable. A commission approves automatically when the hold period ends, unless you approve, reject, or extend the hold on it first from the **Commissions** page.
 
 ### Common uses
-- Reduce refund risk
-- Review suspicious activity
-- Delay payout until a commission is cleared
+- Reduce refund risk: a refund that lands during the hold is removed before it ever reaches the partner's balance
+- Give yourself time to reject suspicious commissions before they approve
+- Extend the hold on a commission you are still checking
 
 ---
 
@@ -80,7 +97,7 @@ The program's hold period, set under **Commission** in [program settings](/brand
     { text: 'Affitor records the attributed revenue event' },
     { text: 'Commission and platform obligations are calculated through the Affitor workflow' },
     { text: 'Advertiser billing happens through the invoice process' },
-    { text: 'Partner payout continues after the commission is approved' },
+    { text: 'The commission is credited to the partner balance when it is approved; the partner then requests a withdrawal' },
   ]}
 />
 
@@ -88,7 +105,13 @@ The program's hold period, set under **Commission** in [program settings](/brand
 
 ## Refund Handling
 
-Refunds are reconciled based on the commission's current lifecycle stage.
+What happens depends on where the commission is when the refund arrives:
+
+- **Pending** — nothing reaches the partner's balance. A full refund marks the commission **Reversed**, a partial one **Refunded**.
+- **Approved or invoiced** — the refunded share is taken back from the partner's balance (never below zero): all of the commission for a full refund, and the same fraction of it for a partial refund.
+- **Already collected** — Affitor deducts it from the partner's balance, which can go negative, and sends you a notification: reconciling with the partner is a manual step.
+
+Platform fees already billed are not refunded, and a refund does not lower the revenue total that counts toward your program's $10,000 fee-free tier. See [Track refund](/api-reference/track-refund) for the API details.
 
 ---
 

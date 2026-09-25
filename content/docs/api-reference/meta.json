@@ -8,7 +8,7 @@
     "track-lead",
     "track-sale",
     "track-refund",
-    "---Program API---",
+    "---Dashboard API (session auth)---",
     "status",
     "events",
     "performance",

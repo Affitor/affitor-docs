@@ -47,10 +47,10 @@ The platform fee is **$0 until your program earns its first $10,000 through affi
 The platform fee stays at $0 until your program's affiliate-driven revenue reaches $10,000. After that, the 3.5% fee applies to affiliate-driven sales only. It is never charged on the rest of your revenue or on the commissions you pay partners.
 
 ### When do I pay?
-Platform fees accrue per attributed sale and are billed through **weekly invoices**, issued every Monday at 09:00 UTC and due 7 days after issue by default. You can download each invoice as a PDF and pay it with Stripe Checkout from your Billing tab. If an invoice goes unpaid, your program can be paused — see the [overdue policy](/brand/billing/overdue-policy).
+Your approved partner commissions and the platform fee are billed together through **weekly invoices**, issued every Monday at 09:00 UTC and due 7 days after issue by default. You can download each invoice as a PDF from your Billing tab and pay it by Wise wire transfer to the account shown on the invoice. Card payment through Stripe Checkout is off by default; use it only if your invoice page offers it. If an invoice goes unpaid, your program can be paused — see the [overdue policy](/brand/billing/overdue-policy).
 
 ### Does Affitor collect money from my customers?
-No. Affitor is **not** the merchant of record. You continue charging customers through your own Stripe or payment setup.
+No. Affitor is **not** the merchant of record for your sales. You continue charging customers through your own Stripe or payment setup. The money that does pass through Affitor is your weekly invoice: you pay approved commissions plus the platform fee to Affitor LLC, and Affitor pays partners when they withdraw.
 
 ---
 
@@ -94,17 +94,17 @@ With Stripe integration, Affitor attributes the sale from metadata and webhook e
 ## Commissions & Payouts
 
 ### Who pays the partner?
-Affitor handles partner commissions and payouts after attributed conversions move through the commission lifecycle. Partners request withdrawals through Affitor's payout workflow — bank transfer, PayPal, Stripe, or Wise — once their approved balance passes the program's payout threshold.
+Affitor does. When a commission clears the program's hold period, it is added to the partner's balance. The partner requests a withdrawal by bank transfer or Wise, and Affitor approves and sends it.
 
 ### What happens after a sale is attributed?
 At a high level:
 1. sale is recorded
 2. commission is created
-3. commission moves through review / hold operations
-4. payout workflow continues in Affitor
+3. commission waits out the program's hold period, then is approved and added to the partner's balance
+4. the partner requests a withdrawal, and Affitor sends it
 
 ### What happens if there is a refund?
-Refunds are reconciled through Affitor's commission and payout workflow. The exact outcome depends on where the commission is in the lifecycle when the refund happens.
+It depends on where the commission is. Before approval, the commission is removed before it reaches the partner. After approval, the amount is taken back from the partner's balance. If the commission was already collected, reconciling with the partner is a manual step and you get a dashboard notification. Platform fees already billed are not refunded, and refunds do not lower the revenue counted toward the $10,000 fee-free tier. See [commission approval and cash flow](/brand/quickstart/commission-approval-cash-flow#refund-handling).
 
 ---
 
