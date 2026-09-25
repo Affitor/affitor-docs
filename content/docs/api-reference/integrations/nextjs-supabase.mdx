@@ -34,8 +34,13 @@ The `affitor_click_id` is a first-party browser cookie. A Supabase Edge Function
 ```tsx
 'use client';
 
-// window.affitor is the tracker loaded by <AffitorProvider> (null-safe while it loads)
-const clickId = window.affitor?.getClickId() ?? null; // the affitor_click_id cookie value
+import { useAffitor } from '@affitor/sdk/react';
+
+// inside your sign-up form component
+const affitor = useAffitor(); // null until the tracker has loaded
+
+// during your sign-up form submit (disable the button until `affitor` is set)
+const clickId = affitor?.getClickId() ?? null; // the affitor_click_id cookie value
 
 await supabase.auth.signUp({
   email,
@@ -72,7 +77,7 @@ Without a forwarded `clickId`, Affitor cannot find the click: the lead call retu
 
 ### Browser `signup()` (provisional on new programs)
 
-The tracker also has a browser helper, `affitor.signup(userId, email)`, which you can call from Supabase's client-side `onAuthStateChange` listener. It reads the cookie automatically, but it sends the lead without your API key. On programs that require server-verified leads (the default for new programs), that lead is stored as **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until your server sends the lead or a payment settles. Use it alongside the Edge Function path, not instead of it.
+The tracker also has a browser helper, `affitor.signup(userId, email)`, which you can call from Supabase's client-side `onAuthStateChange` listener. It reads the cookie automatically, but it sends the lead without your API key. On programs that require server-verified leads (the default for new programs), that lead is stored as **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use it alongside the Edge Function path, not instead of it.
 
 ## 3. Track the sale
 

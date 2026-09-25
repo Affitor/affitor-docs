@@ -41,6 +41,10 @@ import { auth } from '@/auth'; // your NextAuth (Auth.js) instance
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
+// Stock Auth.js sessions do not include `user.id`. Add it in your auth config:
+//   callbacks: { session({ session, user, token }) {
+//     session.user.id = user?.id ?? token.sub; return session; } }
+// Without it, this route always returns 204 and never sends the lead.
 export async function POST() {
   const session = await auth();
   const clickId = (await cookies()).get('affitor_click_id')?.value;
@@ -112,7 +116,7 @@ A lead is recorded once per customer. A repeat call for the same customer (for e
 
 :::note[Browser `signup()` is provisional on new programs]
 
-The tracker's browser helper, `affitor.signup(id, email)` from `useAffitor()`, sends the lead without your API key. New programs require server-verified leads, so a browser-only lead is stored as **provisional** and does not settle, save the user ID, or count until your server sends the lead or a payment settles. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
+The tracker's browser helper, `affitor.signup(id, email)` from `useAffitor()`, sends the lead without your API key. New programs require server-verified leads, so a browser-only lead is stored as **provisional** and does not settle, save the user ID, or count until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
 
 :::
 

@@ -24,7 +24,7 @@ Each program has a lead auth policy. **New programs default to server-verified l
 
 - the API still returns `200`, with `provisional: true` in the body
 - the lead does not settle attribution, does not save your `customer_key` on the customer, and does not count in partner metrics or pay a per-lead commission
-- it settles only when your backend sends the same lead with a Bearer key, or when a payment for that customer settles
+- it settles only when your backend sends the same lead with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it, and a Bearer lead sent after that sale returns `400`
 
 Programs created before this policy existed keep the older behavior, where a browser lead settles directly. Send leads from your server with a Bearer key so the lead settles under either policy.
 

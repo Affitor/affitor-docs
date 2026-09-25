@@ -124,7 +124,7 @@ Use this when signup completes in the browser and the tracker script is loaded o
 
 :::warning[Browser leads are provisional on new programs]
 
-On programs that require server-verified leads (the default for new programs), a browser `signup()` call is recorded as **provisional**. It does not settle the lead, does not save your `customerKey` on the customer, and does not count in partner metrics or pay a per-lead commission. It settles only when your backend sends the same lead (Option A) or a payment for that customer settles. Use `signup()` alongside the server-side call, not instead of it.
+On programs that require server-verified leads (the default for new programs), a browser `signup()` call is recorded as **provisional**. It does not settle the lead, does not save your `customerKey` on the customer, and does not count in partner metrics or pay a per-lead commission. It settles only when your backend sends the same lead (Option A) or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use `signup()` alongside the server-side call, not instead of it.
 
 :::
 
@@ -198,7 +198,7 @@ A call without a Bearer key is treated as browser mode, even when it comes from 
 Each program has a lead auth policy. New programs default to **server-verified** leads (`server_required`):
 
 - a browser-mode lead returns `200` with `"provisional": true` and is stored, but it does not settle attribution, save `customer_key`, count in partner metrics, or pay a per-lead commission
-- the lead settles when your backend sends it with a Bearer key, or when a payment for that customer settles
+- the lead settles when your backend sends it with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account (a sale sent to `/api/v1/track/sale` does not settle it)
 
 Programs created before this policy existed keep the older behavior, where a browser lead settles directly. The **Lead capture mode** line in your program's tracking settings shows which policy applies.
 

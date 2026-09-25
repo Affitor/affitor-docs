@@ -81,7 +81,7 @@ A lead needs the click: without a `clickId` (or a `customerExternalId` Affitor a
 
 :::note[Browser `signup()` is provisional on new programs]
 
-The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (from `useAffitor()` in `@affitor/sdk/react`). New programs require server-verified leads, so a browser-only signup is stored as **provisional**: the API returns `200` with `provisional: true`, but the lead does not settle, does not save your user ID, and does not count or pay per lead until your server sends the lead above or a payment settles. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
+The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (from `useAffitor()` in `@affitor/sdk/react`). New programs require server-verified leads, so a browser-only signup is stored as **provisional**: the API returns `200` with `provisional: true`, but the lead does not settle, does not save your user ID, and does not count or pay per lead until your server sends the lead above or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
 
 :::
 

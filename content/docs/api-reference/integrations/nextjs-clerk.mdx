@@ -94,7 +94,7 @@ If `affitor_click_id` is `null` (the user arrived directly, not via an affiliate
 
 ### Option B — Client-side `signup()`
 
-After Clerk completes sign-up, call the tracker's `signup()` from a client component. The tracker reads the `affitor_click_id` cookie automatically — you do not need to pass it explicitly. On programs that require server-verified leads (the default for new programs), this lead is **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until the webhook path above sends the lead or a payment settles. Use it alongside Option A, not instead of it.
+After Clerk completes sign-up, call the tracker's `signup()` from a client component. The tracker reads the `affitor_click_id` cookie automatically — you do not need to pass it explicitly. On programs that require server-verified leads (the default for new programs), this lead is **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until the webhook path above sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use it alongside Option A, not instead of it.
 
 Use Clerk's `useUser()` hook to access the signed-in user and `useAffitor()` to access the tracker, then fire `signup()` once both are available:
 
@@ -124,7 +124,7 @@ export function AffitorSignup() {
 
 :::note
 
-Place `<AffitorSignup />` only on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). A repeat lead for the same customer is rejected with `400`, so rendering it on every page only produces errors.
+Place `<AffitorSignup />` only on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page adds nothing: on programs that require server-verified leads, a repeat browser lead returns `200` with `provisional: true` and records nothing new, and on older programs where a browser lead settles directly, a repeat after the lead has settled is rejected with `400`.
 
 :::
 

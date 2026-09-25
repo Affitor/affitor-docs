@@ -57,25 +57,19 @@ You can skip auto-detection by setting the cookie domain on the tracker script t
 ></script>
 ```
 
-Or pass `cookieDomain` when you initialize the tracker yourself:
-
-```ts
-window.affitor.init({ programId: 123, cookieDomain: '.example.com' });
-```
-
-The `loadAffitor()` options in `@affitor/sdk` do not include a cookie domain; use the script attribute or `window.affitor.init()` when you need one.
+The `@affitor/sdk` types do not include a cookie domain option (`loadAffitor()` and `init()` take only `programId`, `debug`, `env` and `scriptUrl`), so use the script attribute when you need one.
 
 ---
 
 ## Re-click from another partner
 
-If a visitor already has an `affitor_click_id` cookie and clicks a **different** partner's link, the SDK sends the new click together with the existing `click_id` (as `existing_click_id`). The server finds the customer that already owns that `click_id` and keeps it: the new click is logged for audit, but the customer, its `click_id` and its partner do not change.
+If a visitor already has an `affitor_click_id` cookie and clicks a **different** partner's link, the SDK sends the new click together with the existing `click_id` (as `existing_click_id`). The server finds the customer that already owns that `click_id` and keeps it: the new click is still recorded and counted for the new partner (a click event, plus that link's and partner's click counts), but the customer, its `click_id` and its partner do not change, so later leads and sales stay with the original partner.
 
 | Scenario | Outcome |
 |----------|---------|
 | No existing cookie, `?aff=` present | New click tracked, new customer created, new `affitor_click_id` written |
 | Same partner link clicked again | Existing cookie reused — no new click event |
-| Different partner link clicked | Click event logged for audit; the customer and its `click_id` stay with the original partner |
+| Different partner link clicked | New click counted for the new partner; the customer and its `click_id` stay with the original partner |
 | No `?aff=` in URL, cookie present | Existing attribution restored from cookie silently |
 | No `?aff=` in URL, no cookie | No `click_id`. A lead call without a `click_id` or a known `customer_key` returns `400` and nothing is recorded |
 
