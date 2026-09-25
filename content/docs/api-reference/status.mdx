@@ -17,6 +17,12 @@ Retrieves the integration health of a program: whether each of the three setup s
 
 This endpoint is protected by the `verify-program-access` workspace policy. The caller must be an authenticated dashboard user with `tracking:read` permission on the program. No Bearer API key is used.
 
+:::note
+
+This endpoint backs the Affitor dashboard. It accepts only a signed-in dashboard session for a workspace member of the program and does not accept a program API key (`aff_…`), so you cannot call it from a server integration with your API key.
+
+:::
+
 ---
 
 ## Path Parameters

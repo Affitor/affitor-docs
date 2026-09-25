@@ -201,7 +201,7 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 | `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
 | `amount` | `number` | **Yes** | Sale amount in **integer cents** (e.g. `4999` = $49.99). |
 | `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
-| `currency` | `string` | No | ISO 4217 currency code. Defaults to `USD`. |
+| `currency` | `string` | No | `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD. |
 | `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
 | `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
 | `subscriptionId` | `string` | No | External subscription id from your payment provider. |

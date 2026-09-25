@@ -99,7 +99,7 @@ Affitor resolves the customer/partner relationship using any combination of:
 
 ### 6. Commission and platform records are created
 
-When attribution succeeds, Affitor records the sale and creates the commission flow. Commissions then move through review / hold / payout operations according to your program configuration.
+When attribution succeeds, Affitor records the sale and creates the commission flow. Commissions then wait out the program's hold period, are approved into the partner's balance, and are paid out when the partner requests a withdrawal.
 
 ---
 
@@ -114,7 +114,7 @@ In the current public invoice billing model:
 
 :::note
 
-Affitor is not the merchant of record in this invoice billing model.
+Affitor is not the merchant of record for your sales: customer payments stay in your Stripe account. Your weekly invoice (approved partner commissions plus the platform fee) is paid to Affitor LLC, and Affitor pays partners when they withdraw.
 
 :::
 
@@ -159,7 +159,7 @@ If only the initial checkout metadata is present, renewals may not attribute cor
 | 2 | customer signs up and you send `customerKey` |
 | 7 | customer pays |
 | 7 | sale is attributed via server-side tracking or Stripe integration |
-| 7+ | commission enters review / hold / payout operations |
+| 7+ | commission enters the hold period, then is approved into the partner balance |
 
 ---
 

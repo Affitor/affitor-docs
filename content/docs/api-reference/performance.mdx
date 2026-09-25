@@ -21,7 +21,13 @@ Requests must be authenticated. The authenticated user must be an active workspa
 |--------|-------|
 | `Authorization` | Session token (Affitor dashboard session) |
 
-An unauthenticated request returns `401`. A request from a user who is not a workspace member of the program returns `403`.
+An unauthenticated request and a request from a user who is not a workspace member of the program both return `403`.
+
+:::note
+
+This endpoint backs the Affitor dashboard. It accepts only a signed-in dashboard session for a workspace member of the program and does not accept a program API key (`aff_…`), so you cannot call it from a server integration with your API key.
+
+:::
 
 ---
 

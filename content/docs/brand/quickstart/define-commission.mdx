@@ -46,9 +46,9 @@ Partners earn a fixed amount for each qualified lead (signup) they refer.
 
 ### CPS (Cost per Sale)
 
-Partners earn a fixed amount for each sale they generate.
+Partners earn a percentage of each sale they generate — the same calculation as Revenue Share. CPS is always a percentage of the sale amount; there is no fixed-amount-per-sale option.
 
-**Example:** $20 per sale.
+**Example:** 20% on a $100 sale = $20.
 
 ### Coming Soon
 
@@ -56,8 +56,6 @@ Partners earn a fixed amount for each sale they generate.
 |------|-------------|---------|
 | **Tiered** | Bonuses at milestones | $100 bonus after $100K revenue |
 | **Hybrid** | Combine multiple types | CPC + CPS + milestone bonuses |
-
-These will be available through Group Rewards.
 
 ---
 
@@ -112,13 +110,14 @@ This becomes your default commission for all partners.
 | $100/month × 12 months | $30/month × 12 = $360 total |
 | $1,000/year lifetime | $300/year ongoing |
 
-**With Affitor's 3.5% platform fee:**
+**With Affitor's platform fee:** $0 until your program has earned its first $10,000 through affiliates, then 3.5% of each affiliate-driven sale. The free tier is counted per program.
 
-| Sale | Partner Commission (30%) | Platform Fee (3.5%) | You Keep |
-|------|--------------------------|---------------------|----------|
-| $100 | $30 | $3.50 | $66.50* |
+| Sale | Partner Commission (30%) | Platform Fee | You Keep |
+|------|--------------------------|--------------|----------|
+| $100, program still under $10,000 | $30 | $0 | $70* |
+| $100, program past $10,000 | $30 | $3.50 (3.5%) | $66.50* |
 
-*Before Stripe fees (~2.9% + $0.30)
+*Before your own payment processing fees (for example Stripe's ~2.9% + $0.30)
 
 ---
 
@@ -126,18 +125,15 @@ This becomes your default commission for all partners.
 
 You can update your default commission anytime in Program Settings.
 
-**Important:** Changes apply to new referrals only — existing attributions keep their original rate.
+**Important:** A change does not rewrite commissions that already exist, but it does apply to every new commission from the date it takes effect — including recurring payments from customers referred before the change. Lowering the rate lowers what partners earn on their existing subscribers' future renewals.
+
+If you lengthen the duration, payments that earned nothing under the old duration (because it had run out) can be credited retroactively at the new policy. Those backpaid commissions go through the hold period again and carry the platform fee, so they appear on a later invoice.
 
 ---
 
-## Group Rewards (Coming Soon)
+## Different Rates for Different Partners
 
-Group Rewards will let you assign different commission structures to different partner segments:
-
-- **Performance tiers** – Higher commission for top performers
-- **Partner types** – Different rates for influencers vs. agencies
-- **Special promotions** – Temporary commission boosts
-- **Milestone bonuses** – Extra rewards at revenue thresholds
+Use [partner groups](/brand/groups) to give different partner segments different commission rates — for example, a higher rate for top performers or a separate rate for agencies. Each group carries its own commission policy, and every partner belongs to exactly one group.
 
 ---
 
@@ -156,7 +152,7 @@ Group Rewards will let you assign different commission structures to different p
 ## Verify it worked
 
 <VerifySuccess
-  dashboard={["Groups shows your group with the new rate in the Commission column", "Run a test-mode sale (`additional_data: { test_mode: true }`) — the commission appears under Commissions → Pending, computed at the group's rate"]}
+  dashboard={["Groups shows your group with the new rate in the Commission column", "Test-mode sales (`additional_data: { test_mode: true }`) create no commission. To check the rate end to end, use Run verification (see [Testing Integration](/brand/tracking/testing-integration)) — the synthetic sale's commission appears under Commissions, computed at the group's rate"]}
   ifNotWorking={["Partners inherit the policy of the group they are IN — check the partner's group on the Partners table before assuming the rate is wrong"]}
 />
 

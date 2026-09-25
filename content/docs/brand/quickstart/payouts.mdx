@@ -3,7 +3,7 @@ title: Payouts
 description: How partner commissions move through Affitor's payout workflow.
 ---
 
-Cleared commissions move through Affitor's payout workflow automatically. This page explains the lifecycle, payout methods, and your role as advertiser.
+When a commission clears its hold period, it is credited to the partner's balance. The partner then requests a withdrawal, and Affitor approves and sends it. This page explains the lifecycle, payout methods, and your role as advertiser.
 
 <PageMeta
   items={[
@@ -19,10 +19,14 @@ Cleared commissions move through Affitor's payout workflow automatically. This p
 <Mermaid chart={`flowchart LR
   A[Customer pays you] --> B[Affitor attributes the sale]
   B --> C[Commission approved after hold]
-  C --> D[Affitor invoices you]
-  D --> E[You pay the invoice]
-  E --> F[Affitor pays your partners]
+  C --> D[Partner balance credited]
+  D --> E[Partner requests withdrawal]
+  E --> F[Affitor approves and sends it]
+  C --> G[Affitor invoices you weekly]
+  G --> H[You pay the invoice]
 `} />
+
+Partner payouts are not held until you pay your invoice: once a commission is approved, the partner can withdraw it. Your weekly invoice covers those approved commissions plus the platform fee. See [Overdue invoices & program pause policy](/brand/billing/overdue-policy).
 
 ![Billing — platform fee, outstanding balance, and your next invoice date](/docs/brand/billing.png)
 
@@ -31,17 +35,17 @@ The platform fee follows the same principle: **$0 until your program earns its f
 <Flow>
   <FlowStep>Sale attributed</FlowStep>
   <FlowStep>Commission created</FlowStep>
-  <FlowStep>Review / hold workflow</FlowStep>
-  <FlowStep>Commission clears</FlowStep>
-  <FlowStep>Payout workflow continues</FlowStep>
+  <FlowStep>Hold period</FlowStep>
+  <FlowStep>Commission approved</FlowStep>
+  <FlowStep>Partner requests withdrawal</FlowStep>
 </Flow>
 
 At a high level:
 1. A sale is attributed.
 2. A commission is created.
-3. The commission moves through the review / hold workflow.
-4. Cleared earnings become withdrawable within the payout process.
-5. The partner payout is processed through Affitor.
+3. The commission waits out the program's hold period. You can approve, reject, or extend the hold on it from the **Commissions** page.
+4. When approved, the commission is added to the partner's balance and becomes withdrawable.
+5. The partner requests a withdrawal; Affitor approves it and sends the transfer.
 
 You do not need to manage individual partner transfers yourself.
 
@@ -49,13 +53,12 @@ You do not need to manage individual partner transfers yourself.
 
 ## Payout Methods
 
-Available payout methods depend on partner setup and region:
+Partners can withdraw by one of two methods:
 
 | Method | Notes |
 |--------|-------|
 | Bank transfer | Common partner payout path |
 | Wise | Used where supported |
-| Stripe | Used where supported |
 
 Partners manage their payout details inside the payout workflow; advertisers do not need to collect bank details directly.
 
@@ -66,7 +69,7 @@ Partners manage their payout details inside the payout workflow; advertisers do 
 | State | Meaning |
 |-------|---------|
 | **Pending** | Withdrawal requested, awaiting approval |
-| **Approved** | Approved and ready to process |
+| **Approved** | Approved and ready to send (partners see this as **Processing**) |
 | **Completed** | Payout sent |
 
 ---
@@ -77,20 +80,20 @@ Partners manage their payout details inside the payout workflow; advertisers do 
 |----|-------|
 | Review transactions and commissions where needed | Manage individual partner bank transfers |
 | Configure commission and hold settings | Build a separate payout ops layer for each partner |
-| Monitor affiliate cost and performance | Manually reconcile partner payments outside the workflow |
+| Monitor affiliate cost and performance | Send partner payouts yourself |
 
 ---
 
 ## Verify it worked
 
 <VerifySuccess
-  dashboard={["A test-mode sale produces a commission in Pending; when its hold period ends it moves to Approved", "Billing shows the platform-fee card ($0 until your first $10,000 through affiliates) and the Next invoice date"]}
+  dashboard={["Test-mode sales create no commission. To see a commission end to end, use Run verification (see Testing your integration); a live sale's commission starts in Pending and moves to Approved when its hold period ends", "Billing shows the platform-fee card ($0 until your first $10,000 through affiliates) and the Next invoice date"]}
   ifNotWorking={["Commissions stuck in Pending usually mean the hold period has not elapsed — the per-program default is in your program settings"]}
 />
 
 ## Refunds
 
-When a refund occurs, Affitor reconciles the commission through the payout workflow based on its current lifecycle state.
+A refund before the commission is approved removes it before it reaches the partner. After approval, the amount is taken back from the partner's balance. If the commission was already collected, the partner's balance can go negative and you get a notification: reconciling with the partner is a manual step. Platform fees already billed are not refunded. See [Commission approval & cash flow](/brand/quickstart/commission-approval-cash-flow#refund-handling).
 
 ---
 

@@ -41,7 +41,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
   </ParamField>
   <ParamField name="currency" type="string">
-    ISO 4217 currency code. Defaults to `USD`.
+    `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
   </ParamField>
   <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
     `"payment"` (default) or `"subscription"`.

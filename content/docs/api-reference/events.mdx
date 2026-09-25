@@ -13,6 +13,12 @@ Returns a merged, reverse-chronological list of click, lead, and conversion even
 
 This endpoint uses workspace-policy enforcement. The request must carry a valid authenticated session that has been granted the `tracking:list` action for the program. This is enforced by the `verify-program-access` policy on the Strapi backend.
 
+:::note
+
+This endpoint backs the Affitor dashboard. It accepts only a signed-in dashboard session for a workspace member of the program and does not accept a program API key (`aff_…`), so you cannot call it from a server integration with your API key.
+
+:::
+
 ---
 
 ## Path Parameter
