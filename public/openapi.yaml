@@ -111,7 +111,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentError'
+                allOf:
+                  - $ref: '#/components/schemas/AgentError'
+                  - type: object
+                    properties:
+                      success: { type: boolean, example: false }
+                      message: { type: string }
               examples:
                 link_disabled:
                   value:
@@ -858,7 +863,8 @@ components:
       description: |
         Typed agent error envelope so an agent can branch on `code`. No `data`
         key. Returned by rate limiting on every `/api/v1/` route, by a key past
-        its rotation deadline, and by every error on the readiness endpoint.
+        its rotation deadline, by every error on the readiness endpoint, and by
+        `POST /api/v1/track/click` on an inactive referral link (`link_disabled`).
 
         Only `code` and `message` are always present; the rest depends on the
         case.

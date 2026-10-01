@@ -20,7 +20,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 | `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
-| `410` | The endpoint is retired | Use the replacement named in `error.message` | No |
+| `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
 | `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
 | `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
@@ -57,7 +57,7 @@ Most errors in this envelope carry no stable machine code, so match on the HTTP 
 
 ### The typed envelope
 
-Three things answer with a typed envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
+Four things answer with a typed envelope instead. It has no `data` key, and it carries a stable `error.code` you can branch on:
 
 ```json
 {
@@ -75,8 +75,9 @@ You get it from:
 | `GET /api/v1/programs/me/readiness` | all of its errors | `invalid_key` on a `401`, `internal_error` on a `500` |
 | [Rate limiting](#rate-limits-429) | every `/api/v1/track/*`, `/api/v1/cli/*` and readiness route | `rate_limited` |
 | [A retired API key](#api_key_rotation_required) | every endpoint that key authenticates | `api_key_rotation_required` |
+| [`POST /api/v1/track/click`](/api-reference/track-click) | a `410` for an inactive referral link | `link_disabled` (the body also keeps the older top-level `success: false` and `message`) |
 
-Only `code` and `message` are always present. The rest varies with the case: a rate limit adds `status` and `retry_after_seconds`, a retired key adds `hint` and `docs_url`, and a readiness `internal_error` adds `retry_after_seconds`.
+Only `code` and `message` are always present. The rest varies with the case: a rate limit adds `status` and `retry_after_seconds`, a retired key adds `hint` and `docs_url`, `link_disabled` adds `hint`, and a readiness `internal_error` adds `retry_after_seconds`.
 
 ### Handling both
 
