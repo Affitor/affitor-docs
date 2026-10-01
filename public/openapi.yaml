@@ -80,9 +80,7 @@ paths:
                     program_id: "YOUR_PROGRAM_ID"
       responses:
         '200':
-          description: |
-            Click recorded. Also returned with `success: false` (HTTP 200) when
-            the referral link exists but is inactive.
+          description: Click recorded.
           content:
             application/json:
               schema:
@@ -96,10 +94,6 @@ paths:
                     click_id: "cust_42_1714000000000"
                     partner_code: "abc123"
                     cookie_window_days: 60
-                inactive_link:
-                  value:
-                    success: false
-                    message: "Referral link is inactive"
         '400':
           description: |
             Validation error. Causes: missing `affiliate_url`, URL not
@@ -109,6 +103,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410':
+          description: |
+            The referral link exists but is inactive (turned off by the partner
+            or brand). No click was recorded. The body also carries
+            `success: false` and `message` for older clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentError'
+              examples:
+                link_disabled:
+                  value:
+                    success: false
+                    message: "Referral link is inactive"
+                    error:
+                      code: link_disabled
+                      message: "Referral link is inactive"
+                      hint: "The partner or brand turned this link off. No click was recorded."
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
@@ -717,9 +729,6 @@ components:
         cookie_window_days:
           type: integer
           description: Cookie lifetime in days. Follows the program's attribution window (default 60).
-        message:
-          type: string
-          description: Present on non-recorded outcomes (e.g. inactive link).
 
     LeadRequest:
       type: object
@@ -859,7 +868,7 @@ components:
           properties:
             code:
               type: string
-              description: Stable machine code (e.g. invalid_key, rate_limited, api_key_rotation_required, internal_error).
+              description: Stable machine code (e.g. invalid_key, rate_limited, api_key_rotation_required, link_disabled, internal_error).
             message: { type: string }
             status:
               type: integer

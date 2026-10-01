@@ -144,7 +144,7 @@ When `additional_data.test_mode` is `true`:
 | `400 Bad Request` | No `?aff=` parameter found in `affiliate_url` |
 | `400 Bad Request` | No referral link found matching the `aff` value |
 | `400 Bad Request` | Referral link configuration is invalid (missing partner or program) |
-| `200` (with `success: false`) | Referral link exists but has `status: inactive` |
+| `410 Gone` | Referral link exists but is inactive. Body has `error.code: link_disabled`; no click is recorded |
 | `500 Internal Server Error` | Unexpected server error |
 
 ---
