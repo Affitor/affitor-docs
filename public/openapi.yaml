@@ -835,7 +835,7 @@ components:
           description: This refund's amount (not the running total). Omit to refund the rest of the sale.
         refund_id:
           type: string
-          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored.
+          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted or 0.
         refund_reason:
           type: string
           description: Free-text reason, stored for audit.
