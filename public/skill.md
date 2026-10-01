@@ -237,7 +237,7 @@ Reverse the commission when a sale is refunded. Keyed by the **original sale's**
 ```ts
 await affitor.trackRefund({
   invoiceId: invoice.id,          // → transaction_id of the ORIGINAL sale
-  refundAmountCents: 5000,        // omit for a full refund
+  refundAmountCents: 5000,        // THIS refund's own amount (adds up); omit to refund the rest
   refundReason: 'customer_request',
 });
 ```

@@ -106,7 +106,7 @@ Nothing extra to wire: Polar fires `order.paid` on **every** billing cycle, and 
 
 ## Refunds
 
-`order.refunded` delivers the updated order; `trackRefund({ invoiceId: order.id })` reverses the commission in full (idempotent by `invoiceId`). For **partial** refunds, pass the refunded amount instead: `trackRefund({ invoiceId, refundAmountCents: order.refundedAmount })`.
+Report each refund once, with **that refund's own amount**. Listen to `refund.created` and call `trackRefund({ invoiceId: refund.orderId, refundAmountCents: refund.amount })`; amounts add up on the sale, and the commission is reversed once they reach the sale amount. Omit `refundAmountCents` to refund everything not yet refunded. Do **not** pass `order.refundedAmount` from `order.refunded`: it is a running total, and each call is counted as a new refund. A retry with the same amount is ignored; to report two separate refunds of the same amount, call the [HTTP endpoint](/api-reference/track-refund) with a distinct `refund_id` for each.
 
 ## Verify
 

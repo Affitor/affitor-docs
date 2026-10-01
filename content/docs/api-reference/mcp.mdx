@@ -62,7 +62,7 @@ The server registers seven tools. Each returns the Affitor API's JSON payload as
 | `affitor_track_click` | `affiliateUrl?`, `pageUrl?`, `referrerUrl?`, `existingClickId?` (all optional strings) | Report a click (usually browser-side; public, no customer needed). |
 | `affitor_track_lead` | `customerExternalId?: string`, `clickId?: string`, `email?: string` (one of `customerExternalId` / `clickId` required) | Report a lead/signup. Binds the customer to the click so later sales attribute by `customerExternalId` alone. |
 | `affitor_track_sale` | `customerExternalId?` / `clickId?` (one required), `amount: number` (cents), `invoiceId: string`, `currency?`, `saleType?`, `isRecurring?`, `subscriptionId?`, `subscriptionInterval?` | Report a sale. Resolves attribution by `customerExternalId` (bound at lead time). |
-| `affitor_track_refund` | `invoiceId: string`, `refundAmountCents?: number`, `refundReason?: string` | Report a refund (omit amount = full → commission reversed; partial → refunded). Idempotent by `invoiceId`. |
+| `affitor_track_refund` | `invoiceId: string`, `refundAmountCents?: number`, `refundReason?: string` | Report one refund with its own amount; amounts add up on the sale (omit amount = refund the rest → commission reversed). A retry with the same amount is ignored. |
 | `affitor_get_integration_plan` | `framework`, `provider`, `mode?` | Return the deterministic per-stack integration plan — install, checkout-metadata snippet, `trackSale` snippet + where to inject it, and the verify step. |
 | `affitor_run_verification` | _(none)_ | Fire the synthetic click → lead → sale verification chain through the real attribution pipeline (isolated `is_test` rows). |
 
@@ -89,7 +89,7 @@ The server registers seven tools. Each returns the Affitor API's JSON payload as
 **`affitor_track_refund`**:
 
 - `invoiceId: string` — the sale's idempotency key (the `invoiceId` you passed to `affitor_track_sale`).
-- `refundAmountCents?: number` — integer cents. Omit (or `0`) = full refund → commission reversed; partial → refunded.
+- `refundAmountCents?: number` — integer cents, **this refund's own amount** (not a running total). Omit (or `0`) = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
 - `refundReason?: string` — optional human-readable refund reason.
 
 **`affitor_track_click`** — all optional:
