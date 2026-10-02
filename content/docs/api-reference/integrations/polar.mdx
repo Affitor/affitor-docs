@@ -19,7 +19,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## What you will set up
 
-In your Polar organization, add a webhook endpoint delivering `order.paid` and `order.refunded` to a route in your own app — `https://<your domain>/api/polar/webhook` in the examples below — and store the signing secret Polar gives you as `POLAR_WEBHOOK_SECRET`. The rest of this page is the route that receives those deliveries, plus the click and signup steps that come before it.
+In your Polar organization, add a webhook endpoint delivering `order.paid`, `refund.created` and `refund.updated` to a route in your own app — `https://<your domain>/api/polar/webhook` in the examples below — and store the signing secret Polar gives you as `POLAR_WEBHOOK_SECRET`. The rest of this page is the route that receives those deliveries, plus the click and signup steps that come before it.
 
 ## 1. Capture clicks and track signups
 
@@ -82,14 +82,23 @@ export const POST = Webhooks({
       console.error('[affitor] trackSale failed', res.status, res.error);
     }
   },
-  onOrderRefunded: async (payload) => {
-    const order = payload.data;
-    const res = await affitor.trackRefund({ invoiceId: order.id });
-    if (!res.ok) {
-      console.error('[affitor] trackRefund failed', res.status, res.error);
-    }
-  },
+  // One call per refund, with that refund's own amount. Polar sends refund.created
+  // "regardless of status", so report only once the refund has succeeded; a repeat
+  // with the same amount (created + updated both succeeded) is ignored by Affitor.
+  onRefundCreated: async (payload) => reportRefund(payload.data),
+  onRefundUpdated: async (payload) => reportRefund(payload.data),
 });
+
+async function reportRefund(refund: { status: string; orderId: string; amount: number; taxAmount?: number }) {
+  if (refund.status !== 'succeeded') return;
+  const res = await affitor.trackRefund({
+    invoiceId: refund.orderId,                             // the ORDER id you sent as the sale's invoiceId
+    refundAmountCents: refund.amount + (refund.taxAmount ?? 0), // same basis as the sale (order.totalAmount includes tax)
+  });
+  if (!res.ok) {
+    console.error('[affitor] trackRefund failed', res.status, res.error);
+  }
+}
 ```
 
 :::note
@@ -106,7 +115,7 @@ Nothing extra to wire: Polar fires `order.paid` on **every** billing cycle, and 
 
 ## Refunds
 
-`order.refunded` delivers the updated order; `trackRefund({ invoiceId: order.id })` reverses the commission in full (idempotent by `invoiceId`). For **partial** refunds, pass the refunded amount instead: `trackRefund({ invoiceId, refundAmountCents: order.refundedAmount })`.
+Report each refund once, with **that refund's own amount**, after it has succeeded (the handler above does this from `refund.created` / `refund.updated`). Use the same tax basis as the sale amount you sent; amounts add up on the sale, and the commission is reversed once they reach the sale amount. Omit `refundAmountCents` to refund everything not yet refunded. Do **not** pass `order.refundedAmount` from `order.refunded`: it is a running total, and each call is counted as a new refund. A retry with the same amount is ignored; to report two separate refunds of the same amount, call the [HTTP endpoint](/api-reference/track-refund) with a distinct `refund_id` for each.
 
 ## Verify
 

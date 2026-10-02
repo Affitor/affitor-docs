@@ -314,10 +314,12 @@ paths:
         Reverses the commission for a previously tracked sale. Keyed by the
         **original sale's** `transaction_id` (not the refund event's ID).
 
-        - Full refund (or `refund_amount_cents` omitted) — commission reversed.
-        - Partial refund — commission marked refunded for the partial amount.
-        - Reversal is idempotent: reporting the same refund twice does not
-          double-reverse (atomic row-level claim).
+        - Send one call per refund. `refund_amount_cents` is THIS refund's
+          amount; it is added to what was already refunded (capped at the sale).
+        - Omitted `refund_amount_cents` — the rest of the sale is refunded and
+          the commission is reversed.
+        - Idempotent per `refund_id`; without it, a repeat of the same amount
+          is treated as a retry and ignored.
 
         When using Stripe webhook tracking, `charge.refunded` events trigger
         the same reversal automatically — no API call needed.
@@ -332,6 +334,7 @@ paths:
             example:
               transaction_id: "txn_abc123"
               refund_amount_cents: 5000
+              refund_id: "re_123"
               refund_reason: "customer_request"
       responses:
         '200':
@@ -829,7 +832,10 @@ components:
         refund_amount_cents:
           type: integer
           minimum: 1
-          description: Partial refund amount. Omit for a full refund.
+          description: This refund's amount (not the running total). Omit to refund the rest of the sale.
+        refund_id:
+          type: string
+          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted or 0.
         refund_reason:
           type: string
           description: Free-text reason, stored for audit.

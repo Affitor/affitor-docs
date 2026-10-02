@@ -5,7 +5,7 @@ description: Reverse a commission when a sale is refunded
 
 `POST /api/v1/track/refund`
 
-Reverses the affiliate commission tied to a previously tracked sale. A full refund (or when `refund_amount_cents` is omitted) sets the commission status to `reversed`; a partial refund sets it to `refunded` and deducts a proportional amount. This is the non-Stripe counterpart to the Stripe refund webhook — both use the same underlying reversal logic.
+Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount), and the commission is reduced proportionally: `refunded` while part of the sale remains, `reversed` once all of it is refunded. Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook — both use the same underlying reversal logic.
 
 ---
 
@@ -31,7 +31,10 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    Refund amount in cents. Omit or set to `0` to trigger a full refund. Must be a positive integer when provided.
+    This refund's amount in cents — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
+  </ParamField>
+  <ParamField name="refund_id" type="string">
+    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted or `0` (refunding the rest is already safe to retry).
   </ParamField>
   <ParamField name="refund_reason" type="string">
     Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
@@ -50,6 +53,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
   -d '{
     "transaction_id": "txn_abc123",
     "refund_amount_cents": 5000,
+    "refund_id": "re_123",
     "refund_reason": "Customer requested cancellation"
   }'`
   },
@@ -66,10 +70,16 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     code: `{
   "transaction_id": "txn_abc123",
   "refund_amount_cents": 5000,
+  "refund_id": "re_123",
   "refund_reason": "Customer requested cancellation"
 }`
   },
 ]} />
+
+### Multiple refunds and retries
+
+- Two partial refunds of $30 and $20 on a $100 sale: send `3000` then `2000` (each with its own `refund_id`). The commission is reduced by 50% in total.
+- Retries: resending a call with the same `refund_id` returns `status: "skipped"` and changes nothing. Without `refund_id`, the amount is used to detect the retry.
 
 ---
 
@@ -89,7 +99,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 | Field | Type | Description |
 |-------|------|-------------|
 | `success` | boolean | Always `true` on a 200 response. |
-| `status` | string | `"reversed"` (full refund), `"refunded"` (partial), or `"skipped"` (commission already in a terminal state). |
+| `status` | string | `"reversed"` (sale fully refunded), `"refunded"` (partially refunded), or `"skipped"` (refund already applied, or commission already reversed). |
 | `deductionAmount` | number | Dollar amount deducted from the partner's commission balance. Present when `status` is `reversed` or `refunded`. |
 | `commission_id` | integer | ID of the affected commission record. |
 

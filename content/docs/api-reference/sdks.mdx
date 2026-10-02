@@ -227,17 +227,19 @@ This endpoint does not require authentication.
 
 #### `trackRefund(input: TrackRefundInput)`
 
-Reverses the commission for a previously tracked sale. Call from your payment provider's refund webhook. Idempotent by `invoiceId`.
+Reverses the commission for a previously tracked sale. Call it once per refund, from your payment provider's refund webhook.
 
-- Omit `refundAmountCents` (or pass `0`) for a full refund → commission status set to `reversed`.
-- Pass a partial amount → commission status set to `refunded` (proportional).
+- Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
+- Pass **this refund's own amount** → it is added to what was already refunded on the sale, and the commission is reduced proportionally (`refunded`, or `reversed` once the total reaches the sale amount).
+- Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
+- A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/api-reference/track-refund) with a distinct `refund_id` for each.
 
 `invoiceId` is required and throws synchronously if missing.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
-| `refundAmountCents` | `number` | No | Refund amount in integer cents. Omit or pass `0` for a full refund. |
+| `refundAmountCents` | `number` | No | This refund's amount in integer cents (not the running total). Omit or pass `0` to refund the rest of the sale. |
 | `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
 
 ---
@@ -274,11 +276,12 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
     }
   }
 
-  if (event.type === 'charge.refunded') {
-    const charge = event.data.object as Stripe.Charge;
+  // One event per refund, carrying that refund's own amount.
+  if (event.type === 'refund.created') {
+    const refund = event.data.object as Stripe.Refund;
     await affitor.trackRefund({
-      invoiceId: charge.payment_intent as string,
-      refundAmountCents: charge.amount_refunded,
+      invoiceId: refund.payment_intent as string,
+      refundAmountCents: refund.amount,
     });
   }
 }
