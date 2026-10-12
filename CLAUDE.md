@@ -28,8 +28,9 @@ For tracking / attribution / billing docs, the primary sources are usually:
 
 ## Current docs structure
 - content lives in `content/docs/`
-- docs app routes are served at the **root**, with no `/docs` prefix: `content/docs/api-reference/errors.mdx` is `https://docs.affitor.com/api-reference/errors`. a permanent page redirect under `/docs` keeps old links alive, for both HTML and the `.md` twins (measured 2026-09-20: `/api-reference/errors` 200, `/docs/api-reference/errors` 308, `/docs/api-reference/errors.md` 308)
-- static files are the exception — they really do live under `/docs`, because they sit in `public/docs/` (for example `public/docs/brand/dashboard.png` is served at `/docs/brand/dashboard.png`)
+- docs pages are served under **`/docs`** and published at `https://affitor.com/docs/...` (the dashboard rewrites `/docs/*` and `/blog/*` to this app's Vercel alias, multi-zone): `content/docs/api-reference/errors.mdx` is `https://affitor.com/docs/api-reference/errors`, its twin is `.../errors.md`. The blog stays at `https://affitor.com/blog`
+- `docs.affitor.com` (`src/middleware.ts`): blog pages always 301 to `affitor.com/blog/<path>`. Docs pages 301 (or 302) to `affitor.com/docs/<path>` only when the Vercel env `DOCS_HOST_REDIRECT` is `301` or `302`; unset, they are served in place from `/docs<path>`. Files that moved under `/docs` (`.md` twins, `skill.md`, `llms*.txt`, `openapi.yaml`, logo, favicons, `images/`, `changelog/` screenshots) are always served there in place with a canonical `Link` header; `/_next/*` keeps loading from it (`assetPrefix`). Renamed pages (`advertisers`→`brand`, `errors`, `/docs/blog`→`/blog`, ...) live in `RENAMES` in the middleware, not in next.config. `scripts/check-docs-host.mjs` (unit) and `scripts/check-docs-host-http.mjs` (real router, every mode) pin this
+- static files live in `public/docs/` and are served at `/docs/...` (for example `public/docs/brand/dashboard.png` is `/docs/brand/dashboard.png`); chrome assets (logo, favicons), `skill.md`, `llms.txt` and `openapi.yaml` live there too, because `affitor.com/<file>` belongs to the dashboard
 - app/router code lives in `src/app/`
 - Fumadocs config lives in `source.config.ts`
 - workflow sync guidance lives in `docs/workflow-sync-map.md`
@@ -37,7 +38,7 @@ For tracking / attribution / billing docs, the primary sources are usually:
 ## Rules
 1. **Runtime-first docs** — never invent behavior to fill gaps
 2. **Prefer public supported paths** — mention legacy aliases only as compatibility notes when runtime still accepts them
-3. **Keep pathing correct** — link pages at the root (`/api-reference/track-click`), not `/docs/...`, which only redirects. Reference files by where they sit in `public/`, so `public/docs/brand/x.png` is linked as `/docs/brand/x.png`. `scripts/check-agent-surface.mjs` fails the build if a file reference is missing from `public/` or is swallowed by a redirect
+3. **Keep pathing correct** — link docs pages under `/docs` (`/docs/api-reference/track-click`) and blog posts under `/blog`; a bare root link (`/brand/...`) resolves to the dashboard on affitor.com. Reference files by where they sit in `public/`, so `public/docs/brand/x.png` is linked as `/docs/brand/x.png`. `scripts/check-agent-surface.mjs` fails the build if a page link is not a real `/docs` page or a `/blog` link, or a file reference is missing from `public/` or swallowed by a redirect
 4. **Do not revive removed features** — Affitor Pay is removed unless explicitly reintroduced in canonical runtime/docs
 5. **Avoid unsupported certainty** — if payout timing or business wording is ambiguous across canonicals, use conservative wording and note the dependency
 6. **Keep docs self-serve** — optimize for advertisers and agents implementing integrations without support calls

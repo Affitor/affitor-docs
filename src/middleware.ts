@@ -7,15 +7,96 @@ import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
 const AI_BOTS =
   /GPTBot|ClaudeBot|Claude-Web|PerplexityBot|Google-Extended|Bytespider|CCBot|anthropic-ai|OAI-SearchBot/i;
 
-// The blog's canonical home is affitor.com/blog, but search engines were ranking the
-// docs.affitor.com/blog copies. Permanently redirect blog PAGES requested on the public
-// docs host to the apex twin. affitor.com/blog proxies to this app through the Vercel
-// production alias (affitor-docs.vercel.app), and Vercel external rewrites send the
-// destination host as Host, so proxied requests never match here and cannot loop.
-// Preview deployments have their own host and are untouched. Files with an extension
-// (the .md twins, images) stay on the docs host.
+// Docs pages live under /docs here and are published at https://affitor.com/docs (the
+// dashboard proxies /docs/* and /blog/* through the Vercel production alias,
+// affitor-docs.vercel.app; Vercel external rewrites send that alias as Host, so
+// proxied requests never match DOCS_HOST and cannot loop).
+//
+// docs.affitor.com still answers every old URL:
+//  - blog pages 301 to affitor.com/blog<path> (always on);
+//  - pages: with DOCS_HOST_REDIRECT=301 (or 302 while baking) they redirect to
+//    affitor.com/docs<path> in one hop; unset, they are served in place from /docs<path>,
+//    so the docs deploy can go out before the dashboard proxies /docs (no broken window);
+//  - files that moved under /docs (.md twins, skill.md, llms*.txt, openapi.yaml, logo,
+//    favicons, images/, changelog/ screenshots) are always served in place with a
+//    canonical Link header: agents are told to fetch docs.affitor.com/skill.md and
+//    some fetchers refuse a cross-host redirect. Other files pass through.
+// Renamed pages and the old /docs/blog prefix resolve on every host (currentPath).
+// Preview deployments have their own host and only get the renames.
 const DOCS_HOST = 'docs.affitor.com';
 const BLOG_PAGE = /^\/blog(?:\/[^.]*)?$/;
+const FILE = /\.[^/]+$/;
+const MOVED_FILE =
+  /^\/(?:.+\.md|llms\.txt|llms-full\.txt|openapi\.yaml|affitor-logo\.svg|favicon\.svg|favicon-(?:32|64)\.png|icon-512\.png|apple-touch-icon\.png|images\/.+|changelog\/.+\.[^/]+)$/;
+
+// Old page paths -> current path, first match wins; a prefix also covers its subpages.
+const RENAMES: [string, string][] = [
+  ['/docs/advertisers/tracking/pageview-tracker-click', '/docs/brand/tracking/click-tracking'],
+  ['/docs/advertisers', '/docs/brand'],
+  ['/docs/getting-started/what-is-affitor', '/docs'],
+  ['/docs/getting-started/glossary', '/docs/support/glossary'],
+  ['/docs/errors', '/docs/api-reference/errors'],
+  ['/docs/blog', '/blog'],
+];
+
+/** The current path for a renamed page or its .md twin, or null when nothing changed. */
+export function currentPath(path: string): string | null {
+  const md = path.endsWith('.md');
+  if (FILE.test(path) && !md) return null;
+  const base = md ? path.slice(0, -3) : path;
+  for (const [from, to] of RENAMES) {
+    if (base !== from && !base.startsWith(`${from}/`)) continue;
+    const page = to + base.slice(from.length);
+    return md ? `${page === '/docs' ? '/docs/index' : page}.md` : page;
+  }
+  return null;
+}
+
+function redirectStatus(): 301 | 302 | null {
+  const value = process.env.DOCS_HOST_REDIRECT;
+  return value === '301' || value === '302' ? Number(value) as 301 | 302 : null;
+}
+
+// Same-host redirect. Next turns a same-origin Location into a relative one, so on a
+// request proxied through affitor.com it resolves on affitor.com, not on the alias.
+function movedTo(req: NextRequest, location: string) {
+  return NextResponse.redirect(new URL(location, req.url), 308);
+}
+
+function serve(req: NextRequest, path: string) {
+  const res = NextResponse.rewrite(new URL(`${path}${req.nextUrl.search}`, req.url));
+  res.headers.set('Link', `<https://affitor.com${path}>; rel="canonical"`);
+  return res;
+}
+
+function docsHost(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  if (BLOG_PAGE.test(pathname)) {
+    // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
+    // direct call never emits a trailing-slash URL.
+    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
+  }
+  const page = !FILE.test(pathname);
+  const moved = MOVED_FILE.test(pathname) && !/^\/(?:docs|blog)\//.test(pathname);
+  if (!page && !moved) {
+    const renamed = currentPath(pathname);
+    return renamed ? serve(req, renamed) : NextResponse.next();
+  }
+  // The path this URL means in the /docs layout, then any rename applied.
+  const trimmed = pathname.replace(/(.)\/$/, '$1');
+  const inLayout = /^\/(?:docs|blog)(?:\/|$)/.test(trimmed) ? trimmed : `/docs${trimmed === '/' ? '' : trimmed}`;
+  const target = currentPath(inLayout) ?? inLayout;
+
+  if (!page) return serve(req, target);
+  // The blog already moved for good (always 301); docs pages follow DOCS_HOST_REDIRECT.
+  const status = target.startsWith('/blog') ? 301 : redirectStatus();
+  if (status) return NextResponse.redirect(`https://affitor.com${target}${search}`, status);
+  if (target !== inLayout) {
+    // Redirects off: keep the docs host on its root layout for renamed pages.
+    return movedTo(req, `${target.replace(/^\/docs/, '') || '/'}${search}`);
+  }
+  return target === pathname ? NextResponse.next() : NextResponse.rewrite(new URL(`${target}${search}`, req.url));
+}
 
 export function middleware(req: NextRequest, event: NextFetchEvent) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || POSTHOG_PUBLIC_KEY;
@@ -41,19 +122,17 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
     );
   }
 
-  const { pathname, search } = req.nextUrl;
-  if (req.headers.get('host') === DOCS_HOST && BLOG_PAGE.test(pathname)) {
-    // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
-    // direct call never emits a trailing-slash URL.
-    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
-  }
+  if (req.headers.get('host') === DOCS_HOST) return docsHost(req);
 
+  const renamed = currentPath(req.nextUrl.pathname);
+  if (renamed) return movedTo(req, `${renamed}${req.nextUrl.search}`);
   return NextResponse.next();
 }
 
 export const config = {
-  // Skip build assets and favicon; keep .md twins and llms.txt — bots fetching
-  // the machine surface is exactly the signal we want ("which posts are in the
-  // answer pool").
+  // Skip build assets and favicon (assetPrefix serves /_next/* from DOCS_HOST, so
+  // they must never redirect); keep .md twins and llms.txt — bots fetching the
+  // machine surface is exactly the signal we want ("which posts are in the answer
+  // pool").
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

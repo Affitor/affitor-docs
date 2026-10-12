@@ -218,7 +218,7 @@ The `invoiceId` field acts as an idempotency key. If your webhook fires twice fo
 
 :::note
 
-The handler above tracks the **first** subscription payment (`checkout.session.completed`). Subscription **renewals** arrive as a different event (`invoice.paid`) and need their own `case` — see [Subscription Renewals](/api-reference/integrations/stripe#subscription-renewals) in the canonical Stripe guide.
+The handler above tracks the **first** subscription payment (`checkout.session.completed`). Subscription **renewals** arrive as a different event (`invoice.paid`) and need their own `case` — see [Subscription Renewals](/docs/api-reference/integrations/stripe#subscription-renewals) in the canonical Stripe guide.
 
 :::
 
@@ -242,4 +242,4 @@ The handler above tracks the **first** subscription payment (`checkout.session.c
   "Forgetting the `invoice.paid` renewal handler — `checkout.session.completed` only covers the first payment; every renewal is silently missed without it."
 ]} />
 
-<NextStep title="Tracking Stripe sales?" description="See the canonical Stripe guide for one-time payments, subscription renewals, and the attribution fallback chain." href="/api-reference/integrations/stripe" />
+<NextStep title="Tracking Stripe sales?" description="See the canonical Stripe guide for one-time payments, subscription renewals, and the attribution fallback chain." href="/docs/api-reference/integrations/stripe" />

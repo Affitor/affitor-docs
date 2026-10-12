@@ -1,21 +1,19 @@
 /**
- * Cross-zone URL helpers (Next multi-zone).
- *
- * The blog is proxied at https://affitor.com/blog while this app deploys on
- * docs.affitor.com. Inside blog chrome, links/assets that belong to docs
- * sections must be ABSOLUTE to the docs host in production — relative ones
- * would resolve against affitor.com and collide with the main app's routes.
- * Blog canonicals point at affitor.com/blog.
- *
- * `docsBase` is '' in dev and preview deployments so navigation stays on the
- * local host. Guard is VERCEL_ENV-aware: local `next build` and Vercel
- * production get the absolute prefix, Vercel previews don't.
+ * Public URLs. This app is served through affitor.com (Next multi-zone): the
+ * dashboard rewrites /docs/* and /blog/* to this app, so docs pages live at
+ * https://affitor.com/docs/... and the blog at https://affitor.com/blog/...
+ * Both zones share the affitor.com origin, so in-app links stay relative
+ * (/docs/..., /blog/...) and these absolute URLs are only for canonicals,
+ * structured data and the machine-readable surface.
  */
-export const DOCS_URL = 'https://docs.affitor.com';
-export const BLOG_URL = 'https://affitor.com/blog';
+export const SITE_URL = 'https://affitor.com';
+export const DOCS_URL = `${SITE_URL}/docs`;
+export const BLOG_URL = `${SITE_URL}/blog`;
 
-const isProd = process.env.VERCEL_ENV
-  ? process.env.VERCEL_ENV === 'production'
-  : process.env.NODE_ENV === 'production';
-
-export const docsBase = isProd ? DOCS_URL : '';
+/**
+ * Prefix for /docs links and assets inside the BLOG (served at affitor.com/blog).
+ * docs.affitor.com serves /docs/* in every DOCS_HOST_REDIRECT mode (200, or a redirect
+ * to affitor.com/docs once that is on), so these links work before, during and after
+ * the dashboard starts proxying affitor.com/docs. Set to '' once that proxy is live.
+ */
+export const BLOG_DOCS_ORIGIN = 'https://docs.affitor.com';

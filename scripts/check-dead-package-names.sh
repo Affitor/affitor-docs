@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PATTERN='affitor-sdk|affitor-node|@affitor/tracker|@affitor/node'
-HITS=$(grep -rnE "$PATTERN" content/ public/skill.md public/llms.txt \
+HITS=$(grep -rnE "$PATTERN" content/ public/docs/skill.md public/docs/llms.txt \
   --include='*.mdx' --include='*.md' --include='*.txt' 2>/dev/null \
   | grep -vE 'affitor-tracker\.js|data-affitor-program-id|affitor_click_id|affitor_customer_key' \
   || true)

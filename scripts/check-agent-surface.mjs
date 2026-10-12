@@ -9,10 +9,14 @@ import { generateLlms } from './gen-llms.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
-const SITE = 'https://docs.affitor.com';
+// Docs pages are served at affitor.com/docs (multi-zone), the blog at affitor.com/blog.
+const ORIGIN = 'https://affitor.com';
+const SITE = `${ORIGIN}/docs`;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const read = (path) => readFileSync(path, 'utf8');
+// The .md twin URL: the docs landing (/docs) has /docs/index.md, every other page <url>.md.
+const markdownUrl = (page) => (page.id === 'index' ? `${SITE}/index.md` : `${page.url}.md`);
 const json = (path) => JSON.parse(read(path));
 
 function walk(dir) {
@@ -44,7 +48,7 @@ function inventory() {
   // Use the installed loader's URL rules without importing the production renderer.
   const files = walk(docsDir).filter((file) => /\.mdx?$/.test(file) || /\/meta\.json$/.test(file));
   const docs = loader({
-    baseUrl: '/',
+    baseUrl: '/docs',
     source: {
       files: files.map((file) => ({
         type: file.endsWith('.json') ? 'meta' : 'page',
@@ -54,11 +58,11 @@ function inventory() {
       })),
     },
   }).getPages().map((page) => {
-    const id = page.url.slice(1) || 'index';
+    const id = page.url.replace(/^\/docs\/?/, '') || 'index';
     assert.equal(page.data.date, undefined, `${id}: docs must not invent a date field`);
     assert.equal(page.data.updated, undefined, `${id}: docs must not invent an updated field`);
     return {
-      id, type: 'doc', url: `${SITE}${page.url}`,
+      id, type: 'doc', url: `${ORIGIN}${page.url}`,
       body: markdown(page.data, id), title: page.data.title, description: page.data.description,
     };
   });
@@ -73,7 +77,7 @@ function inventory() {
       assert.match(data.updated, ISO_DAY, `${id}: updated must be YYYY-MM-DD`);
     }
     return {
-      id, type: 'blog', url: `https://affitor.com/${id}`,
+      id, type: 'blog', url: `${ORIGIN}/${id}`,
       updated: data.updated ?? data.date,
       sourceDate: data.updated ?? data.date,
       body: markdown(data, id),
@@ -153,7 +157,7 @@ function main() {
       lastmod: lastmod.length ? lastmod[0][1] : undefined,
     };
   });
-  const expectedUrls = pages.flatMap((page) => [page.url, `${SITE}/${page.id}.md`]);
+  const expectedUrls = pages.flatMap((page) => [page.url, markdownUrl(page)]);
   expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
   assert.deepEqual(entries.map((entry) => entry.url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
   const dates = new Map(entries.map((entry) => [entry.url, entry.lastmod]));
@@ -172,14 +176,14 @@ function main() {
     }
   }
 
-  let corpus = artifact('/llms-full.txt', 'text/plain');
+  let corpus = artifact('/docs/llms-full.txt', 'text/plain');
   for (const page of pages) {
     const twin = artifact(`/llms.md/${page.id}`, 'text/markdown');
     const header = twin.match(FRONTMATTER);
     assert.ok(header, `${page.id}: missing twin frontmatter`);
     const metadata = load(header[1], { schema: JSON_SCHEMA });
     const htmlLastmod = dates.get(page.url);
-    const mdLastmod = dates.get(`${SITE}/${page.id}.md`);
+    const mdLastmod = dates.get(markdownUrl(page));
 
     if (page.type === 'doc') {
       assert.equal(page.updated, undefined, `${page.id}: docs inventory must omit updated`);
@@ -207,19 +211,16 @@ function main() {
     assert.ok(position >= 0, `${page.id}: complete twin missing from llms-full.txt`);
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);
     corpus = corpus.slice(0, position) + corpus.slice(position + twin.length);
-    if (page.type === 'doc') {
-      const path = new URL(page.url).pathname;
-      checkHtml(page, path);
-      checkHtml(page, path === '/' ? '/docs' : `/docs${path}`);
-    }
-    console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', canonical and legacy HTML' : ''}`);
+    if (page.type === 'doc') checkHtml(page, new URL(page.url).pathname);
+    console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', HTML and canonical' : ''}`);
   }
   assert.match(corpus, /^\n*$/, 'llms-full.txt contains unexpected content or extra pages');
 
-  const llms = read(join(ROOT, 'public/llms.txt'));
-  assert.equal(llms, generateLlms(), 'public/llms.txt is stale; run npm run gen:llms');
-  assert.ok(Buffer.byteLength(llms) < 10000, 'public/llms.txt must be under 10000 bytes');
-  for (const match of llms.matchAll(/\]\(https:\/\/docs\.affitor\.com\/([^\s)]+)\.md\)/g)) {
+  const llms = read(join(ROOT, 'public/docs/llms.txt'));
+  assert.equal(llms, generateLlms(), 'public/docs/llms.txt is stale; run npm run gen:llms');
+  assert.ok(Buffer.byteLength(llms) < 10000, 'public/docs/llms.txt must be under 10000 bytes');
+  assert.equal(llms.includes('docs.affitor.com'), false, 'llms.txt must link affitor.com/docs, not docs.affitor.com');
+  for (const match of llms.matchAll(/\]\(https:\/\/affitor\.com\/docs\/([^\s)]+)\.md\)/g)) {
     if (match[1] === 'skill') continue;
     assert.ok(ids.includes(match[1]), `llms.txt links unknown twin ${match[1]}`);
   }
@@ -234,7 +235,7 @@ function main() {
     }), `robots.txt missing Allow block for ${bot}`);
   }
   for (const line of [
-    `Sitemap: ${SITE}/sitemap.xml`, `Llms-Txt: ${SITE}/llms.txt`, `Llms-Full-Txt: ${SITE}/llms-full.txt`,
+    `Sitemap: ${ORIGIN}/sitemap.xml`, `Llms-Txt: ${SITE}/llms.txt`, `Llms-Full-Txt: ${SITE}/llms-full.txt`,
   ]) assert.ok(robots.split(/\r?\n/).includes(line), `robots.txt missing ${line}`);
 
   // Ensure the renderer no longer imports file mtime for content dates.
@@ -242,7 +243,7 @@ function main() {
   assert.equal(agentMd.includes('statSync'), false, 'agent-md.ts must not use statSync for content dates');
   assert.equal(agentMd.includes('mtime'), false, 'agent-md.ts must not use mtime for content dates');
 
-  const assets = checkContentAssets();
+  const assets = checkContentAssets(pages);
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
@@ -257,23 +258,22 @@ function main() {
  * /docs/brand/dashboard.png into /brand/dashboard.png, which is a 404. Assets live
  * under public/docs, so the prefix is real for them and must not be stripped.
  */
-function checkContentAssets() {
+function checkContentAssets(pages) {
   const FILE_REF = /!?\[[^\]]*\]\((\/[^)\s]+\.[a-z0-9]{2,5})\)/gi;
-  // Page links under /docs only redirect. They are not broken, but they cost a hop and
-  // they are how the wrong path keeps spreading, so the canonical root path is required.
-  // Asset paths are exempt: public/docs/... really is served at /docs/....
-  const PAGE_LINK = /(?:\]\(|href:\s*'|href=")(\/docs\/[^)'"\s]*)/g;
+  // Root-relative page links must point at a real page under /docs or /blog. Pages moved from the root to /docs (served at affitor.com/docs), so a bare
+  // /brand/... link would resolve to the main app on affitor.com. A link to a renamed
+  // page only redirects; it costs a hop and spreads the old path, so it fails too.
+  const PAGE_LINK = /(?:\]\(|href:\s*['"]|href=['"])(\/[^)'"\s]*)/g;
+  const pageIds = new Set([...pages.map((page) => new URL(page.url).pathname), '/blog']);
   const refs = new Set();
   for (const file of walk(join(ROOT, 'content'))) {
-    if (!/\.mdx?$/.test(file)) continue;
+    if (!/\.mdx?$/.test(file) && !/\/meta\.json$/.test(file)) continue;
     const body = read(file);
     for (const match of body.matchAll(FILE_REF)) refs.add(match[1]);
     for (const match of body.matchAll(PAGE_LINK)) {
-      const target = match[1].split(/[?#]/)[0];
+      const target = match[1].split(/[?#]/)[0].replace(/(.)\/$/, '$1');
       if (/\.[a-z0-9]{2,5}$/i.test(target)) continue;
-      assert.fail(
-        `${relative(ROOT, file)} links ${target}; pages live at the root, so link ${target.replace(/^\/docs/, '') || '/'} instead`,
-      );
+      assert.ok(pageIds.has(target), `${relative(ROOT, file)} links ${target}, which is not a page under /docs or /blog`);
     }
   }
 

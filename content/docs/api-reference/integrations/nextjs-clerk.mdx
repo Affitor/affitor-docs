@@ -3,7 +3,7 @@ title: "Next.js + Clerk"
 description: "Add Affitor tracking to a Next.js (App Router) app that uses Clerk for authentication."
 ---
 
-This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
+This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/docs/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
 
 :::note
 
@@ -19,13 +19,13 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## 1. Capture the click
 
-Follow [Step 1 of the base Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click) — install `@affitor/sdk`, create the client component that wraps your app in `<AffitorProvider>`, and render it in your root layout. Nothing changes for Clerk.
+Follow [Step 1 of the base Next.js guide](/docs/api-reference/integrations/nextjs#1-capture-the-click) — install `@affitor/sdk`, create the client component that wraps your app in `<AffitorProvider>`, and render it in your root layout. Nothing changes for Clerk.
 
 ## 2. Track the signup
 
 The `affitor_click_id` is stored in a **first-party browser cookie**. A server-side Clerk webhook (`user.created`) runs with no access to that cookie, so it cannot supply the click ID on its own.
 
-**Two paths are available. The webhook path (server-side, with your API key) is the one that settles the lead:** new programs require server-verified leads, and a lead sent only from the browser stays provisional. See [Lead auth policy](/api-reference/track-lead/#lead-auth-policy).
+**Two paths are available. The webhook path (server-side, with your API key) is the one that settles the lead:** new programs require server-verified leads, and a lead sent only from the browser stays provisional. See [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy).
 
 ### Option A — Clerk webhook (`user.created`, recommended)
 
@@ -130,7 +130,7 @@ Place `<AffitorSignup />` only on the page a new user lands on right after regis
 
 ## 3. Track the sale
 
-Follow [Step 3 of the base Next.js guide](/api-reference/integrations/nextjs#3-track-the-sale). Use `user.id` (the Clerk user ID) as `affitor_customer_key` in Stripe metadata and as `customerExternalId` in `trackSale` — the same value you used at signup.
+Follow [Step 3 of the base Next.js guide](/docs/api-reference/integrations/nextjs#3-track-the-sale). Use `user.id` (the Clerk user ID) as `affitor_customer_key` in Stripe metadata and as `customerExternalId` in `trackSale` — the same value you used at signup.
 
 ## Verify
 
@@ -151,4 +151,4 @@ Follow [Step 3 of the base Next.js guide](/api-reference/integrations/nextjs#3-t
   "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to any partner."
 ]} />
 
-<NextStep title="Add Stripe for sales tracking" description="Attach Affitor metadata to Stripe Checkout Sessions so sales and renewals attribute automatically." href="/api-reference/integrations/stripe" />
+<NextStep title="Add Stripe for sales tracking" description="Attach Affitor metadata to Stripe Checkout Sessions so sales and renewals attribute automatically." href="/docs/api-reference/integrations/stripe" />

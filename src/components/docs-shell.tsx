@@ -16,9 +16,9 @@ export function DocsShell({ children }: { children: ReactNode }) {
         tree={source.pageTree}
         nav={{
           title: (
-            <img src="/affitor-logo.svg" alt="Affitor" style={{ height: '24px', width: 'auto' }} />
+            <img src="/docs/affitor-logo.svg" alt="Affitor" style={{ height: '24px', width: 'auto' }} />
           ),
-          url: '/',
+          url: '/docs',
           enabled: false,
         }}
         themeSwitch={{ enabled: false }}

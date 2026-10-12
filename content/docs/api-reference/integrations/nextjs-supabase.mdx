@@ -3,7 +3,7 @@ title: "Next.js + Supabase Auth"
 description: "Add Affitor tracking to a Next.js app that uses Supabase Auth — clicks, signups, and sales."
 ---
 
-This guide covers the Supabase-specific signup step. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/api-reference/integrations/nextjs) — refer there for full detail.
+This guide covers the Supabase-specific signup step. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/docs/api-reference/integrations/nextjs) — refer there for full detail.
 
 :::note
 
@@ -19,11 +19,11 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## 1. Capture the click
 
-Follow [Step 1 of the Next.js guide](/api-reference/integrations/nextjs#1-capture-the-click). Install `@affitor/sdk`, create the client component that wraps your app in `<AffitorProvider programId="…">`, and render it once in your root layout.
+Follow [Step 1 of the Next.js guide](/docs/api-reference/integrations/nextjs#1-capture-the-click). Install `@affitor/sdk`, create the client component that wraps your app in `<AffitorProvider programId="…">`, and render it once in your root layout.
 
 ## 2. Track the signup
 
-Send the lead from your server with your program API key, which is what settles it: new programs require server-verified leads (see [Lead auth policy](/api-reference/track-lead/#lead-auth-policy)).
+Send the lead from your server with your program API key, which is what settles it: new programs require server-verified leads (see [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy)).
 
 The `affitor_click_id` is a first-party browser cookie. A Supabase Edge Function or DB trigger runs with no access to that cookie, so you must forward the click ID yourself.
 
@@ -81,7 +81,7 @@ The tracker also has a browser helper, `affitor.signup(userId, email)`, which yo
 
 ## 3. Track the sale
 
-Follow [Step 3 of the Next.js guide](/api-reference/integrations/nextjs#3-track-the-sale). Use `session.user.id` (your `customerExternalId`) as `affitor_customer_key` in Stripe metadata, or as `customerExternalId` in `affitor.trackSale()`. Sales must always be tracked server-side.
+Follow [Step 3 of the Next.js guide](/docs/api-reference/integrations/nextjs#3-track-the-sale). Use `session.user.id` (your `customerExternalId`) as `affitor_customer_key` in Stripe metadata, or as `customerExternalId` in `affitor.trackSale()`. Sales must always be tracked server-side.
 
 ## Verify
 
@@ -102,4 +102,4 @@ Follow [Step 3 of the Next.js guide](/api-reference/integrations/nextjs#3-track-
   "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
 ]} />
 
-<NextStep title="Ready to track sales?" description="Connect Stripe so Affitor attributes subscription renewals automatically." href="/api-reference/integrations/stripe" />
+<NextStep title="Ready to track sales?" description="Connect Stripe so Affitor attributes subscription renewals automatically." href="/docs/api-reference/integrations/stripe" />

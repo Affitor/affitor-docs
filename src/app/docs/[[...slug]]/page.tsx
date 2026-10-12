@@ -1,11 +1,6 @@
 import { source } from '@/lib/source';
 import { getDocArticle } from '@/lib/agent-md';
-import {
-  DocsPage,
-  DocsBody,
-  DocsDescription,
-  DocsTitle,
-} from 'fumadocs-ui/page';
+import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
 import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
@@ -13,28 +8,39 @@ import { DocsFooter } from '@/components/docs-footer';
 
 const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
 
-export default async function Page(props: {
-  params: Promise<{ slug?: string[] }>;
-}) {
+// Docs pages live under /docs: https://affitor.com/docs/<slug> proxies here
+// (dashboard multi-zone rewrite), and /docs is the landing page.
+function markdownPath(slug: string[] = []) {
+  return `/docs/${slug.join('/') || 'index'}.md`;
+}
+
+export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
   const article = getDocArticle(page);
   const MDX = page.data.body;
-  const slugPath = params.slug?.join('/') ?? 'index';
-  const filePath = `content/docs/${slugPath}.mdx`;
+  const filePath = `content/docs/${params.slug?.join('/') ?? 'index'}.mdx`;
   const editUrl = `${GITHUB_REPO}/edit/main/${filePath}`;
 
   return (
-    <DocsPage data-page-id={article.id} toc={page.data.toc} full={page.data.full} tableOfContent={{ single: true }}>
+    <DocsPage data-page-id={article.id} toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
         <MDX components={useMDXComponents({})} />
       </DocsBody>
-      <EditOnGitHub href={editUrl} />
+      <div className="flex flex-row flex-wrap items-center gap-4">
+        <EditOnGitHub href={editUrl} />
+        <a
+          href={markdownPath(params.slug)}
+          className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground"
+        >
+          View as Markdown
+        </a>
+      </div>
       <DocsFooter />
     </DocsPage>
   );
@@ -44,9 +50,7 @@ export async function generateStaticParams() {
   return source.generateParams();
 }
 
-export async function generateMetadata(props: {
-  params: Promise<{ slug?: string[] }>;
-}) {
+export async function generateMetadata(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
@@ -54,5 +58,10 @@ export async function generateMetadata(props: {
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: {
+      canonical: getDocArticle(page).url,
+      // machine-readable markdown twin of this page
+      types: { 'text/markdown': markdownPath(params.slug) },
+    },
   };
 }

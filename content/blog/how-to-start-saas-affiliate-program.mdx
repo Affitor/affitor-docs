@@ -62,8 +62,6 @@ Two rules keep the number safe:
 
 **Prefer recurring commissions over one-time bounties.** In programs that pay on renewals, 70% of all commission events are renewal payments. Most of what a good partner earns arrives after the first sale, and that ongoing stake is exactly what keeps them promoting you next quarter instead of the next tool. If your margin allows it, pay on renewals for at least the first year of each referred subscription.
 
-For the full treatment, including a worked example and how to run different rates for different partner tiers, see [What commission rate should your SaaS affiliate program pay?](/blog/saas-affiliate-commission-rates)
-
 ## Step 2: Choose your software
 
 Four criteria separate the tools. Weigh them before you look at a single feature list.
@@ -78,7 +76,7 @@ Four criteria separate the tools. Weigh them before you look at a single feature
 
 Where Affitor fits, with the obvious disclosure that I build it: Affitor is the performance-priced option. You pay $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. No monthly fee, no setup fee; the 3.5% is the whole cost. It is also the tool built agent-first: an AI coding agent can complete the entire integration from one paste line and prove it worked, which no other tool in the set offered as of that June 2026 audit. And the honest counterpoints: if you want the most recognized brand and a simple flat subscription for a Stripe SaaS, Rewardful is the category default and its 0% transaction fee is genuine. If you run affiliates, resellers, and referral partners at enterprise scale, PartnerStack is a full partner-management suite that Affitor does not try to be.
 
-The detailed trade-offs live in dedicated comparisons: [the best affiliate software for SaaS by stage](/blog/best-affiliate-software-for-saas), [Rewardful alternatives](/blog/rewardful-alternatives), [PartnerStack alternatives](/blog/partnerstack-alternatives), [FirstPromoter alternatives](/blog/firstpromoter-alternatives), [Rewardful vs FirstPromoter](/blog/rewardful-vs-firstpromoter), and [Rewardful vs Tolt](/blog/rewardful-vs-tolt).
+The detailed trade-offs live in dedicated comparisons: [the best affiliate software for SaaS by stage](/blog/best-affiliate-software-saas), [Rewardful alternatives](/blog/rewardful-alternatives), [PartnerStack alternatives](/blog/partnerstack-alternatives), [FirstPromoter alternatives](/blog/firstpromoter-alternatives), [Rewardful vs FirstPromoter](/blog/rewardful-vs-firstpromoter), and [Rewardful vs Tolt](/blog/tolt-vs-rewardful).
 
 ## Step 3: Set up tracking that survives real customers
 
@@ -107,7 +105,7 @@ npx affitor onboard
 
 The CLI detects your stack, installs click tracking, injects the sale call into your Stripe webhook handler, and then fires a synthetic click, lead, and sale through the live pipeline. When the readiness check returns `integration_verified: true`, tracking is proven end to end. The same capability is exposed to AI agents through an MCP server with 7 tools and a public `skill.md` runbook, so "set up tracking" can be a ten-minute delegation to your coding agent instead of a sprint task.
 
-Setup details live in the docs: [how the tracking pieces fit together](/brand/tracking/tracking-overview), [payment tracking with Stripe](/brand/tracking/payment-tracking-stripe), and [testing your integration end to end](/brand/tracking/testing-integration). If you are on Stripe, the companion guide [How to create a Stripe affiliate program](/blog/stripe-affiliate-program) walks the whole integration step by step.
+Setup details live in the docs: [how the tracking pieces fit together](/docs/brand/tracking/tracking-overview), [payment tracking with Stripe](/docs/brand/tracking/payment-tracking-stripe), and [testing your integration end to end](/docs/brand/tracking/testing-integration). If you are on Stripe, the companion guide [How to create a Stripe affiliate program](/blog/stripe-affiliate-program) walks the whole integration step by step.
 
 ## Step 4: Recruit your first partners
 
@@ -119,8 +117,8 @@ Software launches nothing. Your first ten partners will be hand-recruited, and t
 2. **Creators already covering your category.** Find the people writing comparisons, filming tutorials, and ranking for the searches your buyers make. Personalize the pitch: name the piece of theirs you read and state your commission terms plainly.
 3. **Communities where your buyers gather.** Founders' Slacks, subreddits, Discords, newsletters. Contribute first; recruit second.
 4. **Partners of adjacent products.** People who already promote tools your customers use know how to sell software like yours. They are the fastest to activate because the workflow is not new to them.
-5. **A marketplace listing.** List your program where affiliates already browse. In Affitor, opt your program into the [marketplace](https://affitor.com/marketplace), and partners discover and apply on their own; you approve manually or set auto-accept. See [reviewing partner applications](/brand/quickstart/partner-approval-quality-control).
-6. **Direct invites.** For the names you already have, skip the application queue entirely. Affitor's [partner invites](/brand/quickstart/inviting-partners) take typed emails or a CSV, auto-write the invitation email from your program's real terms, and activate the partner the moment they accept. Unaccepted invites expire automatically.
+5. **A marketplace listing.** List your program where affiliates already browse. In Affitor, opt your program into the [marketplace](https://affitor.com/marketplace), and partners discover and apply on their own; you approve manually or set auto-accept. See [reviewing partner applications](/docs/brand/quickstart/partner-approval-quality-control).
+6. **Direct invites.** For the names you already have, skip the application queue entirely. Affitor's [partner invites](/docs/brand/quickstart/inviting-partners) take typed emails or a CSV, auto-write the invitation email from your program's real terms, and activate the partner the moment they accept. Unaccepted invites expire automatically.
 
 Recruit for fit, not follower count. One partner whose audience actually buys SaaS beats ten whose audiences scroll past, and you will see the difference in your click-to-signup numbers within weeks.
 
@@ -140,7 +138,7 @@ Match the hold period to your refund window before launch. It is the one payout 
 
 **Payout thresholds.** A minimum balance before withdrawal keeps you from processing five-dollar payouts. Once a partner crosses your threshold, Affitor pays out by bank transfer, PayPal, Stripe, or Wise.
 
-The mechanics are documented in [commission approval and cash flow](/brand/quickstart/commission-approval-cash-flow) and [payouts](/brand/quickstart/payouts); rate and hold configuration lives in [define commission](/brand/quickstart/define-commission).
+The mechanics are documented in [commission approval and cash flow](/docs/brand/quickstart/commission-approval-cash-flow) and [payouts](/docs/brand/quickstart/payouts); rate and hold configuration lives in [define commission](/docs/brand/quickstart/define-commission).
 
 ## Step 6: Launch and measure the first ninety days
 
@@ -150,7 +148,7 @@ Expect the start to be quiet, and plan around it. A partner recruited today publ
 
 **Month 2: watch the first commissions move.** Real clicks should be turning into signups, and the first sales into on-hold commissions. Check attribution quality (sales landing on the right partner), confirm refunds reverse commissions, and make sure the hold and approval flow behaves the way you configured it. The number to watch: click-to-signup rate per partner, which tells you whose audience actually matches your product.
 
-**Month 3: judge channels, not partners.** Look at which recruiting channel produced the partners who drive revenue, then double down there and stop spending time on the rest. If the data says your rate is wrong, adjust it going forward rather than retroactively; in Affitor, commission policies are versioned and apply from an effective date, so a rate change never rewrites history. Program-level metrics live in [performance tracking](/brand/quickstart/view-performance).
+**Month 3: judge channels, not partners.** Look at which recruiting channel produced the partners who drive revenue, then double down there and stop spending time on the rest. If the data says your rate is wrong, adjust it going forward rather than retroactively; in Affitor, commission policies are versioned and apply from an effective date, so a rate change never rewrites history. Program-level metrics live in [performance tracking](/docs/brand/quickstart/view-performance).
 
 ## Key takeaways
 
@@ -193,4 +191,4 @@ Recurring, if your margin allows it. In programs that pay on renewals, 70% of al
 You have the six steps: a rate grounded in the 20-25% benchmark and your margin, software priced the way you want to pay, tracking that survives real customers, a recruiting plan that starts warm, payout terms that match your refund policy, and a ninety-day measurement plan. Two ways to move:
 
 - **Start the program.** [Create your Affitor program](https://affitor.com/welcome). It costs $0 until your program earns its first $10,000 through affiliates, so the software decision does not need a budget meeting.
-- **Go deeper on the mechanics.** The [advertiser quickstart](/brand/quickstart) walks from account creation to a configured program, and the [tracking overview](/brand/tracking/tracking-overview) explains the attribution chain in full.
+- **Go deeper on the mechanics.** The [advertiser quickstart](/docs/brand/quickstart) walks from account creation to a configured program, and the [tracking overview](/docs/brand/tracking/tracking-overview) explains the attribution chain in full.

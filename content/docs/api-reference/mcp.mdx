@@ -5,7 +5,7 @@ description: The @affitor/mcp Model Context Protocol server — let AI agents (C
 
 `@affitor/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) **stdio server** for Affitor. It exposes Affitor's affiliate-tracking capabilities as MCP tools, so an AI agent — Claude Desktop, Cursor, or any MCP client — can report clicks, leads, sales and refunds, fetch a per-stack integration plan, and prove attribution works, all as native tool calls.
 
-Under the hood it wraps the consolidated server client [`@affitor/sdk/server`](/api-reference/sdks/) (the `Affitor` class). Authentication is your **program API key**, supplied via the `AFFITOR_API_KEY` environment variable.
+Under the hood it wraps the consolidated server client [`@affitor/sdk/server`](/docs/api-reference/sdks/) (the `Affitor` class). Authentication is your **program API key**, supplied via the `AFFITOR_API_KEY` environment variable.
 
 :::note
 
@@ -145,9 +145,9 @@ The recommended agent loop:
 
 ## Related
 
-- [Agent Integration](/api-reference/agent-integration/) — how AI agents auto-install tracking from generated `AGENTS.md` instruction files.
-- [CLI Command Reference](/brand/cli/commands/) — `npx affitor onboard`, the one-shot equivalent of the MCP flow.
-- [SDK Reference](/api-reference/sdks/) — the `@affitor/sdk` package the MCP server wraps.
-- [Track Sale](/api-reference/track-sale/) — the full API contract behind `affitor_track_sale`.
+- [Agent Integration](/docs/api-reference/agent-integration/) — how AI agents auto-install tracking from generated `AGENTS.md` instruction files.
+- [CLI Command Reference](/docs/brand/cli/commands/) — `npx affitor onboard`, the one-shot equivalent of the MCP flow.
+- [SDK Reference](/docs/api-reference/sdks/) — the `@affitor/sdk` package the MCP server wraps.
+- [Track Sale](/docs/api-reference/track-sale/) — the full API contract behind `affitor_track_sale`.
 
-<NextStep title="Prefer a single command?" description="npx affitor onboard runs detect → install → inject → verify in one shot — the CLI equivalent of the MCP flow." href="/brand/cli/commands" />
+<NextStep title="Prefer a single command?" description="npx affitor onboard runs detect → install → inject → verify in one shot — the CLI equivalent of the MCP flow." href="/docs/brand/cli/commands" />

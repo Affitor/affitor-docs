@@ -1,13 +1,11 @@
-import { docsBase } from '@/lib/site';
+import { BLOG_DOCS_ORIGIN } from '@/lib/site';
 
 /**
  * Compact marketing footer for blog pages — landing's muted link style.
- * Changelog lives on the docs host, so it goes through `docsBase` to survive
- * the affitor.com/blog proxy; the rest are absolute already.
  */
 const FOOTER_LINKS = [
-  { label: 'Docs', href: 'https://docs.affitor.com' },
-  { label: 'Changelog', href: `${docsBase}/changelog` },
+  { label: 'Docs', href: `${BLOG_DOCS_ORIGIN}/docs` },
+  { label: 'Changelog', href: `${BLOG_DOCS_ORIGIN}/docs/changelog` },
   { label: 'About', href: 'https://affitor.com/about' },
   { label: 'X @affitor_ai', href: 'https://x.com/affitor_ai' },
 ];

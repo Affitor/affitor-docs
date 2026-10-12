@@ -75,7 +75,7 @@ You get it from:
 | `GET /api/v1/programs/me/readiness` | all of its errors | `invalid_key` on a `401`, `internal_error` on a `500` |
 | [Rate limiting](#rate-limits-429) | every `/api/v1/track/*`, `/api/v1/cli/*` and readiness route | `rate_limited` |
 | [A retired API key](#api_key_rotation_required) | every endpoint that key authenticates | `api_key_rotation_required` |
-| [`POST /api/v1/track/click`](/api-reference/track-click) | a `410` for an inactive referral link | `link_disabled` (the body also keeps the older top-level `success: false` and `message`) |
+| [`POST /api/v1/track/click`](/docs/api-reference/track-click) | a `410` for an inactive referral link | `link_disabled` (the body also keeps the older top-level `success: false` and `message`) |
 
 Only `code` and `message` are always present. The rest varies with the case: a rate limit adds `status` and `retry_after_seconds`, a retired key adds `hint` and `docs_url`, `link_disabled` adds `hint`, and a readiness `internal_error` adds `retry_after_seconds`.
 
@@ -108,7 +108,7 @@ When you contact support about a failed request, include the `X-Request-ID`. It 
 |--------|---------------|-----------|-----|
 | `401` | `Missing or malformed Authorization header. Expected: Bearer <token>` | `Authorization` header missing or does not start with `Bearer ` | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
 | `401` | `Missing API token` | Header present but the token is empty after trimming (sale only; refund answers `Invalid API token`) | Check for trailing spaces or an empty env variable |
-| `401` | `Invalid API token` | The token matches no program: a wrong key, a replaced key, or a key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
+| `401` | `Invalid API token` | The token matches no program: a wrong key, a replaced key, or a key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/docs/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
 
 The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
 
@@ -186,7 +186,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 
 This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
-**Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
+**Fix:** In your Affitor dashboard, go to **Settings** → **API Key** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
 ---
 
@@ -355,7 +355,7 @@ For `500`s from the CLI endpoints, see [CLI endpoint errors](#cli-endpoint-error
 
 ### CLI endpoint errors
 
-The [Affitor CLI](/brand/cli/commands) talks to the `/api/v1/cli/*` endpoints. They answer in the [platform envelope](#the-platform-envelope), except the [rate limits](#rate-limits-429) and a [retired key](#api_key_rotation_required), which use the typed one. This section is about what the API returns; for the codes the CLI itself prints with `--json`, see [CLI commands](/brand/cli/commands).
+The [Affitor CLI](/docs/brand/cli/commands) talks to the `/api/v1/cli/*` endpoints. They answer in the [platform envelope](#the-platform-envelope), except the [rate limits](#rate-limits-429) and a [retired key](#api_key_rotation_required), which use the typed one. This section is about what the API returns; for the codes the CLI itself prints with `--json`, see [CLI commands](/docs/brand/cli/commands).
 
 The routes authenticate in two different ways, and the fix for a `401` depends on which:
 

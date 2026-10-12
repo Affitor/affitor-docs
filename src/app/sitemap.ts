@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAgentPages } from '@/lib/agent-md';
+import { DOCS_URL } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = getAgentPages();
@@ -15,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       const md = { url: page.markdownUrl, ...(page.updated ? { lastModified: page.updated } : {}) };
       return [html, md];
     }),
-    { url: 'https://docs.affitor.com/llms.txt', ...(lastModified ? { lastModified } : {}) },
-    { url: 'https://docs.affitor.com/llms-full.txt', ...(lastModified ? { lastModified } : {}) },
+    { url: `${DOCS_URL}/llms.txt`, ...(lastModified ? { lastModified } : {}) },
+    { url: `${DOCS_URL}/llms-full.txt`, ...(lastModified ? { lastModified } : {}) },
   ];
 }

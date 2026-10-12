@@ -3,7 +3,7 @@ title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 ---
 
-Everything you configured in the [setup wizard](/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
+Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
 
 <PageMeta
   items={[
@@ -40,7 +40,7 @@ Programs evolve — rates get adjusted, branding gets refreshed, approval polici
 
 :::tip
 
-The **Commission** section sets your program-wide default. To pay different rates to different sets of partners, [organize partners into groups](/brand/groups) — each group carries its own commission policy.
+The **Commission** section sets your program-wide default. To pay different rates to different sets of partners, [organize partners into groups](/docs/brand/groups) — each group carries its own commission policy.
 
 :::
 
@@ -62,7 +62,7 @@ AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 
 :::note
 
-The **API Key** section also gives you a one-line instruction for an AI coding agent. It points the agent at [skill.md](https://docs.affitor.com/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/api-reference/agent-integration).
+The **API Key** section also gives you a one-line instruction for an AI coding agent. It points the agent at [skill.md](https://affitor.com/docs/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/docs/api-reference/agent-integration).
 
 :::
 
@@ -124,14 +124,14 @@ Expected response:
   ]}
   ifNotWorking={[
     "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline — regenerate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program — check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner to regenerate the key (Step 3), copy it from the reveal, then update and redeploy",
-    "See the [error reference](/api-reference/errors) for every `401` cause and fix",
+    "See the [error reference](/docs/api-reference/errors) for every `401` cause and fix",
   ]}
 />
 
 ## Next steps
 
 <FeatureCards>
-  <FeatureCard icon="book" title="API Reference" href="/api-reference/overview">Base URL, auth modes, and every tracking endpoint your key unlocks.</FeatureCard>
-  <FeatureCard icon="zap" title="3-Step Integration Guide" href="/brand/tracking/quickstart-integration">Put the key to work: get clicks, signups, and sales tracking live end to end.</FeatureCard>
-  <FeatureCard icon="code" title="Agent Integration" href="/api-reference/agent-integration">Hand the one-line instruction to an AI coding agent and let it wire up tracking for you.</FeatureCard>
+  <FeatureCard icon="book" title="API Reference" href="/docs/api-reference/overview">Base URL, auth modes, and every tracking endpoint your key unlocks.</FeatureCard>
+  <FeatureCard icon="zap" title="3-Step Integration Guide" href="/docs/brand/tracking/quickstart-integration">Put the key to work: get clicks, signups, and sales tracking live end to end.</FeatureCard>
+  <FeatureCard icon="code" title="Agent Integration" href="/docs/api-reference/agent-integration">Hand the one-line instruction to an AI coding agent and let it wire up tracking for you.</FeatureCard>
 </FeatureCards>

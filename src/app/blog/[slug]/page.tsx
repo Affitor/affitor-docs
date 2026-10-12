@@ -7,7 +7,7 @@ import { useMDXComponents } from '@/../mdx-components';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_URL, DOCS_URL, docsBase } from '@/lib/site';
+import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
 
 function getPost(slug: string) {
   return blog.find((post) => postSlug(post.info.path) === slug);
@@ -15,20 +15,13 @@ function getPost(slug: string) {
 
 type Post = NonNullable<ReturnType<typeof getPost>>;
 
-// Assets (covers/screenshots) live on the docs host; the canonical page URL
-// lives on the proxied affitor.com/blog zone.
-const SITE_URL = DOCS_URL;
-
 /**
- * MDX `a` override: root-relative links that aren't /blog/* point at docs
- * sections — absolutize them so they survive the affitor.com/blog proxy
- * instead of colliding with the main app's routes.
+ * MDX `a` override: post links to docs pages (`/docs/...` or `https://affitor.com/docs/...`)
+ * go through BLOG_DOCS_ORIGIN (see site.ts). The .md twins keep the canonical URL.
  */
 function BlogPostLink({ href, ...props }: ComponentProps<typeof FdLink>) {
-  const resolved =
-    href && href.startsWith('/') && !href.startsWith('/blog')
-      ? `${docsBase}${href}`
-      : href;
+  const docsPath = href?.replace(/^https:\/\/affitor\.com(?=\/docs(?:[/?#]|$))/, '');
+  const resolved = docsPath && /^\/docs(?:[/?#]|$)/.test(docsPath) ? `${BLOG_DOCS_ORIGIN}${docsPath}` : href;
   return <FdLink href={resolved} {...props} />;
 }
 

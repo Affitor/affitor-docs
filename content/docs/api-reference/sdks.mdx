@@ -232,7 +232,7 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 - Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
 - Pass **this refund's own amount** → it is added to what was already refunded on the sale, and the commission is reduced proportionally (`refunded`, or `reversed` once the total reaches the sale amount).
 - Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
-- A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/api-reference/track-refund) with a distinct `refund_id` for each.
+- A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
 
 `invoiceId` is required and throws synchronously if missing.
 
@@ -291,8 +291,8 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
 
 ## Related
 
-- [Track Click](/api-reference/track-click) — raw HTTP endpoint reference
-- [Track Lead](/api-reference/track-lead) — raw HTTP endpoint reference
-- [Track Sale](/api-reference/track-sale) — raw HTTP endpoint reference
-- [Track Refund](/api-reference/track-refund) — raw HTTP endpoint reference
-- [Lead Tracking Guide](/brand/tracking/lead-tracking-signup) — implementation walkthrough
+- [Track Click](/docs/api-reference/track-click) — raw HTTP endpoint reference
+- [Track Lead](/docs/api-reference/track-lead) — raw HTTP endpoint reference
+- [Track Sale](/docs/api-reference/track-sale) — raw HTTP endpoint reference
+- [Track Refund](/docs/api-reference/track-refund) — raw HTTP endpoint reference
+- [Lead Tracking Guide](/docs/brand/tracking/lead-tracking-signup) — implementation walkthrough

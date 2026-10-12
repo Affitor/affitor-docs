@@ -6,22 +6,16 @@ import { usePathname } from 'next/navigation';
 type Tab = { title: string; href: string; match: (p: string) => boolean };
 
 const TABS: Tab[] = [
-  { title: 'Getting Started', href: '/', match: (p) => p === '/' || ['/how-it-works', '/pricing-performance-model'].some((x) => p.startsWith(x)) },
-  { title: 'For Brands', href: '/brand/quickstart/create-account', match: (p) => p.startsWith('/brand') },
-  { title: 'For Partners', href: '/partners', match: (p) => p.startsWith('/partners') },
-  { title: 'API Reference', href: '/api-reference/overview', match: (p) => p.startsWith('/api-reference') },
-  { title: 'Support', href: '/support', match: (p) => p.startsWith('/support') || p.startsWith('/faq') },
+  { title: 'Getting Started', href: '/docs', match: (p) => p === '/docs' || ['/docs/how-it-works', '/docs/pricing-performance-model'].some((x) => p.startsWith(x)) },
+  { title: 'For Brands', href: '/docs/brand/quickstart/create-account', match: (p) => p.startsWith('/docs/brand') },
+  { title: 'For Partners', href: '/docs/partners', match: (p) => p.startsWith('/docs/partners') },
+  { title: 'API Reference', href: '/docs/api-reference/overview', match: (p) => p.startsWith('/docs/api-reference') },
+  { title: 'Support', href: '/docs/support', match: (p) => p.startsWith('/docs/support') || p.startsWith('/docs/faq') },
   { title: 'Blog', href: '/blog', match: (p) => p.startsWith('/blog') },
-  { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
+  { title: 'Changelog', href: '/docs/changelog', match: (p) => p.startsWith('/docs/changelog') },
 ];
 
-/**
- * `docsBase` makes docs-section tabs absolute (blog pages pass
- * 'https://docs.affitor.com' in production so tab links survive being proxied
- * at affitor.com/blog). The Blog tab always stays relative — /blog/* is the
- * one namespace that exists on both hosts.
- */
-export function TabNav({ docsBase = '' }: { docsBase?: string }) {
+export function TabNav() {
   const pathname = usePathname() || '/';
   const activeIdx = (() => {
     // most specific match wins; Getting Started is the fallback
@@ -37,7 +31,7 @@ export function TabNav({ docsBase = '' }: { docsBase?: string }) {
         return (
           <Link
             key={tab.title}
-            href={tab.href === '/blog' ? tab.href : `${docsBase}${tab.href}`}
+            href={tab.href}
             className={`relative inline-flex items-center h-full text-[13.5px] font-medium whitespace-nowrap transition-colors ${
               active ? 'text-fd-foreground' : 'text-fd-muted-foreground hover:text-fd-foreground'
             }`}
