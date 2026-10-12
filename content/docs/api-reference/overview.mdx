@@ -21,7 +21,7 @@ https://api.affitor.com/api/v1/track/sale
 
 :::note
 
-A machine-readable [OpenAPI 3.1 spec](https://docs.affitor.com/openapi.yaml) is available for the tracking endpoints — import it into Postman, Insomnia, code generators, or an AI coding agent.
+A machine-readable [OpenAPI 3.1 spec](https://affitor.com/docs/openapi.yaml) is available for the tracking endpoints — import it into Postman, Insomnia, code generators, or an AI coding agent.
 
 :::
 
@@ -86,7 +86,7 @@ Sale and refund responses include additional IDs:
 }
 ```
 
-Read `error.message`, not `error` — interpolating the object prints `[object Object]`. The readiness endpoint uses a different envelope, and so does any endpoint refusing a key past its rotation deadline. Both shapes are laid out in the [error reference](/api-reference/errors#error-response-shape).
+Read `error.message`, not `error` — interpolating the object prints `[object Object]`. The readiness endpoint uses a different envelope, and so does any endpoint refusing a key past its rotation deadline. Both shapes are laid out in the [error reference](/docs/api-reference/errors#error-response-shape).
 
 ---
 
@@ -111,9 +111,9 @@ The `/api/tracking/` paths that do exist back the Affitor dashboard, not a serve
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `GET` | `/api/tracking/status/:programId` | [Integration status](/api-reference/status) for the program |
-| `GET` | `/api/tracking/events/:programId` | [Recent click, lead, and sale events](/api-reference/events) |
-| `GET` | `/api/tracking/performance/:programId` | [Aggregated performance metrics](/api-reference/performance) |
+| `GET` | `/api/tracking/status/:programId` | [Integration status](/docs/api-reference/status) for the program |
+| `GET` | `/api/tracking/events/:programId` | [Recent click, lead, and sale events](/docs/api-reference/events) |
+| `GET` | `/api/tracking/performance/:programId` | [Aggregated performance metrics](/docs/api-reference/performance) |
 | `GET` | `/api/tracking/readiness/:programId` | Readiness verdict for the program |
 | `POST` | `/api/tracking/test` | Create a test event from the dashboard verifier |
 | `POST` | `/api/tracking/check-test-events` | Check whether those test events landed |
@@ -132,11 +132,11 @@ Pass `"additional_data": { "test_mode": true }` in any tracking request body to 
 ## Endpoint pages
 
 <FeatureCards>
-  <FeatureCard icon="mouse-pointer-click" title="Track Click" href="/api-reference/track-click">Record an affiliate link click and create the customer attribution relationship.</FeatureCard>
-  <FeatureCard icon="user-check" title="Track Lead" href="/api-reference/track-lead">Record a customer signup and link it to a prior click.</FeatureCard>
-  <FeatureCard icon="credit-card" title="Track Sale" href="/api-reference/track-sale">Record a completed sale, create a commission, and update program metrics.</FeatureCard>
-  <FeatureCard icon="rotate-ccw" title="Track Refund" href="/api-reference/track-refund">Reverse the commission for a sale that was refunded.</FeatureCard>
-  <FeatureCard icon="activity" title="Status" href="/api-reference/status">Check program integration status and health.</FeatureCard>
-  <FeatureCard icon="list" title="Events" href="/api-reference/events">Retrieve click, lead, and sale event records for a program.</FeatureCard>
-  <FeatureCard icon="bar-chart-2" title="Performance" href="/api-reference/performance">Retrieve aggregated performance metrics for a program.</FeatureCard>
+  <FeatureCard icon="mouse-pointer-click" title="Track Click" href="/docs/api-reference/track-click">Record an affiliate link click and create the customer attribution relationship.</FeatureCard>
+  <FeatureCard icon="user-check" title="Track Lead" href="/docs/api-reference/track-lead">Record a customer signup and link it to a prior click.</FeatureCard>
+  <FeatureCard icon="credit-card" title="Track Sale" href="/docs/api-reference/track-sale">Record a completed sale, create a commission, and update program metrics.</FeatureCard>
+  <FeatureCard icon="rotate-ccw" title="Track Refund" href="/docs/api-reference/track-refund">Reverse the commission for a sale that was refunded.</FeatureCard>
+  <FeatureCard icon="activity" title="Status" href="/docs/api-reference/status">Check program integration status and health.</FeatureCard>
+  <FeatureCard icon="list" title="Events" href="/docs/api-reference/events">Retrieve click, lead, and sale event records for a program.</FeatureCard>
+  <FeatureCard icon="bar-chart-2" title="Performance" href="/docs/api-reference/performance">Retrieve aggregated performance metrics for a program.</FeatureCard>
 </FeatureCards>

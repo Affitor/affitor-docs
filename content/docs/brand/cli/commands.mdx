@@ -257,7 +257,7 @@ customer.subscription.deleted
 The endpoint is created on your connected Stripe account with the delivery URL `<api-url>/webhooks/stripe/<program-id>` — for the default API URL, `https://api.affitor.com/webhooks/stripe/430`. That is the URL this command sends to Stripe; it is the value to check in the Stripe dashboard if deliveries are not arriving.
 
 <Callout type="warning" title="Confirm delivery before relying on it">
-  After running this command, send a test event from the Stripe dashboard and confirm the sale shows up in Affitor before you treat Stripe tracking as live. If nothing arrives, report the sale from your own backend instead — see [Track Sale](/api-reference/track-sale) or the [Stripe integration guide](/api-reference/integrations/stripe), which does not depend on this endpoint.
+  After running this command, send a test event from the Stripe dashboard and confirm the sale shows up in Affitor before you treat Stripe tracking as live. If nothing arrives, report the sale from your own backend instead — see [Track Sale](/docs/api-reference/track-sale) or the [Stripe integration guide](/docs/api-reference/integrations/stripe), which does not depend on this endpoint.
 </Callout>
 
 ---

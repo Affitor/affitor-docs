@@ -1,9 +1,9 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://docs.affitor.com/sitemap.xml
-Llms-Txt: https://docs.affitor.com/llms.txt
-Llms-Full-Txt: https://docs.affitor.com/llms-full.txt
+Sitemap: https://affitor.com/sitemap.xml
+Llms-Txt: https://affitor.com/docs/llms.txt
+Llms-Full-Txt: https://affitor.com/docs/llms-full.txt
 
 User-agent: GPTBot
 Allow: /

@@ -32,7 +32,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   -d '{ "additional_data": { "test_mode": true } }'
 ```
 
-A `200` with `test_mode: true` in `data` means the key works. The call is not a no-op: it stores a sale event flagged as a test, writes a tracking log entry, and can move your integration checklist. It creates no commission and no platform fee. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/api-reference/track-sale).
+A `200` with `test_mode: true` in `data` means the key works. The call is not a no-op: it stores a sale event flagged as a test, writes a tracking log entry, and can move your integration checklist. It creates no commission and no platform fee. A real sale needs a `transaction_id` and a customer that already carries attribution — see [Track a sale](/docs/api-reference/track-sale).
 
 :::note
 
@@ -54,7 +54,7 @@ A program is given a key the moment it is created, but creating a program does n
 AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 ```
 
-After that the tab shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/brand/settings).
+After that the tab shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/docs/brand/settings).
 
 Program read endpoints never return the key. They expose `api_token_masked` only, so a leaked read response cannot be used to forge tracking calls. The value itself is returned in exactly one place: the response to the owner's own regenerate request.
 
@@ -70,7 +70,7 @@ Program read endpoints never return the key. They expose `api_token_masked` only
 | `POST /api/v1/track/lead` — browser mode | No. The click cookie carries the attribution. On a program that requires server-side lead tracking, a browser lead is stored as provisional — the response says `provisional: true` — and a server-mode call is what settles it. |
 | `POST /api/v1/track/click` | No. Click tracking is public. |
 
-Every endpoint above is documented in the [API reference](/api-reference/overview).
+Every endpoint above is documented in the [API reference](/docs/api-reference/overview).
 
 ---
 
@@ -99,7 +99,7 @@ Affitor can mark a specific program key for mandatory rotation — for example a
 - **Before the deadline**, the key still authenticates requests, so tracking keeps running until you are ready to swap it. Every response to a call made with that key carries `Deprecation` and `Sunset` headers plus a `Link` header pointing at the error reference, and the JSON body gains a `warnings` array carrying the code `api_key_rotation_required` and the deadline.
 - **At or after the deadline**, the key stops working. Requests come back as `401` with the same code in `error.code`, and the three headers are still there. That response has no `warnings` array — the warning only exists while the key still works.
 
-Replace the key before the deadline: past it, the old key is refused whether or not you are ready. Doing it early does not remove the changeover gap described under [Replace a key](#replace-a-key) — it only lets you choose when that gap happens. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/api-reference/errors#api_key_rotation_required).
+Replace the key before the deadline: past it, the old key is refused whether or not you are ready. Doing it early does not remove the changeover gap described under [Replace a key](#replace-a-key) — it only lets you choose when that gap happens. Branch on the code, not on the message text. The full header and body shapes are in [`api_key_rotation_required`](/docs/api-reference/errors#api_key_rotation_required).
 
 Replacing the key clears the flag: regenerate it in **Settings** → **API Key** and the warnings stop.
 
@@ -109,9 +109,9 @@ Replacing the key clears the flag: regenerate it in **Settings** → **API Key**
 
 Separately from program keys, Affitor issues **agent API keys** (prefix `agt_`) to approved tools that read and update programs on a brand's behalf through the `/api/agent/v1/...` endpoints.
 
-These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. Each agent endpoint also requires a specific scope on the key, so a valid agent key is still refused where it was not granted that scope. If you are building an integration that needs one, [contact support](/support/contact).
+These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. Each agent endpoint also requires a specific scope on the key, so a valid agent key is still refused where it was not granted that scope. If you are building an integration that needs one, [contact support](/docs/support/contact).
 
-If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://docs.affitor.com/skill.md) with your program API key in the environment. See [Agent Integration](/api-reference/agent-integration).
+If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://affitor.com/docs/skill.md) with your program API key in the environment. See [Agent Integration](/docs/api-reference/agent-integration).
 
 ---
 
@@ -125,7 +125,7 @@ If you only want an AI coding agent to install tracking for you, you do not need
 
 ## Verify it worked
 
-Send a test-mode call with the key in hand: it goes through the same authentication as a real sale, then stops before any commission or platform fee is created. Every cause of a `401`, and its fix, is listed in the [error reference](/api-reference/errors).
+Send a test-mode call with the key in hand: it goes through the same authentication as a real sale, then stops before any commission or platform fee is created. Every cause of a `401`, and its fix, is listed in the [error reference](/docs/api-reference/errors).
 
 <VerifySuccess
   network={[
@@ -145,6 +145,6 @@ Send a test-mode call with the key in hand: it goes through the same authenticat
 <NextStep
   title="Track your first conversion"
   description="With your program API key in hand, wire up clicks, signups, and sales end to end."
-  href="/brand/tracking/quickstart-integration"
+  href="/docs/brand/tracking/quickstart-integration"
   ctaLabel="Open tracking quickstart"
 />

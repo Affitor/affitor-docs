@@ -7,15 +7,42 @@ import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
 const AI_BOTS =
   /GPTBot|ClaudeBot|Claude-Web|PerplexityBot|Google-Extended|Bytespider|CCBot|anthropic-ai|OAI-SearchBot/i;
 
-// The blog's canonical home is affitor.com/blog, but search engines were ranking the
-// docs.affitor.com/blog copies. Permanently redirect blog PAGES requested on the public
-// docs host to the apex twin. affitor.com/blog proxies to this app through the Vercel
-// production alias (affitor-docs.vercel.app), and Vercel external rewrites send the
-// destination host as Host, so proxied requests never match here and cannot loop.
-// Preview deployments have their own host and are untouched. Files with an extension
-// (the .md twins, images) stay on the docs host.
+// docs.affitor.com is retired as a public host: docs pages now live at
+// https://affitor.com/docs and the blog at https://affitor.com/blog (both proxied
+// here by the dashboard through the Vercel production alias, affitor-docs.vercel.app;
+// Vercel external rewrites send that alias as Host, so proxied requests never match
+// DOCS_HOST and cannot loop). On DOCS_HOST:
+//  - blog pages 301 to affitor.com/blog<path>;
+//  - every other page 301s to affitor.com/docs<path> (old /docs/<page> URLs keep
+//    their path, since the prefix is already there);
+//  - files are never redirected. Machine-readable files that moved under /docs (the
+//    .md twins, skill.md, llms.txt, llms-full.txt, openapi.yaml) are served in place
+//    with a canonical Link header, because agents are told to fetch
+//    docs.affitor.com/skill.md and some fetchers refuse a cross-host redirect.
+//    Images, favicons, robots.txt and sitemap.xml pass through untouched.
+// Preview deployments have their own host and are untouched.
 const DOCS_HOST = 'docs.affitor.com';
 const BLOG_PAGE = /^\/blog(?:\/[^.]*)?$/;
+const FILE = /\.[^/]+$/;
+const MOVED_FILE = /^\/(?!docs\/|blog\/)(?:.+\.md|llms\.txt|llms-full\.txt|openapi\.yaml)$/;
+
+function docsHost(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  if (BLOG_PAGE.test(pathname)) {
+    // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
+    // direct call never emits a trailing-slash URL.
+    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
+  }
+  if (MOVED_FILE.test(pathname)) {
+    const res = NextResponse.rewrite(new URL(`/docs${pathname}${search}`, req.url));
+    res.headers.set('Link', `<https://affitor.com/docs${pathname}>; rel="canonical"`);
+    return res;
+  }
+  if (FILE.test(pathname)) return NextResponse.next();
+  const path = pathname.replace(/\/$/, '');
+  const target = /^\/docs(?:\/|$)/.test(path) ? path : `/docs${path}`;
+  return NextResponse.redirect(`https://affitor.com${target}${search}`, 301);
+}
 
 export function middleware(req: NextRequest, event: NextFetchEvent) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || POSTHOG_PUBLIC_KEY;
@@ -41,19 +68,15 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
     );
   }
 
-  const { pathname, search } = req.nextUrl;
-  if (req.headers.get('host') === DOCS_HOST && BLOG_PAGE.test(pathname)) {
-    // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
-    // direct call never emits a trailing-slash URL.
-    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
-  }
+  if (req.headers.get('host') === DOCS_HOST) return docsHost(req);
 
   return NextResponse.next();
 }
 
 export const config = {
-  // Skip build assets and favicon; keep .md twins and llms.txt — bots fetching
-  // the machine surface is exactly the signal we want ("which posts are in the
-  // answer pool").
+  // Skip build assets and favicon (assetPrefix serves /_next/* from DOCS_HOST, so
+  // they must never redirect); keep .md twins and llms.txt — bots fetching the
+  // machine surface is exactly the signal we want ("which posts are in the answer
+  // pool").
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

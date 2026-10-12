@@ -5,8 +5,8 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
-const SITE = 'https://docs.affitor.com';
-// Blog is proxied at affitor.com/blog (multi-zone) — that's its canonical home.
+// Docs and blog are proxied at affitor.com/docs and affitor.com/blog (multi-zone).
+const SITE = 'https://affitor.com/docs';
 const BLOG_SITE = 'https://affitor.com/blog';
 
 // These section indexes use flat, single-line frontmatter values.
@@ -61,7 +61,7 @@ export function generateLlms() {
 
 - [Agent integration runbook](${SITE}/skill.md): Integrate tracking and verify it end-to-end.
 - [Complete documentation](${SITE}/llms-full.txt): Every documentation page, blog post, and changelog entry, with page identifiers and source metadata.
-- [Sitemap](${SITE}/sitemap.xml): HTML pages and their Markdown twins.
+- [Sitemap](https://affitor.com/sitemap.xml): Every public page on affitor.com, including the docs and the blog.
 
 ## Documentation sections
 
@@ -79,7 +79,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (process.argv.includes('--stdout')) {
     process.stdout.write(output);
   } else {
-    writeFileSync(join(ROOT, 'public/llms.txt'), output);
-    console.log(`public/llms.txt regenerated: ${Buffer.byteLength(output)} bytes.`);
+    writeFileSync(join(ROOT, 'public/docs/llms.txt'), output);
+    console.log(`public/docs/llms.txt regenerated: ${Buffer.byteLength(output)} bytes.`);
   }
 }

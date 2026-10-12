@@ -6,20 +6,15 @@ import { useState } from 'react';
  * Marketing top bar for blog pages — recreates affitor.com's landing navbar
  * (white bar, center pill nav, blue Sign In CTA) inside the docs app.
  * No search, no docs tabs, no sidebar.
- *
- * `docsBase` is passed from the server shell (same pattern as DocsHeader) so
- * the logo asset resolves on the docs host when the blog is proxied at
- * affitor.com/blog, without client/server env drift.
  */
 const NAV_LINKS: { label: string; href: string; active?: boolean }[] = [
   { label: 'Marketplace', href: 'https://affitor.com/marketplace' },
   { label: 'About', href: 'https://affitor.com/about' },
-  { label: 'Docs', href: 'https://docs.affitor.com' },
-  // /blog is the one namespace that exists on both hosts — keep it relative.
+  { label: 'Docs', href: '/docs' },
   { label: 'Blog', href: '/blog', active: true },
 ];
 
-export function BlogNav({ docsBase = '' }: { docsBase?: string }) {
+export function BlogNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -30,7 +25,7 @@ export function BlogNav({ docsBase = '' }: { docsBase?: string }) {
           <a href="https://affitor.com" className="flex items-center shrink-0" aria-label="Affitor">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`${docsBase}/affitor-logo.svg`}
+              src="/docs/affitor-logo.svg"
               alt="Affitor"
               style={{ height: '22px', width: 'auto' }}
             />

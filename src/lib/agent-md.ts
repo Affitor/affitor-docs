@@ -1,6 +1,7 @@
 import { source } from '@/lib/source';
 import { blog, changelog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
+import { DOCS_URL, SITE_URL } from '@/lib/site';
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
 
@@ -44,8 +45,6 @@ async function renderBody(slug: string[]): Promise<string | null> {
   );
 }
 
-const DOCS_URL = 'https://docs.affitor.com';
-
 type DocPage = ReturnType<typeof source.getPages>[number];
 
 export type AgentPage = {
@@ -58,11 +57,12 @@ export type AgentPage = {
 };
 
 function getDocMetadata(page: DocPage): AgentPage {
-  const id = page.url.replace(/^\//, '') || 'index';
+  // page.url is /docs or /docs/<slug> (source baseUrl is /docs)
+  const id = page.url.replace(/^\/docs\/?/, '') || 'index';
   return {
     id,
     type: 'doc',
-    url: `${DOCS_URL}${page.url}`,
+    url: `${SITE_URL}${page.url}`,
     markdownUrl: `${DOCS_URL}/${id}.md`,
   };
 }
@@ -87,8 +87,8 @@ export function getAgentPages(): AgentPage[] {
       return {
         id,
         type: 'blog',
-        url: `https://affitor.com/${id}`,
-        markdownUrl: `${DOCS_URL}/${id}.md`,
+        url: `${SITE_URL}/${id}`,
+        markdownUrl: `${SITE_URL}/${id}.md`,
         updated,
       };
     }),
@@ -107,6 +107,7 @@ export function getDocArticle(page: DocPage) {
   // Docs have no trustworthy content date — omit dateModified rather than invent one.
   return {
     id: metadata.id,
+    url: metadata.url,
     jsonLd: JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'TechArticle',

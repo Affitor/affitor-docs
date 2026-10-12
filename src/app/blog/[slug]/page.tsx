@@ -1,36 +1,17 @@
 import type { Metadata } from 'next';
-import type { ComponentProps } from 'react';
 import { notFound } from 'next/navigation';
-import FdLink from 'fumadocs-core/link';
 import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_URL, DOCS_URL, docsBase } from '@/lib/site';
+import { BLOG_URL, SITE_URL } from '@/lib/site';
 
 function getPost(slug: string) {
   return blog.find((post) => postSlug(post.info.path) === slug);
 }
 
 type Post = NonNullable<ReturnType<typeof getPost>>;
-
-// Assets (covers/screenshots) live on the docs host; the canonical page URL
-// lives on the proxied affitor.com/blog zone.
-const SITE_URL = DOCS_URL;
-
-/**
- * MDX `a` override: root-relative links that aren't /blog/* point at docs
- * sections — absolutize them so they survive the affitor.com/blog proxy
- * instead of colliding with the main app's routes.
- */
-function BlogPostLink({ href, ...props }: ComponentProps<typeof FdLink>) {
-  const resolved =
-    href && href.startsWith('/') && !href.startsWith('/blog')
-      ? `${docsBase}${href}`
-      : href;
-  return <FdLink href={resolved} {...props} />;
-}
 
 /** "Son Piaz, Founder" -> "Son Piaz" (role suffix is byline decoration, not the Person name). */
 function authorName(author: string) {
@@ -184,7 +165,7 @@ export default async function BlogPostPage(props: {
   if (!post) notFound();
 
   const Body = post.body;
-  const components = useMDXComponents({ a: BlogPostLink });
+  const components = useMDXComponents({});
   const jsonLd = buildJsonLd(post, slug);
 
   return (

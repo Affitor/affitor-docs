@@ -123,17 +123,17 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-You keep charging customers in your own Stripe account. Affitor never becomes the merchant of record; it reads the metadata and the webhook events and does the attribution and commission math from there. The full wiring, including the plain server-side path for non-Checkout setups, is in the [Stripe tracking docs](https://docs.affitor.com/brand/tracking/payment-tracking-stripe).
+You keep charging customers in your own Stripe account. Affitor never becomes the merchant of record; it reads the metadata and the webhook events and does the attribution and commission math from there. The full wiring, including the plain server-side path for non-Checkout setups, is in the [Stripe tracking docs](https://affitor.com/docs/brand/tracking/payment-tracking-stripe).
 
 ## Step 5: Run the integration (one command)
 
-A working integration has three touchpoints: track the click in the browser, record the signup as a lead, and attach the metadata at checkout so the webhook can record the sale. You can wire each one by hand from the [tracking docs](https://docs.affitor.com/brand/tracking/tracking-overview), or run one command from your project root:
+A working integration has three touchpoints: track the click in the browser, record the signup as a lead, and attach the metadata at checkout so the webhook can record the sale. You can wire each one by hand from the [tracking docs](https://affitor.com/docs/brand/tracking/tracking-overview), or run one command from your project root:
 
 `npx affitor onboard`
 
 It runs four phases in order. **Detect** inspects the project and identifies your framework (Next.js, Fastify, Express, plain Node) and payment provider. **Browser tracking** installs `@affitor/sdk` and wires the tracker component (the browser SDK is in beta; the documented happy path works). **Server sale** finds your Stripe webhook handler and injects the sale call after the event is verified. **Verify** fires the proof step described in Step 6.
 
-Two properties matter for trust. Every edit to payment code shows you a diff and asks before applying, and when the webhook shape is not cleanly recognized, `onboard` never guesses: it degrades to printing the exact snippets for you to paste. Re-running is safe, because steps already applied are skipped. For AI coding agents there is a `--json` mode that makes no file edits at all; the agent reads the plan, applies the changes itself, and still runs verification. The [CLI quickstart](https://docs.affitor.com/brand/cli/quickstart) covers the full flow.
+Two properties matter for trust. Every edit to payment code shows you a diff and asks before applying, and when the webhook shape is not cleanly recognized, `onboard` never guesses: it degrades to printing the exact snippets for you to paste. Re-running is safe, because steps already applied are skipped. For AI coding agents there is a `--json` mode that makes no file edits at all; the agent reads the plan, applies the changes itself, and still runs verification. The [CLI quickstart](https://affitor.com/docs/brand/cli/quickstart) covers the full flow.
 
 ## Step 6: Verify the chain before launch
 
@@ -186,4 +186,4 @@ Yes. Signup-anchored attribution binds the click to a durable identity — a has
 
 You now have the whole picture: Stripe supplies the payment events and the metadata rails, a third-party layer answers "who caused this sale," and the durable way to answer it on a subscription business is to anchor attribution at signup, not in a cookie.
 
-[Create your program on Affitor](https://affitor.com). It costs $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. If you want to read the wiring before you sign up, start with the [Stripe tracking docs](https://docs.affitor.com/brand/tracking/payment-tracking-stripe).
+[Create your program on Affitor](https://affitor.com). It costs $0 until your program earns its first $10,000 through affiliates, then 3.5% on affiliate-driven sales only. If you want to read the wiring before you sign up, start with the [Stripe tracking docs](https://affitor.com/docs/brand/tracking/payment-tracking-stripe).

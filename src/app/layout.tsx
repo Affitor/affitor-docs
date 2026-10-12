@@ -2,7 +2,6 @@ import './globals.css';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import { docsBase } from '@/lib/site';
 import { PostHog } from '@/components/posthog';
 
 export const metadata: Metadata = {
@@ -14,12 +13,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/favicon-64.png', type: 'image/png', sizes: '64x64' },
-      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+      { url: '/docs/favicon.svg', type: 'image/svg+xml' },
+      { url: '/docs/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/docs/favicon-64.png', type: 'image/png', sizes: '64x64' },
+      { url: '/docs/icon-512.png', type: 'image/png', sizes: '512x512' },
     ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    apple: [{ url: '/docs/apple-touch-icon.png', sizes: '180x180' }],
   },
 };
 
@@ -33,10 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        {/* Absolute search endpoint: blog pages are proxied at affitor.com/blog,
-            where a relative /api/search would hit the main app and 404. CORS
-            for this route is set in next.config.mjs. */}
-        <RootProvider search={{ options: { api: `${docsBase}/api/search` } }}>
+        {/* Under /docs so it rides the affitor.com/docs zone rewrite: /api/* on
+            affitor.com belongs to the main app. */}
+        <RootProvider search={{ options: { api: '/docs/api/search' } }}>
           {children}
         </RootProvider>
         <PostHog />

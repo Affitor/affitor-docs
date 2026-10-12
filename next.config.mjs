@@ -2,10 +2,11 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
-// The blog is proxied at https://affitor.com/blog (Next multi-zone), so every
-// asset URL in the HTML must be absolute to the docs host or it would resolve
-// against affitor.com after proxying. Production only — VERCEL_ENV-aware so
-// preview deployments keep serving their own assets.
+// Docs and blog are proxied at https://affitor.com/docs and /blog (Next
+// multi-zone), so build assets must be absolute to a host this app serves or
+// /_next/* would resolve against the main app. Production only — VERCEL_ENV-aware
+// so preview deployments keep serving their own assets. docs.affitor.com keeps
+// serving /_next/* (its middleware only redirects pages).
 const isProdDeploy = process.env.VERCEL_ENV
   ? process.env.VERCEL_ENV === 'production'
   : process.env.NODE_ENV === 'production';
@@ -19,90 +20,61 @@ const config = {
     // too so those <img> URLs also survive the proxy.
     images: { path: 'https://docs.affitor.com/_next/image' },
   }),
-  async headers() {
-    return [
-      {
-        // fumadocs search dialog fetches this endpoint; on proxied blog pages
-        // the fetch comes from the affitor.com origin (see RootProvider's
-        // absolute `api` option in src/app/layout.tsx).
-        source: '/api/search',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: 'https://affitor.com' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, OPTIONS' },
-        ],
-      },
-    ];
-  },
   async rewrites() {
     return [
       {
         // Machine-readable markdown twin for every page: `<page-url>.md`
         // returns the raw MDX body as text/markdown (Stripe/Vercel pattern).
-        // afterFiles by default, so real files in public/ (skill.md) still win.
-        source: '/:path*.md',
+        // afterFiles by default, so real files in public/ (docs/skill.md) still win.
+        source: '/docs/:path*.md',
         destination: '/llms.md/:path*',
+      },
+      {
+        source: '/blog/:path*.md',
+        destination: '/llms.md/blog/:path*',
       },
     ];
   },
   async redirects() {
     return [
       {
+        // The landing page is /docs. Not on docs.affitor.com: its middleware sends
+        // every page to affitor.com/docs in one hop, and config redirects run first.
+        source: '/',
+        missing: [{ type: 'host', value: 'docs.affitor.com' }],
+        destination: '/docs',
+        permanent: true,
+      },
+      {
         // tracker page renamed BEFORE the audience-slug catch-all below —
         // first match wins, and this one needs a different destination.
-        source: '/advertisers/tracking/pageview-tracker-click',
-        destination: '/brand/tracking/click-tracking',
+        source: '/docs/advertisers/tracking/pageview-tracker-click',
+        destination: '/docs/brand/tracking/click-tracking',
         permanent: true,
       },
       {
         // audience slug renamed to match the app's /brand/* paths (old URLs
         // are indexed by search/AI engines — keep them alive forever)
-        source: '/advertisers/:path*',
-        destination: '/brand/:path*',
+        source: '/docs/advertisers/:path*',
+        destination: '/docs/brand/:path*',
         permanent: true,
       },
       {
-        source: '/docs',
-        destination: '/',
-        permanent: true,
-      },
-      {
-        // The markdown twins are a page surface, not a file in public/, so the
-        // rule below (which skips anything with an extension) would drop them.
-        // Keep the old /docs/<page>.md links alive: AI crawlers index these.
-        // Measured 2026-09-20 without this rule: /docs/api-reference/errors.md
-        // returned 404 instead of redirecting to /api-reference/errors.md.
-        source: '/docs/:path*.md',
-        destination: '/:path*.md',
-        permanent: true,
-      },
-      {
-        // Page routes only. The negative lookahead keeps static files out: assets
-        // genuinely live under /docs (public/docs/brand/*.png), so stripping the
-        // prefix sent every screenshot to a 404. Measured 2026-09-20 on production:
-        // /docs/brand/dashboard.png -> 308 -> /brand/dashboard.png -> 404, and the
-        // same for applications, billing, commissions, groups and settings.
-        // scripts/check-agent-surface.mjs pins this so the rule cannot swallow
-        // assets again.
-        source: '/docs/:path((?!.*\\.[^/]+$).*)',
-        destination: '/:path*',
-        permanent: true,
-      },
-      {
-        // intro content now lives at the root landing
-        source: '/getting-started/what-is-affitor',
-        destination: '/',
+        // intro content now lives at the docs landing
+        source: '/docs/getting-started/what-is-affitor',
+        destination: '/docs',
         permanent: true,
       },
       {
         // glossary moved under Support
-        source: '/getting-started/glossary',
-        destination: '/support/glossary',
+        source: '/docs/getting-started/glossary',
+        destination: '/docs/support/glossary',
         permanent: true,
       },
       {
         // the error reference is the page people guess at as /errors
-        source: '/errors',
-        destination: '/api-reference/errors',
+        source: '/docs/errors',
+        destination: '/docs/api-reference/errors',
         permanent: true,
       },
     ];

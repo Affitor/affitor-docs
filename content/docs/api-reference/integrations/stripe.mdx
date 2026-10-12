@@ -3,7 +3,7 @@ title: "Stripe"
 description: "Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring."
 ---
 
-This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/api-reference/integrations/nextjs) or the framework guide for your stack.
+This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
 
 :::note
 
@@ -20,7 +20,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## 1. Capture clicks and track signups
 
-These two steps are identical to the framework integration. Follow [Step 1](/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
+These two steps are identical to the framework integration. Follow [Step 1](/docs/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/docs/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
 
 The key thing to take away: when you call `signup(userId)` or `trackLead({ customerExternalId: userId })`, keep that `userId` — you will attach it to every Checkout Session as `affitor_customer_key`.
 
@@ -186,4 +186,4 @@ This path requires a Bearer API key and is called from your server only — neve
   "Using a different `program_id` than the one in your `init()` call — all three metadata fields must reference the same program."
 ]} />
 
-<NextStep title="Using Express or a non-Next.js server?" description="See the Node / Express integration guide for server-side wiring without a framework." href="/api-reference/integrations/node-express" />
+<NextStep title="Using Express or a non-Next.js server?" description="See the Node / Express integration guide for server-side wiring without a framework." href="/docs/api-reference/integrations/node-express" />

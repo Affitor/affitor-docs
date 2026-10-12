@@ -23,7 +23,7 @@ In your Polar organization, add a webhook endpoint delivering `order.paid`, `ref
 
 ## 1. Capture clicks and track signups
 
-Identical to the framework integration — follow [Step 1](/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
+Identical to the framework integration — follow [Step 1](/docs/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/docs/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
 
 Keep the `userId` you send at signup (`signup(userId)` / `trackLead({ customerExternalId: userId })`) — you will plant it on every Polar checkout as `user_id`.
 
@@ -115,7 +115,7 @@ Nothing extra to wire: Polar fires `order.paid` on **every** billing cycle, and 
 
 ## Refunds
 
-Report each refund once, with **that refund's own amount**, after it has succeeded (the handler above does this from `refund.created` / `refund.updated`). Use the same tax basis as the sale amount you sent; amounts add up on the sale, and the commission is reversed once they reach the sale amount. Omit `refundAmountCents` to refund everything not yet refunded. Do **not** pass `order.refundedAmount` from `order.refunded`: it is a running total, and each call is counted as a new refund. A retry with the same amount is ignored; to report two separate refunds of the same amount, call the [HTTP endpoint](/api-reference/track-refund) with a distinct `refund_id` for each.
+Report each refund once, with **that refund's own amount**, after it has succeeded (the handler above does this from `refund.created` / `refund.updated`). Use the same tax basis as the sale amount you sent; amounts add up on the sale, and the commission is reversed once they reach the sale amount. Omit `refundAmountCents` to refund everything not yet refunded. Do **not** pass `order.refundedAmount` from `order.refunded`: it is a running total, and each call is counted as a new refund. A retry with the same amount is ignored; to report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
 
 ## Verify
 
@@ -137,4 +137,4 @@ Report each refund once, with **that refund's own amount**, after it has succeed
   "Calling trackSale from the browser — sale tracking is server-side only; the program API key must never ship to a client."
 ]} />
 
-<NextStep title="Check the whole chain end to end?" description="affitor onboard fires a synthetic click, lead and sale through the real attribution pipeline, then polls readiness until it passes." href="/brand/cli/commands#affitor-onboard" />
+<NextStep title="Check the whole chain end to end?" description="affitor onboard fires a synthetic click, lead and sale through the real attribution pipeline, then polls readiness until it passes." href="/docs/brand/cli/commands#affitor-onboard" />

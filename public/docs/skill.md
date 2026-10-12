@@ -1,10 +1,10 @@
 # Affitor Integration Skill
 
 > A self-contained runbook for an AI coding agent. If a founder told you:
-> *"Follow https://docs.affitor.com/skill.md to integrate Affitor. Program `<id>` on `<api_base>`. Key in `AFFITOR_API_KEY`."*
+> *"Follow https://affitor.com/docs/skill.md to integrate Affitor. Program `<id>` on `<api_base>`. Key in `AFFITOR_API_KEY`."*
 > — you are in the right place. Execute the steps below **in order**. Do not re-read Affitor source; everything you need is here.
 >
-> Source of truth for fields/endpoints is the OpenAPI spec at `<api_base>/openapi.yaml` (mirror: https://docs.affitor.com/openapi.yaml). Never invent fields not in this file or that spec.
+> Source of truth for fields/endpoints is the OpenAPI spec at `<api_base>/openapi.yaml` (mirror: https://affitor.com/docs/openapi.yaml). Never invent fields not in this file or that spec.
 
 Affitor tracks affiliate **click → lead (signup) → sale** and attributes revenue to the partner who referred each customer. Your job: wire those three events into this brand's app, then prove the loop closes via the readiness endpoint.
 
@@ -359,4 +359,4 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 | `/api/v1/cli/test-event` `{ "type": "chain" }` | POST | Bearer | Fire a synthetic click→lead→sale to verify the pipeline |
 | `/api/v1/programs/me/readiness` | GET | Bearer | Poll the 5-gate verdict until `integration_verified: true` |
 
-Full spec: `<API_BASE>/openapi.yaml`  ·  Docs: https://docs.affitor.com
+Full spec: `<API_BASE>/openapi.yaml`  ·  Docs: https://affitor.com/docs
