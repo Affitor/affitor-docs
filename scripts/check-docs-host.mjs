@@ -149,6 +149,12 @@ mode(undefined, () => {
   check('off: docs host / served from /docs', serves('/', '/docs', false));
   check('off: docs host page served from /docs<path>', serves('/brand/quickstart?x=1', '/docs/brand/quickstart', false));
   check('off: docs host /changelog served from /docs/changelog', serves('/changelog', '/docs/changelog', false));
+  check('off: alias Host + x-forwarded-host docs.affitor.com is not rewritten', passes(PROXIES[0], '/brand/quickstart', { 'x-forwarded-host': DOCS }));
+  check('off: docs Host + x-forwarded-host affitor.com is still served from /docs', () => {
+    const r = run(DOCS, '/brand/quickstart', { 'x-forwarded-host': 'affitor.com' });
+    assert.equal(r.location, null);
+    assert.equal(r.rewrite && new URL(r.rewrite).pathname, '/docs/brand/quickstart');
+  });
   check('off: docs host /docs/<page> passes through', passes(DOCS, '/docs/brand/quickstart'));
   check('off: docs host /docs/api/search passes through', passes(DOCS, '/docs/api/search'));
   check('off: docs host /blogger is a docs page path', serves('/blogger', '/docs/blogger', false));
@@ -181,6 +187,12 @@ for (const status of ['301', '302']) {
     check(`${status}: /errors in one hop`, to('/errors', 'https://affitor.com/docs/api-reference/errors'));
     check(`${status}: /getting-started/what-is-affitor in one hop`, to('/getting-started/what-is-affitor', 'https://affitor.com/docs'));
     check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
+    // Only Host decides: Vercel external rewrites send the alias as Host while
+    // x-forwarded-host can still carry the public host, and the reverse must not matter.
+    check(`${status}: alias Host + x-forwarded-host docs.affitor.com is not redirected`, passes(PROXIES[0], '/brand/quickstart', { 'x-forwarded-host': DOCS }));
+    check(`${status}: affitor.com Host + x-forwarded-host docs.affitor.com is not redirected`, passes('affitor.com', '/docs/brand/quickstart', { 'x-forwarded-host': DOCS }));
+    check(`${status}: docs Host + x-forwarded-host affitor.com still redirects`, redirects(DOCS, '/brand/quickstart', 'https://affitor.com/docs/brand/quickstart', { 'x-forwarded-host': 'affitor.com' }, Number(status)));
+    check(`${status}: docs Host + x-forwarded-host alias still redirects`, redirects(DOCS, '/brand/quickstart', 'https://affitor.com/docs/brand/quickstart', { 'x-forwarded-host': PROXIES[0] }, Number(status)));
     check(`${status}: RSC request redirects too (intended)`, redirects(DOCS, '/brand/quickstart?_rsc=x', 'https://affitor.com/docs/brand/quickstart?_rsc=x', { rsc: '1' }, Number(status)));
   });
 }
