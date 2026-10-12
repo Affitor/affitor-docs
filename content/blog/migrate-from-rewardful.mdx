@@ -67,7 +67,7 @@ Run like this for at least one full Rewardful cookie window. Referrals that star
 
 ## Step 6: Disconnect Rewardful from Stripe
 
-When the window has passed and every partner who is coming has moved, settle the last Rewardful payout run and disconnect Rewardful from Stripe so it stops recording commissions.
+When the window has passed and every partner who is coming has moved, settle the last Rewardful payout run. Disconnect Rewardful from Stripe only once the recurring commissions on customers referred before the switch are settled, or keep it connected until they run out (see the note below).
 
 :::note
 
@@ -77,7 +77,7 @@ Disconnecting Rewardful from Stripe also ends the recurring commissions partners
 
 ## Step 7: Remove the Rewardful script
 
-Remove the Rewardful script from your site last. From this point, any Rewardful link still out in the wild stops tracking, so send partners one more reminder to update old links before you do it. Cancel your Rewardful plan once the final payouts are done.
+Remove the Rewardful script from your site last. From this point, any Rewardful link still out in the wild stops tracking, so send partners one more reminder to update old links before you do it. Cancel your Rewardful plan only after you disconnect it from Stripe in Step 6 and the final payouts, including any remaining recurring commissions, are done.
 
 ## Run both in parallel without paying twice
 
