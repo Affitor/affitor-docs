@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { BLOG_DOCS_ORIGIN } from '@/lib/site';
 
 /**
  * Marketing top bar for blog pages — recreates affitor.com's landing navbar
@@ -10,7 +11,7 @@ import { useState } from 'react';
 const NAV_LINKS: { label: string; href: string; active?: boolean }[] = [
   { label: 'Marketplace', href: 'https://affitor.com/marketplace' },
   { label: 'About', href: 'https://affitor.com/about' },
-  { label: 'Docs', href: '/docs' },
+  { label: 'Docs', href: `${BLOG_DOCS_ORIGIN}/docs` },
   { label: 'Blog', href: '/blog', active: true },
 ];
 
@@ -25,7 +26,7 @@ export function BlogNav() {
           <a href="https://affitor.com" className="flex items-center shrink-0" aria-label="Affitor">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/docs/affitor-logo.svg"
+              src={`${BLOG_DOCS_ORIGIN}/docs/affitor-logo.svg`}
               alt="Affitor"
               style={{ height: '22px', width: 'auto' }}
             />

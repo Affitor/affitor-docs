@@ -1,17 +1,29 @@
 import type { Metadata } from 'next';
+import type { ComponentProps } from 'react';
 import { notFound } from 'next/navigation';
+import FdLink from 'fumadocs-core/link';
 import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_URL, SITE_URL } from '@/lib/site';
+import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
 
 function getPost(slug: string) {
   return blog.find((post) => postSlug(post.info.path) === slug);
 }
 
 type Post = NonNullable<ReturnType<typeof getPost>>;
+
+/**
+ * MDX `a` override: post links to docs pages (`/docs/...` or `https://affitor.com/docs/...`)
+ * go through BLOG_DOCS_ORIGIN (see site.ts). The .md twins keep the canonical URL.
+ */
+function BlogPostLink({ href, ...props }: ComponentProps<typeof FdLink>) {
+  const docsPath = href?.replace(/^https:\/\/affitor\.com(?=\/docs(?:[/?#]|$))/, '');
+  const resolved = docsPath && /^\/docs(?:[/?#]|$)/.test(docsPath) ? `${BLOG_DOCS_ORIGIN}${docsPath}` : href;
+  return <FdLink href={resolved} {...props} />;
+}
 
 /** "Son Piaz, Founder" -> "Son Piaz" (role suffix is byline decoration, not the Person name). */
 function authorName(author: string) {
@@ -165,7 +177,7 @@ export default async function BlogPostPage(props: {
   if (!post) notFound();
 
   const Body = post.body;
-  const components = useMDXComponents({});
+  const components = useMDXComponents({ a: BlogPostLink });
   const jsonLd = buildJsonLd(post, slug);
 
   return (

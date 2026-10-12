@@ -9,3 +9,11 @@
 export const SITE_URL = 'https://affitor.com';
 export const DOCS_URL = `${SITE_URL}/docs`;
 export const BLOG_URL = `${SITE_URL}/blog`;
+
+/**
+ * Prefix for /docs links and assets inside the BLOG (served at affitor.com/blog).
+ * docs.affitor.com serves /docs/* in every DOCS_HOST_REDIRECT mode (200, or a redirect
+ * to affitor.com/docs once that is on), so these links work before, during and after
+ * the dashboard starts proxying affitor.com/docs. Set to '' once that proxy is live.
+ */
+export const BLOG_DOCS_ORIGIN = 'https://docs.affitor.com';
