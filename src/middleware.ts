@@ -7,6 +7,16 @@ import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
 const AI_BOTS =
   /GPTBot|ClaudeBot|Claude-Web|PerplexityBot|Google-Extended|Bytespider|CCBot|anthropic-ai|OAI-SearchBot/i;
 
+// The blog's canonical home is affitor.com/blog, but search engines were ranking the
+// docs.affitor.com/blog copies. Permanently redirect blog PAGES requested on the public
+// docs host to the apex twin. affitor.com/blog proxies to this app through the Vercel
+// production alias (affitor-docs.vercel.app), and Vercel external rewrites send the
+// destination host as Host, so proxied requests never match here and cannot loop.
+// Preview deployments have their own host and are untouched. Files with an extension
+// (the .md twins, images) stay on the docs host.
+const DOCS_HOST = 'docs.affitor.com';
+const BLOG_PAGE = /^\/blog(?:\/[^.]*)?$/;
+
 export function middleware(req: NextRequest, event: NextFetchEvent) {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || POSTHOG_PUBLIC_KEY;
   const match = req.headers.get('user-agent')?.match(AI_BOTS);
@@ -29,6 +39,11 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
         signal: AbortSignal.timeout(1000),
       }).catch(() => {}),
     );
+  }
+
+  const { pathname, search } = req.nextUrl;
+  if (req.headers.get('host') === DOCS_HOST && BLOG_PAGE.test(pathname)) {
+    return NextResponse.redirect(`https://affitor.com${pathname}${search}`, 301);
   }
 
   return NextResponse.next();
