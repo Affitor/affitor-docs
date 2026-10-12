@@ -120,18 +120,17 @@ for (const [mode, cases] of Object.entries(MODES)) {
       console.log(`${ok ? 'PASS' : 'FAIL'} ${host}${path} -> ${res.statusCode} ${got ?? ''} ${type ? type_ : ''}`);
       if (!ok) failed += 1;
     }
-    // Blog HTML must work whatever the dashboard runs: before affitor.com proxies /docs
-    // (new docs + old dashboard) and after a dashboard rollback, only /blog/* reaches this
-    // app. So every root-relative URL in blog HTML stays under /blog (or /favicon.ico,
-    // which the dashboard has), and every docs.affitor.com URL must answer here.
+    // affitor.com proxies /blog/* and /docs/* to this app, so every root-relative URL in
+    // blog HTML stays under /blog or /docs (or /favicon.ico, which the dashboard has),
+    // and every docs.affitor.com URL (assets) must answer here.
     for (const page of BLOG_PAGES) {
       const html = (await get(PROXY, page)).body;
       const urls = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
       const local = urls.filter((u) => u.startsWith('/') && !u.startsWith('//'));
-      const bad = local.filter((u) => u !== '/favicon.ico' && u !== '/blog' && !u.startsWith('/blog/') && !u.startsWith('/blog?'));
-      const apexDocs = urls.filter((u) => /^https:\/\/affitor\.com\/docs(?:[/?#]|$)/.test(u));
+      const bad = local.filter((u) => u !== '/favicon.ico' && !/^\/(?:blog|docs)(?:[/?#]|$)/.test(u));
+      const apexDocs = [];
       const ok = urls.length > 0 && bad.length === 0 && apexDocs.length === 0;
-      console.log(`${ok ? 'PASS' : 'FAIL'} blog HTML ${page}: ${local.length} root-relative URLs under /blog${bad.length ? `; outside /blog: ${bad.join(', ')}` : ''}${apexDocs.length ? `; affitor.com/docs: ${apexDocs.join(', ')}` : ''}`);
+      console.log(`${ok ? 'PASS' : 'FAIL'} blog HTML ${page}: ${local.length} root-relative URLs under /blog or /docs${bad.length ? `; outside: ${bad.join(', ')}` : ''}`);
       if (!ok) failed += 1;
       const docsHostUrls = [...new Set(urls.filter((u) => u.startsWith(`https://${DOCS}/`)))];
       let broken = 0;
