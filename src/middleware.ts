@@ -43,7 +43,9 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
 
   const { pathname, search } = req.nextUrl;
   if (req.headers.get('host') === DOCS_HOST && BLOG_PAGE.test(pathname)) {
-    return NextResponse.redirect(`https://affitor.com${pathname}${search}`, 301);
+    // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
+    // direct call never emits a trailing-slash URL.
+    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
   }
 
   return NextResponse.next();
