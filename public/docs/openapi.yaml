@@ -32,7 +32,7 @@ info:
     - Customer lifecycle: `click → lead → conversion` (status never regresses).
   contact:
     name: Affitor Support
-    url: https://docs.affitor.com/support/contact
+    url: https://affitor.com/docs/support/contact
 servers:
   - url: https://api.affitor.com
     description: Production
@@ -600,7 +600,7 @@ components:
                   code: api_key_rotation_required
                   message: "This API key was retired on 2026-10-03."
                   hint: "Create a new key in Affitor → Settings → API Key."
-                  docs_url: "https://docs.affitor.com/api-reference/errors#api_key_rotation_required"
+                  docs_url: "https://affitor.com/docs/api-reference/errors#api_key_rotation_required"
     RateLimited:
       description: |
         Per-minute rate limit exceeded. Refused before the endpoint runs, so
