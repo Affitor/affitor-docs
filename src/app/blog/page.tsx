@@ -6,7 +6,8 @@ import { formatDate, postSlug } from '@/components/blog/post-meta';
 import { BLOG_URL, docsBase } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Blog',
+  // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
+  title: { absolute: 'Blog | Affitor' },
   description:
     'Essays, launches, and guides from the team building Affitor — affiliate infrastructure for the agent era.',
   // Canonical home of the blog is the proxied affitor.com/blog zone.
