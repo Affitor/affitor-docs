@@ -1,68 +1,83 @@
 ---
-title: "How to Migrate from Tolt to Affitor (Step by Step)"
-description: "Move your affiliate program from Tolt to Affitor without losing a referral: invite your partners, give them new links, run both tools through your cookie window with each partner on one tool, then switch Stripe over. What Affitor does today, and what it does not do yet."
+title: "How to Migrate from Tolt to Affitor"
+description: "Move from Tolt to Affitor step by step: set up tracking, invite partners, run both without a link clash, then retire Tolt. And what is missing."
 date: '2026-10-12'
 updated: '2026-10-12'
 category: Guide
 authors: ["Son Piaz, Founder"]
-readTime: "7 min read"
+readTime: "8 min read"
 howto: true
 faq:
   - q: "Can Affitor import my partners and sales from Tolt automatically?"
-    a: "No, not today. You bring partners over by inviting them by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Tolt; Affitor starts counting from the day you switch."
+    a: "No, not today. You invite partners by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Tolt, and Affitor starts counting from the day each partner moves."
   - q: "Will my partners' existing Tolt links keep working?"
-    a: "They keep working in Tolt for as long as the Tolt script stays on your site. Affitor does not read Tolt's tracking parameter. Each partner gets a new Affitor link that uses ?aff=, and you should ask partners to update the links they have posted."
+    a: "They keep working in Tolt for as long as the Tolt script stays on your site, as long as they use a parameter other than aff. Each partner gets a new Affitor link that uses ?aff=, so ask partners to update the links they have posted. If your Tolt links already use ?aff=, change the Tolt parameter or skip running both tools."
   - q: "Can I run Tolt and Affitor at the same time?"
-    a: "Yes, and for most programs that is the safe way to switch. The rule is that each partner lives on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool."
+    a: "Yes, and for most programs that is the safe way to switch. Set up Affitor's sale tracking first, then keep each partner on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool."
   - q: "How long should I run both tools?"
     a: "At least as long as the cookie window set on your Tolt program. Long B2B windows mean a longer overlap, so check the setting before you pick a cutover date."
-  - q: "How much does Affitor cost?"
-    a: "Affitor is free until your first $10k in affiliate revenue, then 3.5% of affiliate-driven revenue. There is no monthly subscription."
+  - q: "What happens to recurring commissions my partners earn in Tolt?"
+    a: "They stop when you disconnect Tolt from Stripe, and Affitor cannot pick them up because it does not import history. Either keep Tolt connected until those commissions run out, or pay them yourself, and tell partners which one you chose."
 ---
 
-To migrate from Tolt to Affitor, export your partners from Tolt, invite those partners to Affitor by name and email, and have each one switch to a new `?aff=` link. Keep Tolt running through its cookie window with every partner on only one tool, then move your Stripe connection and remove the Tolt script. Affitor does not import history yet.
+To migrate from Tolt to Affitor, set up Affitor's sale tracking first, then invite your partners by name and email and give each a new `?aff=` link. Check that your Tolt links do not also use `aff`. Run both tools through Tolt's cookie window with each partner on one tool only, then disconnect Tolt from Stripe and remove its script.
 
 I wrote this as the guide I would want if I were the one switching: what each step involves, where things can go wrong, and what Affitor does not do yet. We build Affitor, so read the last part as carefully as the rest.
 
 ## Before you start
 
-You need admin access to Tolt, an Affitor account, and access to your site code and Stripe. Plan for the switch to take one full cookie window. Tolt lets you set the cookie duration per program, and B2B programs often use long ones, so look up yours before you set a date.
+You need admin access to Tolt, an Affitor account, and access to your site code and Stripe. Plan for the switch to take at least one full cookie window. Tolt lets you set the cookie duration per program, and B2B programs often use long ones, so look up yours before you set a date.
 
-Make one decision up front: will you move every partner at once, or move them in batches? Both work. Batches are easier to watch, and they are the only way to keep a partner on one tool at all times without a scramble on cutover day.
+Make one decision up front: will you move every partner at once, or move them in batches? Both work. Batches are easier to watch, and they make it easier to keep each partner on one tool at all times.
 
 ## Step 1: Export your partners from Tolt
 
-Pull your partner list out of Tolt and keep it as a spreadsheet. You will use it to invite partners and, later, to check that nobody was left behind. Tolt's API has a list-partners endpoint if you would rather script the export than copy it by hand.
+Pull your partner list out of Tolt and keep it as a spreadsheet. You will use it to invite partners and, later, to check that nobody was left behind. If you would rather script the export than copy it by hand, [Tolt's API](https://docs.tolt.com/partners/list) has an endpoint that lists the partners in a program.
 
 For each partner, capture at least their name, email, commission rate, and unpaid balance. Affitor needs only the name and email. The other columns are for you: unpaid balances get paid out of Tolt, not Affitor.
 
-## Step 2: Invite your partners to Affitor
+## Step 2: Set up Affitor's sale tracking before anyone moves
 
-Create your program on Affitor, set the commission to match what partners earn today, and connect tracking. The [quickstart](/docs/getting-started/quickstart) covers that part.
+Create your program on Affitor and set the commission to match what partners earn today. Then connect sale tracking now, before you invite a single partner, so every sale from a partner who moves is recorded from their first day on Affitor.
 
-Then open **Partners**, click **Invite partners**, and paste the emails or import a CSV with `name,email` columns. You can invite up to 50 people per batch. Each partner gets an email with your program terms and an Accept button. They sign in, accept, and get their Affitor link right away. Invites expire after 30 days, so follow up with anyone who has not accepted. Details are in [Inviting partners](/docs/brand/quickstart/inviting-partners).
+Pick one sale path for the program and stay on it:
+
+- **Stripe path.** You keep charging in your own Stripe account, connect it to Affitor, and pass the Affitor metadata on Checkout. Follow [Payment tracking](/docs/brand/tracking/payment-tracking-stripe).
+- **Server-side path.** Your backend reports each sale to Affitor when the payment succeeds. Follow the [quickstart](/docs/getting-started/quickstart).
+
+Do not run both paths for the same program. Add the Affitor tracking script to your site next to the Tolt script, and run one test purchase end to end before you move on.
+
+## Step 3: Invite your partners to Affitor
+
+Open **Partners**, click **Invite partners**, and paste the emails or import a CSV with `name,email` columns. You can invite up to 50 people per batch. Each partner gets an email with your program terms and an Accept button. They sign in, accept, and get their Affitor link right away. Invites expire after 30 days, so follow up with anyone who has not accepted. Details are in [Inviting partners](/docs/brand/quickstart/inviting-partners).
 
 This is a real ask of your partners. Tell them before the invite arrives why you are moving and what changes for them.
 
-## Step 3: Give every partner a new link
+## Step 4: Give every partner a new link
 
-Tolt links carry Tolt's own tracking parameter, commonly `?via=`. Affitor links look like `yoursite.com/?aff=CODE`. Affitor does not read Tolt's parameter, so a partner's old link only counts in Tolt.
+Affitor links look like `yoursite.com/?aff=CODE`. Before you send any, open one of your partners' Tolt links and note the parameter in it. If it is anything other than `aff`, Affitor does not read it, so a partner's old link only counts in Tolt.
 
-Ask each partner to replace the links they control: their bio, their newsletter footer, their pinned post. Old links buried in videos and old articles will keep crediting through Tolt until you remove its script in Step 6, and after that they stop tracking.
+If your Tolt links also use `?aff=`, both tools would read the same links once the Affitor script is on your site, and a click could be counted in both. Fix that before Step 5: switch your Tolt program to a different parameter if Tolt lets you, or skip the overlap and move every partner on the same day, with the Tolt script removed when the Affitor one goes live.
 
-## Step 4: Run both tools through the cookie window
+Ask each partner to replace the links they control: their bio, their newsletter footer, their pinned post. Old links buried in videos and old articles will keep crediting through Tolt until you remove its script in Step 7, and after that they stop tracking.
 
-Leave the Tolt script on your site and add the Affitor tracking next to it. Partners who have moved send traffic with `?aff=`, partners who have not yet moved keep using their Tolt links, and each tool only tracks its own links.
+## Step 5: Run both tools through the cookie window
 
-Run like this for at least one full Tolt cookie window. Referrals that started in Tolt get the time to convert there, and new referrals from moved partners start in Affitor. If your Tolt window is long, moving partners in batches keeps the overlap manageable. The next section covers the rules that keep this safe.
+Keep Tolt running while partners move. Partners who have moved send traffic with `?aff=`, and partners who have not moved yet keep using their Tolt links. As long as your Tolt links use a parameter other than `aff` (see Step 4), each tool only tracks its own links.
 
-## Step 5: Switch your Stripe connection
+Run like this for at least one full Tolt cookie window. Referrals that started in Tolt get the time to convert there, and new referrals from moved partners land in Affitor, because its sale tracking has been live since Step 2. The next section covers the rules that keep this safe.
 
-When the window has passed and every partner who is coming has moved, connect Stripe to Affitor as your only affiliate tool. Follow [Payment tracking](/docs/brand/tracking/payment-tracking-stripe) to pass the Affitor metadata on Checkout, and test one purchase end to end before you trust it.
+## Step 6: Disconnect Tolt from Stripe
 
-Then settle the last Tolt payout run and disconnect Tolt from Stripe so it stops recording new commissions.
+When the window has passed and every partner who is coming has moved, settle the last Tolt payout run and disconnect Tolt from Stripe so it stops recording commissions.
 
-## Step 6: Remove the Tolt script
+:::note
+
+Disconnecting Tolt from Stripe also ends the recurring commissions partners still earn on customers they referred before the switch. Affitor cannot take those over, because it does not import history. Decide this before you disconnect: either keep Tolt connected until those commissions run out, or pay them yourself from your own records. Then tell your partners which one you chose.
+
+:::
+
+## Step 7: Remove the Tolt script
 
 Remove the Tolt script from your site last. From this point, any Tolt link still out in the wild stops tracking, so send partners one more reminder to update old links before you do it. Cancel your Tolt plan once the final payouts are done.
 
@@ -75,43 +90,44 @@ Here is what can go wrong if you do not:
 - **The same partner is active in both tools.** They post both links, a customer clicks one and later the other, and each tool records the sale. You pay that partner twice for one customer.
 - **Two partners claim the same customer.** A customer clicks partner A's Tolt link, then partner B's Affitor link, then buys. Each tool credits its own partner. Affitor does not check Tolt's records, and Tolt does not check Affitor's.
 - **The numbers will not match.** Two tools with different windows and rules will credit some sales differently. That is expected, not a bug. Reconcile at the end of each month so every sale has a commission in at most one tool.
+- **Both tools read the same parameter.** If your Tolt links use `?aff=`, every click lands in both tools. Change the Tolt parameter or skip the overlap, as described in Step 4.
 
-Affitor ignores Stripe sales it cannot connect to one of its own partners: no commission and no fee. That keeps Tolt's sales out of Affitor, but it does not stop the cases above, which is why the one-partner-one-tool rule matters.
+Affitor ignores Stripe sales it cannot connect to one of its own partners, so it creates no commission and charges no fee on them. That keeps Tolt's sales out of Affitor, but it does not stop the cases above, which is why the one-partner-one-tool rule matters.
 
 ## What Affitor does not do yet
 
 I would rather you hear this from me than find it on cutover day.
 
-- **No automatic import.** Affitor does not connect to Tolt and pull your partners, customers, or referrals. You invite partners by name and email, and each partner accepts.
-- **Old links are not carried over.** Affitor only tracks `?aff=` links. Tolt links keep working only while the Tolt script stays installed.
-- **No history import.** Past sales, clicks, and unpaid commissions stay in Tolt. Pay outstanding balances from Tolt before you close it.
-- **No cross-tool duplicate check.** Affitor cannot see Tolt's data, so keeping each partner on one tool is your call, not something the software enforces.
+- **Partners are invited, not imported.** Affitor does not connect to Tolt to pull your partners, customers, or referrals. You invite partners by name and email, and each partner accepts.
+- **Old links stay with Tolt.** Affitor only tracks `?aff=` links. Tolt links keep working only while the Tolt script stays installed.
+- **History stays in Tolt.** Past sales, clicks, unpaid commissions, and recurring commissions on existing customers are not moved. Settle them in Tolt or pay them yourself.
+- **Duplicates across tools are up to you.** Affitor cannot see Tolt's data, so keeping each partner on one tool is your call, and the software does not enforce it.
 
 ## What it costs
 
-Affitor is free until your first $10k in affiliate revenue, then 3.5%. There is no monthly subscription and no setup fee, so you can run both tools during the move without paying for a second plan. The [pricing model](/docs/getting-started/pricing-performance-model) explains how the fee is counted.
+Affitor is free until your first $10k in affiliate revenue, then 3.5%. The $10k is counted per program, and there is no monthly subscription or setup fee, so you can run both tools during the move without paying for a second plan. The [pricing model](/docs/getting-started/pricing-performance-model) explains how the fee is counted.
 
 ## FAQ
 
 ### Can Affitor import my partners and sales from Tolt automatically?
 
-No, not today. You bring partners over by inviting them by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Tolt; Affitor starts counting from the day you switch.
+No, not today. You invite partners by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Tolt, and Affitor starts counting from the day each partner moves.
 
 ### Will my partners' existing Tolt links keep working?
 
-They keep working in Tolt for as long as the Tolt script stays on your site. Affitor does not read Tolt's tracking parameter. Each partner gets a new Affitor link that uses `?aff=`, and you should ask partners to update the links they have posted.
+They keep working in Tolt for as long as the Tolt script stays on your site, as long as they use a parameter other than aff. Each partner gets a new Affitor link that uses `?aff=`, so ask partners to update the links they have posted. If your Tolt links already use `?aff=`, change the Tolt parameter or skip running both tools.
 
 ### Can I run Tolt and Affitor at the same time?
 
-Yes, and for most programs that is the safe way to switch. The rule is that each partner lives on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool.
+Yes, and for most programs that is the safe way to switch. Set up Affitor's sale tracking first, then keep each partner on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool.
 
 ### How long should I run both tools?
 
 At least as long as the cookie window set on your Tolt program. Long B2B windows mean a longer overlap, so check the setting before you pick a cutover date.
 
-### How much does Affitor cost?
+### What happens to recurring commissions my partners earn in Tolt?
 
-Affitor is free until your first $10k in affiliate revenue, then 3.5% of affiliate-driven revenue. There is no monthly subscription.
+They stop when you disconnect Tolt from Stripe, and Affitor cannot pick them up because it does not import history. Either keep Tolt connected until those commissions run out, or pay them yourself, and tell partners which one you chose.
 
 ## What's next
 
@@ -119,7 +135,7 @@ Start with the partners most likely to accept quickly, move them first, and watc
 
 [Launch your program free](https://affitor.com), or read [Inviting partners](/docs/brand/quickstart/inviting-partners) first.
 
-## More comparisons
+## Related guides
 
 - [Tolt alternatives](/blog/tolt-alternatives)
 - [Tolt vs Rewardful](/blog/tolt-vs-rewardful)
