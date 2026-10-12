@@ -54,9 +54,9 @@ function check(name, fn) {
     console.error(`FAIL ${name}\n  ${error.message}`);
   }
 }
-const redirects = (host, path, location, headers) => () => {
+const redirects = (host, path, location, headers, status = 301) => () => {
   const r = run(host, path, headers);
-  assert.equal(r.status, 301, `${host}${path} status`);
+  assert.equal(r.status, status, `${host}${path} status`);
   assert.equal(r.location, location, `${host}${path} location`);
 };
 const passes = (host, path, headers) => () => {
@@ -65,76 +65,132 @@ const passes = (host, path, headers) => () => {
   assert.equal(r.rewrite, null, `${host}${path} must not rewrite, got ${r.rewrite}`);
   assert.equal(r.status, 200, `${host}${path} status`);
 };
-const servesInPlace = (path, internal) => () => {
+// Served in place: 200, internal rewrite to `internal`, optional canonical Link.
+const serves = (path, internal, link = true) => () => {
   const r = run(DOCS, path);
   assert.equal(r.location, null, `${path} must not redirect, got ${r.location}`);
   assert.equal(r.status, 200, `${path} status`);
   assert.equal(r.rewrite && new URL(r.rewrite).pathname, internal, `${path} rewrite`);
-  assert.equal(r.link, `<https://affitor.com${internal}>; rel="canonical"`, `${path} canonical Link`);
+  assert.equal(r.link, link ? `<https://affitor.com${internal}>; rel="canonical"` : null, `${path} canonical Link`);
 };
+function mode(value, fn) {
+  if (value === undefined) delete process.env.DOCS_HOST_REDIRECT;
+  else process.env.DOCS_HOST_REDIRECT = value;
+  console.log(`\n--- DOCS_HOST_REDIRECT=${value ?? '(unset)'}`);
+  fn();
+}
 
 const DOCS = 'docs.affitor.com';
-check('docs host /blog -> 301 affitor.com/blog', redirects(DOCS, '/blog', 'https://affitor.com/blog'));
-check(
-  'docs host /blog/<slug> -> 301 with query kept',
-  redirects(DOCS, '/blog/rewardful-alternatives?utm_source=x&b=2', 'https://affitor.com/blog/rewardful-alternatives?utm_source=x&b=2'),
-);
-check('docs host /blog/ (trailing slash) -> 301 affitor.com/blog', redirects(DOCS, '/blog/', 'https://affitor.com/blog'));
-check(
-  'docs host /blog/<slug>/ (trailing slash) -> 301 without the slash',
-  redirects(DOCS, '/blog/rewardful-alternatives/', 'https://affitor.com/blog/rewardful-alternatives'),
-);
-check('docs host /blog/<slug>.md twin is NOT redirected', passes(DOCS, '/blog/rewardful-alternatives.md'));
-check('docs host blog image is NOT redirected', passes(DOCS, '/blog/cover.png'));
-// Intended: RSC payload requests on the docs host redirect too. The browser's
-// cross-origin RSC fetch fails and Next falls back to a full page load of the same
-// URL, which then lands on affitor.com/blog. Serving them would keep docs-host blog
-// content reachable; affitor.com's own RSC requests arrive on the proxy host instead.
-check('docs host /blog?_rsc=x -> 301 (intended)', redirects(DOCS, '/blog?_rsc=x', 'https://affitor.com/blog?_rsc=x'));
-check(
-  'docs host RSC header request (rsc: 1, next-router-state-tree) -> 301 (intended)',
-  redirects(DOCS, '/blog/rewardful-alternatives', 'https://affitor.com/blog/rewardful-alternatives', {
-    rsc: '1',
-    'next-router-state-tree': '%5B%22%22%5D',
-  }),
-);
-// Docs pages: one 301 hop to affitor.com/docs, the old root path kept under /docs.
-check('docs host / -> 301 affitor.com/docs', redirects(DOCS, '/', 'https://affitor.com/docs'));
-check(
-  'docs host page -> 301 affitor.com/docs/<page> with query kept',
-  redirects(DOCS, '/api-reference/errors?x=1', 'https://affitor.com/docs/api-reference/errors?x=1'),
-);
-check('docs host page/ (trailing slash) -> 301 without the slash', redirects(DOCS, '/brand/quickstart/', 'https://affitor.com/docs/brand/quickstart'));
-check('docs host /blogger is a docs page path, not the blog', redirects(DOCS, '/blogger', 'https://affitor.com/docs/blogger'));
-check('docs host /changelog -> 301 affitor.com/docs/changelog', redirects(DOCS, '/changelog', 'https://affitor.com/docs/changelog'));
-check('docs host legacy /advertisers/x keeps its path (renamed on the next hop)', redirects(DOCS, '/advertisers/quickstart', 'https://affitor.com/docs/advertisers/quickstart'));
-check('docs host old /docs/<page> keeps its path, no double prefix', redirects(DOCS, '/docs/brand/quickstart', 'https://affitor.com/docs/brand/quickstart'));
-check('docs host /docs -> 301 affitor.com/docs', redirects(DOCS, '/docs', 'https://affitor.com/docs'));
-check('docs host /docsy is not mistaken for /docs', redirects(DOCS, '/docsy', 'https://affitor.com/docs/docsy'));
-check('docs host old search API -> 301 to the moved endpoint', redirects(DOCS, '/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
-check('docs host RSC request for a docs page -> 301 (intended)', redirects(DOCS, '/brand/quickstart?_rsc=x', 'https://affitor.com/docs/brand/quickstart?_rsc=x', { rsc: '1' }));
-// Machine-readable files that moved under /docs: served in place (agents were told to
-// fetch docs.affitor.com/skill.md; some fetchers refuse cross-host redirects).
-check('docs host /skill.md served in place from /docs/skill.md', servesInPlace('/skill.md', '/docs/skill.md'));
-check('docs host /llms.txt served in place', servesInPlace('/llms.txt', '/docs/llms.txt'));
-check('docs host /llms-full.txt served in place', servesInPlace('/llms-full.txt', '/docs/llms-full.txt'));
-check('docs host /openapi.yaml served in place', servesInPlace('/openapi.yaml', '/docs/openapi.yaml'));
-check('docs host /index.md twin served in place', servesInPlace('/index.md', '/docs/index.md'));
-check('docs host page twin served in place', servesInPlace('/api-reference/errors.md', '/docs/api-reference/errors.md'));
-check('docs host /changelog.md served in place', servesInPlace('/changelog.md', '/docs/changelog.md'));
-// Other files pass through untouched.
-for (const path of ['/robots.txt', '/sitemap.xml', '/favicon.ico', '/docs/brand/dashboard.png', '/docs/skill.md', '/docs/api-reference/errors.md', '/opengraph-image.png']) {
-  check(`docs host ${path} passes through`, passes(DOCS, path));
-}
-for (const host of ['affitor-docs.vercel.app', 'affitor.com', 'affitor-docs-git-x-affitor.vercel.app']) {
-  for (const path of [
-    '/blog', '/blog/rewardful-alternatives?utm_source=x', '/blog/rewardful-alternatives.md',
-    '/docs', '/docs/brand/quickstart', '/docs/brand/quickstart.md', '/docs/api/search', '/skill.md', '/brand/quickstart',
-  ]) {
-    check(`${host}${path} is never redirected or rewritten (proxy / preview host)`, passes(host, path, { rsc: '1' }));
+const PROXIES = ['affitor-docs.vercel.app', 'affitor.com', 'affitor-docs-git-x-affitor.vercel.app'];
+
+// Same in every mode: blog pages, moved files, other files, proxy hosts.
+function invariants() {
+  check('docs host /blog -> 301 affitor.com/blog', redirects(DOCS, '/blog', 'https://affitor.com/blog'));
+  check(
+    'docs host /blog/<slug> -> 301 with query kept',
+    redirects(DOCS, '/blog/rewardful-alternatives?utm_source=x&b=2', 'https://affitor.com/blog/rewardful-alternatives?utm_source=x&b=2'),
+  );
+  check('docs host /blog/ (trailing slash) -> 301 affitor.com/blog', redirects(DOCS, '/blog/', 'https://affitor.com/blog'));
+  check('docs host /blog/<slug>/ -> 301 without the slash', redirects(DOCS, '/blog/rewardful-alternatives/', 'https://affitor.com/blog/rewardful-alternatives'));
+  check('docs host /blog?_rsc=x -> 301 (intended)', redirects(DOCS, '/blog?_rsc=x', 'https://affitor.com/blog?_rsc=x'));
+  check('docs host legacy /docs/blog/<slug> -> 301 affitor.com/blog/<slug>', redirects(DOCS, '/docs/blog/rewardful-alternatives', 'https://affitor.com/blog/rewardful-alternatives'));
+  check('docs host legacy /docs/blog -> 301 affitor.com/blog', redirects(DOCS, '/docs/blog', 'https://affitor.com/blog'));
+  // Files that moved under /docs: served in place with a canonical Link.
+  for (const [path, internal] of [
+    ['/skill.md', '/docs/skill.md'],
+    ['/llms.txt', '/docs/llms.txt'],
+    ['/llms-full.txt', '/docs/llms-full.txt'],
+    ['/openapi.yaml', '/docs/openapi.yaml'],
+    ['/index.md', '/docs/index.md'],
+    ['/api-reference/errors.md', '/docs/api-reference/errors.md'],
+    ['/changelog.md', '/docs/changelog.md'],
+    ['/affitor-logo.svg', '/docs/affitor-logo.svg'],
+    ['/favicon.svg', '/docs/favicon.svg'],
+    ['/apple-touch-icon.png', '/docs/apple-touch-icon.png'],
+    ['/images/how-it-works-diagram.png', '/docs/images/how-it-works-diagram.png'],
+    ['/changelog/invite-partners/invite-compose.png', '/docs/changelog/invite-partners/invite-compose.png'],
+    // renamed pages' twins resolve to the current twin (no 404 after the config phase)
+    ['/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
+    ['/advertisers/tracking/pageview-tracker-click.md', '/docs/brand/tracking/click-tracking.md'],
+    ['/getting-started/what-is-affitor.md', '/docs/index.md'],
+    ['/errors.md', '/docs/api-reference/errors.md'],
+    ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
+    ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
+  ]) check(`docs host ${path} served in place from ${internal}`, serves(path, internal));
+  for (const path of ['/robots.txt', '/sitemap.xml', '/favicon.ico', '/opengraph-image.png', '/docs/brand/dashboard.png', '/docs/skill.md', '/docs/api-reference/errors.md', '/blog/rewardful-alternatives.md', '/blog/covers/x.png']) {
+    check(`docs host ${path} passes through`, passes(DOCS, path));
+  }
+  for (const host of PROXIES) {
+    for (const path of [
+      '/blog', '/blog/rewardful-alternatives?utm_source=x', '/blog/rewardful-alternatives.md',
+      '/docs', '/docs/brand/quickstart', '/docs/brand/quickstart.md', '/docs/api/search', '/skill.md', '/brand/quickstart',
+    ]) {
+      check(`${host}${path} is never redirected or rewritten (proxy / preview host)`, passes(host, path, { rsc: '1' }));
+    }
+    // Renames resolve on every host as a same-host redirect (Next sends it relative,
+    // so a proxied request stays on affitor.com; check-docs-host-http.mjs pins that).
+    for (const [path, location] of [
+      ['/docs/advertisers/quickstart', '/docs/brand/quickstart'],
+      ['/docs/advertisers/tracking/pageview-tracker-click', '/docs/brand/tracking/click-tracking'],
+      ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
+      ['/docs/errors?x=1', '/docs/api-reference/errors?x=1'],
+      ['/docs/getting-started/what-is-affitor', '/docs'],
+      ['/docs/getting-started/glossary', '/docs/support/glossary'],
+      ['/docs/blog/rewardful-alternatives', '/blog/rewardful-alternatives'],
+      ['/docs/blog', '/blog'],
+    ]) check(`${host}${path} -> 308 ${location} on the same host`, redirects(host, path, `https://${host}${location}`, {}, 308));
+    check(`${host}/docs/advertisers-x is not a rename`, passes(host, '/docs/advertisers-x'));
   }
 }
-check('AI crawler on docs host is captured AND redirected', () => {
+
+mode(undefined, () => {
+  invariants();
+  // Redirects off: the docs host keeps serving every old root URL (and /docs URLs).
+  check('off: docs host / served from /docs', serves('/', '/docs', false));
+  check('off: docs host page served from /docs<path>', serves('/brand/quickstart?x=1', '/docs/brand/quickstart', false));
+  check('off: docs host /changelog served from /docs/changelog', serves('/changelog', '/docs/changelog', false));
+  check('off: docs host /docs/<page> passes through', passes(DOCS, '/docs/brand/quickstart'));
+  check('off: docs host /docs/api/search passes through', passes(DOCS, '/docs/api/search'));
+  check('off: docs host /blogger is a docs page path', serves('/blogger', '/docs/blogger', false));
+  check('off: renamed root page -> 308 to its root-layout path', redirects(DOCS, '/advertisers/quickstart', 'https://docs.affitor.com/brand/quickstart', {}, 308));
+  check('off: /errors -> 308 /api-reference/errors', redirects(DOCS, '/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
+  check('off: /docs/errors -> 308 /api-reference/errors', redirects(DOCS, '/docs/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
+  check('off: /getting-started/what-is-affitor -> 308 /', redirects(DOCS, '/getting-started/what-is-affitor', 'https://docs.affitor.com/', {}, 308));
+  check('off: AI crawler on a docs page is captured, page served', () => {
+    captures = 0;
+    const r = run(DOCS, '/brand/quickstart', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.2)' });
+    assert.equal(r.status, 200);
+    assert.equal(captures, 1, 'PostHog capture fired');
+  });
+});
+
+for (const status of ['301', '302']) {
+  mode(status, () => {
+    invariants();
+    const to = (path, location) => redirects(DOCS, path, location, {}, Number(status));
+    check(`${status}: docs host / -> affitor.com/docs`, to('/', 'https://affitor.com/docs'));
+    check(`${status}: docs host page, query kept`, to('/api-reference/errors?x=1', 'https://affitor.com/docs/api-reference/errors?x=1'));
+    check(`${status}: trailing slash dropped`, to('/brand/quickstart/', 'https://affitor.com/docs/brand/quickstart'));
+    check(`${status}: /blogger is a docs page path`, to('/blogger', 'https://affitor.com/docs/blogger'));
+    check(`${status}: /changelog -> affitor.com/docs/changelog`, to('/changelog', 'https://affitor.com/docs/changelog'));
+    check(`${status}: old /docs/<page> keeps its path`, to('/docs/brand/quickstart', 'https://affitor.com/docs/brand/quickstart'));
+    check(`${status}: /docs -> affitor.com/docs`, to('/docs', 'https://affitor.com/docs'));
+    check(`${status}: /docsy is not mistaken for /docs`, to('/docsy', 'https://affitor.com/docs/docsy'));
+    check(`${status}: renamed /advertisers/x lands on /docs/brand/x in one hop`, to('/advertisers/quickstart', 'https://affitor.com/docs/brand/quickstart'));
+    check(`${status}: renamed /docs/advertisers/x in one hop`, to('/docs/advertisers/quickstart', 'https://affitor.com/docs/brand/quickstart'));
+    check(`${status}: /errors in one hop`, to('/errors', 'https://affitor.com/docs/api-reference/errors'));
+    check(`${status}: /getting-started/what-is-affitor in one hop`, to('/getting-started/what-is-affitor', 'https://affitor.com/docs'));
+    check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
+    check(`${status}: RSC request redirects too (intended)`, redirects(DOCS, '/brand/quickstart?_rsc=x', 'https://affitor.com/docs/brand/quickstart?_rsc=x', { rsc: '1' }, Number(status)));
+  });
+}
+
+mode('yes', () => {
+  check('an unknown DOCS_HOST_REDIRECT value keeps redirects off', serves('/brand/quickstart', '/docs/brand/quickstart', false));
+});
+delete process.env.DOCS_HOST_REDIRECT;
+
+check('AI crawler on docs host blog page is captured AND redirected', () => {
   captures = 0;
   const r = run(DOCS, '/blog/rewardful-alternatives', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.2)' });
   assert.equal(r.status, 301);

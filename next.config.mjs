@@ -38,43 +38,12 @@ const config = {
   async redirects() {
     return [
       {
-        // The landing page is /docs. Not on docs.affitor.com: its middleware sends
-        // every page to affitor.com/docs in one hop, and config redirects run first.
+        // The landing page is /docs. Not on docs.affitor.com: its middleware handles /
+        // (config redirects run before middleware). Renamed pages are redirected in
+        // src/middleware.ts (currentPath), so docs.affitor.com can do it in one hop.
         source: '/',
         missing: [{ type: 'host', value: 'docs.affitor.com' }],
         destination: '/docs',
-        permanent: true,
-      },
-      {
-        // tracker page renamed BEFORE the audience-slug catch-all below —
-        // first match wins, and this one needs a different destination.
-        source: '/docs/advertisers/tracking/pageview-tracker-click',
-        destination: '/docs/brand/tracking/click-tracking',
-        permanent: true,
-      },
-      {
-        // audience slug renamed to match the app's /brand/* paths (old URLs
-        // are indexed by search/AI engines — keep them alive forever)
-        source: '/docs/advertisers/:path*',
-        destination: '/docs/brand/:path*',
-        permanent: true,
-      },
-      {
-        // intro content now lives at the docs landing
-        source: '/docs/getting-started/what-is-affitor',
-        destination: '/docs',
-        permanent: true,
-      },
-      {
-        // glossary moved under Support
-        source: '/docs/getting-started/glossary',
-        destination: '/docs/support/glossary',
-        permanent: true,
-      },
-      {
-        // the error reference is the page people guess at as /errors
-        source: '/docs/errors',
-        destination: '/docs/api-reference/errors',
         permanent: true,
       },
     ];

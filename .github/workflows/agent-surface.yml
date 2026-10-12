@@ -20,3 +20,4 @@ jobs:
       - run: npm run build
       - run: node scripts/check-agent-surface.mjs
       - run: node scripts/check-docs-host.mjs
+      - run: node scripts/check-docs-host-http.mjs
