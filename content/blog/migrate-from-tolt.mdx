@@ -26,7 +26,7 @@ I wrote this as the guide I would want if I were the one switching: what each st
 
 ## Before you start
 
-You need admin access to Tolt, an Affitor account, and access to your site code and Stripe. Plan for the switch to take at least one full cookie window. Tolt lets you set the cookie duration per program, and B2B programs often use long ones, so look up yours before you set a date.
+You need admin access to Tolt, an Affitor account, and access to your site code and Stripe. Plan for the switch to take at least one full cookie window. Tolt lets you set the cookie duration per program, and B2B programs often use long ones, so look up yours before you set a date. Also open one of your partners' Tolt links and note its parameter: if it is `aff`, read Step 4 before you add any Affitor tracking to your site.
 
 Make one decision up front: will you move every partner at once, or move them in batches? Both work. Batches are easier to watch, and they make it easier to keep each partner on one tool at all times.
 
@@ -55,9 +55,9 @@ This is a real ask of your partners. Tell them before the invite arrives why you
 
 ## Step 4: Give every partner a new link
 
-Affitor links look like `yoursite.com/?aff=CODE`. Before you send any, open one of your partners' Tolt links and note the parameter in it. If it is anything other than `aff`, Affitor does not read it, so a partner's old link only counts in Tolt.
+Affitor links look like `yoursite.com/?aff=CODE`. Check the parameter in your partners' Tolt links (see Before you start). If it is anything other than `aff`, Affitor does not read it, so a partner's old link only counts in Tolt.
 
-If your Tolt links also use `?aff=`, both tools would read the same links once the Affitor script is on your site, and a click could be counted in both. Fix that before Step 5: switch your Tolt program to a different parameter if Tolt lets you, or skip the overlap and move every partner on the same day, with the Tolt script removed when the Affitor one goes live.
+If your Tolt links also use `?aff=`, both tools would read the same links once the Affitor script is on your site, and a click could be counted in both. Fix that before the Affitor script goes on your site in Step 2: switch your Tolt program to a different parameter if Tolt lets you, or skip the overlap and move every partner on the same day, with the Tolt script removed when the Affitor one goes live.
 
 Ask each partner to replace the links they control: their bio, their newsletter footer, their pinned post. Old links buried in videos and old articles will keep crediting through Tolt until you remove its script in Step 7, and after that they stop tracking.
 
