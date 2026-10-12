@@ -30,8 +30,8 @@ faq:
     a: "Reditus offers free white-glove migration that keeps your old tracking parameters working. Dub Partners imports partners from Rewardful, PartnerStack, FirstPromoter, Tolt, Tapfiliate and Lemon Squeezy, and Partnero imports from Rewardful. Affitor has no importer today: you invite partners by email or CSV and they get new links, so most teams run both tools side by side for a while."
   - q: "How do affiliate tools decide which partner gets credit for a sale?"
     a: "Most set a cookie when a visitor clicks a partner link and credit the sale if it lands inside the cookie window, often with coupon codes as a second path. Dub Partners and Affitor also tie the customer to the partner at signup, so later payments match on the customer record rather than on the cookie."
-  - q: "Is a percentage fee cheaper than a flat subscription?"
-    a: "Only while affiliate revenue is low or uneven. After Affitor's free first $10,000 per program, its 3.5% fee equals PromoteKit's $29 plan at about $830 a month in affiliate revenue and Rewardful's $99 Growth plan at about $2,830 a month. Above that, a flat plan costs less."
+  - q: "How is a percentage fee different from a flat subscription?"
+    a: "A flat subscription costs the same every month whether affiliates sell anything or not, and many plans cap the affiliate revenue they cover, so the price steps up as you grow. A percentage fee costs nothing while affiliates bring in nothing and grows only with the sales they drive. Affitor charges nothing until a program has made $10,000 through affiliates, then 3.5% of affiliate-driven sales, with every feature on from day one."
   - q: "Which affiliate software works with Paddle or Chargebee?"
     a: "FirstPromoter supports Stripe, Paddle, Chargebee, Recurly and Braintree. Partnero and Reditus list Stripe, Paddle and Chargebee, and Tolt works with Stripe and Paddle. PromoteKit requires Stripe. Affitor reads Stripe sales with no code and takes other billing systems through its API or SDK."
 ---
@@ -51,8 +51,6 @@ We build Affitor, one of the nine, so read this with that in mind. The tools are
 - **Developer teams that want links, payouts and an API in one product:** Dub Partners, from $90 a month plus a 5% payout fee.
 - **Someone to bring you B2B SaaS affiliates and move your program for you:** Reditus, from $99 a month billed annually.
 - **Affiliates, resellers and co-sell partners in one enterprise system:** PartnerStack, priced by quote after a demo.
-
-One caveat on our own pitch: once your affiliate revenue is steady and past the free $10,000, most flat plans cost less than 3.5%. The cost table below shows exactly where that line sits.
 
 ## The nine tools at a glance
 
@@ -113,26 +111,6 @@ Developer access is close to standard now. Affitor, Rewardful and FirstPromoter 
 
 "Not listed" means we couldn't find it on the vendor's pricing page or docs on October 12, 2026, not that it can't exist.
 
-## What a year costs at four revenue levels
-
-Headline prices hide the number that matters: what you pay over a year at the affiliate revenue you actually have. Here is the first year at four steady monthly levels.
-
-| Tool | $500/mo | $2,000/mo | $8,000/mo | $25,000/mo |
-|---|---|---|---|---|
-| Affitor | $0 | $490 | $3,010 | $10,150 |
-| PromoteKit | $348 | $348 | $348 | Quote |
-| Rewardful | $588 | $588 | $1,188 | $1,788 |
-| FirstPromoter | $588 | $588 | $1,188 | $1,788+ |
-| Partnero | $708 | $708 | $708 | $708 |
-| Tolt | $828 | $828 | $828 | $2,388 |
-| Dub Partners | $1,140 | $1,320 | $2,040 | $6,600 |
-| Reditus | $1,812 | $1,884 | $5,172 | $5,988 |
-| PartnerStack | Quote | Quote | Quote | Quote |
-
-How we got these numbers: list prices on October 12, 2026, monthly billing (Reditus Scale Up is annual only), and a 20% commission rate, so payouts are 20% of affiliate revenue. Fees that come with the plan are included: Dub's 5% on payouts and Reditus's 2% invoice fee on commissions. Optional payout services are not: Rewardful's 3%, Partnero's 7%, and Tolt's 2% on automatic payouts, which would add $1,200 at $25,000 a month. We read Reditus's ARR caps as affiliate-referred ARR. Annual billing lowers most flat plans by 10% to 34%. Commissions you pay partners are not in any row.
-
-Read it two ways. In year one, Affitor costs the least up to about $1,650 a month in affiliate revenue, because the first $10,000 is free. Past that, PromoteKit's $29 plan is cheaper, and Rewardful, FirstPromoter, Partnero and Tolt follow somewhere between $2,200 and $2,800 a month. At $25,000 a month, Affitor costs more than every published price in the table. From year two Affitor is a straight 3.5%, or $840 a year at $2,000 a month. That's the trade we chose: you pay us when affiliates bring money in, and you pay more when they bring in a lot.
-
 ## The tools, one by one
 
 ### Affitor: pay only after affiliates bring revenue
@@ -142,7 +120,7 @@ Affitor runs your affiliate program and lists it where affiliates look for progr
 - **Pricing (Oct 12, 2026):** $0 until a program has made $10,000 through affiliates, then 3.5% of affiliate-driven sales. No subscription, no setup fee, and nothing per partner or per seat. One weekly invoice covers partner commissions and the fee. [See pricing](https://affitor.com/pricing).
 - **Tracking:** a first-party cookie on the click (`?aff=`), the customer tied to the partner at signup, and sales read from Stripe after a one-time connect. Other billing systems send sales through the [REST API or SDK](/docs/brand/tracking/tracking-overview).
 - **Good:** nothing to pay while you find out whether affiliates work for you. Every program gets a public marketplace listing and an AI-drafted program page. Developers get a REST API, browser and Node SDKs, a [CLI](/docs/brand/cli/commands) that ends setup with a test click, signup and sale, and an [MCP server](/docs/api-reference/mcp) in beta.
-- **Watch out:** there's no importer, so moving from another tool means inviting partners by email or CSV, 50 at a time, and partners get new links. Past sales and unpaid commissions don't come with you. Our marketplace is young and much smaller than Reditus's or PartnerStack's networks. Partner withdrawals go out by bank transfer or Wise after a manual review, with no PayPal. And 3.5% gets expensive once affiliate revenue is high.
+- **Watch out:** there's no importer, so moving from another tool means inviting partners by email or CSV, 50 at a time, and partners get new links. Past sales and unpaid commissions don't come with you. Our marketplace is young and much smaller than Reditus's or PartnerStack's networks. Partner withdrawals go out by bank transfer or Wise after a manual review, with no PayPal.
 
 ### PromoteKit: cheapest flat plan on Stripe
 
@@ -220,7 +198,7 @@ A partner relationship platform for B2B companies running more than an affiliate
 
 **No affiliate revenue yet, or not sure affiliates will work for you:** Affitor, because you pay nothing until a program has made $10,000. If you'd rather have a fixed bill and you're on Stripe, PromoteKit at $29 is the cheapest flat plan.
 
-**Steady affiliate revenue above about $2,000 a month:** a flat plan is cheaper than a percentage. Rewardful for the simplest Stripe setup, FirstPromoter if you bill through Paddle, Chargebee, Recurly or Braintree, Tolt if you want payouts and 1099s handled, and Partnero if you want a price that never moves with revenue.
+**You'd rather have a fixed monthly bill:** a flat plan. Rewardful for the simplest Stripe setup, FirstPromoter if you bill through Paddle, Chargebee, Recurly or Braintree, Tolt if you want payouts and 1099s handled, and Partnero if you want a price that never moves with revenue.
 
 **You want affiliates found for you:** Reditus for B2B SaaS. PartnerStack if you also run resellers or co-sell partners and have the budget for a sales-led contract.
 
@@ -256,9 +234,9 @@ Reditus offers free white-glove migration that keeps your old tracking parameter
 
 Most set a cookie when a visitor clicks a partner link and credit the sale if it lands inside the cookie window, often with coupon codes as a second path. Dub Partners and Affitor also tie the customer to the partner at signup, so later payments match on the customer record rather than on the cookie.
 
-### Is a percentage fee cheaper than a flat subscription?
+### How is a percentage fee different from a flat subscription?
 
-Only while affiliate revenue is low or uneven. After Affitor's free first $10,000 per program, its 3.5% fee equals PromoteKit's $29 plan at about $830 a month in affiliate revenue and Rewardful's $99 Growth plan at about $2,830 a month. Above that, a flat plan costs less.
+A flat subscription costs the same every month whether affiliates sell anything or not, and many plans cap the affiliate revenue they cover, so the price steps up as you grow. A percentage fee costs nothing while affiliates bring in nothing and grows only with the sales they drive. Affitor charges nothing until a program has made $10,000 through affiliates, then 3.5% of affiliate-driven sales, with every feature on from day one.
 
 ### Which affiliate software works with Paddle or Chargebee?
 
