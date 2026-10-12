@@ -260,12 +260,11 @@ function main() {
  */
 function checkContentAssets(pages) {
   const FILE_REF = /!?\[[^\]]*\]\((\/[^)\s]+\.[a-z0-9]{2,5})\)/gi;
-  // Root-relative page links must point under /docs or /blog, and /docs links at a real
-  // page. Pages moved from the root to /docs (served at affitor.com/docs), so a bare
+  // Root-relative page links must point at a real page under /docs or /blog. Pages moved from the root to /docs (served at affitor.com/docs), so a bare
   // /brand/... link would resolve to the main app on affitor.com. A link to a renamed
   // page only redirects; it costs a hop and spreads the old path, so it fails too.
   const PAGE_LINK = /(?:\]\(|href:\s*['"]|href=['"])(\/[^)'"\s]*)/g;
-  const pageIds = new Set(pages.filter((page) => page.type !== 'blog').map((page) => new URL(page.url).pathname));
+  const pageIds = new Set([...pages.map((page) => new URL(page.url).pathname), '/blog']);
   const refs = new Set();
   for (const file of walk(join(ROOT, 'content'))) {
     if (!/\.mdx?$/.test(file) && !/\/meta\.json$/.test(file)) continue;
@@ -274,9 +273,7 @@ function checkContentAssets(pages) {
     for (const match of body.matchAll(PAGE_LINK)) {
       const target = match[1].split(/[?#]/)[0].replace(/(.)\/$/, '$1');
       if (/\.[a-z0-9]{2,5}$/i.test(target)) continue;
-      // Blog links only need the /blog prefix: posts can link a post that is not out yet.
-      if (target === '/blog' || target.startsWith('/blog/')) continue;
-      assert.ok(pageIds.has(target), `${relative(ROOT, file)} links ${target}, which is not a docs page under /docs`);
+      assert.ok(pageIds.has(target), `${relative(ROOT, file)} links ${target}, which is not a page under /docs or /blog`);
     }
   }
 
