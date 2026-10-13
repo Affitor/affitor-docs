@@ -37,80 +37,84 @@ Or include the script tag directly:
 ### Quick start
 
 ```ts
-import { init, signup } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 
-// On app load (client-side only — no-op on server)
-init({ programId: 123 });
+// On app load (client-side; resolves to null on the server)
+const affitor = await loadAffitor(123);
 
-// After the user completes signup / checkout
-await signup('user_abc123', 'user@example.com');
+// After the user completes signup
+await affitor?.signup('user_abc123', 'user@example.com');
 ```
 
----
+`loadAffitor` loads the tracker script once and resolves to the same instance on every later call. The tracker captures `?aff=` from the URL and sets the click id cookie by itself.
 
-### `AffitorInitOptions`
-
-Options accepted by `init()` and the `AffitorTracker` constructor.
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `programId` | `number \| string` | No | Your affiliate program id. Falls back to `data-affitor-program-id` on the script tag, then `window.AFFITOR_PROGRAM_ID`. |
-| `debug` | `boolean` | No | Enables verbose `console.log` output. Errors always log regardless of this flag. |
-| `cookieDomain` | `string` | No | Force a cookie domain (e.g. `.example.com`). Auto-detected from the current hostname when omitted. |
-| `apiBase` | `string` | No | Override the tracking API base URL. Defaults to `https://api.affitor.com`. |
+The tracker sends events to `https://api.affitor.com`. To send them to a non-production API, set `window.AFFITOR_API_BASE = '<API_BASE>'` before the first `loadAffitor` call, or use the script tag with `data-affitor-api-base`.
 
 ---
+
+### `loadAffitor(programId, options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `env` | `'production' \| 'local'` | `'production'` | Selects the tracker script URL. |
+| `scriptUrl` | `string` | none | Custom tracker script URL; overrides `env`. It only chooses where the script loads from. |
+| `debug` | `boolean` | `false` | Verbose `console.log` output. Errors always log. |
+
+---
+
+### Instance methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `signup` | `(customerKey: string, email: string) => Promise<void>` | Report a lead (signup). Pass your internal user id as `customerKey`. |
+| `getClickId` | `() => string \| null` | The current click id from memory or the `affitor_click_id` cookie. |
+| `getVisitorId` | `() => string \| null` | The visitor id from Affitor's first-party cookie, or `null`. Put it in checkout metadata as `affitor_visitor_id`. With consent mode on, call it after `consent(true)`. |
+| `consent` | `(granted: boolean) => void` | With `data-affitor-consent="required"` on the script, nothing is stored or sent until `consent(true)`; `consent(false)` removes Affitor's cookies. |
+| `getData` | `() => AffitorData` | A snapshot of tracker state. |
+| `trackTest` | `(data?) => void` | Send a test event. |
+
+> `signup()` requires `customerKey`, your own user id. Affitor uses it to bind the customer to a click so later backend sale calls can resolve attribution by id alone.
 
 ### `AffitorData`
 
-Returned by `getData()` — a snapshot of current tracker state.
+Returned by `getData()`.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `clickId` | `string \| null` | The active `affitor_click_id` (in-memory or from cookie). |
-| `programId` | `number \| null` | The resolved program id. |
-| `hasAttribution` | `boolean` | `true` when a valid click has been tracked in this session. |
-| `affiliateUrl` | `string \| null` | The affiliate URL that originated the current attribution. |
-
----
-
-### Methods
-
-| Function | Signature | Description |
-|----------|-----------|-------------|
-| `init` | `(options?: AffitorInitOptions) => AffitorTracker \| null` | Initialize tracking. Captures `?aff=` from the current URL and sets up the click id cookie. Returns `null` on the server. |
-| `signup` | `(customerKey: string, email?: string) => Promise<void>` | Report a lead (signup) event. Pass your internal user id as `customerKey`. |
-| `trackClick` | `(affiliateUrl?: string, existingClickId?: string \| null) => Promise<void>` | Manually track a click. Usually called automatically by `init()` when `?aff=` is detected. |
-| `getClickId` | `() => string \| null` | Return the current click id from memory or the `affitor_click_id` cookie. |
-| `getData` | `() => AffitorData \| null` | Return a snapshot of tracker state. `null` before `init()` is called. |
-| `getTracker` | `() => AffitorTracker \| null` | Return the underlying `AffitorTracker` instance (advanced use). `null` before `init()`. |
-
-> `signup()` requires `customerKey` — this is your own user id. Affitor uses it to bind the customer to a click so later backend sale calls can resolve attribution by id alone.
+| `clickId` | `string \| null` | The active `affitor_click_id` (in memory or from the cookie). |
+| `programId` | `number` | The resolved program id. |
+| `hasAttribution` | `boolean` | `true` when a valid click has been tracked. |
+| `affiliateUrl` | `string \| null` | The affiliate URL that started the current attribution. |
 
 ---
 
 ### Full example (Next.js)
 
-```ts
-// app/providers.tsx — client component
+```tsx
+// app/affitor-tracker.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
-export function AffitorInit() {
-  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+import { loadAffitor } from '@affitor/sdk';
+
+export function AffitorTracker() {
+  useEffect(() => {
+    void loadAffitor(YOUR_PROGRAM_ID);
+  }, []);
   return null;
 }
-// render <AffitorInit /> once in app/layout.tsx
+// render <AffitorTracker /> once in app/layout.tsx
 ```
 
-After successful signup, call `signup(customerKey, email)` from the SDK (or `window.affitor.signup(...)` for the script-tag path):
+After a successful signup, call `signup(customerKey, email)` on the instance (or `window.affitor.signup(...)` for the script-tag path):
 
 ```ts
-import { signup } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 
-// After successful signup
-await signup(userId, email);
+const affitor = await loadAffitor(YOUR_PROGRAM_ID);
+await affitor?.signup(userId, email);
 ```
+
+React apps can also use `AffitorProvider` and `useAffitor()` from `@affitor/sdk/react`.
 
 ---
 

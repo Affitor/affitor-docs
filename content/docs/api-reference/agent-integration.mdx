@@ -59,12 +59,12 @@ The file contains three verbatim integration sections an agent can copy directly
 // app/providers.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
-export function AffitorInit() {
-  useEffect(() => { init({ programId: YOUR_PROGRAM_ID }); }, []);
+import { loadAffitor } from '@affitor/sdk';
+export function AffitorTracker() {
+  useEffect(() => { void loadAffitor(YOUR_PROGRAM_ID); }, []);
   return null;
 }
-// render <AffitorInit /> once in app/layout.tsx
+// render <AffitorTracker /> once in app/layout.tsx
 ```
 
 **2. Signup/lead tracking** — browser-side helper and server-side curl:
