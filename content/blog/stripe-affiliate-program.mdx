@@ -101,10 +101,10 @@ Create a program at [affitor.com/welcome](https://affitor.com/welcome), or from 
 
 ```bash
 npx affitor login
-npx affitor init
+npx affitor init --no-wizard
 ```
 
-`init` creates the program and writes its API key to `.affitor/.env`, which it adds to `.gitignore`. Then open the program in the dashboard and set the commission on its Default partner group: that is the rate partners are paid on every sale, and the test in Step 4 needs it. The [CLI commands reference](https://affitor.com/docs/brand/cli/commands) lists every flag.
+`init` creates the program and writes its API key to `.affitor/.env`, which it adds to `.gitignore`. The `--no-wizard` flag keeps it from editing your project; you add the tracker by hand in Step 3. Then open the program in the dashboard and set the commission on its Default partner group: that is the rate partners are paid on every sale, and the test in Step 4 needs it. The [CLI commands reference](https://affitor.com/docs/brand/cli/commands) lists every flag.
 
 ## Step 2: Connect Stripe
 
@@ -179,9 +179,10 @@ It fires a synthetic click, signup and sale through Affitor's attribution pipeli
 }
 ```
 
-`integration_verified: true` means the program passed its readiness checks: profile, commission, tracking, and a live event. A real click or sale on the program can also satisfy those checks, so `true` on its own does not prove the test sale was attributed. Check the test chain directly in the readiness response, with the same API key:
+`integration_verified: true` means the program passed its readiness checks: profile, commission, tracking, and a live event. A real click or sale on the program can also satisfy those checks, so `true` on its own does not prove the test sale was attributed. Check the test chain directly in the readiness response. The CLI reads the key from `.affitor/.env` on its own, but your shell does not, so load it first (if you created the program in the dashboard or passed `--api-key`, set `AFFITOR_API_KEY` to that program API key instead):
 
 ```bash
+export AFFITOR_API_KEY="$(grep '^AFFITOR_API_KEY=' .affitor/.env | cut -d= -f2-)"
 curl -s https://api.affitor.com/api/v1/programs/me/readiness \
   -H "Authorization: Bearer $AFFITOR_API_KEY"
 ```
