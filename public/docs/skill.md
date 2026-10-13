@@ -75,11 +75,15 @@ Load the tracker on **every page** so `?aff=<code>` visits are captured into the
 import { useEffect } from 'react';
 import { loadAffitor } from '@affitor/sdk';
 
-const apiBase = process.env.NEXT_PUBLIC_AFFITOR_API_BASE; // = API_BASE (unset for prod)
+const programId = process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID!; // = PROGRAM_ID
+const apiBase = process.env.NEXT_PUBLIC_AFFITOR_API_BASE;      // = API_BASE, unset for prod
 
 export function AffitorInit() {
   useEffect(() => {
-    void loadAffitor(process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID!, { // = PROGRAM_ID
+    // The tracker sends events to window.AFFITOR_API_BASE when it is set, otherwise to production.
+    // scriptUrl only chooses where the tracker script is loaded from.
+    if (apiBase) (window as Window & { AFFITOR_API_BASE?: string }).AFFITOR_API_BASE = apiBase;
+    void loadAffitor(programId, {
       scriptUrl: apiBase ? `${apiBase}/js/affitor-tracker.js` : undefined,
     });
   }, []);
@@ -99,17 +103,25 @@ import { AffitorInit } from './affitor-init';
 
 ### 4b. Next.js — Pages Router / Vite / plain React
 
+**Pages Router:** use the same `AffitorInit` component as 4a without the `'use client';` line, and render `<AffitorInit />` once in `pages/_app.tsx`.
+
+**Vite / plain React:** read the Vite env instead of `process.env`:
+
 ```tsx
-// pages/_app.tsx (Pages Router) or src/main.tsx (Vite) — runs client-side
+// src/AffitorInit.tsx — render <AffitorInit /> once in your root component
 import { useEffect } from 'react';
 import { loadAffitor } from '@affitor/sdk';
 
-useEffect(() => {
-  const apiBase = import.meta.env.VITE_AFFITOR_API_BASE ?? process.env.NEXT_PUBLIC_AFFITOR_API_BASE;
-  void loadAffitor(import.meta.env.VITE_AFFITOR_PROGRAM_ID ?? process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID, {
-    scriptUrl: apiBase ? `${apiBase}/js/affitor-tracker.js` : undefined, // omit for prod
-  });
-}, []);
+export function AffitorInit() {
+  useEffect(() => {
+    const apiBase: string | undefined = import.meta.env.VITE_AFFITOR_API_BASE; // = API_BASE, unset for prod
+    if (apiBase) (window as Window & { AFFITOR_API_BASE?: string }).AFFITOR_API_BASE = apiBase;
+    void loadAffitor(import.meta.env.VITE_AFFITOR_PROGRAM_ID, { // = PROGRAM_ID
+      scriptUrl: apiBase ? `${apiBase}/js/affitor-tracker.js` : undefined,
+    });
+  }, []);
+  return null;
+}
 ```
 
 ### 4c. Plain HTML — script tag (no bundler)
@@ -333,7 +345,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 - **Diff, don't auto-commit.** Edits to checkout/signup/webhook code must be shown to the founder as a reviewable diff. Never auto-commit or push.
 - **Never print, inline, or commit `AFFITOR_API_KEY`.** Read it from the environment. Add `.env*` to `.gitignore` if not already ignored. The key is server-side only — never ship it to a browser bundle.
-- **Never hardcode the API base to prod.** Use `API_BASE` from the trigger line everywhere (client `scriptUrl: API_BASE/js/affitor-tracker.js` / `data-affitor-api-base`, server `apiUrl`).
+- **Never hardcode the API base to prod.** Use `API_BASE` from the trigger line everywhere (client `window.AFFITOR_API_BASE` set before `loadAffitor` / `data-affitor-api-base`, server `apiUrl`).
 - **Never invent fields or endpoints.** The wire contract is exactly what is in this file. The authoritative spec is `<API_BASE>/openapi.yaml`. If you need a field that is not documented, stop and ask.
 - **Money is in cents.** `$49.00 = 4900`. `transaction_id` is unique per sale.
 

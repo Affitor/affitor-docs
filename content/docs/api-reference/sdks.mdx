@@ -48,6 +48,8 @@ await affitor?.signup('user_abc123', 'user@example.com');
 
 `loadAffitor` loads the tracker script once and resolves to the same instance on every later call. The tracker captures `?aff=` from the URL and sets the click id cookie by itself.
 
+The tracker sends events to `https://api.affitor.com`. To send them to a non-production API, set `window.AFFITOR_API_BASE = '<API_BASE>'` before the first `loadAffitor` call, or use the script tag with `data-affitor-api-base`.
+
 ---
 
 ### `loadAffitor(programId, options?)`
@@ -55,7 +57,7 @@ await affitor?.signup('user_abc123', 'user@example.com');
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `env` | `'production' \| 'local'` | `'production'` | Selects the tracker script URL. |
-| `scriptUrl` | `string` | none | Custom tracker script URL; overrides `env`. For a non-production API, point it at `<API_BASE>/js/affitor-tracker.js`. |
+| `scriptUrl` | `string` | none | Custom tracker script URL; overrides `env`. It only chooses where the script loads from. |
 | `debug` | `boolean` | `false` | Verbose `console.log` output. Errors always log. |
 
 ---
