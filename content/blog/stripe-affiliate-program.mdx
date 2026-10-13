@@ -27,7 +27,7 @@ faq:
   - q: "Which Stripe affiliate tools can you start without paying?"
     a: "As of October 12, 2026, three of the eight tools compared here have a no-cost start: Affitor charges nothing until a program earns $10,000 through affiliates (all-time, per program), Endorsely charges nothing while affiliate revenue stays under $1,000 a month, and PromoteKit covers your first 3 referrals. Rewardful, FirstPromoter, Tolt and Trackdesk offer 14-day trials, and Partnero offers 30 days."
   - q: "How do I test Stripe affiliate tracking before launch?"
-    a: "On Affitor, run npx affitor onboard from your project root. Its last step fires a synthetic click, signup and sale through the real attribution pipeline and reports integration_verified: true once the sale is attributed. The test rows are flagged as tests: no partner earns from them, they create no platform fee, and they stay out of your revenue numbers. You can run it 10 times per program per hour."
+    a: "On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before you invite partners at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour."
   - q: "Can affiliate tracking work without cookies?"
     a: "Partly. Coupon and promo-code tracking needs no cookie, and PromoteKit, Endorsely, Rewardful, FirstPromoter, Tolt, Partnero and Trackdesk offer it; Affitor does not, as of October 12, 2026. Affitor shortens the time the cookie matters instead: it ties the click to the person at signup, so a cookie cleared after signup does not lose the sale."
 ---
@@ -36,7 +36,7 @@ The best affiliate tracking software for Stripe depends on how you want to pay. 
 
 Stripe has no affiliate feature of its own: no referral links, no partner accounts, no commission ledger. Every tool below adds that layer on top of your Stripe account, and they differ on three things: what they read from Stripe, how they charge you, and where the price jumps.
 
-Disclosure: we build Affitor, one of the eight tools on this page. Every price comes from the vendor's own pricing page, and every Stripe permission from the vendor's Stripe App Marketplace listing or help center, all checked on October 12, 2026. Each tool gets a Catch, ours included.
+Disclosure: we build Affitor, one of the eight tools on this page. Every price comes from the vendor's own pricing page, and every Stripe permission from the vendor's Stripe App Marketplace listing, all checked on October 12, 2026; sources are listed under the table. Each tool gets a Catch, ours included.
 
 ## Stripe affiliate tracking software compared (October 2026)
 
@@ -45,15 +45,15 @@ Sorted by entry price. Each tool name links to its pricing page. "Read and write
 | Tool | What it reads from Stripe | Price (checked Oct 12, 2026) | Fee on top | Revenue cap | Catch |
 |---|---|---|---|---|---|
 | [Affitor](https://affitor.com/pricing) | Completed Checkout Sessions, paid invoices, refunds and disputes, through Stripe Connect | $0 until a program earns $10,000 through affiliates | 3.5% of affiliate-driven sales after the first $10,000 | None | No importer, so partners get new links. Payouts go by bank or Wise, not PayPal |
-| [PromoteKit](https://www.promotekit.com/pricing) | Checkout Sessions, customers, invoices, subscriptions and promo codes (read and write); charges and refunds (read) | $0 for your first 3 referrals, then $29/mo on Pro | None; 5% to a bank or 8% to a card if PromoteKit sends payouts | $10,000/mo on Pro | Requires Stripe; above $10,000/mo in affiliate revenue it's a quote |
+| [PromoteKit](https://www.promotekit.com/pricing) | Checkout Sessions, customers, invoices, subscriptions and promo codes (read and write); charges and refunds (read) | $0 for your first 3 referrals, then $29/mo on Pro | None on sales; if PromoteKit sends payouts, 5% when you fund them by bank (ACH) or 8% by card, added on top of the payout total | $10,000/mo on Pro | Requires Stripe; above $10,000/mo in affiliate revenue it's a quote |
 | [Endorsely](https://endorsely.com/pricing) | Charges, refunds, Checkout Sessions, customers, invoices and subscriptions (read); coupons and promo codes (read and write) | $0 up to $1,000/mo in affiliate revenue, then $39/mo on Pro | None stated | $1,000/mo on Starter, $5,000/mo on Pro | Tracking needs a paid plan once affiliate revenue passes $1,000 in a month; payouts are a PayPal bulk file you send yourself |
-| [Rewardful](https://www.rewardful.com/pricing) | The `referral` field in customer metadata, paid invoices and refunds; writes affiliate and commission details back to metadata | $49/mo on Starter | 0%; 3% if Rewardful runs payouts | $7,500/mo on Starter | Growth is $99 for up to $15,000/mo; outside Stripe it supports Paddle Classic |
+| [Rewardful](https://www.rewardful.com/pricing) | Charges, refunds, customers, invoices, subscriptions, coupons and promo codes (read and write); Checkout Sessions and events (read) | $49/mo on Starter | 0%; 3% if Rewardful runs payouts | $7,500/mo on Starter | Growth is $99 for up to $15,000/mo; outside Stripe it supports Paddle Classic |
 | [FirstPromoter](https://firstpromoter.com/pricing) | Charges, refunds, Checkout Sessions, disputes, invoices and subscriptions (read); customers, coupons and promo codes (read and write) | $49/mo on Starter | None listed | $5,000/mo on Starter | Starter allows up to 1,000 affiliates; managed payouts need Enterprise 2 or higher |
 | [Partnero](https://www.partnero.com/pricing) | Charges, refunds, Checkout Sessions, disputes, invoices and payment intents (read); customers, subscriptions, coupons and promo codes (read and write) | $59/mo, or $49/mo billed annually | 7% if Partnero runs payouts | None | Starter is 1 program and 1 team member |
 | [Tolt](https://tolt.com/pricing) | Charges, refunds, Checkout Sessions, customers, invoices, subscriptions and products (read); coupons and promo codes (read and write) | $69/mo on Basic | 2% on automatic payouts (Growth and up) | $10,000/mo on Basic | Basic is manual payouts |
 | [Trackdesk](https://trackdesk.com/pricing) | Customers and events (read access) | $299/mo billed yearly, or $399 month to month, on Business | None listed | None listed; 5 seats and 10 active offers on Business | No current plan below $299/mo; the trial is a 14-day assisted trial |
 
-Rewardful has no Stripe App Marketplace listing, so its row comes from [its help center](https://help.rewardful.com/en/articles/2213091-how-does-rewardful-use-my-stripe-account). Affitor's row comes from [our Stripe tracking docs](https://affitor.com/docs/brand/tracking/payment-tracking-stripe) and how our Stripe Connect integration handles events.
+Sources, checked Oct 12, 2026. Stripe App Marketplace listings: [PromoteKit](https://marketplace.stripe.com/apps/promotekit), [Endorsely](https://marketplace.stripe.com/apps/endorsely), [Rewardful](https://marketplace.stripe.com/apps/rewardful-affiliate-software), [FirstPromoter](https://marketplace.stripe.com/apps/firstpromoter), [Partnero](https://marketplace.stripe.com/apps/partnero), [Tolt](https://marketplace.stripe.com/apps/tolt), [Trackdesk](https://marketplace.stripe.com/apps/trackdesk). Payout fees and limits: [PromoteKit payout fees](https://www.promotekit.com/docs/payouts/stripe-payouts#fees), [FirstPromoter managed payouts](https://help.firstpromoter.com/en/articles/9998853-how-managed-auto-payouts-work), [Partnero managed payouts](https://help.partnero.com/article/292-intermediary-payouts). Affitor: [our Stripe tracking docs](https://affitor.com/docs/brand/tracking/payment-tracking-stripe) and how our Stripe Connect integration handles events.
 
 :::caution
 
@@ -65,9 +65,9 @@ Prices and plan limits change often in this category. Everything in this table w
 
 There are two ways an affiliate tool gets your Stripe data, and it is worth knowing which one you are approving.
 
-**A Stripe App.** PromoteKit, Endorsely, FirstPromoter, Partnero, Tolt and Trackdesk install from the Stripe App Marketplace. Before you install, Stripe shows the exact objects the app can read or change, and the table above summarizes those lists. Most of them ask for write access to coupons and promotion codes so they can create a partner's discount code in Stripe for you. Trackdesk asks for the least: read access to customers and events.
+**A Stripe App.** PromoteKit, Endorsely, Rewardful, FirstPromoter, Partnero, Tolt and Trackdesk install from the Stripe App Marketplace. Before you install, Stripe shows the exact objects the app can read or change, and the table above summarizes those lists. Most of them ask for write access to coupons and promotion codes so they can create a partner's discount code in Stripe for you. Trackdesk asks for the least: read access to customers and events. [Rewardful's help center](https://help.rewardful.com/en/articles/2213091-how-does-rewardful-use-my-stripe-account) describes how it uses its access: it reads the `referral` attribute in customer metadata, paid invoices and refunds, and adds affiliate and commission details back to that metadata.
 
-**An OAuth connection.** Affitor connects through Stripe Connect OAuth, using Stripe's standard read_write scope. From the connected account it handles completed Checkout Sessions, paid invoices for subscription renewals, refunds (the commission is reversed) and disputes. Rewardful has no Stripe App listing; its help center says it reads the `referral` attribute in customer metadata, paid invoices and refunds, and adds affiliate and commission details back to that metadata.
+**An OAuth connection.** Affitor connects through Stripe Connect OAuth, using Stripe's standard read_write scope. From the connected account it handles completed Checkout Sessions, paid invoices for subscription renewals, refunds (the commission is reversed) and disputes.
 
 With Affitor you keep charging customers in your own Stripe account; Affitor never becomes the merchant of record.
 
@@ -93,7 +93,7 @@ Affitor has no subscription. A program pays nothing until it has made $10,000 th
 
 ## How to set up Stripe affiliate tracking on Affitor
 
-Four steps, and the last one proves the chain works before a partner sends real traffic. Affitor attributes each customer to the partner whose click first brought them in, within the attribution window you set.
+Four steps, and the last one tests the chain before a partner sends real traffic. Affitor attributes each customer to the partner whose click first brought them in, within the attribution window you set.
 
 ## Step 1: Create your program and set the commission
 
@@ -136,7 +136,7 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-Prefer not to connect Stripe? Report each sale from your own Stripe webhook handler with `affitor.trackSale` instead; `npx affitor onboard` can add that call for you. Use one path, not both.
+Prefer not to connect Stripe? Report each sale from your own Stripe webhook handler with `POST /api/v1/track/sale` instead, as the [payment tracking docs](https://affitor.com/docs/brand/tracking/payment-tracking-stripe) show. Use one path, not both.
 
 ## Step 3: Add click and signup tracking
 
@@ -154,19 +154,19 @@ When a signup succeeds, tell Affitor who signed up, using the same customer key 
 window.affitor.signup(currentUser.id, currentUser.email);
 ```
 
-`npx affitor onboard` can install the tracker for you: in a Next.js project it adds `@affitor/sdk` and wires the tracker component, showing a diff before each edit; for other stacks it prints the script tag. The signup call stays yours to add. `onboard` also offers to add the sale call to your Stripe webhook handler. If you connected Stripe in Step 2, decline that edit. The [tracking overview](https://affitor.com/docs/brand/tracking/tracking-overview) explains how the pieces fit.
+Add both by hand. Replace `YOUR_PROGRAM_ID` with your real program ID, which the dashboard shows (and `.affitor/config.json` holds if you used `init`). The [tracking overview](https://affitor.com/docs/brand/tracking/tracking-overview) explains how the pieces fit.
 
 ## Step 4: Run a test click, signup and sale
 
-Run `onboard` from your project root. It uses the API key from `.affitor/.env`, or pass one with `--api-key`. To run just the test, with no file edits, add `--json`:
+Run the test from your project root. It uses the API key from `.affitor/.env`, or pass one with `--api-key`. The `--json` flag keeps it from editing any of your files:
 
 ```bash
 npx affitor onboard --json
 ```
 
-Its last step fires a synthetic click, signup and sale through the real attribution pipeline, then checks the program's readiness until the sale is attributed:
+It fires a synthetic click, signup and sale through Affitor's attribution pipeline, then polls the program's readiness and prints a summary:
 
-```json title="npx affitor onboard --api-key aff_xxx --yes --json"
+```json title="npx affitor onboard --api-key aff_xxx --json"
 {
   "program_id": "430",
   "steps": [
@@ -179,11 +179,20 @@ Its last step fires a synthetic click, signup and sale through the real attribut
 }
 ```
 
-`integration_verified: true` means a test click was recorded, the signup attached to it, and the sale was attributed with your commission applied. The test rows are flagged as tests: no partner earns from them, they create no platform fee, and they stay out of your revenue numbers. When a check fails, the result is `false` and `blocker` and `next_action` name the first one (program profile, commission, tracking, or the test sale), so you can fix it and run again. You can run the test 10 times per program per hour. The [CLI quickstart](https://affitor.com/docs/brand/cli/quickstart) walks through the same flow.
+`integration_verified: true` means the program passed its readiness checks: profile, commission, tracking, and a live event. A real click or sale on the program can also satisfy those checks, so `true` on its own does not prove the test sale was attributed. Check the test chain directly in the readiness response, with the same API key:
+
+```bash
+curl -s https://api.affitor.com/api/v1/programs/me/readiness \
+  -H "Authorization: Bearer $AFFITOR_API_KEY"
+```
+
+`gates.live.test_chain.sale` should read `"attributed"`. If the summary says `false`, `blocker` and `next_action` name the first check to fix. Fix it and run the test again until the sale step reads attributed. The test rows are flagged as tests: no partner earns from them, they create no platform fee, and they stay out of your revenue numbers. You can run the test 10 times per program per hour.
+
+The synthetic chain runs inside Affitor. It does not go through your site's signup call or Stripe's webhook delivery to your account, so it cannot prove those two pieces work.
 
 <img src="/blog/shots/dashboard-live.png" alt="The Affitor program dashboard once tracking is live, with revenue, partners and an action queue" />
 
-When the test passes, click **Go live** on your program's Share Program page. The program becomes active and gets its marketplace listing.
+When the test sale reads attributed, click **Go live** on your program's Share Program page. The program becomes active and gets its marketplace listing. Before you invite partners at scale, have one partner send a real click and make one real purchase through their link, then check that the sale and its commission show up in your dashboard. The [CLI quickstart](https://affitor.com/docs/brand/cli/quickstart) covers the same commands.
 
 ## FAQ
 
@@ -205,7 +214,7 @@ As of October 12, 2026, three of the eight tools compared here have a no-cost st
 
 ### How do I test Stripe affiliate tracking before launch?
 
-On Affitor, run npx affitor onboard from your project root. Its last step fires a synthetic click, signup and sale through the real attribution pipeline and reports integration_verified: true once the sale is attributed. The test rows are flagged as tests: no partner earns from them, they create no platform fee, and they stay out of your revenue numbers. You can run it 10 times per program per hour.
+On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before you invite partners at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour.
 
 ### Can affiliate tracking work without cookies?
 
