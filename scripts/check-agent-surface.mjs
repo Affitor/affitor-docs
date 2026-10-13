@@ -43,6 +43,24 @@ function markdown(data, fallbackTitle) {
   return `${head}\n\n${data.raw.replace(FRONTMATTER, '').trim()}\n`;
 }
 
+/**
+ * `layout: comparison` posts: the FAQ rendered in the body must say exactly what the frontmatter
+ * `faq` (FAQPage JSON-LD) says, and every logo the comparison components can draw must exist.
+ */
+function checkComparison(data, id) {
+  const block = data.raw.match(/\n<Faq>\n([\s\S]*?)\n<\/Faq>\n/);
+  assert.ok(block, `${id}: comparison post needs a <Faq> block`);
+  const body = block[1].split(/^### /m).slice(1).map((item) => {
+    const [q, ...a] = item.trim().split('\n');
+    return { q: q.trim(), a: a.join('\n').trim() };
+  });
+  assert.deepEqual(body, data.faq ?? [], `${id}: <Faq> questions and answers must match frontmatter faq`);
+  const registry = read(join(ROOT, 'src/components/blog/comparison/tools.ts'));
+  for (const [, logo] of registry.matchAll(/logo: '([^']+)'/g)) {
+    assert.ok(existsSync(join(ROOT, 'public/blog/logos', logo)), `comparison logo public/blog/logos/${logo} is missing`);
+  }
+}
+
 function inventory() {
   const docsDir = join(ROOT, 'content/docs');
   // Use the installed loader's URL rules without importing the production renderer.
@@ -76,6 +94,7 @@ function inventory() {
       assert.equal(typeof data.updated, 'string', `${id}: updated must be a string`);
       assert.match(data.updated, ISO_DAY, `${id}: updated must be YYYY-MM-DD`);
     }
+    if (data.layout === 'comparison') checkComparison(data, id);
     return {
       id, type: 'blog', url: `${ORIGIN}/${id}`,
       updated: data.updated ?? data.date,
