@@ -506,7 +506,7 @@ The SDK applies this value as the cookie expiry. Edge cases:
 | User clears cookies before signup | Attribution is lost; lead and sale will be unattributed unless you pass `customer_key` server-side |
 | User visits with a different partner's link after the first click | First-click attribution: the SDK detects a new `aff` value and sends a new click with the existing `click_id`. The click is logged for the new partner, but the customer stays with the first partner and the cookie keeps the same `click_id` |
 | Signup fires after cookie expiry | `click_id` from cookie is null; lead is still recorded (unattributed) if `customer_key` is provided |
-| Sale fires with a `customer_key` for a customer whose window expired | The attribution window (`attribution_window_days`, default 60) is checked once, at the customer's first payment: the click must be at most that many days older than the customer's signup (or than the payment, when no signup was recorded). If it is older, the sale is not attributed. Once a customer has paid, later payments are not re-checked |
+| Sale fires with a `customer_key` for a customer whose window expired | The attribution window (`attribution_window_days`, default 60) is checked on each payment until one is recorded as a conversion: the click must be at most that many days older than the customer's signup (or than the payment, when no signup was recorded). If it is older, that sale is not attributed and nothing is recorded, so the customer's next payment is checked again. Once a conversion has been recorded for the customer, later payments are not re-checked |
 
 ---
 
