@@ -11,17 +11,20 @@ Before going live, verify each layer in order to confirm that your identifiers, 
 
 ---
 
-## The easy way — Run verification
+## The synthetic verification chain
 
-You don't need to manually test each layer. Once your tracking code is live on your **public site**, Affitor **detects it automatically** (no debug mode required), and on the **Share Program** step the dashboard shows a **Run verification** button.
+Once your tracking code is live on your **public site**, Affitor **detects it automatically** (no debug mode required). The dashboard has no verification button: **Go Live** on the **Share Program** step publishes the program once its profile and commission are set, and it does not test your integration.
 
-**Run verification** fires a synthetic `click → signup → sale` through Affitor's real attribution + commission pipeline — no real customer, no real money — and shows you a per-step verdict. When the synthetic **sale** is attributed, your integration is verified and **Go Live** unlocks.
+To check the whole pipeline without a real customer, run the synthetic `click → signup → sale` chain through Affitor's real attribution and commission pipeline, with no real money. Two ways run it:
 
-This is the same check the agent runs with `affitor test` (and the MCP `affitor_run_verification` tool), so humans and agents verify the exact same way.
+- `npx affitor onboard`, which fires the chain and then polls readiness until `integration_verified` is reached (see [CLI commands](/docs/brand/cli/commands))
+- the MCP `affitor_run_verification` tool, followed by `affitor_readiness`
+
+`affitor test click|lead|sale` sends one test event at a time; it does not run the chain.
 
 :::tip
 
-Run verification needs an **active commission policy** (so the synthetic sale can produce a commission). Set your commission first, then run it. Limited to 10 runs/hour.
+The chain needs an **active commission policy** (so the synthetic sale can produce a commission). Set your commission first, then run it. Limited to 10 runs per program per hour.
 
 :::
 

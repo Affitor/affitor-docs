@@ -30,7 +30,7 @@ Two different credentials are in play, and they are not interchangeable.
 | Credential | Where it lives | Which commands use it |
 |---|---|---|
 | Account session | `~/.affitor/credentials.json`, written by `affitor login` | `affitor init`, `affitor programs`, `affitor whoami` |
-| Program API key | `AFFITOR_API_KEY` in the environment or `.affitor/.env`, or `--api-key` | `affitor onboard`, `affitor status`, `affitor test`, `affitor setup stripe` |
+| Program API key | `AFFITOR_API_KEY` in the environment or `.affitor/.env`, or `--api-key` | `affitor onboard`, `affitor status`, `affitor test` |
 
 Run `affitor login` before the first group. Without a session, `init` and `programs` stop and exit non-zero (`not_logged_in` in `--json` mode) — they never fall back to a program API key.
 
@@ -70,7 +70,7 @@ Show which account the stored session belongs to, and when its token expires.
 npx affitor whoami
 ```
 
-With no session it exits non-zero. `whoami --json` instead prints `{"logged_in": false}` and exits `0`, so a script should read that field rather than the exit code.
+With no session it exits non-zero. `whoami --json` prints `{"logged_in": false}` and also exits `1`.
 
 ---
 
@@ -182,7 +182,7 @@ In `--json` mode `onboard` performs **no file edits** — the steps that would h
 ### Example (agent / non-interactive)
 
 ```bash
-npx affitor onboard --api-key affitor_xxx --yes --json
+npx affitor onboard --api-key aff_xxx --yes --json
 ```
 
 The JSON summary reports the per-step status and the final verdict:
@@ -204,7 +204,7 @@ The JSON summary reports the per-step status and the final verdict:
 
 Once `onboard` reaches the verification phase, `--json` always prints this summary. `program_id`, `steps` and `integration_verified` are always present, though `program_id` is `null` when no readiness verdict was obtained. `blocker`, `next_action` and `error` are omitted rather than sent as null, so read them with that in mind.
 
-The only way to get no summary is for `onboard` to stop before it runs: with no API key it prints `{"error": "no_api_key"}` and exits non-zero.
+The only way to get no summary is for `onboard` to stop before it runs: with no API key it prints `{"error": "no_api_key"}` and exits non-zero. `onboard` exits `0` only when `integration_verified` is `true`; otherwise it prints the summary and exits `1`.
 
 **What `integration_verified: false` means.** The verification chain and the readiness poll are separate: if the chain fails to run, `onboard` carries on polling anyway, so a chain failure never decides the verdict. Readiness does. Three cases produce `false`, and the other fields tell them apart:
 
@@ -220,45 +220,13 @@ A readiness poll that succeeds after a failed chain still reports `integration_v
 
 ## `affitor setup stripe`
 
-Connect your Stripe account so payments are tracked automatically.
+Stripe is connected from the Affitor dashboard, not from the CLI: open the program, go to **Settings**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds for that account; nothing needs to be created on your Stripe account. To attribute each sale, add Affitor metadata to your Checkout Session, as described in the [Stripe integration guide](/docs/api-reference/integrations/stripe).
 
 ```bash
 npx affitor setup stripe
 ```
 
-**What happens:**
-
-1. Opens Stripe Connect OAuth in your browser
-2. You authorize Affitor to read your payment data
-3. A webhook endpoint is created on your Stripe account
-4. Connection is saved to your program config
-
-| Flag | Description |
-|---|---|
-| `--stripe-client-id <id>` | Override Stripe Connect client ID |
-| `--stripe-secret-key <key>` | Override Stripe secret key |
-
-**Environment variables (alternative to flags):**
-
-- `STRIPE_CONNECT_CLIENT_ID` or `AFFITOR_STRIPE_CLIENT_ID`
-- `STRIPE_SECRET_KEY` or `AFFITOR_STRIPE_SECRET_KEY`
-
-**Webhook events subscribed:**
-
-```text
-customer.created
-checkout.session.completed
-invoice.paid
-invoice.payment_failed
-charge.refunded
-customer.subscription.deleted
-```
-
-The endpoint is created on your connected Stripe account with the delivery URL `<api-url>/webhooks/stripe/<program-id>` — for the default API URL, `https://api.affitor.com/webhooks/stripe/430`. That is the URL this command sends to Stripe; it is the value to check in the Stripe dashboard if deliveries are not arriving.
-
-<Callout type="warning" title="Confirm delivery before relying on it">
-  After running this command, send a test event from the Stripe dashboard and confirm the sale shows up in Affitor before you treat Stripe tracking as live. If nothing arrives, report the sale from your own backend instead — see [Track Sale](/docs/api-reference/track-sale) or the [Stripe integration guide](/docs/api-reference/integrations/stripe), which does not depend on this endpoint.
-</Callout>
+From CLI 0.4.3 this command only prints those directions and exits `1` (`{"error": "stripe_setup_moved", "message": "..."}` with `--json`). Earlier versions start a browser flow that cannot complete; do not use it.
 
 ---
 
@@ -343,13 +311,11 @@ Secrets (the program API key, and provider webhook secrets) are **not** stored i
 
 ## When a command fails
 
-A command that cannot do its job exits non-zero. Three outcomes are the exception, because they are results rather than failures, and each one is reported in the output instead:
+A command that cannot do its job exits non-zero. Since CLI 0.4.2 that includes `affitor onboard` when the integration is not verified (`integration_verified: false`) and `affitor whoami --json` when no session is stored; both still print their JSON first. One outcome is the exception, because it is a result rather than a failure, and it is reported in the output instead:
 
 | Command | Reports a negative outcome with exit `0` | Read instead |
 |---|---|---|
-| `affitor onboard` | Verification did not pass | `integration_verified` in the summary |
 | `affitor test` | The test event was not received | `received` in the JSON result |
-| `affitor whoami --json` | No session is stored | `logged_in` |
 
 ### What `--json` puts on `error`
 
@@ -359,7 +325,7 @@ A command that cannot do its job exits non-zero. Three outcomes are the exceptio
 |---|---|---|
 | A machine code | Every check a command makes before it calls the API | `{"error": "not_logged_in"}` |
 | The API's message, with the HTTP status beside it | `init`, `status`, `test` when the API rejects the call | `{"error": "Invalid API token", "status": 401}` |
-| A code with the message in its own field | `setup stripe` | `{"error": "api_error", "message": "..."}` |
+| A code with the message in its own field | `setup stripe` | `{"error": "stripe_setup_moved", "message": "..."}` |
 
 `onboard` is different again. Once it gets past its own preflight checks it prints a summary object, and in that summary `error` is itself an **object** rather than a string — the one place the CLI hands you the API's own error code:
 
@@ -384,17 +350,16 @@ Two gaps are worth knowing before you build on this output:
 | Condition | `--json` code | Commands | What to do |
 |---|---|---|---|
 | Not logged in | `not_logged_in` | `init`, `programs` | Run `affitor login`, then re-run the command |
-| No config in this directory | `no_config` | `status`, `test`, `setup` | Run the command from the project root where you ran `affitor init`, or run `affitor init` to create a program here |
+| No config in this directory | `no_config` | `status`, `test`, `setup dns` | Run the command from the project root where you ran `affitor init`, or run `affitor init` to create a program here |
 | Already configured | `already_configured` | `init` | `init` found an existing `.affitor/config.json` and changed nothing. Use `affitor status` to check that program. Do not run `init` to recover a key — it only ever creates a new program |
 | Missing required options | `missing_options` | `init` with `--no-interactive` | Pass `--name`, `--domain`, `--commission-type` and `--commission-rate` |
 | Invalid event type | `invalid_event_type` | `test` | `affitor test` takes `click`, `lead`, or `sale` |
 | No API key | `no_api_key` | `onboard` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
 | API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session is invalid or expired — run `affitor login` again. Do **not** regenerate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
 | API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
-| API rejected the call | `api_error`, with the API message on `message` and no `status` | `setup stripe` | Read `message`. A `401` here is a program-key problem, as in the row above |
-| Stripe authorization failed | `stripe_oauth_error` | `setup stripe` | Read `message`, then run `affitor setup stripe` again |
-| No usable response | `network_error` | `init`, `status`, `test`, `setup stripe` | See below |
-| Anything else | `unexpected_error` | `init`, `status`, `test`, `setup stripe` | Re-run with `--verbose` and keep the output |
+| Stripe is connected elsewhere | `stripe_setup_moved` | `setup stripe` | Connect Stripe in the dashboard: program **Settings**, **Connect Stripe** |
+| No usable response | `network_error` | `init`, `status`, `test` | See below |
+| Anything else | `unexpected_error` | `init`, `status`, `test` | Re-run with `--verbose` and keep the output |
 
 ### `network_error` does not mean the request was ignored
 

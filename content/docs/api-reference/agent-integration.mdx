@@ -82,11 +82,11 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
   -d '{"customer_key": "user_123", "email": "user@example.com"}'
 ```
 
-**3. Sale tracking** — three options in priority order: Stripe OAuth auto-connect, Server-side tracking vs Stripe integration:
+**3. Sale tracking**: Stripe connected in the dashboard, or server-side tracking:
 
 ```bash
-# Option A: auto-connect Stripe (recommended)
-npx affitor setup stripe
+# Option A: Stripe (recommended). Connect it in the Affitor dashboard (program Settings, Connect Stripe)
+# and add Affitor metadata to your Checkout Session. The CLI does not connect Stripe.
 
 # Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
 curl -X POST https://api.affitor.com/api/v1/track/sale \
@@ -124,7 +124,6 @@ The file includes a table that tells agents which field name to use in each cont
 
 ```bash
 npx affitor status          # Check program health
-npx affitor setup stripe    # Auto-connect Stripe via OAuth
 npx affitor test click      # Send test click event
 npx affitor test lead       # Send test lead event
 npx affitor test sale       # Send test sale event
