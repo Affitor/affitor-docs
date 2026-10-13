@@ -504,7 +504,7 @@ The SDK applies this value as the cookie expiry. Edge cases:
 | Scenario | Behavior |
 |----------|----------|
 | User clears cookies before signup | Attribution is lost; lead and sale will be unattributed unless you pass `customer_key` server-side |
-| User visits with a different partner's link after the first click | Last-touch attribution: the SDK detects a new `aff` value, fires a new click, and overwrites the cookie |
+| User visits with a different partner's link after the first click | First-click attribution: the SDK detects a new `aff` value and sends a new click with the existing `click_id`. The click is logged for the new partner, but the customer stays with the first partner and the cookie keeps the same `click_id` |
 | Signup fires after cookie expiry | `click_id` from cookie is null; lead is still recorded (unattributed) if `customer_key` is provided |
 | Sale fires with a `customer_key` for a customer whose window expired | Sale is recorded and attribution is resolved from the stored customer record, not the cookie — the window only governs cookie persistence |
 

@@ -81,7 +81,7 @@ No. Stripe is the best-documented integration path, but server-side tracking wor
 ### How does attribution work?
 Affitor uses:
 - first-party tracking
-- a last-click, last-partner-wins attribution model
+- first-click attribution: the partner whose click first brings in a customer keeps that customer, and a later click from another partner is logged but does not take the customer over
 - a 60-day default attribution window, configurable per program
 
 The full model is documented in the [attribution reference](/docs/api-reference/attribution). For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that identifier in sale tracking.
