@@ -171,7 +171,7 @@ await affitor.trackLead({
 });
 ```
 
-> Some programs are configured `lead_auth: server_required`. On those, a **browser-only** lead is recorded as *provisional* and only settles when your **server** sends the lead (5b) or the first verified payment lands. When in doubt, do **both** 5a and 5b — they are idempotent on the customer.
+> New programs default to `lead_auth: server_required`. On those, a **browser-only** lead is recorded as *provisional* and only settles when your **server** sends the lead (5b) or the first verified payment lands. When in doubt, do **both** 5a and 5b — they are idempotent on the customer.
 
 ---
 
