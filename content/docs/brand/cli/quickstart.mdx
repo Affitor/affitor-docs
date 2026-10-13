@@ -96,18 +96,7 @@ Choose your payment tracking method: **Server-side tracking vs Stripe integratio
 
 ### Option A: Stripe integration (automatic)
 
-Auto-configure Stripe webhooks for payment tracking:
-
-```bash
-npx affitor setup stripe
-```
-
-This opens Stripe Connect OAuth in your browser, then automatically creates webhook endpoints for:
-- `checkout.session.completed` -- sale tracking
-- `invoice.payment_succeeded` -- recurring commission
-- `charge.refunded` -- automatic commission clawback
-- `customer.created` -- lead tracking
-- `customer.subscription.deleted` -- churn tracking
+Connect Stripe in the Affitor dashboard: open the program, go to **Settings**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds. Add Affitor metadata to your Checkout Session so each sale is attributed; see the [Stripe integration guide](/docs/api-reference/integrations/stripe). The CLI does not connect Stripe (`affitor setup stripe` only points you to the dashboard).
 
 ### Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
 
@@ -161,7 +150,7 @@ Output is valid JSON, ready for AI agents to parse:
 ```json
 {
   "program_id": 430,
-  "api_key": "affitor_...",
+  "api_key": "aff_...",
   "domain": "example.com",
   "status": "created",
   "tracking": {
