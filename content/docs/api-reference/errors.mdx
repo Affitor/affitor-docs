@@ -553,15 +553,12 @@ if (!response.ok) {
 
 ### SDK `debug: true` for verbose logging
 
-Pass `debug: true` to `init()` to enable verbose console output. This sets `AffitorInitOptions.debug` on the tracker instance.
+Pass `debug: true` to `loadAffitor()` to enable verbose console output.
 
 ```ts
-import { init } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 
-init({
-  programId: 123,
-  debug: true,
-});
+const affitor = await loadAffitor(123, { debug: true });
 ```
 
 With `debug: true`, the SDK logs to the browser console using `[Affitor]` as the prefix for every `info` and `warn` level message — including initialization, program ID resolution, click tracking, and signup calls. Errors (`console.error`) are always logged regardless of the `debug` flag.
@@ -578,9 +575,7 @@ With `debug: true`, the SDK logs to the browser console using `[Affitor]` as the
 To check the current tracker state at any point:
 
 ```ts
-import { getData } from '@affitor/sdk';
-
-console.log(getData());
+console.log(affitor?.getData());
 // {
 //   clickId: "cust_42_1712345678901",
 //   programId: 123,

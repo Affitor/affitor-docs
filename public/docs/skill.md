@@ -73,13 +73,14 @@ Load the tracker on **every page** so `?aff=<code>` visits are captured into the
 // app/affitor-init.tsx — client component
 'use client';
 import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
+
+const apiBase = process.env.NEXT_PUBLIC_AFFITOR_API_BASE; // = API_BASE (unset for prod)
 
 export function AffitorInit() {
   useEffect(() => {
-    init({
-      programId: process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID, // = PROGRAM_ID
-      apiBase: process.env.NEXT_PUBLIC_AFFITOR_API_BASE,     // = API_BASE (omit for prod)
+    void loadAffitor(process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID!, { // = PROGRAM_ID
+      scriptUrl: apiBase ? `${apiBase}/js/affitor-tracker.js` : undefined,
     });
   }, []);
   return null;
@@ -101,12 +102,12 @@ import { AffitorInit } from './affitor-init';
 ```tsx
 // pages/_app.tsx (Pages Router) or src/main.tsx (Vite) — runs client-side
 import { useEffect } from 'react';
-import { init } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 
 useEffect(() => {
-  init({
-    programId: import.meta.env.VITE_AFFITOR_PROGRAM_ID ?? process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID,
-    apiBase: import.meta.env.VITE_AFFITOR_API_BASE ?? process.env.NEXT_PUBLIC_AFFITOR_API_BASE,
+  const apiBase = import.meta.env.VITE_AFFITOR_API_BASE ?? process.env.NEXT_PUBLIC_AFFITOR_API_BASE;
+  void loadAffitor(import.meta.env.VITE_AFFITOR_PROGRAM_ID ?? process.env.NEXT_PUBLIC_AFFITOR_PROGRAM_ID, {
+    scriptUrl: apiBase ? `${apiBase}/js/affitor-tracker.js` : undefined, // omit for prod
   });
 }, []);
 ```
@@ -129,12 +130,13 @@ For production you may drop `data-affitor-api-base` (defaults to `https://api.af
 
 Fire **once** when a user account is created, with the canonical `customerKey` (§2).
 
-### 5a. Browser (after the tracker script / `init` has run)
+### 5a. Browser (after the tracker has loaded)
 
 ```javascript
-import { signup } from '@affitor/sdk';
+import { loadAffitor } from '@affitor/sdk';
 // in your post-registration success handler:
-await signup(user.id, user.email); // customerKey = user.id (same id used at sale)
+const affitor = await loadAffitor(PROGRAM_ID); // same instance as §4
+await affitor?.signup(user.id, user.email); // customerKey = user.id (same id used at sale)
 // script-tag equivalent:  await window.affitor.signup(user.id, user.email);
 ```
 
@@ -170,7 +172,8 @@ Pick the **first** mode that fits the brand's stack. Do not double-report the sa
 If the brand uses Stripe Checkout, you do **not** call a sale API. Inject two metadata fields when creating the Checkout Session; Affitor's Stripe webhook reads them and creates the sale + commission automatically.
 
 ```ts
-import { getClickId } from '@affitor/sdk'; // client: read the cookie click id
+import { loadAffitor } from '@affitor/sdk';
+const clickId = (await loadAffitor(PROGRAM_ID))?.getClickId(); // client: read the cookie click id
 // pass clickId to your server when starting checkout, OR read the
 // affitor_click_id cookie server-side.
 
@@ -330,7 +333,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 - **Diff, don't auto-commit.** Edits to checkout/signup/webhook code must be shown to the founder as a reviewable diff. Never auto-commit or push.
 - **Never print, inline, or commit `AFFITOR_API_KEY`.** Read it from the environment. Add `.env*` to `.gitignore` if not already ignored. The key is server-side only — never ship it to a browser bundle.
-- **Never hardcode the API base to prod.** Use `API_BASE` from the trigger line everywhere (client `apiBase` / `data-affitor-api-base`, server `apiUrl`).
+- **Never hardcode the API base to prod.** Use `API_BASE` from the trigger line everywhere (client `scriptUrl: API_BASE/js/affitor-tracker.js` / `data-affitor-api-base`, server `apiUrl`).
 - **Never invent fields or endpoints.** The wire contract is exactly what is in this file. The authoritative spec is `<API_BASE>/openapi.yaml`. If you need a field that is not documented, stop and ask.
 - **Money is in cents.** `$49.00 = 4900`. `transaction_id` is unique per sale.
 
