@@ -6,6 +6,7 @@ import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
+import { articleComponents } from '@/components/blog/comparison/article-tables';
 import { ComparisonLayout, comparisonComponents } from '@/components/blog/comparison/comparison-layout';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
 import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
@@ -251,7 +252,7 @@ export default async function BlogPostPage(props: {
         </header>
 
         <div className="prose dark:prose-invert max-w-none text-[17px] leading-[28px] [&_p]:leading-[28px] [&_a]:text-fd-primary [&_a]:font-medium [&_a]:no-underline hover:[&_a]:underline [&_img]:rounded-lg [&_img]:border [&_img]:border-fd-border">
-          <Body components={components} />
+          <Body components={{ ...components, ...articleComponents }} />
         </div>
 
         <AskAiRow slug={slug} />

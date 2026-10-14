@@ -85,9 +85,9 @@ function HeadRow({ head, first }: { head: Cell[]; first?: string }) {
 
 /**
  * Feature matrix: rows are tools, columns are capabilities ("Label<br />tooltip").
- * `anchors` gives each row `id="tool-<id>"`, the target of the quadrant chips.
+ * `anchors` gives each row `id="tool-<id>"`, the target of the quadrant chips; `ranked={false}` drops the row numbers.
  */
-export function FeatureMatrix({ children, anchors }: { children: ReactNode; anchors?: boolean }) {
+export function FeatureMatrix({ children, anchors, ranked = true }: { children: ReactNode; anchors?: boolean; ranked?: boolean }) {
   const { head, rows } = readTable(children);
   return (
     <table className={TABLE}>
@@ -97,7 +97,7 @@ export function FeatureMatrix({ children, anchors }: { children: ReactNode; anch
           const t = tool(row[0].main);
           return (
             <tr key={t.id} id={anchors ? `tool-${t.id}` : undefined} className={`scroll-mt-32 ${t.ours ? TINT : ''}`}>
-              <ToolCell cell={row[0]} rank={i + 1} />
+              <ToolCell cell={row[0]} rank={ranked ? i + 1 : undefined} />
               {row.slice(1).map((cell, j) => (
                 <td key={j} className={`${TD} ${t.ours ? TINT : ''}`}>
                   <Mark cell={cell} />
@@ -173,9 +173,9 @@ function TwoLine({ cell }: { cell: Cell }) {
 /**
  * Cost table: "[Tool](pricing url)<br />plan note" | "price<br />optional note" | then "value<br />note" columns.
  * Our price sits in a pill; the last column is a muted note column (billing systems).
- * `anchors` gives each row `id="tool-<id>"`, as on FeatureMatrix.
+ * `anchors` gives each row `id="tool-<id>"`, as on FeatureMatrix; `ranked={false}` drops the row numbers.
  */
-export function CostTable({ children, anchors }: { children: ReactNode; anchors?: boolean }) {
+export function CostTable({ children, anchors, ranked = true }: { children: ReactNode; anchors?: boolean; ranked?: boolean }) {
   const { head, rows } = readTable(children);
   const last = head.length - 1;
   return (
@@ -187,7 +187,7 @@ export function CostTable({ children, anchors }: { children: ReactNode; anchors?
           const tint = t.ours ? TINT : '';
           return (
             <tr key={t.id} id={anchors ? `tool-${t.id}` : undefined} className={`scroll-mt-32 ${tint}`}>
-              <ToolCell cell={row[0]} rank={i + 1} sub={row[0].sub || 'Entry plan'} />
+              <ToolCell cell={row[0]} rank={ranked ? i + 1 : undefined} sub={row[0].sub || 'Entry plan'} />
               <td className={`${TD} ${tint} whitespace-nowrap font-medium text-fd-foreground`}>
                 {t.ours ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-fd-primary px-2 py-0.5 font-medium text-fd-primary-foreground text-xs">
