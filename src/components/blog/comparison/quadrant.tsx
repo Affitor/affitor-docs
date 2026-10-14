@@ -1,47 +1,51 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { readList } from './table-data';
 import { tool } from './tools';
+import { PopIn } from './pop-in';
 import { Logo } from './ui';
 
 /*
- * The 2x2 map (founder's axes, 13/10/2026; positions and labels from the v5 mockup), shared by the
- * comparison and pricing pages.
+ * The 2x2 map (founder's axes, 13/10/2026; positions and labels from the approved mockup), shared by
+ * the comparison and pricing pages.
  *   up    = brings you partners (lists your program where affiliates look, or helps recruit them)
- *   right = no fixed monthly fee at any revenue
+ *   right = no subscription: no fixed monthly fee at any revenue
  * Children: a markdown list, one item per quadrant, "**<label>:** Tool, Tool". The list is what
  * agents read in the .md twin; AT just places the chips, and the build fails if a chip sits
  * outside the quadrant its list item names.
  */
 const CORNERS = {
   'Network + subscription': 'tl',
-  'Network, no fixed fee': 'tr',
-  'Tracker + subscription': 'bl',
-  'Tracker, no fixed fee': 'br',
+  'Network, no subscription': 'tr',
+  'Software + subscription': 'bl',
+  'Software, no subscription': 'br',
 } as const;
 type Corner = (typeof CORNERS)[keyof typeof CORNERS];
 
-/** Chip position on the lg+ map: [left %, bottom %] of a 672px square. Inside the left half, two columns for legibility. */
+// Fact scores (quadlayout.py in the design workspace): x = entry-plan fixed fee on a log scale, quotes at the left edge; y = 15 + 30*listing + 30*recruiting + 10*network; nudged apart where chips would overlap.
+/** Chip box position on the lg+ map: [left %, bottom %] of a 672px square. */
 const AT: Record<string, [number, number]> = {
-  affitor: [72, 80],
-  partnerstack: [6, 86],
-  cj: [6, 79],
-  rakuten: [6, 72],
-  partnerize: [6, 65],
-  everflow: [6, 58],
-  awin: [29, 86],
-  partnero: [29, 79],
-  refersion: [29, 72],
-  endorsely: [29, 65],
-  reditus: [29, 58],
-  dub: [6, 48],
-  tapfiliate: [6, 40],
-  impact: [29, 44],
-  tolt: [6, 29],
-  postaffiliatepro: [6, 12],
-  rewardful: [29, 30],
-  firstpromoter: [29, 21],
-  promotekit: [29, 12],
+  affitor: [66.8, 76.2],
+  partnerstack: [1.5, 82.3],
+  awin: [27.3, 82.3],
+  everflow: [2.1, 76.3],
+  partnerize: [17.0, 76.3],
+  partnero: [34.0, 76.3],
+  rakuten: [2.6, 70.3],
+  cj: [15.9, 70.3],
+  endorsely: [28.5, 64.3],
+  refersion: [28.5, 58.3],
+  reditus: [6.8, 57.3],
+  impact: [32.4, 52.3],
+  dub: [12.7, 42.3],
+  rewardful: [24.6, 29.0],
+  promotekit: [33.0, 22.0],
+  tapfiliate: [14.0, 22.0],
+  firstpromoter: [21.9, 15.0],
+  tolt: [27.0, 8.0],
+  postaffiliatepro: [2.0, 8.0],
 };
+/** Pop-in order: our tool first, then top to bottom. */
+const POP = Object.keys(AT).sort((a, b) => (a === 'affitor' ? -1 : b === 'affitor' ? 1 : AT[b][1] - AT[a][1]));
 const CHIP: Record<string, string> = { 'Rakuten Advertising': 'Rakuten' };
 
 const TINT: Record<Corner, string> = {
@@ -57,9 +61,9 @@ const LABEL: Record<Corner, string> = {
   br: 'text-stone-500/80 dark:text-fd-muted-foreground',
 };
 const LEGEND = [
-  ['border-blue-300 bg-blue-100', 'Network, no fixed fee'],
-  ['border-sky-300 bg-sky-100', 'Network, subscription or quote'],
-  ['border-stone-300 bg-stone-100', 'Tracker + subscription'],
+  ['border-blue-300 bg-blue-100', 'Network, no subscription'],
+  ['border-sky-300 bg-sky-100', 'Network + subscription or quote'],
+  ['border-stone-300 bg-stone-100', 'Software + subscription'],
 ];
 const AXIS = 'rounded bg-white/80 font-medium text-stone-500 text-xs uppercase tracking-wider dark:bg-fd-background/80 dark:text-fd-muted-foreground';
 
@@ -114,8 +118,8 @@ export function Quadrant({ children }: { children: ReactNode }) {
     <div className="my-8">
       <p className="mb-3 font-medium text-fd-foreground text-lg">Affiliate network = affiliate management + marketplace</p>
 
-      {/* lg and up: chips placed on the map, as in the approved design (the map is 672px wide there) */}
-      <div className="relative hidden aspect-square w-full max-w-2xl overflow-hidden rounded-2xl border border-stone-300 bg-gradient-to-br from-stone-50 to-stone-100 shadow-sm lg:block dark:border-fd-border dark:from-fd-card dark:to-fd-card">
+      {/* lg and up: chips placed on the map (672px wide there); they pop in once, when 35% of the map is in view */}
+      <PopIn className="relative hidden aspect-square w-full max-w-2xl overflow-hidden rounded-2xl border border-stone-300 bg-gradient-to-br from-stone-50 to-stone-100 shadow-sm lg:block dark:border-fd-border dark:from-fd-card dark:to-fd-card">
         <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
           <div className={`border-r border-b border-stone-200/60 dark:border-white/10 ${TINT.tl}`} />
           <div className={`border-b border-stone-200/60 dark:border-white/10 ${TINT.tr}`} />
@@ -128,14 +132,18 @@ export function Quadrant({ children }: { children: ReactNode }) {
         {corner('br', 'right-4 bottom-4')}
         <div className="absolute top-0 bottom-0 left-1/2 w-px bg-stone-300/80 dark:bg-white/15" />
         <div className="absolute top-1/2 right-0 left-0 h-px bg-stone-300/80 dark:bg-white/15" />
-        <div className={`absolute bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 ${AXIS}`}>No fixed monthly fee →</div>
+        <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 ${AXIS}`}>No subscription →</div>
         <div className={`absolute top-1/2 left-2 -translate-y-1/2 rotate-180 px-0.5 py-2 [writing-mode:vertical-rl] ${AXIS}`}>
-          Brings you partners →
+          Brings partners →
         </div>
         {all.map((name) => {
           const [x, y] = AT[tool(name).id];
           return (
-            <div key={name} className="absolute z-10" style={{ left: `${x}%`, bottom: `${y}%` }}>
+            <div
+              key={name}
+              className="chip-pop absolute z-10"
+              style={{ left: `${x}%`, bottom: `${y}%`, '--i': POP.indexOf(tool(name).id) } as CSSProperties}
+            >
               <Chip name={name} lead={tool(name).ours} />
             </div>
           );
@@ -148,12 +156,12 @@ export function Quadrant({ children }: { children: ReactNode }) {
             <div key={`h${p}`} className="absolute right-0 left-0 h-px bg-stone-200/40 dark:bg-white/5" style={{ bottom: `${p}%` }} />
           ))}
         </div>
-      </div>
+      </PopIn>
 
       {/* below lg: the same four quadrants as a 2x2 grid; chips wrap, so no name overlaps another */}
       <div className="lg:hidden">
         <p className="mb-2 font-medium text-[11px] text-stone-500 uppercase tracking-wider dark:text-fd-muted-foreground">
-          ↑ Brings you partners · → No fixed monthly fee
+          ↑ Brings partners · → No subscription
         </p>
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-stone-300 bg-stone-300/60 dark:border-fd-border dark:bg-white/10">
           {(['tl', 'tr', 'bl', 'br'] as Corner[]).map((c) => (
