@@ -1262,3 +1262,21 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 .dark .docs-param-desc code {
   background: rgba(255, 255, 255, 0.07);
 }
+
+/* ── Comparison quadrant: chips pop in one by one once the map is 35% in view.
+   `quad-anim` / `in` are added after hydration by src/components/blog/comparison/pop-in.tsx,
+   so the server HTML always shows every chip. ── */
+@keyframes chip-pop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.quad-anim .chip-pop { transform: scale(0); opacity: 0; }
+.quad-anim.in .chip-pop {
+  animation: chip-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i) * 70ms + 120ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .quad-anim .chip-pop,
+  .quad-anim.in .chip-pop { transform: none; opacity: 1; animation: none; }
+}

@@ -6,6 +6,7 @@ import { blog } from '@/../.source/server';
 import { useMDXComponents } from '@/../mdx-components';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
+import { ComparisonLayout, comparisonComponents } from '@/components/blog/comparison/comparison-layout';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
 import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
 
@@ -179,16 +180,37 @@ export default async function BlogPostPage(props: {
   const Body = post.body;
   const components = useMDXComponents({ a: BlogPostLink });
   const jsonLd = buildJsonLd(post, slug);
+  const schema = (
+    <script
+      type="application/ld+json"
+      // eslint-disable-next-line react/no-danger -- server-rendered schema; `<` escaped below
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+      }}
+    />
+  );
+
+  if (post.layout === 'comparison') {
+    return (
+      <BlogShell>
+        {schema}
+        <ComparisonLayout
+          slug={slug}
+          title={post.title}
+          highlight={post.highlight}
+          description={post.description}
+          authors={post.authors}
+          updated={post.updated ?? post.date}
+        >
+          <Body components={{ ...components, ...comparisonComponents }} />
+        </ComparisonLayout>
+      </BlogShell>
+    );
+  }
 
   return (
     <BlogShell>
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger -- server-rendered schema; `<` escaped below
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+      {schema}
       {/* Article measure: 640px centered (FACTS-aesthetics rule 3) */}
       <article className="mx-auto w-full max-w-[640px] px-6 py-16 md:py-24">
         <header className="mb-10">

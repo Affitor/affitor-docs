@@ -65,6 +65,11 @@ export const blog = defineCollections({
     tools: z.array(z.string()).optional(),
     // How-to posts -> HowTo JSON-LD (steps derived from "Step N" H2 headings)
     howto: z.boolean().optional(),
+    // `comparison` renders the wide comparison shell (src/components/blog/comparison);
+    // route, sitemap, .md twin and JSON-LD stay the same
+    layout: z.enum(['comparison']).optional(),
+    // A word of the title the comparison hero tints
+    highlight: z.string().optional(),
   }),
 });
 
