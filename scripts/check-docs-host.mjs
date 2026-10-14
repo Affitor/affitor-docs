@@ -95,6 +95,7 @@ function invariants() {
   check('docs host /blog?_rsc=x -> 301 (intended)', redirects(DOCS, '/blog?_rsc=x', 'https://affitor.com/blog?_rsc=x'));
   check('docs host legacy /docs/blog/<slug> -> 301 affitor.com/blog/<slug>', redirects(DOCS, '/docs/blog/rewardful-alternatives', 'https://affitor.com/blog/rewardful-alternatives'));
   check('docs host legacy /docs/blog -> 301 affitor.com/blog', redirects(DOCS, '/docs/blog', 'https://affitor.com/blog'));
+  check('docs host renamed /blog/<slug> -> 301 to the new slug in one hop', redirects(DOCS, '/blog/best-affiliate-software-saas', 'https://affitor.com/blog/affiliate-software-pricing-comparison'));
   // Files that moved under /docs: served in place with a canonical Link.
   for (const [path, internal] of [
     ['/skill.md', '/docs/skill.md'],
@@ -116,6 +117,7 @@ function invariants() {
     ['/errors.md', '/docs/api-reference/errors.md'],
     ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
     ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
+    ['/blog/free-affiliate-software-for-saas.md', '/blog/affiliate-software-pricing-comparison.md'],
   ]) check(`docs host ${path} served in place from ${internal}`, serves(path, internal));
   for (const path of ['/robots.txt', '/sitemap.xml', '/favicon.ico', '/opengraph-image.png', '/docs/brand/dashboard.png', '/docs/skill.md', '/docs/api-reference/errors.md', '/blog/rewardful-alternatives.md', '/blog/covers/x.png']) {
     check(`docs host ${path} passes through`, passes(DOCS, path));
@@ -138,6 +140,8 @@ function invariants() {
       ['/docs/getting-started/glossary', '/docs/support/glossary'],
       ['/docs/blog/rewardful-alternatives', '/blog/rewardful-alternatives'],
       ['/docs/blog', '/blog'],
+      ['/blog/best-affiliate-software-saas', '/blog/affiliate-software-pricing-comparison'],
+      ['/blog/free-affiliate-software-for-saas.md', '/blog/affiliate-software-pricing-comparison.md'],
     ]) check(`${host}${path} -> 308 ${location} on the same host`, redirects(host, path, `https://${host}${location}`, {}, 308));
     check(`${host}/docs/advertisers-x is not a rename`, passes(host, '/docs/advertisers-x'));
   }

@@ -37,6 +37,9 @@ const RENAMES: [string, string][] = [
   ['/docs/getting-started/glossary', '/docs/support/glossary'],
   ['/docs/errors', '/docs/api-reference/errors'],
   ['/docs/blog', '/blog'],
+  // Merged into the pricing comparison (13/10/2026); the .md twins follow.
+  ['/blog/best-affiliate-software-saas', '/blog/affiliate-software-pricing-comparison'],
+  ['/blog/free-affiliate-software-for-saas', '/blog/affiliate-software-pricing-comparison'],
 ];
 
 /** The current path for a renamed page or its .md twin, or null when nothing changed. */
@@ -73,8 +76,9 @@ function docsHost(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   if (BLOG_PAGE.test(pathname)) {
     // Next already 308s /blog/ to /blog before middleware; strip it anyway so a
-    // direct call never emits a trailing-slash URL.
-    return NextResponse.redirect(`https://affitor.com${pathname.replace(/\/$/, '')}${search}`, 301);
+    // direct call never emits a trailing-slash URL. A renamed post goes to its new slug in one hop.
+    const post = pathname.replace(/\/$/, '');
+    return NextResponse.redirect(`https://affitor.com${currentPath(post) ?? post}${search}`, 301);
   }
   const page = !FILE.test(pathname);
   const moved = MOVED_FILE.test(pathname) && !/^\/(?:docs|blog)\//.test(pathname);
