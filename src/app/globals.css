@@ -127,7 +127,7 @@ article :where(p) {
 }
 
 /* ── Links — monochrome (Linear): inherit color, subtle rest underline, ink on hover ── */
-article :where(p, li, td):where(:not(.not-prose *)) a {
+article :where(p, li, td):where(:not(.compare-frame *)) a {
   color: inherit;
   text-decoration: none !important;
   font-weight: 400;
@@ -135,7 +135,7 @@ article :where(p, li, td):where(:not(.not-prose *)) a {
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
-article :where(p, li, td):where(:not(.not-prose *)) a:hover {
+article :where(p, li, td):where(:not(.compare-frame *)) a:hover {
   color: var(--color-fd-foreground);
   border-bottom-color: var(--color-fd-foreground);
   opacity: 1;
@@ -148,9 +148,9 @@ article :where(h1, h2, h3, h4, h5, h6) a {
 }
 
 /* ── Tables — Mintlify-clean: no wrapper box, hairline rows only ── */
-/* Kill the Fumadocs bordered/rounded wrapper around tables. A `.not-prose` frame (comparison tables in an
+/* Kill the Fumadocs bordered/rounded wrapper around tables. A `.compare-frame` (comparison tables in an
    article, src/components/blog/comparison/article-tables.tsx) keeps its own styles: none of these rules apply in it. */
-article :where(figure, div):has(> table):where(:not(.not-prose)) {
+article :where(figure, div):has(> table):where(:not(.compare-frame)) {
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -158,14 +158,14 @@ article :where(figure, div):has(> table):where(:not(.not-prose)) {
   margin: 18px 0;
   overflow-x: auto;
 }
-article table:where(:not(.not-prose *)) {
+article table:where(:not(.compare-frame *)) {
   border-collapse: collapse;
   width: 100%;
   font-size: 0.875rem;
   line-height: 1.55;
   border: 0 !important;
 }
-article table:where(:not(.not-prose *)) thead th {
+article table:where(:not(.compare-frame *)) thead th {
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -177,15 +177,15 @@ article table:where(:not(.not-prose *)) thead th {
   text-align: left;
   white-space: nowrap;
 }
-article table:where(:not(.not-prose *)) tbody td {
+article table:where(:not(.compare-frame *)) tbody td {
   padding: 13px 18px 13px 0;
   border: 0 !important;
   border-bottom: 1px solid var(--color-fd-border) !important;
   color: var(--aff-body);
   vertical-align: top;
 }
-article table:where(:not(.not-prose *)) :where(th, td):first-child { padding-left: 0; }
-article table:where(:not(.not-prose *)) tbody tr:last-child td { border-bottom: 0 !important; }
+article table:where(:not(.compare-frame *)) :where(th, td):first-child { padding-left: 0; }
+article table:where(:not(.compare-frame *)) tbody tr:last-child td { border-bottom: 0 !important; }
 
 /* ── Code blocks — the Fumadocs <figure> wrapper IS the dark surface; the
    <pre> fills it edge-to-edge (kills the white "box-in-box" + shadow). ── */
