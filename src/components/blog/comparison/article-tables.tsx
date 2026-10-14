@@ -7,18 +7,19 @@ import { CostTable, FeatureMatrix } from './tables';
  * The frame widens past the column from lg up (848px, 976px from xl) and scrolls sideways when a table
  * is still wider. `compare-frame` opts it out of the article table and link styles in globals.css. The frame is a
  * scroll container, so the header's sticky offset is reset to 0 here (64px would push it over the first row).
- * Rows carry no rank numbers: a head-to-head is not a ranking.
+ * Rows carry no rank numbers: a head-to-head is not a ranking. Each frame is a labelled, focusable scroll region;
+ * give a second FeatureMatrix on the page its own `label` so the region names stay unique.
  */
 const FRAME = 'compare-frame not-prose my-8 overflow-x-auto border-y border-fd-border lg:-mx-32 xl:-mx-48 [&_th]:top-0';
 
 export const articleComponents: MDXComponents = {
   CostTable: ({ children }: { children: ReactNode }) => (
-    <div className={FRAME} tabIndex={0} role="region" aria-label="Comparison table">
+    <div className={FRAME} tabIndex={0} role="region" aria-label="Cost comparison">
       <CostTable ranked={false}>{children}</CostTable>
     </div>
   ),
-  FeatureMatrix: ({ children }: { children: ReactNode }) => (
-    <div className={FRAME} tabIndex={0} role="region" aria-label="Comparison table">
+  FeatureMatrix: ({ children, label }: { children: ReactNode; label?: string }) => (
+    <div className={FRAME} tabIndex={0} role="region" aria-label={label ?? 'Feature comparison'}>
       <FeatureMatrix ranked={false}>{children}</FeatureMatrix>
     </div>
   ),
