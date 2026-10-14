@@ -6,7 +6,7 @@ import { Cta } from './cta';
 import { Faq } from './faq';
 import { Quadrant } from './quadrant';
 import { Section } from './section';
-import { CostTable, FeatureMatrix, GroupTable } from './tables';
+import { CostTable, FeatureMatrix, GroupTable, ScenarioTable } from './tables';
 import { Band, Spacer } from './ui';
 
 /**
@@ -22,6 +22,7 @@ export const comparisonComponents: MDXComponents = {
   GroupTable,
   FeatureMatrix,
   CostTable,
+  ScenarioTable,
   Faq,
   Cta,
 };
