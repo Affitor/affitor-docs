@@ -3,7 +3,7 @@ import { Band, GRID } from './ui';
 
 const CHEVRON = (
   <svg
-    className="pointer-events-none size-4 shrink-0 translate-y-1 text-fd-muted-foreground transition-transform duration-200 group-open:rotate-180"
+    className="pointer-events-none size-4 shrink-0 translate-y-1 text-fd-muted-foreground motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-open:rotate-180"
     viewBox="0 0 256 256"
     fill="currentColor"
     aria-hidden="true"

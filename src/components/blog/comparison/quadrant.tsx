@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { Children, isValidElement, type CSSProperties, type ReactNode } from 'react';
 import { readList } from './table-data';
 import { tool } from './tools';
 import { PopIn } from './pop-in';
@@ -9,19 +9,19 @@ import { Logo } from './ui';
  * the comparison and pricing pages.
  *   up    = brings you partners (lists your program where affiliates look, or helps recruit them)
  *   right = no subscription: no fixed monthly fee at any revenue
- * Children: a markdown list, one item per quadrant, "**<label>:** Tool, Tool". The list is what
- * agents read in the .md twin; AT just places the chips, and the build fails if a chip sits
+ * Children: a title paragraph, then a markdown list, one item per quadrant, "**<label>:** Tool, Tool".
+ * Both stay in the .md twin; AT just places the chips, and the build fails if a chip sits
  * outside the quadrant its list item names.
  */
 const CORNERS = {
-  'Network + subscription': 'tl',
+  'Network + subscription or quote': 'tl',
   'Network, no subscription': 'tr',
   'Software + subscription': 'bl',
   'Software, no subscription': 'br',
 } as const;
 type Corner = (typeof CORNERS)[keyof typeof CORNERS];
 
-// Fact scores (quadlayout.py in the design workspace): x = entry-plan fixed fee on a log scale, quotes at the left edge; y = 15 + 30*listing + 30*recruiting + 10*network; nudged apart where chips would overlap.
+// Fact scores (quadlayout.py in the design workspace): x = entry-plan fixed fee on a log scale, quotes at the left edge; y = 15 + 30*listing + 30*recruiting + 10*network, where a capability on an upper plan counts half (so Dub sits just below the line); nudged apart where chips would overlap.
 /** Chip box position on the lg+ map: [left %, bottom %] of a 672px square. */
 const AT: Record<string, [number, number]> = {
   affitor: [66.8, 76.2],
@@ -94,7 +94,7 @@ function Chip({ name, lead }: { name: string; lead?: boolean }) {
   const t = tool(name);
   return (
     <a
-      className={`relative flex items-center gap-1 rounded-md border border-stone-200 bg-white text-stone-700 shadow-md transition-all duration-200 hover:scale-105 hover:shadow-lg sm:gap-1.5 sm:rounded-lg dark:border-fd-border dark:bg-fd-card dark:text-fd-foreground ${
+      className={`relative flex items-center gap-1 rounded-md border border-stone-200 bg-white text-stone-700 shadow-md hover:shadow-lg motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:scale-105 sm:gap-1.5 sm:rounded-lg dark:border-fd-border dark:bg-fd-card dark:text-fd-foreground ${
         lead ? 'py-1.5 pr-2 pl-1.5 shadow-xl ring-2 ring-fd-primary/40' : 'py-0.5 pr-2 pl-0.5 sm:py-1 sm:pl-1'
       }`}
       href={`#tool-${t.id}`}
@@ -109,6 +109,7 @@ function Chip({ name, lead }: { name: string; lead?: boolean }) {
 
 export function Quadrant({ children }: { children: ReactNode }) {
   const { groups, labels } = parse(children);
+  const title = Children.toArray(children).filter((c) => isValidElement(c) && c.type === 'p');
   const all = Object.values(groups).flat();
   const corner = (c: Corner, pos: string) => (
     <div className={`absolute font-semibold text-sm uppercase tracking-wide ${pos} ${LABEL[c]}`}>{labels[c]}</div>
@@ -116,7 +117,7 @@ export function Quadrant({ children }: { children: ReactNode }) {
 
   return (
     <div className="my-8">
-      <p className="mb-3 font-medium text-fd-foreground text-lg">Affiliate network = affiliate management + marketplace</p>
+      <div className="mb-3 font-medium text-fd-foreground text-lg [&>p]:m-0">{title}</div>
 
       {/* lg and up: chips placed on the map (672px wide there); they pop in once, when 35% of the map is in view */}
       <PopIn className="relative hidden aspect-square w-full max-w-2xl overflow-hidden rounded-2xl border border-stone-300 bg-gradient-to-br from-stone-50 to-stone-100 shadow-sm lg:block dark:border-fd-border dark:from-fd-card dark:to-fd-card">

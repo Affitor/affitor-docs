@@ -54,7 +54,7 @@ function ToolCell({ cell, rank, sub }: { cell: Cell; rank: number; sub?: string 
         {sub ? (
           <div className="flex min-w-0 flex-col">
             {name}
-            <span className="line-clamp-2 text-[11px] text-fd-muted-foreground leading-tight">{sub}</span>
+            <span className="text-[11px] text-fd-muted-foreground leading-tight">{sub}</span>
           </div>
         ) : (
           name
@@ -160,14 +160,14 @@ function TwoLine({ cell }: { cell: Cell }) {
     <div className="mx-auto max-w-[11rem]">
       <span className="text-fd-foreground">{cell.main}</span>
       {cell.sub ? (
-        <span className="mt-0.5 block line-clamp-2 text-[11px] text-fd-muted-foreground leading-tight">{cell.sub}</span>
+        <span className="mt-0.5 block text-[11px] text-fd-muted-foreground leading-tight">{cell.sub}</span>
       ) : null}
     </div>
   );
 }
 
 /**
- * Cost table: "[Tool](pricing url)<br />plan note" | price | then "value<br />note" columns.
+ * Cost table: "[Tool](pricing url)<br />plan note" | "price<br />optional note" | then "value<br />note" columns.
  * Our price sits in a pill; the last column is a muted note column (billing systems).
  */
 export function CostTable({ children }: { children: ReactNode }) {
@@ -191,6 +191,11 @@ export function CostTable({ children }: { children: ReactNode }) {
                 ) : (
                   row[1].main
                 )}
+                {row[1].sub ? (
+                  <span className="mx-auto mt-0.5 block max-w-[11rem] whitespace-normal font-normal text-[11px] text-fd-muted-foreground leading-tight">
+                    {row[1].sub}
+                  </span>
+                ) : null}
               </td>
               {row.slice(2).map((cell, j) =>
                 j + 2 === last ? (

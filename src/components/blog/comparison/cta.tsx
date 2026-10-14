@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { textOf } from './table-data';
 import { ARROW, Band } from './ui';
 
 const BTN = 'inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 font-medium text-xs transition-all duration-150';
@@ -7,11 +8,24 @@ const BTN = 'inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 
 const GRADIENT =
   'bg-[linear-gradient(to_bottom,oklch(37.9%_0.146_265.522)_0%,oklch(42.4%_0.199_265.638)_20%,var(--color-fd-primary)_50%,oklch(80.9%_0.105_251.813)_75%,oklch(93.2%_0.032_255.585)_88%,#fff_100%)] dark:bg-[linear-gradient(to_bottom,oklch(28.2%_0.091_267.935)_0%,oklch(37.9%_0.146_265.522)_35%,var(--color-fd-primary)_75%,var(--color-fd-card)_100%)]';
 
+type El = ReactElement<{ children?: ReactNode; href?: string }>;
+
+/** Links of a paragraph, in order: `[label](href)`. */
+function links(p: El): { href: string; label: string }[] {
+  return Children.toArray(p.props.children)
+    .filter((c): c is El => isValidElement(c) && typeof (c as El).props.href === 'string')
+    .map((a) => ({ href: a.props.href as string, label: textOf(a.props.children) }));
+}
+
 /**
- * Closing call to action. Children: a heading and a paragraph (kept in the .md twin); the two
- * buttons are fixed: docs and program creation, both absolute affitor.com URLs.
+ * Closing call to action. Children: a heading, a paragraph, and a last paragraph of links that
+ * become the buttons (the first secondary, the last primary). All of it stays in the .md twin.
  */
 export function Cta({ children, image = '/blog/shots/dashboard-live.png' }: { children: ReactNode; image?: string }) {
+  const items = Children.toArray(children).filter((c) => typeof c !== 'string' || c.trim());
+  const last = items.at(-1);
+  const actions = isValidElement(last) && last.type === 'p' ? links(last as El) : [];
+  const copy = actions.length ? items.slice(0, -1) : items;
   return (
     <section>
       <Band>
@@ -20,18 +34,26 @@ export function Cta({ children, image = '/blog/shots/dashboard-live.png' }: { ch
             <div className={`relative overflow-hidden rounded-sm p-8 ${GRADIENT}`}>
               <div className="relative flex flex-col items-center justify-between gap-8 lg:flex-row">
                 <div className="text-white lg:flex-1 [&>h3]:mb-2 [&>h3]:font-semibold [&>h3]:text-xl [&>p]:max-w-lg [&>p]:text-sm [&>p]:text-white/80">
-                  {children}
-                  <div className="mt-4 flex flex-row gap-4">
-                    <a className={`${BTN} bg-fd-secondary text-fd-secondary-foreground hover:bg-fd-secondary/80`} href="https://affitor.com/docs">
-                      Read the docs
-                    </a>
-                    <a
-                      className={`${BTN} border border-transparent bg-fd-background text-fd-foreground shadow-sm shadow-black/15 ring-1 ring-fd-foreground/10 hover:bg-fd-muted`}
-                      href="https://affitor.com/welcome"
-                    >
-                      Create your program {ARROW}
-                    </a>
-                  </div>
+                  {copy}
+                  {actions.length ? (
+                    <div className="mt-4 flex flex-row flex-wrap gap-4">
+                      {actions.map(({ href, label }, i) =>
+                        i === actions.length - 1 ? (
+                          <a
+                            key={href}
+                            className={`${BTN} border border-transparent bg-fd-background text-fd-foreground shadow-sm shadow-black/15 ring-1 ring-fd-foreground/10 hover:bg-fd-muted`}
+                            href={href}
+                          >
+                            {label} {ARROW}
+                          </a>
+                        ) : (
+                          <a key={href} className={`${BTN} bg-fd-secondary text-fd-secondary-foreground hover:bg-fd-secondary/80`} href={href}>
+                            {label}
+                          </a>
+                        ),
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="relative mx-auto -mb-12 w-full translate-y-4 lg:mx-0 lg:-mr-10 lg:w-1/2 lg:translate-y-6 lg:perspective-[1000px] xl:w-3/5">
                   <div className="relative overflow-hidden rounded-lg shadow-xl lg:rounded-tl-sm lg:[transform:rotateX(4deg)_rotateY(-12deg)_rotateZ(1deg)]">
