@@ -35,8 +35,8 @@ function Mark({ cell }: { cell: Cell }) {
   );
 }
 
-/** First column: rank (row order), logo and the tool name linking to its pricing page. */
-function ToolCell({ cell, rank, sub }: { cell: Cell; rank: number; sub?: string }) {
+/** First column: rank (row order, omitted when unranked), logo and the tool name linking to its pricing page. */
+function ToolCell({ cell, rank, sub }: { cell: Cell; rank?: number; sub?: string }) {
   const t = tool(cell.main);
   const color = t.ours ? 'text-fd-primary' : 'text-fd-foreground';
   const name = cell.href ? (
@@ -49,7 +49,9 @@ function ToolCell({ cell, rank, sub }: { cell: Cell; rank: number; sub?: string 
   return (
     <td className={`${TD_FIRST} ${t.ours ? OURS_BG : 'bg-fd-background'}${sub ? '' : ' whitespace-nowrap'}`}>
       <div className={sub ? 'flex w-56 items-center gap-3' : 'flex items-center gap-3'}>
-        <span className={`w-5 shrink-0 font-mono text-xs ${t.ours ? 'text-fd-foreground' : 'text-fd-muted-foreground'}`}>#{rank}</span>
+        {rank ? (
+          <span className={`w-5 shrink-0 font-mono text-xs ${t.ours ? 'text-fd-foreground' : 'text-fd-muted-foreground'}`}>#{rank}</span>
+        ) : null}
         <Logo name={t.name} />
         {sub ? (
           <div className="flex min-w-0 flex-col">
@@ -81,9 +83,9 @@ function HeadRow({ head, first }: { head: Cell[]; first?: string }) {
 
 /**
  * Feature matrix: rows are tools, columns are capabilities ("Label<br />tooltip").
- * `anchors` gives each row `id="tool-<id>"`, the target of the quadrant chips.
+ * `anchors` gives each row `id="tool-<id>"`, the target of the quadrant chips; `ranked={false}` drops the row numbers.
  */
-export function FeatureMatrix({ children, anchors }: { children: ReactNode; anchors?: boolean }) {
+export function FeatureMatrix({ children, anchors, ranked = true }: { children: ReactNode; anchors?: boolean; ranked?: boolean }) {
   const { head, rows } = readTable(children);
   return (
     <table className={TABLE}>
@@ -93,7 +95,7 @@ export function FeatureMatrix({ children, anchors }: { children: ReactNode; anch
           const t = tool(row[0].main);
           return (
             <tr key={t.id} id={anchors ? `tool-${t.id}` : undefined} className={`scroll-mt-32 ${t.ours ? TINT : ''}`}>
-              <ToolCell cell={row[0]} rank={i + 1} />
+              <ToolCell cell={row[0]} rank={ranked ? i + 1 : undefined} />
               {row.slice(1).map((cell, j) => (
                 <td key={j} className={`${TD} ${t.ours ? TINT : ''}`}>
                   <Mark cell={cell} />
@@ -170,7 +172,7 @@ function TwoLine({ cell }: { cell: Cell }) {
  * Cost table: "[Tool](pricing url)<br />plan note" | "price<br />optional note" | then "value<br />note" columns.
  * Our price sits in a pill; the last column is a muted note column (billing systems).
  */
-export function CostTable({ children }: { children: ReactNode }) {
+export function CostTable({ children, ranked = true }: { children: ReactNode; ranked?: boolean }) {
   const { head, rows } = readTable(children);
   const last = head.length - 1;
   return (
@@ -182,7 +184,7 @@ export function CostTable({ children }: { children: ReactNode }) {
           const tint = t.ours ? TINT : '';
           return (
             <tr key={t.id} className={tint}>
-              <ToolCell cell={row[0]} rank={i + 1} sub={row[0].sub || 'Entry plan'} />
+              <ToolCell cell={row[0]} rank={ranked ? i + 1 : undefined} sub={row[0].sub || 'Entry plan'} />
               <td className={`${TD} ${tint} whitespace-nowrap font-medium text-fd-foreground`}>
                 {t.ours ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-fd-primary px-2 py-0.5 font-medium text-fd-primary-foreground text-xs">
