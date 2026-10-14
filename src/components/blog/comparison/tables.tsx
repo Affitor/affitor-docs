@@ -16,6 +16,8 @@ const TH_FIRST = `${HEAD} sticky left-0 z-10 lg:z-30 min-w-52 border-b border-r 
 const TD = 'border-b border-l border-fd-border px-4 py-3 text-center align-middle';
 const TD_FIRST = 'sticky left-0 z-10 border-b border-r border-fd-border px-6 py-3 text-left align-middle';
 const TINT = 'bg-fd-primary/5';
+/** Amount cells: one line, slightly tighter padding so four three-amount columns fit the 69rem band. */
+const TD_NUM = 'whitespace-nowrap border-b border-l border-fd-border px-3 py-3 text-center align-middle';
 
 const MARKS: Record<string, IconKind> = { Yes: 'yes', Partial: 'partial', No: 'no' };
 
@@ -35,8 +37,8 @@ function Mark({ cell }: { cell: Cell }) {
   );
 }
 
-/** First column: rank (row order), logo and the tool name linking to its pricing page. */
-function ToolCell({ cell, rank, sub }: { cell: Cell; rank: number; sub?: string }) {
+/** First column: rank (row order, when given), logo and the tool name linking to its pricing page. */
+function ToolCell({ cell, rank, sub }: { cell: Cell; rank?: number; sub?: string }) {
   const t = tool(cell.main);
   const color = t.ours ? 'text-fd-primary' : 'text-fd-foreground';
   const name = cell.href ? (
@@ -49,7 +51,9 @@ function ToolCell({ cell, rank, sub }: { cell: Cell; rank: number; sub?: string 
   return (
     <td className={`${TD_FIRST} ${t.ours ? OURS_BG : 'bg-fd-background'}${sub ? '' : ' whitespace-nowrap'}`}>
       <div className={sub ? 'flex w-56 items-center gap-3' : 'flex items-center gap-3'}>
-        <span className={`w-5 shrink-0 font-mono text-xs ${t.ours ? 'text-fd-foreground' : 'text-fd-muted-foreground'}`}>#{rank}</span>
+        {rank ? (
+          <span className={`w-5 shrink-0 font-mono text-xs ${t.ours ? 'text-fd-foreground' : 'text-fd-muted-foreground'}`}>#{rank}</span>
+        ) : null}
         <Logo name={t.name} />
         {sub ? (
           <div className="flex min-w-0 flex-col">
@@ -169,8 +173,9 @@ function TwoLine({ cell }: { cell: Cell }) {
 /**
  * Cost table: "[Tool](pricing url)<br />plan note" | "price<br />optional note" | then "value<br />note" columns.
  * Our price sits in a pill; the last column is a muted note column (billing systems).
+ * `anchors` gives each row `id="tool-<id>"`, as on FeatureMatrix.
  */
-export function CostTable({ children }: { children: ReactNode }) {
+export function CostTable({ children, anchors }: { children: ReactNode; anchors?: boolean }) {
   const { head, rows } = readTable(children);
   const last = head.length - 1;
   return (
@@ -181,7 +186,7 @@ export function CostTable({ children }: { children: ReactNode }) {
           const t = tool(row[0].main);
           const tint = t.ours ? TINT : '';
           return (
-            <tr key={t.id} className={tint}>
+            <tr key={t.id} id={anchors ? `tool-${t.id}` : undefined} className={`scroll-mt-32 ${tint}`}>
               <ToolCell cell={row[0]} rank={i + 1} sub={row[0].sub || 'Entry plan'} />
               <td className={`${TD} ${tint} whitespace-nowrap font-medium text-fd-foreground`}>
                 {t.ours ? (
@@ -216,4 +221,48 @@ export function CostTable({ children }: { children: ReactNode }) {
   );
 }
 
-export const TABLES: unknown[] = [FeatureMatrix, GroupTable, CostTable];
+/**
+ * Scenario table: "[Tool](pricing url)<br />plan note" | then one "amount<br />note" cell per column.
+ * Every amount has the same weight and no row carries a rank, so the order is not read as a score.
+ * A cell that is not an amount ("No published plan fits") is muted. `compact` sets amounts in text-xs,
+ * for cells holding several amounts ("$294 / $588 / $882"), so the table still fits the band at 1024px.
+ */
+export function ScenarioTable({ children, compact }: { children: ReactNode; compact?: boolean }) {
+  const { head, rows } = readTable(children);
+  return (
+    <table className={TABLE}>
+      <HeadRow head={head} />
+      <tbody>
+        {rows.map((row) => {
+          const t = tool(row[0].main);
+          const tint = t.ours ? TINT : '';
+          return (
+            <tr key={t.id} className={tint}>
+              <ToolCell cell={row[0]} sub={row[0].sub || 'Entry plan'} />
+              {row.slice(1).map((cell, j) => (
+                <td key={j} className={`${TD_NUM} ${tint}`}>
+                  <span
+                    className={
+                      cell.main.startsWith('$')
+                        ? `font-medium tabular-nums ${compact ? 'text-xs' : ''} ${t.ours ? 'text-fd-primary' : 'text-fd-foreground'}`
+                        : 'text-[11px] text-fd-muted-foreground italic'
+                    }
+                  >
+                    {cell.main}
+                  </span>
+                  {cell.sub ? (
+                    <span className="mx-auto mt-0.5 block max-w-[11rem] whitespace-normal text-[11px] text-fd-muted-foreground leading-tight">
+                      {cell.sub}
+                    </span>
+                  ) : null}
+                </td>
+              ))}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+export const TABLES: unknown[] = [FeatureMatrix, GroupTable, CostTable, ScenarioTable];
