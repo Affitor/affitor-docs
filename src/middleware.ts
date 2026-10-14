@@ -38,8 +38,8 @@ const RENAMES: [string, string][] = [
   ['/docs/errors', '/docs/api-reference/errors'],
   ['/docs/blog', '/blog'],
   // Merged into the pricing comparison (13/10/2026); the .md twins follow.
-  ['/blog/best-affiliate-software-saas', '/blog/affiliate-software-pricing-comparison'],
-  ['/blog/free-affiliate-software-for-saas', '/blog/affiliate-software-pricing-comparison'],
+  ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
+  ['/blog/free-affiliate-software-for-saas', '/blog/best-affiliate-software-saas'],
 ];
 
 /** The current path for a renamed page or its .md twin, or null when nothing changed. */
