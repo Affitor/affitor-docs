@@ -1,6 +1,7 @@
 'use client';
 
-import { LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
+import { DASHBOARD_LABEL, LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
+import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -14,6 +15,8 @@ export function DocsHeader() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === 'dark';
+  const dashboardHref = useDashboardHref();
+  const cta = dashboardHref ? { label: DASHBOARD_LABEL, href: dashboardHref } : SIGNUP_LINK;
 
   return (
     <header className="bg-fd-background/80 backdrop-blur-md">
@@ -52,19 +55,21 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: Log in + CTA + theme toggle (Changelog lives in the tab row, not here) */}
+      {/* Right: Log in + CTA (Go to Dashboard when signed in) + theme toggle (Changelog lives in the tab row, not here) */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {!dashboardHref && (
+          <a
+            href={LOGIN_LINK.href}
+            className="whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
+          >
+            {LOGIN_LINK.label}
+          </a>
+        )}
         <a
-          href={LOGIN_LINK.href}
-          className="whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
-        >
-          {LOGIN_LINK.label}
-        </a>
-        <a
-          href={SIGNUP_LINK.href}
+          href={cta.href}
           className="inline-flex items-center whitespace-nowrap h-8 rounded-lg bg-[#155DFC] px-2.5 sm:px-3.5 text-[12px] sm:text-[13px] font-medium text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#1047C9] active:scale-[0.97]"
         >
-          {SIGNUP_LINK.label}
+          {cta.label}
         </a>
 
         {/* Theme toggle — Son's existing sun/moon icon, kept verbatim */}

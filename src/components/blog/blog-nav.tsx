@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { HEADER_LINKS, LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
+import { DASHBOARD_LABEL, HEADER_LINKS, LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
+import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
 import { ThemeSwitch } from '@/components/theme-switch';
 
 /**
  * The affitor.com header (affiliate-dashboard LandingRedesign/Navbar) for the blog and the
- * changelog: logo, center pill nav, Log in + Create free account, plus the theme switch.
+ * changelog: logo, center pill nav, Log in + Create free account (Go to Dashboard when signed in),
+ * plus the theme switch.
  * Data lives in src/config/site-nav.ts. Mobile mirrors home: Marketplace and Pricing inline,
  * the rest in the toggle menu.
  */
@@ -17,6 +19,8 @@ const MOBILE_MENU = HEADER_LINKS.filter((link) => !MOBILE_INLINE.includes(link))
 export function BlogNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const dashboardHref = useDashboardHref();
+  const cta = dashboardHref ? { label: DASHBOARD_LABEL, href: dashboardHref } : SIGNUP_LINK;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -55,17 +59,19 @@ export function BlogNav() {
           {/* Desktop: theme switch, Log in, primary CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <ThemeSwitch />
+            {!dashboardHref && (
+              <a
+                href={LOGIN_LINK.href}
+                className="whitespace-nowrap px-4 py-2 text-sm font-medium text-[#425466] hover:text-[#0A2540] transition-colors duration-150 dark:text-fd-muted-foreground dark:hover:text-fd-foreground"
+              >
+                {LOGIN_LINK.label}
+              </a>
+            )}
             <a
-              href={LOGIN_LINK.href}
-              className="whitespace-nowrap px-4 py-2 text-sm font-medium text-[#425466] hover:text-[#0A2540] transition-colors duration-150 dark:text-fd-muted-foreground dark:hover:text-fd-foreground"
-            >
-              {LOGIN_LINK.label}
-            </a>
-            <a
-              href={SIGNUP_LINK.href}
+              href={cta.href}
               className="whitespace-nowrap px-6 py-2 text-sm font-medium text-white bg-[#155DFC] hover:bg-[#1047C9] rounded-lg transition-colors duration-150"
             >
-              {SIGNUP_LINK.label}
+              {cta.label}
             </a>
           </div>
 
@@ -121,17 +127,19 @@ export function BlogNav() {
                 <ThemeSwitch large />
               </div>
               <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-[#E5E7EB] dark:border-fd-border">
+                {!dashboardHref && (
+                  <a
+                    href={LOGIN_LINK.href}
+                    className="px-3 py-2 text-sm font-medium text-[#425466] hover:text-[#0A2540] dark:text-fd-muted-foreground dark:hover:text-fd-foreground"
+                  >
+                    {LOGIN_LINK.label}
+                  </a>
+                )}
                 <a
-                  href={LOGIN_LINK.href}
-                  className="px-3 py-2 text-sm font-medium text-[#425466] hover:text-[#0A2540] dark:text-fd-muted-foreground dark:hover:text-fd-foreground"
-                >
-                  {LOGIN_LINK.label}
-                </a>
-                <a
-                  href={SIGNUP_LINK.href}
+                  href={cta.href}
                   className="px-6 py-3 text-sm font-medium text-white bg-[#155DFC] hover:bg-[#1047C9] rounded-lg text-center transition-colors duration-150"
                 >
-                  {SIGNUP_LINK.label}
+                  {cta.label}
                 </a>
               </div>
             </div>
