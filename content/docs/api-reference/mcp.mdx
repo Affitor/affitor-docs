@@ -38,9 +38,7 @@ Pick your client. Every option runs the same local server with `npx -y @affitor/
   {
     label: "Claude Desktop",
     lang: "json",
-    code: `// claude_desktop_config.json
-// macOS: ~/Library/Application Support/Claude/  Windows: %APPDATA%\\Claude\\
-{
+    code: `{
   "mcpServers": {
     "affitor": {
       "command": "npx",
@@ -53,8 +51,7 @@ Pick your client. Every option runs the same local server with `npx -y @affitor/
   {
     label: "Cursor",
     lang: "json",
-    code: `// .cursor/mcp.json in your project (or ~/.cursor/mcp.json for every project)
-{
+    code: `{
   "mcpServers": {
     "affitor": {
       "command": "npx",
@@ -67,8 +64,7 @@ Pick your client. Every option runs the same local server with `npx -y @affitor/
   {
     label: "VS Code",
     lang: "json",
-    code: `// .vscode/mcp.json (VS Code asks for the key once and stores it securely)
-{
+    code: `{
   "inputs": [
     {
       "type": "promptString",
@@ -89,8 +85,7 @@ Pick your client. Every option runs the same local server with `npx -y @affitor/
   {
     label: "Other clients",
     lang: "json",
-    code: `// Windsurf, Cline and most other MCP clients use this shape
-{
+    code: `{
   "mcpServers": {
     "affitor": {
       "command": "npx",
@@ -102,11 +97,18 @@ Pick your client. Every option runs the same local server with `npx -y @affitor/
   }
 ]} />
 
+Where each JSON goes:
+
+- **Claude Desktop:** `claude_desktop_config.json`, in `~/Library/Application Support/Claude/` on macOS or `%APPDATA%\Claude\` on Windows.
+- **Cursor:** `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for every project.
+- **VS Code:** `.vscode/mcp.json` in your project. VS Code asks for the key once and stores it securely.
+- **Other clients** (Windsurf, Cline and most others): the client's MCP config file, in the same `mcpServers` shape.
+
 Restart your client (or reload its MCP servers) and the `affitor_*` tools become available to the agent. To let the agent report sales and refunds, also add `"AFFITOR_MCP_WRITE": "1"` to `env` (see below).
 
 :::note
 
-Gemini CLI: since June 18, 2026, Google AI Pro, Ultra and free individual users use Antigravity CLI instead; Gemini Code Assist and paid API key users keep Gemini CLI. If you moved, follow [Google's migration guide](https://antigravity.google/docs/cli/gcli-migration).
+Gemini CLI: some Google plans moved from Gemini CLI to Antigravity CLI. If you use Antigravity CLI, follow [Google's migration guide](https://antigravity.google/docs/cli/gcli-migration).
 
 :::
 
