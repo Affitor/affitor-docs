@@ -817,15 +817,16 @@ components:
         amount_cents:
           type: integer
           minimum: 1
-          description: What the customer paid, after discounts, in the smallest unit of `currency` (cents for USD, đồng for VND). If it includes tax, also send `tax_cents`.
+          description: Gross sale amount in cents.
         tax_cents:
           type: integer
           minimum: 0
-          description: The tax included in `amount_cents`, same unit, at most `amount_cents`. From your money-basis start date commissions use `amount_cents - tax_cents`; before it the field is ignored. Omit when unknown.
+          description: The tax included in `amount_cents`, same unit. Accepted but not used yet; commissions are calculated on `amount_cents`.
         currency:
           type: string
           default: USD
-          description: ISO 4217 code. Non-USD sales are converted to USD when recorded (rolling out; until your start date only USD, EUR and VND). Unsupported code → 422 `unsupported_currency`; no sale, commission or fee is created.
+          enum: [USD, EUR, VND]
+          description: Another code → 422 `unsupported_currency`; no sale, commission or fee is created. Amounts are not converted.
         occurred_at:
           type: string
           format: date-time
@@ -867,12 +868,8 @@ components:
       properties:
         success: { type: boolean }
         sale_id: { type: integer }
-        commission_id: { type: [integer, 'null'], description: '`null` when `money_status` is `fx_pending`.' }
+        commission_id: { type: integer }
         message: { type: string, example: "Sale tracked successfully" }
-        money_status:
-          type: string
-          enum: [fx_pending]
-          description: Present only when no exchange rate from the last 7 days was available. The sale is recorded with no commission or fee; `commission_id` is null.
 
     SaleNotAttributedResponse:
       type: object

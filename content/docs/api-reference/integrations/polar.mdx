@@ -72,7 +72,7 @@ export const POST = Webhooks({
         ?? order.customer?.externalId ?? order.customerId,
       clickId: (order.metadata?.affitor_click_id ?? order.metadata?.reference_id) as string | undefined,
       amount: order.totalAmount,         // integer cents, after discounts, tax included
-      taxCents: order.taxAmount,         // the tax inside totalAmount: deducted from your money-basis start date
+      taxCents: order.taxAmount,         // the tax inside totalAmount (accepted, not used yet)
       currency: order.currency,
       invoiceId: order.id,               // idempotency key — 409 = already recorded
       saleType: order.subscriptionId ? 'subscription' : 'payment',

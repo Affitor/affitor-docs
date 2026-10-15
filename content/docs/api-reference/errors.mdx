@@ -21,7 +21,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
 | `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
-| `422` | `POST /api/v1/track/sale` only: the `currency` is not supported (`error.code` `unsupported_currency`). No sale, commission or fee was created | Send a supported ISO 4217 code | Not unchanged |
+| `422` | `POST /api/v1/track/sale` only: the `currency` is not `USD`, `EUR` or `VND` (`error.code` `unsupported_currency`). No sale, commission or fee was created | Send `USD`, `EUR` or `VND` | Not unchanged |
 | `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
 | `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
@@ -222,10 +222,9 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 |--------|---------------|---------|-----|
 | `400` | `transaction_id is required and must be a string` | Field missing or not a string type | Always pass `transaction_id` as a string |
 | `400` | `amount_cents is required and must be a positive integer` | Field missing, zero, negative, or wrong type | Pass sale amount in smallest currency unit (e.g. `4900` for $49.00 USD) as a positive integer |
-| `400` | `tax_cents must be an integer between 0 and amount_cents` | `tax_cents` is negative, larger than `amount_cents`, or not an integer. Checked on live sales from your money-basis start date; before it `tax_cents` is ignored | Send the tax included in `amount_cents`, in the same unit, or omit it |
 | `400` | `occurred_at must be an ISO 8601 time within the last 30 days` | Not ISO 8601 with an offset, not a real date, older than 30 days, or more than 5 minutes in the future | Send for example `2026-10-16T09:30:00Z`, or omit it |
 | `400` | `provider must be one of: ...` / `provider_payment_id must be a string of 1 to 255 characters` / `livemode must be a boolean` | An optional field has the wrong shape | Fix the field or omit it |
-| `422` | `currency XXX is not supported` | The code is not a supported ISO 4217 currency (test sales: only `USD`, `EUR`, `VND`) | Send a supported code; no sale was created, so you can resend |
+| `422` | `currency XXX is not supported` | The code is not `USD`, `EUR` or `VND` | Send a supported code; no sale was created, so you can resend |
 | `400` | `Customer not found. Provide customer_key or click_id.` | Neither identifier resolved a customer | Ensure lead tracking ran first and the customer record exists |
 | `400` | `No affiliate attribution found for this customer in this program` | Customer exists but is attributed to a different program | Use the API key matching the program where the click originated |
 | `400` | `No partner-program relationship found for this customer` | Customer has no linked partner-program junction | The customer record is missing a partner relationship — check that the original click was tracked correctly |
@@ -237,7 +236,6 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 |--------|---------------|---------|-----|
 | `400` | `transaction_id is required` | Body did not include `transaction_id` | Pass the same `transaction_id` used when recording the original sale |
 | `400` | `reason must be refund or chargeback` | `reason` has another value | Send `refund` or `chargeback`, or use free-text `refund_reason` |
-| `400` | `refund_amount_cents must be a positive integer` | A non-integer or negative amount on a sale priced in its original currency | Send this refund's amount in the sale's smallest currency unit, or omit it to refund the rest |
 
 ---
 

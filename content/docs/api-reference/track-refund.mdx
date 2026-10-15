@@ -31,7 +31,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    This refund's amount in the smallest unit of the sale's currency (cents for USD, đồng for VND), on the same basis as the sale's `amount_cents` — not the running total refunded so far. Omit it to refund the rest of the sale. Must be a positive integer when provided.
+    This refund's amount in the same unit as the sale's `amount_cents` — not the running total refunded so far. Omit it to refund the rest of the sale. Must be a positive integer when provided.
   </ParamField>
   <ParamField name="refund_id" type="string">
     Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted (refunding the rest is already safe to retry).
@@ -135,7 +135,7 @@ Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envel
 
 | Status | `error.code` | When |
 |--------|--------------|------|
-| 400 | `invalid_request` | `transaction_id` is missing, `reason` is not `refund` or `chargeback`, or `refund_amount_cents` is not a positive integer on a sale recorded in its original currency. |
+| 400 | `invalid_request` | `transaction_id` is missing, or `reason` is not `refund` or `chargeback`. |
 | 401 | `unauthorized` | `Authorization` header is missing, malformed, or the API token is invalid. |
 | 404 | `not_found` | No sale record found for the given `transaction_id` in the authenticated program. |
 | 500 | `internal_error` | Internal error during commission reversal. |

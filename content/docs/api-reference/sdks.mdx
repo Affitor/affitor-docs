@@ -203,10 +203,10 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 |-------|------|----------|-------------|
 | `customerExternalId` | `string` | Conditional | Your own user id — resolves attribution from the earlier `trackLead` call. |
 | `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
-| `amount` | `number` | **Yes** | What the customer paid, after discounts, in the currency's smallest unit (e.g. `4999` = $49.99). |
-| `taxCents` | `number` | No | The tax included in `amount`, same unit. Deducted from the commission basis from your money-basis start date; ignored before it. Requires `@affitor/sdk` 2.1.2 or later. |
+| `amount` | `number` | **Yes** | Sale amount in **integer cents** (e.g. `4999` = $49.99). |
+| `taxCents` | `number` | No | The tax included in `amount`, same unit. Accepted but not used yet: commissions are calculated on `amount`. Requires `@affitor/sdk` 2.1.2 or later. |
 | `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
-| `currency` | `string` | No | ISO 4217 code. Defaults to `USD`. Non-USD sales are converted to USD when recorded; see [Currencies and tax](/docs/api-reference/track-sale#currencies-and-tax). |
+| `currency` | `string` | No | `USD`, `EUR`, or `VND`; another code returns `422`. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD. |
 | `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
 | `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
 | `subscriptionId` | `string` | No | External subscription id from your payment provider. |
@@ -234,7 +234,7 @@ This endpoint does not require authentication.
 
 Reverses the commission for a previously tracked sale. Call it once per refund, from your payment provider's refund webhook.
 
-- Omit `refundAmountCents` to refund everything not yet refunded → commission status set to `reversed`.
+- Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
 - Pass **this refund's own amount** → it is added to what was already refunded on the sale, and the commission is reduced proportionally (`refunded`, or `reversed` once the total reaches the sale amount).
 - Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
 - A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
@@ -244,7 +244,7 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
-| `refundAmountCents` | `number` | No | This refund's amount in the sale currency's smallest unit (not the running total). Omit it to refund the rest of the sale. |
+| `refundAmountCents` | `number` | No | This refund's amount in integer cents (not the running total). Omit or pass `0` to refund the rest of the sale. |
 | `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
 
 ---
@@ -271,7 +271,6 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
     const result = await affitor.trackSale({
       customerExternalId: session.client_reference_id ?? undefined,
       amount: session.amount_total ?? 0,
-      taxCents: session.total_details?.amount_tax ?? undefined, // deducted from your money-basis start date
       invoiceId: session.payment_intent as string,
       currency: session.currency?.toUpperCase(),
       saleType: 'payment',
@@ -292,8 +291,6 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
   }
 }
 ```
-
-Stripe amounts are in the currency's ISO 4217 smallest unit, which is what the API expects, except for three currencies: ISK and UGX (Stripe counts hundredths, ISO has none: divide by 100) and MGA (Stripe has no decimals, ISO has two: multiply by 100). Convert those before calling `trackSale` or `trackRefund`, or use the Stripe Connect integration, which handles them.
 
 ---
 

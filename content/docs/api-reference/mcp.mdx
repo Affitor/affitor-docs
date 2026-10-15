@@ -161,7 +161,7 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 | `affitor_readiness` | `forceRecheck?: boolean` | Check this program's integration/onboarding readiness — returns a 5-gate verdict + `blocker` + `next_action`. Poll until `integration_verified` is true. |
 | `affitor_track_click` | `affiliateUrl?`, `pageUrl?`, `referrerUrl?`, `existingClickId?` (all optional strings) | Report a click (usually browser-side; public, no customer needed). |
 | `affitor_track_lead` | `customerExternalId?: string`, `clickId?: string`, `email?: string`, `testMode?: boolean` (one of `customerExternalId` / `clickId` required) | Report a lead/signup. Binds the customer to the click so later sales attribute by `customerExternalId` alone. |
-| `affitor_track_sale` | `customerExternalId?` / `clickId?` (one required), `amount: number` (the currency's smallest unit), `invoiceId: string`, `currency?`, `saleType?`, `isRecurring?`, `subscriptionId?`, `subscriptionInterval?`, `testMode?` | Needs `AFFITOR_MCP_WRITE=1`. Report a sale. Creates a real sale and commission unless `testMode` is true. Resolves attribution by `customerExternalId` (bound at lead time). |
+| `affitor_track_sale` | `customerExternalId?` / `clickId?` (one required), `amount: number` (cents), `invoiceId: string`, `currency?`, `saleType?`, `isRecurring?`, `subscriptionId?`, `subscriptionInterval?`, `testMode?` | Needs `AFFITOR_MCP_WRITE=1`. Report a sale. Creates a real sale and commission unless `testMode` is true. Resolves attribution by `customerExternalId` (bound at lead time). |
 | `affitor_track_refund` | `invoiceId: string`, `refundAmountCents?: number`, `refundReason?: string`, `testMode?: boolean` | Needs `AFFITOR_MCP_WRITE=1`. Report one refund with its own amount; amounts add up on the sale (omit amount = refund the rest → commission reversed). A retry with the same amount is ignored. |
 | `affitor_get_integration_plan` | `framework`, `provider`, `mode?` | Return the deterministic per-stack integration plan — install, checkout-metadata snippet, `trackSale` snippet + where to inject it, and the verify step. |
 | `affitor_run_verification` | _(none)_ | Fire the synthetic click → lead → sale verification chain through the real attribution pipeline (isolated `is_test` rows). |
@@ -179,9 +179,9 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 
 - `customerExternalId?: string` — your own user id; resolves attribution (no `clickId` needed once bound at lead time).
 - `clickId?: string` — Affitor click id.
-- `amount: number` — what the customer paid, in the currency's smallest unit (e.g. `4999` = $49.99 USD, `490000` = 490,000 VND).
+- `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
 - `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
-- `currency?: string` — ISO 4217 code. Defaults to `USD`. Non-USD sales are converted to USD when recorded; see [Currencies and tax](/docs/api-reference/track-sale#currencies-and-tax).
+- `currency?: string` — `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
 - `saleType?: "payment" | "subscription"` — one-off payment or subscription.
 - `isRecurring?: boolean` — whether this sale recurs (subscription renewal).
 - `subscriptionId?: string` — provider subscription id, if applicable.
@@ -191,7 +191,7 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 **`affitor_track_refund`**:
 
 - `invoiceId: string` — the sale's idempotency key (the `invoiceId` you passed to `affitor_track_sale`).
-- `refundAmountCents?: number` — **this refund's own amount** in the sale currency's smallest unit (not a running total). Omit = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
+- `refundAmountCents?: number` — integer cents, **this refund's own amount** (not a running total). Omit (or `0`) = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
 - `refundReason?: string` — optional human-readable refund reason.
 - `testMode?: boolean`: a dry run that returns the refund that would be sent and calls nothing. The API has no test mode for refunds.
 
