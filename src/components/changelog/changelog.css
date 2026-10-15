@@ -19,10 +19,10 @@
   --cl-soft: #12151c;
 }
 
-/* Theme-swapped media: banners, screenshots, video loops. */
-.cl-dark { display: none; }
-.dark .cl-light { display: none; }
-.dark .cl-dark { display: block; }
+/* Theme-swapped media: banners, screenshots, video loops (scoped to beat .cl-banner / .cl-media). */
+.cl .cl-dark { display: none; }
+.dark .cl .cl-light { display: none; }
+.dark .cl .cl-dark { display: block; }
 
 .cl a { color: inherit; }
 .cl h1 { color: var(--cl-ink); font-size: 40px; line-height: 48px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
@@ -56,7 +56,8 @@
 .cl-action-line { margin-top: 14px; font-size: 14px; color: var(--cl-ink); font-weight: 600; }
 .cl-peek { margin: 12px 0 0; padding-left: 18px; max-width: 672px; list-style: disc; }
 .cl-peek li { margin: 2px 0; }
-.cl-more { font-size: 14px; color: var(--cl-muted); }
+.cl-more { font-size: 14px; color: var(--cl-muted); text-decoration: underline; }
+.cl-peek a { text-decoration: underline; }
 .cl-pin { font-size: 12px; color: var(--cl-muted); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; }
 .cl-pages { display: flex; gap: 16px; padding-left: 200px; font-size: 14px; }
 .cl code { font: 14px/20px 'JetBrains Mono', ui-monospace, monospace; background: var(--cl-soft); border: 1px solid var(--cl-line); border-radius: 5px; padding: 1px 5px; color: var(--cl-ink); }
@@ -90,6 +91,9 @@
 .cl-prose strong { color: var(--cl-ink); font-weight: 600; }
 .cl-prose a { color: var(--color-fd-primary); text-decoration: none; font-weight: 500; }
 .cl-prose a:hover { text-decoration: underline; }
+.cl-prose :is(h2, h3) a { color: inherit; font-weight: inherit; }
+/* Heading self-anchors carry data-card; globals.css only unboxes them inside <article>. */
+.cl-prose :is(h2, h3) a[data-card], .cl-prose :is(h2, h3) a[data-card]:hover { border: 0; border-radius: 0; transform: none; }
 .cl-prose pre code, .cl-prose figure code { background: none; border: 0; padding: 0; color: inherit; font: inherit; }
 .cl-prose table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 0 0 18px; }
 .cl-prose th, .cl-prose td { border-bottom: 1px solid var(--cl-line); text-align: left; padding: 8px 10px 8px 0; }

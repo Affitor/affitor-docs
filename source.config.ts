@@ -45,7 +45,7 @@ export const changelog = defineCollections({
     surfaces: z.array(z.enum(['dashboard', 'marketplace', 'tracking', 'api', 'sdk', 'cli', 'mcp'])).default([]),
     description: z.string(),
     // Files public/docs/changelog/<slug>/banner-{light,dark}.png. Omit for a digest.
-    banner: z.object({ pill: z.string(), subject: z.enum(['ui', 'code']) }).optional(),
+    banner: z.object({ pill: z.string(), subject: z.enum(['ui', 'code', 'none']) }).optional(),
     version: z.string().optional(),
     action: z.object({ who: z.string(), what: z.string(), by: day.optional() }).optional(),
     deprecations: z.array(z.object({ what: z.string(), replacement: z.string(), sunset: day })).optional(),

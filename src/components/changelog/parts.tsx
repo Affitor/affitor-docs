@@ -67,7 +67,7 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
         <p className="cl-lede">{entry.description}</p>
         {entry.action ? (
           <div className="cl-action-line">
-            {actionText(entry)}: {entry.action.what}
+            {actionText(entry)}: {renderInlineMarkdown(entry.action.what)}
           </div>
         ) : null}
         <Chips entry={entry} compact={digest} onIndex />
