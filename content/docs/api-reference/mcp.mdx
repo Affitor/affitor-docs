@@ -15,9 +15,31 @@ The `@affitor/mcp` and `@affitor/sdk` packages are **Beta**. The documented happ
 
 ---
 
+## Install as a plugin
+
+In Claude Code and Gemini CLI, the plugin is the quickest way to install. It bundles the MCP server with Affitor's integration guide (a skill in Claude Code, a context file in Gemini CLI). Claude Code asks for your program API key when you enable the plugin; Gemini CLI asks during installation.
+
+<CodeGroup items={[
+  {
+    label: "Claude Code",
+    lang: "bash",
+    code: `/plugin marketplace add Affitor/claude-plugins
+/plugin install affitor@affitor`
+  },
+  {
+    label: "Gemini CLI",
+    lang: "bash",
+    code: `gemini extensions install https://github.com/Affitor/claude-plugins`
+  }
+]} />
+
+Run the Claude Code commands inside a Claude Code session. Claude Code keeps the key in secure storage, and Gemini CLI keeps it in the system keychain. Source: [github.com/Affitor/claude-plugins](https://github.com/Affitor/claude-plugins).
+
+The server is also listed in the [Official MCP Registry](https://registry.modelcontextprotocol.io) as `com.affitor/mcp`, so clients that browse the registry can find it there.
+
 ## Add it to your MCP client
 
-Pick your client. Every option runs the same local server with `npx -y @affitor/mcp` and passes your **program API key** as `AFFITOR_API_KEY`. Replace `your_program_key` with your key.
+For any other client, or to configure it yourself, pick your client below. Every option runs the same local server with `npx -y @affitor/mcp` and passes your **program API key** as `AFFITOR_API_KEY`. Replace `your_program_key` with your key.
 
 <CodeGroup items={[
   {
