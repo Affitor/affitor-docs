@@ -14,6 +14,7 @@
   --cl-code-ink: #e6edf3;
   --cl-code-muted: #9aa4b5;
   --cl-code-accent: #5881ff;
+  --cl-code-hover: rgba(255, 255, 255, 0.06);
   color: var(--cl-body);
   font-size: 16px;
   line-height: 28px;
@@ -36,7 +37,7 @@
   --color-fd-border: var(--cl-code-line);
   --color-fd-foreground: var(--cl-code-ink);
   --color-fd-muted-foreground: var(--cl-code-muted);
-  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent: var(--cl-code-hover);
   --color-fd-accent-foreground: var(--cl-code-ink);
   --color-fd-primary: var(--cl-code-accent);
   color: var(--cl-code-ink);
