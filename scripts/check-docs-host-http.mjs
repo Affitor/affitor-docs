@@ -51,11 +51,11 @@ const ALWAYS = [
   [PROXY, '/docs/blog/rewardful-alternatives', 308, '/blog/rewardful-alternatives'],
   [PROXY, '/blog/rewardful-alternatives', 200, null, 'text/html'],
   // Merged posts (13/10/2026): pages and .md twins 308 to the pricing comparison.
-  [PROXY, '/blog/best-affiliate-software-saas', 308, '/blog/affiliate-software-pricing-comparison'],
-  [PROXY, '/blog/free-affiliate-software-for-saas', 308, '/blog/affiliate-software-pricing-comparison'],
-  [PROXY, '/blog/best-affiliate-software-saas.md', 308, '/blog/affiliate-software-pricing-comparison.md'],
-  [PROXY, '/blog/free-affiliate-software-for-saas.md', 308, '/blog/affiliate-software-pricing-comparison.md'],
-  [DOCS, '/blog/free-affiliate-software-for-saas', 301, 'https://affitor.com/blog/affiliate-software-pricing-comparison'],
+  [PROXY, '/blog/affiliate-software-pricing-comparison', 308, '/blog/best-affiliate-software-saas'],
+  [PROXY, '/blog/free-affiliate-software-for-saas', 308, '/blog/best-affiliate-software-saas'],
+  [PROXY, '/blog/affiliate-software-pricing-comparison.md', 308, '/blog/best-affiliate-software-saas.md'],
+  [PROXY, '/blog/free-affiliate-software-for-saas.md', 308, '/blog/best-affiliate-software-saas.md'],
+  [DOCS, '/blog/free-affiliate-software-for-saas', 301, 'https://affitor.com/blog/best-affiliate-software-saas'],
 ];
 const MODES = {
   '': [
