@@ -1,0 +1,20 @@
+---
+title: Sign in from the CLI, and init wires tracking into Next.js
+date: 2026-05-25
+type: feature
+audience: [developers]
+surfaces: [cli, sdk]
+version: 0.3.0
+description: The CLI signs you in through the browser, and init detects Next.js, installs the SDK and adds the tracking code, asking before each install and showing a diff before it edits your layout.
+---
+
+The CLI now signs you in through your browser, so programs you create belong to your dashboard account. `programs` lists them and `whoami` shows who is signed in.
+
+```bash
+npx affitor login
+npx affitor init
+```
+
+In a Next.js project, `init` detects the framework, installs the SDK and adds the tracking code. It asks before installing anything and shows a diff of the change to your app layout before applying it.
+
+A server-side Node SDK ships alongside it, so you can record sales from your backend. Since June 2026 the SDK is published as `@affitor/sdk`.

@@ -1,0 +1,43 @@
+---
+title: Improvements and fixes, June 2026
+date: 2026-06-27
+type: digest
+audience: [brands, partners, developers]
+surfaces: [dashboard, marketplace, tracking, api, sdk]
+description: Shorter app addresses, a calmer design, apply first and sign up after, per-program billing and notifications, refunds through the API, and the end of list.affitor.com.
+---
+
+### New
+
+- Record refunds through the tracking API, so the matching commission is reversed.
+- Record sales from your server without connecting Stripe.
+- Each program connects its own Stripe account.
+- Notifications and billing are scoped per program for brands with several programs.
+- A quick start popover in the top bar, and Billing as its own tab.
+- A program handle field in program settings and in first-program setup.
+- Withdraw an application from your Programs list.
+
+### Improved
+
+- App addresses are shorter (`/brand/...`, `/partner/...`), and the dashboard says "brand" instead of "advertiser".
+- Settings, forms, charts, status pills and alerts share one calmer design.
+- Apply to a program first and sign up after: your application continues once you are in.
+- The attribution window is one setting, and it is applied when sales settle. Chargebacks reverse commissions.
+- Approving or rejecting a commission updates the row at once.
+- The partner table sorts by most clicks first and remembers your sort.
+- The SDK is published as `@affitor/sdk`, and the docs use it everywhere.
+- **list.affitor.com is retired** and now opens the marketplace.
+- Programs without a logo get a default gradient logo, and SVG logos upload.
+- PayPal is no longer a withdrawal method.
+
+### Fixed
+
+- Logging out clears your session completely.
+- Program pages no longer show default commission numbers that the brand never set.
+- The tracking setup wizard shows the right snippet and refund guidance.
+- Test events stay out of brand metrics.
+- Partner chat no longer shows a message twice.
+
+### Security
+
+- We tightened access between accounts so one brand cannot read another's data.
