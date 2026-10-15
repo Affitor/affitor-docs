@@ -5,5 +5,10 @@ export const metadata: Metadata = { title: { absolute: 'Page not found | Affitor
 
 /** Unknown /docs pages keep the docs chrome (header with search, tabs, footer) from docs/layout. */
 export default function DocsNotFound() {
-  return <NotFoundBody />;
+  // The docs layout is a grid; take the main area like DocsPage does, or the body shrinks to one column.
+  return (
+    <div className="[grid-area:main] w-full min-w-0">
+      <NotFoundBody />
+    </div>
+  );
 }
