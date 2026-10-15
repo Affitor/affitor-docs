@@ -203,9 +203,10 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 |-------|------|----------|-------------|
 | `customerExternalId` | `string` | Conditional | Your own user id — resolves attribution from the earlier `trackLead` call. |
 | `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
-| `amount` | `number` | **Yes** | Sale amount in **integer cents** (e.g. `4999` = $49.99). |
+| `amount` | `number` | **Yes** | What the customer paid, after discounts, in the currency's smallest unit (e.g. `4999` = $49.99). |
+| `taxCents` | `number` | No | The tax included in `amount`, same unit. Commissions use the pre-tax amount. Requires `@affitor/sdk` 2.1.2 or later. |
 | `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
-| `currency` | `string` | No | `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD. |
+| `currency` | `string` | No | ISO 4217 code. Defaults to `USD`. Non-USD sales are converted to USD when recorded; see [Currencies and tax](/docs/api-reference/track-sale#currencies-and-tax). |
 | `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
 | `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
 | `subscriptionId` | `string` | No | External subscription id from your payment provider. |

@@ -181,7 +181,7 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 - `clickId?: string` — Affitor click id.
 - `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
 - `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
-- `currency?: string` — `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
+- `currency?: string` — ISO 4217 code. Defaults to `USD`. Non-USD sales are converted to USD when recorded; see [Currencies and tax](/docs/api-reference/track-sale#currencies-and-tax).
 - `saleType?: "payment" | "subscription"` — one-off payment or subscription.
 - `isRecurring?: boolean` — whether this sale recurs (subscription renewal).
 - `subscriptionId?: string` — provider subscription id, if applicable.

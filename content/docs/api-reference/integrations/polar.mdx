@@ -71,7 +71,8 @@ export const POST = Webhooks({
       customerExternalId: (order.metadata?.user_id as string | undefined)
         ?? order.customer?.externalId ?? order.customerId,
       clickId: (order.metadata?.affitor_click_id ?? order.metadata?.reference_id) as string | undefined,
-      amount: order.totalAmount,         // integer cents
+      amount: order.totalAmount,         // integer cents, after discounts, tax included
+      taxCents: order.taxAmount,         // the tax inside totalAmount: commissions use the pre-tax amount
       currency: order.currency,
       invoiceId: order.id,               // idempotency key — 409 = already recorded
       saleType: order.subscriptionId ? 'subscription' : 'payment',

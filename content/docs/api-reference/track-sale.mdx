@@ -32,7 +32,10 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     Your unique payment identifier. Used for duplicate detection — re-sending the same value returns 409.
   </ParamField>
   <ParamField name="amount_cents" type="integer" required>
-    Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer.
+    What the customer paid, after discounts, in the smallest unit of `currency` (cents for USD, đồng for VND, yen for JPY). Must be a positive integer. If it includes tax, also send `tax_cents`.
+  </ParamField>
+  <ParamField name="tax_cents" type="integer">
+    The tax included in `amount_cents`, in the same unit. Must be between `0` and `amount_cents`. Commissions are calculated on `amount_cents - tax_cents` (see [Currencies and tax](#currencies-and-tax)). Omit it when the amount has no tax or you do not know it.
   </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
     Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. At least one of `customer_key` or `click_id` must match an existing customer record.
@@ -41,7 +44,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
   </ParamField>
   <ParamField name="currency" type="string">
-    `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
+    ISO 4217 code of the payment. Defaults to `USD`. Non-USD sales are converted to USD when recorded (see [Currencies and tax](#currencies-and-tax)). An unsupported code returns `422 unsupported_currency` and records nothing.
   </ParamField>
   <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
     `"payment"` (default) or `"subscription"`.
@@ -60,6 +63,18 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
   </ParamField>
   <ParamField name="product_id" type="string">
     Your product identifier. Used for per-product commission policy matching.
+  </ParamField>
+  <ParamField name="occurred_at" type="string">
+    When the payment happened, as ISO 8601 with an offset (for example `2026-10-16T09:30:00Z`), within the last 30 days. Stored for reporting only: commissions, attribution windows and hold periods still use the time Affitor receives the call.
+  </ParamField>
+  <ParamField name="provider" type="string" enum={["stripe", "polar", "dodo", "paddle", "lemonsqueezy", "creem", "sepay", "payos", "apipay", "x402", "other"]}>
+    Your payment provider. Stored for reporting.
+  </ParamField>
+  <ParamField name="provider_payment_id" type="string">
+    The provider's own payment id (1 to 255 characters). Stored for reporting; duplicate detection still uses `transaction_id`.
+  </ParamField>
+  <ParamField name="livemode" type="boolean">
+    `false` records a test sale, the same as `additional_data.test_mode: true`. `true` or omitted records a live sale.
   </ParamField>
 </ParamList>
 
@@ -174,8 +189,19 @@ data = response.json()`
     "status": 409,
     "name": "ConflictError",
     "message": "Duplicate transaction_id. This sale has already been recorded.",
-    "details": {}
+    "details": { "sale_id": 42 },
+    "code": "duplicate_transaction"
   }
+}`
+  },
+  {
+    status: 200,
+    label: "200 No Exchange Rate",
+    code: `{
+  "success": true,
+  "sale_id": 44,
+  "commission_id": null,
+  "money_status": "fx_pending"
 }`
   },
 ]} />
@@ -186,9 +212,10 @@ data = response.json()`
 | `sale_id` | integer | ID of the created sale event record. |
 | `commission_id` | integer | ID of the created commission record. |
 | `message` | string | Human-readable confirmation. |
+| `money_status` | string | Present only as `"fx_pending"`: the sale is recorded, but no exchange rate from the last 7 days was available, so no commission or fee was created. |
 
 <Callout type="info" title="Idempotency">
-  Re-sending the same `transaction_id` returns `409 Conflict` — Affitor does not create a duplicate sale. This is intentional: you can safely retry on network failure by checking for 409 before treating the call as failed.
+  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and the first sale's id in `error.details.sale_id`. Affitor does not create a duplicate sale, so you can safely retry on network failure.
 </Callout>
 
 <Callout type="warning" title="409 is not an error">
@@ -199,23 +226,41 @@ data = response.json()`
 
 ## Error Responses
 
-| Status | When |
-|--------|------|
-| `400` | `transaction_id` missing or not a string |
-| `400` | `amount_cents` missing, not a positive integer |
-| `400` | Neither `customer_key` nor `click_id` resolved a customer record |
-| `400` | Customer does not belong to the program identified by the API key |
-| `400` | No partner-program relationship found for the resolved customer |
-| `401` | Missing or malformed `Authorization` header |
-| `401` | API key does not match any active program |
-| `409` | `transaction_id` already recorded — duplicate sale |
-| `500` | Commission creation failed internally |
+Errors use one envelope: `{ "data": null, "error": { "status", "name", "message", "details", "code" } }`. Branch on `error.code`; the message text may change.
+
+| Status | `error.code` | When |
+|--------|--------------|------|
+| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; `tax_cents` not an integer between `0` and `amount_cents`; an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
+| `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
+| `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
+| `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
+| `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is the recorded sale |
+| `422` | `unsupported_currency` | `currency` is not supported; nothing is recorded |
+| `429` | `rate_limited` | Too many requests; wait `retry_after_seconds` |
+| `500` | `internal_error` | Sale or commission creation failed internally |
+
+---
+
+## Currencies and tax
+
+<Callout type="info" title="Rolling out">
+  The rules in this section apply to sales recorded from the start date we email to your account. Until then, a sale is recorded as sent: no conversion, `tax_cents` is accepted but not deducted, and `currency` must be `USD`, `EUR` or `VND`.
+</Callout>
+
+- **Commission basis.** Commissions are calculated on what the customer paid after discounts and before tax: `amount_cents - tax_cents`. The same amount is used for your platform fee and counts toward your revenue totals. Without `tax_cents`, the full `amount_cents` is used.
+- **Units.** `amount_cents` and `tax_cents` are in the currency's smallest unit as defined by ISO 4217: `4900` USD is $49.00, `490000` VND is 490,000 đồng, `4900` JPY is ¥4,900.
+- **Conversion.** A non-USD sale is converted to USD when it is recorded, at the latest daily rate published no more than 7 days before the sale. The sale keeps the original amount, currency and rate next to the USD amount. Commissions, fees and invoices are in USD.
+- **No rate available.** If no rate from the last 7 days exists, the sale is recorded with `money_status: "fx_pending"` and no commission or fee. It is never counted 1:1 as USD.
+- **Refunds.** Send `refund_amount_cents` in the sale's original currency and unit, on the same basis as `amount_cents` (tax included). The commission is reduced by the refunded share of that original amount, so later rate changes do not matter and a full refund reverses the full commission.
+- **Stripe.** Sales tracked through the Stripe integration read the discount and tax from Stripe; nothing to send.
+
+Exchange rates: [Rates by Exchange Rate API](https://www.exchangerate-api.com).
 
 ---
 
 ## Test Mode
 
-Send `additional_data.test_mode: true` to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode.
+Send `additional_data.test_mode: true` (or `livemode: false`) to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode. Test sales accept `USD`, `EUR` or `VND` only.
 
 ```json
 {

@@ -182,10 +182,11 @@ Send a server-to-server request once payment succeeds.
 | Parameter | Required | Type | Description |
 |-----------|----------|------|-------------|
 | `transaction_id` | **Yes** | string | Unique transaction identifier used for deduplication |
-| `amount_cents` | **Yes** | number | Positive integer amount in cents |
+| `amount_cents` | **Yes** | number | What the customer paid after discounts, in the currency's smallest unit (positive integer) |
+| `tax_cents` | No | number | The tax included in `amount_cents`; commissions use the pre-tax amount |
 | `customer_key` | Conditional | string | Your internal customer ID |
 | `click_id` | Conditional | string | Tracked click identifier |
-| `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
+| `currency` | No | string | ISO 4217 code, converted to USD when recorded ([details](/docs/api-reference/track-sale#currencies-and-tax)). Default: `USD` |
 | `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
 | `is_recurring` | No | boolean | Use `true` for recurring charges |
 | `subscription_id` | No | string | External subscription ID |

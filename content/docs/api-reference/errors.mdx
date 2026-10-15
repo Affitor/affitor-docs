@@ -21,6 +21,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
 | `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
+| `422` | `POST /api/v1/track/sale` only: the `currency` is not supported (`error.code` `unsupported_currency`). Nothing was recorded | Send a supported ISO 4217 code | Not unchanged |
 | `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
 | `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
@@ -48,9 +49,11 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 }
 ```
 
-`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), `GoneError` (410), `InternalServerError` (500). `error.details` is an empty object unless noted below.
+`data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), `GoneError` (410), `UnprocessableEntityError` (422), `InternalServerError` (500). `error.details` is an empty object unless noted below.
 
-Most errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
+`POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with the recorded sale in `error.details.sale_id`), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
+
+Elsewhere, errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
 
 - A suspended account signing in to the CLI gets `error.details.code` set to [`ACCOUNT_BLOCKED`](#account_blocked).
 - A CLI `500` carries `error.details.request_id` — see [request IDs](#request-ids).
@@ -217,6 +220,10 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 |--------|---------------|---------|-----|
 | `400` | `transaction_id is required and must be a string` | Field missing or not a string type | Always pass `transaction_id` as a string |
 | `400` | `amount_cents is required and must be a positive integer` | Field missing, zero, negative, or wrong type | Pass sale amount in smallest currency unit (e.g. `4900` for $49.00 USD) as a positive integer |
+| `400` | `tax_cents must be an integer between 0 and amount_cents` | `tax_cents` is negative, larger than `amount_cents`, or not an integer | Send the tax included in `amount_cents`, in the same unit, or omit it |
+| `400` | `occurred_at must be an ISO 8601 time within the last 30 days` | Not ISO 8601 with an offset, not a real date, or outside the window | Send for example `2026-10-16T09:30:00Z`, or omit it |
+| `400` | `provider must be one of: ...` / `provider_payment_id must be a string of 1 to 255 characters` / `livemode must be a boolean` | An optional field has the wrong shape | Fix the field or omit it |
+| `422` | `currency XXX is not supported` | The code is not a supported ISO 4217 currency (test sales: only `USD`, `EUR`, `VND`) | Send a supported code; nothing was recorded, so you can resend |
 | `400` | `Customer not found. Provide customer_key or click_id.` | Neither identifier resolved a customer | Ensure lead tracking ran first and the customer record exists |
 | `400` | `No affiliate attribution found for this customer in this program` | Customer exists but is attributed to a different program | Use the API key matching the program where the click originated |
 | `400` | `No partner-program relationship found for this customer` | Customer has no linked partner-program junction | The customer record is missing a partner relationship — check that the original click was tracked correctly |
@@ -227,6 +234,8 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
 | `400` | `transaction_id is required` | Body did not include `transaction_id` | Pass the same `transaction_id` used when recording the original sale |
+| `400` | `reason must be refund or chargeback` | `reason` has another value | Send `refund` or `chargeback`, or use free-text `refund_reason` |
+| `400` | `refund_amount_cents must be a positive integer` | A non-integer or negative amount on a sale priced in its original currency | Send this refund's amount in the sale's smallest currency unit, or omit it to refund the rest |
 
 ---
 
@@ -256,7 +265,7 @@ This applies to `POST /api/v1/track/click` and `POST /api/v1/track/lead` in test
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
+| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists; `error.details.sale_id` is its id | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
 
 Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_id`). The check is scoped globally, not per-program.
 
