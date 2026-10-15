@@ -32,11 +32,19 @@ function apply(root: HTMLElement, filter: Filter, limit: number) {
   return matched;
 }
 
-/** The batch size that reveals the #YYYY-MM-DD row in the URL, or null when it is not a row. */
-function limitForHash(root: HTMLElement, filter: Filter, pageSize: number) {
-  const id = decodeURIComponent(window.location.hash.slice(1));
+/** The id in the URL hash, or '' when there is none or it is not valid percent-encoding. */
+function hashId() {
+  try {
+    return decodeURIComponent(window.location.hash.slice(1));
+  } catch {
+    return '';
+  }
+}
+
+/** The batch size that reveals the row with this id, or null when it is not a matching row. */
+function limitFor(root: HTMLElement, filter: Filter, pageSize: number, id: string) {
   const rows = [...root.querySelectorAll<HTMLElement>('.cl-row')].filter((row) => matches(row, filter));
-  const rank = id ? rows.findIndex((row) => row.id === id) : -1;
+  const rank = rows.findIndex((row) => row.id === id);
   return rank < 0 ? null : Math.ceil((rank + 1) / pageSize) * pageSize;
 }
 
@@ -62,10 +70,15 @@ export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Reco
     return () => window.removeEventListener('popstate', sync);
   }, [pageSize]);
 
-  // Old links such as /changelog#2026-09-30: open enough batches to show that day, then scroll to it.
+  // Old links such as /changelog#2026-09-30: open enough batches to show that day, then
+  // scroll to it once per hash navigation (not again when "Older updates" grows the list).
   const [hash, setHash] = useState('');
+  const scrollPending = useRef(false);
   useEffect(() => {
-    const sync = () => setHash(window.location.hash);
+    const sync = () => {
+      scrollPending.current = true;
+      setHash(hashId());
+    };
     sync();
     window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
@@ -74,10 +87,13 @@ export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Reco
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
-    const needed = hash ? limitForHash(root, filter, pageSize) : null;
+    const needed = hash ? limitFor(root, filter, pageSize, hash) : null;
     if (needed && needed > limit) return setLimit(needed);
     setMatched(apply(root, filter, limit));
-    if (needed) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
+    if (needed && scrollPending.current) {
+      scrollPending.current = false;
+      document.getElementById(hash)?.scrollIntoView();
+    }
   }, [filter, limit, hash, pageSize]);
 
   function go(next: Filter) {
@@ -86,6 +102,7 @@ export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Reco
     if (next.surface) q.set('surface', next.surface);
     const s = q.toString();
     window.history.pushState(null, '', s ? `?${s}` : window.location.pathname);
+    scrollPending.current = false;
     setHash('');
     setFilter(next);
     setLimit(pageSize);
