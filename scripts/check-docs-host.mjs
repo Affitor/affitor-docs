@@ -96,6 +96,18 @@ function invariants() {
   check('docs host legacy /docs/blog/<slug> -> 301 affitor.com/blog/<slug>', redirects(DOCS, '/docs/blog/rewardful-alternatives', 'https://affitor.com/blog/rewardful-alternatives'));
   check('docs host legacy /docs/blog -> 301 affitor.com/blog', redirects(DOCS, '/docs/blog', 'https://affitor.com/blog'));
   check('docs host renamed /blog/<slug> -> 301 to the new slug in one hop', redirects(DOCS, '/blog/affiliate-software-pricing-comparison', 'https://affitor.com/blog/best-affiliate-software-saas'));
+  // The changelog is its own zone at affitor.com/changelog (every mode, every changelog URL).
+  for (const [path, location] of [
+    ['/changelog', 'https://affitor.com/changelog'],
+    ['/changelog?for=brands', 'https://affitor.com/changelog?for=brands'],
+    ['/changelog/invite-partners', 'https://affitor.com/changelog/invite-partners'],
+    ['/changelog/page/2', 'https://affitor.com/changelog/page/2'],
+    ['/changelog.md', 'https://affitor.com/changelog.md'],
+    ['/changelog/invite-partners.md', 'https://affitor.com/changelog/invite-partners.md'],
+    ['/changelog/rss.xml', 'https://affitor.com/changelog/rss.xml'],
+    ['/docs/changelog', 'https://affitor.com/changelog'],
+    ['/docs/changelog.md', 'https://affitor.com/changelog.md'],
+  ]) check(`docs host ${path} -> 301 ${location}`, redirects(DOCS, path, location));
   // Files that moved under /docs: served in place with a canonical Link.
   for (const [path, internal] of [
     ['/skill.md', '/docs/skill.md'],
@@ -104,7 +116,6 @@ function invariants() {
     ['/openapi.yaml', '/docs/openapi.yaml'],
     ['/index.md', '/docs/index.md'],
     ['/api-reference/errors.md', '/docs/api-reference/errors.md'],
-    ['/changelog.md', '/docs/changelog.md'],
     ['/affitor-logo.svg', '/docs/affitor-logo.svg'],
     ['/favicon.svg', '/docs/favicon.svg'],
     ['/apple-touch-icon.png', '/docs/apple-touch-icon.png'],
@@ -144,6 +155,12 @@ function invariants() {
       ['/blog/free-affiliate-software-for-saas.md', '/blog/best-affiliate-software-saas.md'],
     ]) check(`${host}${path} -> 308 ${location} on the same host`, redirects(host, path, `https://${host}${location}`, {}, 308));
     check(`${host}/docs/advertisers-x is not a rename`, passes(host, '/docs/advertisers-x'));
+    // The old docs changelog moved to the zone: absolute, permanent, on every host.
+    check(`${host}/docs/changelog -> 301 affitor.com/changelog`, redirects(host, '/docs/changelog', 'https://affitor.com/changelog'));
+    check(`${host}/docs/changelog.md -> 301 affitor.com/changelog.md`, redirects(host, '/docs/changelog.md', 'https://affitor.com/changelog.md'));
+    for (const path of ['/changelog', '/changelog/invite-partners', '/changelog.md', '/changelog/invite-partners.md', '/changelog/rss.xml', '/docs/changelog/invite-partners/invite-compose.png']) {
+      check(`${host}${path} is served by the changelog zone (no redirect)`, passes(host, path));
+    }
   }
 }
 
@@ -152,7 +169,6 @@ mode(undefined, () => {
   // Redirects off: the docs host keeps serving every old root URL (and /docs URLs).
   check('off: docs host / served from /docs', serves('/', '/docs', false));
   check('off: docs host page served from /docs<path>', serves('/brand/quickstart?x=1', '/docs/brand/quickstart', false));
-  check('off: docs host /changelog served from /docs/changelog', serves('/changelog', '/docs/changelog', false));
   check('off: alias Host + x-forwarded-host docs.affitor.com is not rewritten', passes(PROXIES[0], '/brand/quickstart', { 'x-forwarded-host': DOCS }));
   check('off: docs Host + x-forwarded-host affitor.com is still served from /docs', () => {
     const r = run(DOCS, '/brand/quickstart', { 'x-forwarded-host': 'affitor.com' });
@@ -182,7 +198,6 @@ for (const status of ['301', '302']) {
     check(`${status}: docs host page, query kept`, to('/api-reference/errors?x=1', 'https://affitor.com/docs/api-reference/errors?x=1'));
     check(`${status}: trailing slash dropped`, to('/brand/quickstart/', 'https://affitor.com/docs/brand/quickstart'));
     check(`${status}: /blogger is a docs page path`, to('/blogger', 'https://affitor.com/docs/blogger'));
-    check(`${status}: /changelog -> affitor.com/docs/changelog`, to('/changelog', 'https://affitor.com/docs/changelog'));
     check(`${status}: old /docs/<page> keeps its path`, to('/docs/brand/quickstart', 'https://affitor.com/docs/brand/quickstart'));
     check(`${status}: /docs -> affitor.com/docs`, to('/docs', 'https://affitor.com/docs'));
     check(`${status}: /docsy is not mistaken for /docs`, to('/docsy', 'https://affitor.com/docs/docsy'));

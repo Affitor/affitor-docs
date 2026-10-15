@@ -33,6 +33,9 @@ const config = {
         source: '/blog/:path*.md',
         destination: '/llms.md/blog/:path*',
       },
+      // affitor.com/changelog (14/10/2026): the index twin and one twin per entry.
+      { source: '/changelog.md', destination: '/llms.md/changelog' },
+      { source: '/changelog/:slug.md', destination: '/llms.md/changelog/:slug' },
     ];
   },
   async redirects() {

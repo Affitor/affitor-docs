@@ -42,6 +42,19 @@ const RENAMES: [string, string][] = [
   ['/blog/free-affiliate-software-for-saas', '/blog/best-affiliate-software-saas'],
 ];
 
+// The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and
+// permanent on every host: the old /docs/changelog page and twin, and on docs.affitor.com every
+// changelog page, twin and the feed. Old screenshots (/changelog/<dir>/<file>.png) keep MOVED_FILE.
+const OLD_CHANGELOG = /^\/docs\/changelog(\.md)?\/?$/;
+const DOCS_HOST_CHANGELOG = /^\/changelog(?:\.md|\/rss\.xml|\/[^.]*?(?:\.md)?)?\/?$/;
+
+export function changelogMove(path: string, host: string | null): string | null {
+  const old = path.match(OLD_CHANGELOG);
+  if (old) return `https://affitor.com/changelog${old[1] ?? ''}`;
+  if (host === DOCS_HOST && DOCS_HOST_CHANGELOG.test(path)) return `https://affitor.com${path.replace(/(.)\/$/, '$1')}`;
+  return null;
+}
+
 /** The current path for a renamed page or its .md twin, or null when nothing changed. */
 export function currentPath(path: string): string | null {
   const md = path.endsWith('.md');
@@ -126,7 +139,11 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
     );
   }
 
-  if (req.headers.get('host') === DOCS_HOST) return docsHost(req);
+  const host = req.headers.get('host');
+  const changelog = changelogMove(req.nextUrl.pathname, host);
+  if (changelog) return NextResponse.redirect(`${changelog}${req.nextUrl.search}`, 301);
+
+  if (host === DOCS_HOST) return docsHost(req);
 
   const renamed = currentPath(req.nextUrl.pathname);
   if (renamed) return movedTo(req, `${renamed}${req.nextUrl.search}`);

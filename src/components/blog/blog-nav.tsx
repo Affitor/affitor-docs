@@ -8,14 +8,15 @@ import { BLOG_DOCS_ORIGIN } from '@/lib/site';
  * (white bar, center pill nav, blue Sign In CTA) inside the docs app.
  * No search, no docs tabs, no sidebar.
  */
-const NAV_LINKS: { label: string; href: string; active?: boolean }[] = [
+const NAV_LINKS: { label: string; href: string }[] = [
   { label: 'Marketplace', href: 'https://affitor.com/marketplace' },
   { label: 'About', href: 'https://affitor.com/about' },
   { label: 'Docs', href: `${BLOG_DOCS_ORIGIN}/docs` },
-  { label: 'Blog', href: '/blog', active: true },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Changelog', href: '/changelog' },
 ];
 
-export function BlogNav() {
+export function BlogNav({ active }: { active: 'Blog' | 'Changelog' }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -39,9 +40,9 @@ export function BlogNav() {
                 <a
                   key={link.label}
                   href={link.href}
-                  aria-current={link.active ? 'page' : undefined}
+                  aria-current={link.label === active ? 'page' : undefined}
                   className={
-                    link.active
+                    link.label === active
                       ? 'px-4 py-1.5 text-sm font-medium text-[#0A2540] bg-white shadow-sm rounded-full dark:bg-fd-secondary dark:text-fd-foreground'
                       : 'px-4 py-1.5 text-sm font-medium text-[#425466] hover:text-[#0A2540] rounded-full hover:bg-white transition-all duration-150 dark:text-fd-muted-foreground dark:hover:text-fd-foreground dark:hover:bg-fd-secondary'
                   }
@@ -93,7 +94,7 @@ export function BlogNav() {
                   key={link.label}
                   href={link.href}
                   className={
-                    link.active
+                    link.label === active
                       ? 'px-3 py-2 text-sm font-medium text-[#0A2540] bg-[#F3F4F6] rounded-lg dark:text-fd-foreground dark:bg-fd-muted'
                       : 'px-3 py-2 text-sm font-medium text-[#425466] hover:text-[#0A2540] hover:bg-[#F3F4F6] rounded-lg dark:text-fd-muted-foreground dark:hover:text-fd-foreground dark:hover:bg-fd-muted'
                   }

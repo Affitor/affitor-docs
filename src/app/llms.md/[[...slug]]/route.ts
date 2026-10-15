@@ -3,6 +3,7 @@ import { render } from '@/lib/agent-md';
 import { source } from '@/lib/source';
 import { blog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
+import { entrySlug, sortedEntries } from '@/lib/changelog';
 
 // Per-page markdown for machines: `<page-url>.md` is rewritten here (see
 // next.config.mjs). Fully static — every page's .md twin is prerendered at
@@ -31,5 +32,6 @@ export function generateStaticParams(): { slug: string[] }[] {
       .filter((entry) => entry.slug && entry.slug.length > 0)
       .map((entry) => ({ slug: entry.slug as string[] })),
     ...blog.map((post) => ({ slug: ['blog', postSlug(post.info.path)] })),
+    ...sortedEntries().map((entry) => ({ slug: ['changelog', entrySlug(entry)] })),
   ];
 }

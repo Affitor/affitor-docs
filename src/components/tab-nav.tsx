@@ -12,7 +12,7 @@ const TABS: Tab[] = [
   { title: 'API Reference', href: '/docs/api-reference/overview', match: (p) => p.startsWith('/docs/api-reference') },
   { title: 'Support', href: '/docs/support', match: (p) => p.startsWith('/docs/support') || p.startsWith('/docs/faq') },
   { title: 'Blog', href: '/blog', match: (p) => p.startsWith('/blog') },
-  { title: 'Changelog', href: '/docs/changelog', match: (p) => p.startsWith('/docs/changelog') },
+  { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
 ];
 
 export function TabNav() {

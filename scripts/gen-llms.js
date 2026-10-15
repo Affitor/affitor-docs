@@ -70,7 +70,7 @@ ${sections.join('\n')}
 ## Blog and changelog
 
 - [Blog](${BLOG_SITE}): The canonical blog home. All posts are included in the complete documentation above.
-- [Changelog](${SITE}/changelog.md): All changelog entries in Markdown.
+- [Changelog](https://affitor.com/changelog.md): Every changelog entry, newest first, with open deprecations on top. Each entry also has its own twin at its URL + .md.
 `;
 }
 

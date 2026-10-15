@@ -15,6 +15,8 @@ import { ParamList, ParamField } from '@/components/mdx/param-field';
 import { CodeGroup } from '@/components/mdx/code-group';
 import { ResponseTabs } from '@/components/mdx/response-tabs';
 import { Callout } from '@/components/mdx/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Media } from '@/components/changelog/media';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -39,6 +41,10 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     CodeGroup,
     ResponseTabs,
     Callout,
+    // Changelog entries (content/changelog)
+    Media,
+    Accordion,
+    Accordions,
     ...components,
   };
 }
