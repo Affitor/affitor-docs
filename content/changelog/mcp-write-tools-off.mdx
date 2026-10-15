@@ -1,0 +1,37 @@
+---
+title: MCP server records sales only when you allow it
+date: 2026-10-12
+type: breaking
+audience: [developers]
+surfaces: [mcp]
+description: From @affitor/mcp 0.2.1, the tools that record sales and refunds are off by default. Agents that record sales need AFFITOR_MCP_WRITE=1.
+banner: { pill: Action required, subject: code }
+action: { who: developers, what: "If an agent records sales or refunds through the Affitor MCP server, add AFFITOR_MCP_WRITE=1 to the server's env." }
+---
+
+The Affitor MCP server now keeps money tools off by default. An agent that is only exploring its tools can no longer create a sale or reverse one by accident.
+
+## What changes
+
+With `@affitor/mcp` 0.2.1, an agent sees five tools by default: readiness, lead, click, integration plan and verification. `affitor_track_sale` and `affitor_track_refund` appear only when you turn them on. Every tool now also says whether it reads, writes or cannot be undone, so your agent client can ask before it runs one.
+
+## What to do
+
+If your agent records sales or refunds, turn the tools on in the server's config:
+
+```json tab="MCP config"
+{
+  "mcpServers": {
+    "affitor": {
+      "command": "npx",
+      "args": ["-y", "@affitor/mcp"],
+      "env": {
+        "AFFITOR_API_KEY": "your_program_key",
+        "AFFITOR_MCP_WRITE": "1"
+      }
+    }
+  }
+}
+```
+
+Agents that only read or track leads and clicks need no change. While you try it out, pass `testMode` on a sale: it records a test sale with no commission. See [MCP server](https://affitor.com/docs/api-reference/mcp) for the full setup.

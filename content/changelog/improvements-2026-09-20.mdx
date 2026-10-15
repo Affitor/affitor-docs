@@ -1,0 +1,40 @@
+---
+title: Improvements and fixes, Sep 14–20
+date: 2026-09-20
+type: digest
+audience: [brands, partners, developers]
+surfaces: [dashboard, marketplace, tracking, api]
+description: Password reset pages, notifications that open the right place, faster pages, and fixes across commissions, chat and tracking.
+---
+
+### New
+
+- **Forgot your password?** The sign-in page now has forgot-password and reset-password pages, so you can get back into your account on your own.
+
+### Improved
+
+- Clicking a notification opens the page it is about.
+- Emails from Affitor now come from Affitor, with a plain-text version and a reply-to address.
+- Program descriptions are drafted from the brand's website, with a fallback when the site cannot be read.
+- Sign-in, marketplace and dashboard pages load faster and shift less while they load.
+- Marketplace program pages include the commission in the page itself, and every live program is in the sitemap, so search engines and AI assistants can read your terms.
+- `llms.txt` and the Markdown version of each public page are generated correctly for agents.
+- The public marketplace API returns each program's `documentId` and default commission policy.
+- The homepage links to the Marketplace from the top bar and the footer.
+
+### Fixed
+
+- Brands no longer see Approve and Decline on notifications for partners who already joined.
+- One-time programs show an average sale value without "/month".
+- Partners see only the commission terms that are active right now.
+- A completed payout amount can no longer change after it is paid.
+- Message drafts are kept, and a chat message that failed to send is recovered.
+- Click tracking matches a partner's `?aff=` code to the right partner.
+- No hold-extension notification for a commission worth $0.
+- Featured programs stay featured.
+- The brand profile explains why it could not load instead of redirecting you away.
+- The homepage pricing states the $10,000 free tier.
+
+### Security
+
+- We tightened how chat attachments, account balances and public marketplace data are handled.

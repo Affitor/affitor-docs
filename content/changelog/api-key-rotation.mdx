@@ -1,0 +1,43 @@
+---
+title: Know when your API key must be replaced
+date: 2026-09-20
+type: breaking
+audience: [brands, developers]
+surfaces: [api, cli, dashboard]
+description: If Affitor flags your program's API key for replacement, your dashboard, every API response and the CLI now tell you. After the deadline the old key is refused.
+banner: { pill: Action required, subject: code }
+action: { who: brands, what: "If your dashboard shows an API key notice, regenerate the key in Settings > API Key and update it on your server." }
+---
+
+Sometimes a key has to be replaced, for example when it has been exposed outside your control. Until now there was no visible signal. Now there are three, and they all point to the same fix. Keys that are not flagged are not affected.
+
+## In the dashboard
+
+A banner appears at the top of every brand page for that program, with a **Replace key** button. It opens **Settings**, **API Key**, where **Regenerate** creates a new key and clears the notice.
+
+<Media src="/docs/changelog/api-key-rotation/notice.png" alt="Dashboard notice: Replace your API key, with a Replace key button" />
+
+## In API responses
+
+Until the deadline, every response made with the flagged key carries standard headers, and JSON object responses also carry a warning:
+
+```http tab="Headers"
+Deprecation: @<unix time>
+Sunset: <your deadline>
+Link: <https://affitor.com/docs/api-reference/errors#api_key_rotation_required>; rel="deprecation"
+```
+
+```json tab="Body"
+"warnings": [{
+  "code": "api_key_rotation_required",
+  "rotate_by": "<your deadline>"
+}]
+```
+
+After the deadline, requests with the old key get `401` with `error.code` set to `api_key_rotation_required`.
+
+## In the CLI
+
+From `affitor` 0.4.2 (on npm since Oct 12), the CLI prints a one-line warning while the key still works, and points a retired key to the API Key page instead of suggesting `affitor init`.
+
+See [Errors: api_key_rotation_required](https://affitor.com/docs/api-reference/errors#api_key_rotation_required) to handle it in code.
