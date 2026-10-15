@@ -1,6 +1,7 @@
 import { source } from '@/lib/source';
-import { blog, changelog } from '@/../.source/server';
+import { blog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
+import { CHANGELOG_SUB, CHANGELOG_URL, entrySlug, entryUrl, openDeprecations, preamble, sortedEntries } from '@/lib/changelog';
 import { DOCS_URL, SITE_URL } from '@/lib/site';
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
@@ -11,6 +12,19 @@ export function toMarkdown(title: string, description: string | undefined, raw: 
   return `${head}\n\n${body}\n`;
 }
 
+/** Body of /changelog.md. check-agent-surface.mjs rebuilds the same text from the sources. */
+export function changelogIndex() {
+  const open = openDeprecations().map(
+    (d) => `- ${d.what} → ${d.replacement}, sunset ${d.sunset}: [${d.entry.title}](${entryUrl(d.entry)})`,
+  );
+  const lines = sortedEntries().map((e) => {
+    const tags = [e.date, e.type, e.audience.join(', '), ...(e.surfaces.length ? [e.surfaces.join(', ')] : [])];
+    return `- ${tags.join(' · ')} · [${e.title}](${entryUrl(e)}): ${e.description}`;
+  });
+  const head = `# Affitor Changelog\n\n> ${CHANGELOG_SUB}\n\n`;
+  return `${head}${open.length ? `## Open deprecations\n\n${open.join('\n')}\n\n` : ''}## Entries\n\n${lines.join('\n')}\n`;
+}
+
 async function renderBody(slug: string[]): Promise<string | null> {
   // /blog/<slug>.md
   if (slug[0] === 'blog' && slug.length === 2) {
@@ -19,18 +33,16 @@ async function renderBody(slug: string[]): Promise<string | null> {
     return toMarkdown(post.title, post.description, await post.getText('raw'));
   }
 
-  // /changelog.md — the changelog is a single page; aggregate all entries.
-  if (slug.length === 1 && slug[0] === 'changelog') {
-    const entries = [...changelog].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-    const sections = await Promise.all(
-      entries.map(async (entry) => {
-        const body = (await entry.getText('raw')).replace(FRONTMATTER, '').trim();
-        return `## ${entry.title} (${entry.date})\n\n> ${entry.benefit}\n\n${body}`;
-      }),
-    );
-    return `# Affitor Changelog\n\n${sections.join('\n\n---\n\n')}\n`;
+  // /changelog.md: open deprecations, then one line per entry (the entries have their own twins).
+  if (slug.length === 1 && slug[0] === 'changelog') return changelogIndex();
+
+  // /changelog/<slug>.md
+  if (slug[0] === 'changelog' && slug.length === 2) {
+    const entry = sortedEntries().find((e) => entrySlug(e) === slug[1]);
+    if (!entry) return null;
+    // The Action required block and deprecation table the entry page shows go first.
+    const raw = (await entry.getText('raw')).replace(FRONTMATTER, '');
+    return toMarkdown(entry.title, entry.description, `${preamble(entry)}${raw}`);
   }
 
   // Docs pages, including the root landing (`/index.md`).
@@ -67,14 +79,24 @@ function getDocMetadata(page: DocPage): AgentPage {
   };
 }
 
-function newestChangelogDate(): string {
-  const dates = changelog.map((entry) => entry.date);
-  assertDates(dates, 'changelog');
-  return dates.sort().at(-1)!;
-}
-
 function assertDates(dates: string[], label: string) {
   if (!dates.length) throw new Error(`No ${label} dates available`);
+}
+
+function changelogPages(): AgentPage[] {
+  const entries = sortedEntries();
+  assertDates(entries.map((e) => e.date), 'changelog');
+  return [
+    // The index changes whenever an entry is added, so it carries the newest entry date.
+    { id: 'changelog', type: 'changelog', url: CHANGELOG_URL, markdownUrl: `${CHANGELOG_URL}.md`, updated: entries[0].date },
+    ...entries.map((e): AgentPage => ({
+      id: `changelog/${entrySlug(e)}`,
+      type: 'changelog',
+      url: entryUrl(e),
+      markdownUrl: `${entryUrl(e)}.md`,
+      updated: e.date,
+    })),
+  ];
 }
 
 export function getAgentPages(): AgentPage[] {
@@ -92,13 +114,7 @@ export function getAgentPages(): AgentPage[] {
         updated,
       };
     }),
-    {
-      id: 'changelog',
-      type: 'changelog',
-      url: `${DOCS_URL}/changelog`,
-      markdownUrl: `${DOCS_URL}/changelog.md`,
-      updated: newestChangelogDate(),
-    },
+    ...changelogPages(),
   ];
 }
 

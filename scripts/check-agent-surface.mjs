@@ -102,22 +102,75 @@ function inventory() {
       body: markdown(data, id),
     };
   });
-  const changes = walk(join(ROOT, 'content/changelog')).filter((file) => /\.mdx?$/.test(file))
-    .map(document).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  assert.ok(changes.length, 'Changelog source is empty');
-  for (const entry of changes) {
-    assert.equal(typeof entry.date, 'string', `${relative(ROOT, entry.file)}: missing date`);
-    assert.match(entry.date, ISO_DAY, `${relative(ROOT, entry.file)}: date must be YYYY-MM-DD`);
-  }
-  const sections = changes.map((entry) =>
-    `## ${entry.title} (${entry.date})\n\n> ${entry.benefit}\n\n${entry.raw.replace(FRONTMATTER, '').trim()}`,
-  );
-  const changelogUpdated = changes.map((entry) => entry.date).sort().at(-1);
-  return [...docs, ...posts, {
-    id: 'changelog', type: 'changelog', url: `${SITE}/changelog`,
-    updated: changelogUpdated, sourceDate: changelogUpdated,
-    body: `# Affitor Changelog\n\n${sections.join('\n\n---\n\n')}\n`,
-  }];
+  return [...docs, ...posts, ...changelogInventory()];
+}
+
+/**
+ * affitor.com/changelog: the index twin (/changelog.md) and one twin per entry. Also the
+ * authoring rules the build cannot see: no admonitions, no em dash, every <Media> and banner
+ * file present in both themes, no media placeholder left.
+ */
+function changelogInventory() {
+  const dir = join(ROOT, 'content/changelog');
+  const SUB = 'New features, improvements and fixes in Affitor.';
+  const TYPES = ['feature', 'digest', 'breaking', 'deprecation', 'security', 'pricing'];
+  const variant = (src, theme) => src.replace(/(\.[a-z0-9]+)$/i, `-${theme}$1`);
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = (d) => { const [y, m, n] = d.split('-').map(Number); return `${MONTHS[m - 1]} ${n}, ${y}`; };
+  // Mirror of preamble() in src/lib/changelog.ts: what the entry page shows above the body.
+  const preamble = (e) => {
+    const parts = [];
+    if (e.action) parts.push(`**Action required${e.action.by ? ` by ${day(e.action.by)}` : ''}.** ${e.action.who[0].toUpperCase()}${e.action.who.slice(1)}: ${e.action.what}`);
+    if (e.deprecations?.length) {
+      parts.push(['| What | Replacement | Sunset |', '| --- | --- | --- |', ...e.deprecations.map((d) => `| ${d.what} | ${d.replacement} | ${day(d.sunset)} |`)].join('\n'));
+    }
+    return parts.length ? `${parts.join('\n\n')}\n\n` : '';
+  };
+  const entries = walk(dir).filter((file) => /\.mdx?$/.test(file)).map((file) => {
+    const data = document(file);
+    const slug = relative(dir, file).replace(/\.mdx?$/, '');
+    const where = `content/changelog/${slug}.mdx`;
+    assert.equal(typeof data.date, 'string', `${where}: missing date`);
+    assert.match(data.date, ISO_DAY, `${where}: date must be YYYY-MM-DD`);
+    assert.ok(TYPES.includes(data.type), `${where}: unknown type ${data.type}`);
+    assert.ok(Array.isArray(data.audience) && data.audience.length, `${where}: audience is required`);
+    assert.equal(typeof data.description, 'string', `${where}: description is required`);
+    // Early, readable failure; the entry page also throws on any Callout the parser emits.
+    assert.equal(data.raw.includes(':::'), false, `${where}: admonitions (:::) are not allowed in the changelog`);
+    assert.doesNotMatch(data.raw, /<Callout\b/, `${where}: <Callout> is not allowed in the changelog`);
+    assert.equal(data.raw.includes('\u2014'), false, `${where}: em dash in a changelog entry`);
+    assert.doesNotMatch(data.raw, /<Media\b[^>]*\btodo=/, `${where}: media placeholder left`);
+    const media = [...data.raw.matchAll(/<Media\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+    if (data.banner) media.push(`/docs/changelog/${slug}/banner.png`);
+    for (const src of media) {
+      for (const theme of ['light', 'dark']) {
+        const file = variant(src, theme);
+        assert.ok(existsSync(join(ROOT, 'public', file)), `${where}: public${file} is missing`);
+        if (src.endsWith('.mp4')) {
+          const poster = file.replace(/\.mp4$/, '.poster.png');
+          assert.ok(existsSync(join(ROOT, 'public', poster)), `${where}: public${poster} is missing`);
+        }
+      }
+    }
+    return { ...data, slug, surfaces: data.surfaces ?? [], url: `${ORIGIN}/changelog/${slug}` };
+  }).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+  assert.ok(entries.length, 'Changelog source is empty');
+
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
+  const open = entries.flatMap((e) => (e.deprecations ?? []).filter((d) => d.sunset >= today)
+    .map((d) => `- ${d.what} → ${d.replacement}, sunset ${d.sunset}: [${e.title}](${e.url})`));
+  const lines = entries.map((e) => {
+    const tags = [e.date, e.type, e.audience.join(', '), ...(e.surfaces.length ? [e.surfaces.join(', ')] : [])];
+    return `- ${tags.join(' · ')} · [${e.title}](${e.url}): ${e.description}`;
+  });
+  const index = `# Affitor Changelog\n\n> ${SUB}\n\n${open.length ? `## Open deprecations\n\n${open.join('\n')}\n\n` : ''}## Entries\n\n${lines.join('\n')}\n`;
+  return [
+    { id: 'changelog', type: 'changelog', url: `${ORIGIN}/changelog`, updated: entries[0].date, sourceDate: entries[0].date, body: index },
+    ...entries.map((e) => ({
+      id: `changelog/${e.slug}`, type: 'changelog', url: e.url,
+      updated: e.date, sourceDate: e.date, body: markdown({ ...e, raw: `${preamble(e)}${e.raw.replace(FRONTMATTER, '')}` }, e.slug),
+    })),
+  ];
 }
 
 function decodeEntities(text) {

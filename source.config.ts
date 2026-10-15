@@ -25,24 +25,35 @@ export const docs = defineDocs({
   dir: 'content/docs',
 });
 
+// YAML reads an unquoted 2026-09-20 as a Date; keep every changelog date a YYYY-MM-DD string.
+const day = z.preprocess(
+  (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value),
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+);
+
+// affitor.com/changelog (src/app/changelog). One file per entry; the slug is the file name.
+// Admonitions (`:::warning`) are banned here: check-agent-surface.mjs fails on them.
 export const changelog = defineCollections({
   type: 'doc',
   dir: 'content/changelog',
+  // The MDAST is bundled into the page module, so the daily ISR render of the index reads the
+  // digest bullets without touching the disk. (Not includeProcessedMarkdown: its serializer
+  // recursed forever on bold text in the fumadocs-mdx release Vercel installs, 14/10/2026.
+  // And not { removePosition: true }: it serializes removePosition()'s return, undefined.)
+  postprocess: { includeMDAST: true },
   schema: frontmatterSchema.extend({
-    date: z.string(),
-    category: z.enum([
-      'Dashboard',
-      'Tracking',
-      'CMS',
-      'CLI',
-      'Docs',
-      'OpenAffiliate',
-      'Bugfix',
-    ]),
-    benefit: z.string(),
-    authors: z.array(z.string()).optional(),
-    sourcePR: z.string().url().optional(),
-    image: z.string().optional(),
+    date: day,
+    type: z.enum(['feature', 'digest', 'breaking', 'deprecation', 'security', 'pricing']),
+    audience: z.array(z.enum(['brands', 'partners', 'developers'])).min(1),
+    surfaces: z.array(z.enum(['dashboard', 'marketplace', 'tracking', 'api', 'sdk', 'cli', 'mcp'])).default([]),
+    description: z.string(),
+    // Files public/docs/changelog/<slug>/banner-{light,dark}.png. Omit for a digest.
+    banner: z.object({ pill: z.string(), subject: z.enum(['ui', 'code', 'none']) }).optional(),
+    version: z.string().optional(),
+    action: z.object({ who: z.string(), what: z.string(), by: day.optional() }).optional(),
+    deprecations: z.array(z.object({ what: z.string(), replacement: z.string(), sunset: day })).optional(),
+    // The week still running: the date rail says "This week".
+    draft: z.boolean().optional(),
   }),
 });
 

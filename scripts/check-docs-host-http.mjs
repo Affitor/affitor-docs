@@ -13,7 +13,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.CHECK_PORT || 3391);
 const DOCS = 'docs.affitor.com';
 const PROXY = 'affitor-docs.vercel.app';
-const BLOG_PAGES = ['/blog', ...readdirSync(join(ROOT, 'content/blog')).filter((f) => f.endsWith('.mdx')).map((f) => `/blog/${f.slice(0, -4)}`)];
+const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.mdx')).map((f) => f.slice(0, -4));
+// Zone pages proxied by affitor.com: their root-relative URLs must stay inside the zones.
+const BLOG_PAGES = ['/blog', ...slugs('content/blog').map((s) => `/blog/${s}`), '/changelog', ...slugs('content/changelog').map((s) => `/changelog/${s}`)];
 
 // [host, path, status, location (null = none), content-type prefix (optional)]
 const ALWAYS = [
@@ -28,7 +30,10 @@ const ALWAYS = [
   [DOCS, '/advertisers/quickstart.md', 200, null, 'text/markdown'],
   [DOCS, '/docs/advertisers/quickstart.md', 200, null, 'text/markdown'],
   [DOCS, '/errors.md', 200, null, 'text/markdown'],
-  [DOCS, '/changelog.md', 200, null, 'text/markdown'],
+  [DOCS, '/changelog.md', 301, 'https://affitor.com/changelog.md'],
+  [DOCS, '/changelog', 301, 'https://affitor.com/changelog'],
+  [DOCS, '/changelog/invite-partners', 301, 'https://affitor.com/changelog/invite-partners'],
+  [DOCS, '/docs/changelog', 301, 'https://affitor.com/changelog'],
   [DOCS, '/blog/rewardful-alternatives.md', 200, null, 'text/markdown'],
   [DOCS, '/affitor-logo.svg', 200, null, 'image/svg+xml'],
   [DOCS, '/favicon.svg', 200, null, 'image/svg+xml'],
@@ -38,6 +43,16 @@ const ALWAYS = [
   [DOCS, '/robots.txt', 200, null, 'text/plain'],
   [DOCS, '/sitemap.xml', 200, null, 'application/xml'],
   [PROXY, '/', 308, '/docs'],
+  // affitor.com/changelog zone (14/10/2026)
+  [PROXY, '/changelog', 200, null, 'text/html'],
+  [PROXY, '/changelog/invite-partners', 200, null, 'text/html'],
+  [PROXY, '/changelog.md', 200, null, 'text/markdown'],
+  [PROXY, '/changelog/invite-partners.md', 200, null, 'text/markdown'],
+  [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml'],
+  [PROXY, '/changelog/no-such-entry', 404, null],
+  [PROXY, '/docs/changelog', 301, 'https://affitor.com/changelog'],
+  [PROXY, '/docs/changelog.md', 301, 'https://affitor.com/changelog.md'],
+  [PROXY, '/docs/changelog/invite-partners/invite-compose.png', 200, null, 'image/png'],
   [PROXY, '/docs', 200, null, 'text/html'],
   [PROXY, '/docs/brand/quickstart', 200, null, 'text/html'],
   [PROXY, '/docs/brand/quickstart.md', 200, null, 'text/markdown'],
@@ -63,7 +78,6 @@ const MODES = {
     [DOCS, '/', 200, null, 'text/html'],
     [DOCS, '/brand/quickstart', 200, null, 'text/html'],
     [DOCS, '/docs/brand/quickstart', 200, null, 'text/html'],
-    [DOCS, '/changelog', 200, null, 'text/html'],
     [DOCS, '/docs/api/search?query=payout', 200, null, 'application/json'],
     [DOCS, '/advertisers/quickstart', 308, '/brand/quickstart'],
     [DOCS, '/errors', 308, '/api-reference/errors'],
@@ -76,7 +90,6 @@ const MODES = {
     [DOCS, '/advertisers/quickstart', 301, 'https://affitor.com/docs/brand/quickstart'],
     [DOCS, '/docs/advertisers/quickstart', 301, 'https://affitor.com/docs/brand/quickstart'],
     [DOCS, '/errors', 301, 'https://affitor.com/docs/api-reference/errors'],
-    [DOCS, '/changelog', 301, 'https://affitor.com/docs/changelog'],
   ],
   302: [...ALWAYS, [DOCS, '/brand/quickstart', 302, 'https://affitor.com/docs/brand/quickstart']],
 };
@@ -126,17 +139,17 @@ for (const [mode, cases] of Object.entries(MODES)) {
       console.log(`${ok ? 'PASS' : 'FAIL'} ${host}${path} -> ${res.statusCode} ${got ?? ''} ${type ? type_ : ''}`);
       if (!ok) failed += 1;
     }
-    // affitor.com proxies /blog/* and /docs/* to this app, so every root-relative URL in
-    // blog HTML stays under /blog or /docs (or /favicon.ico, which the dashboard has),
+    // affitor.com proxies /blog/*, /docs/* and /changelog/* to this app, so every root-relative
+    // URL in zone HTML stays under /blog, /docs or /changelog (or /favicon.ico, which the dashboard has),
     // and every docs.affitor.com URL (assets) must answer here.
     for (const page of BLOG_PAGES) {
       const html = (await get(PROXY, page)).body;
       const urls = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
       const local = urls.filter((u) => u.startsWith('/') && !u.startsWith('//'));
-      const bad = local.filter((u) => u !== '/favicon.ico' && !/^\/(?:blog|docs)(?:[/?#]|$)/.test(u));
+      const bad = local.filter((u) => u !== '/favicon.ico' && !/^\/(?:blog|docs|changelog)(?:[/?#.]|$)/.test(u));
       const apexDocs = [];
       const ok = urls.length > 0 && bad.length === 0 && apexDocs.length === 0;
-      console.log(`${ok ? 'PASS' : 'FAIL'} blog HTML ${page}: ${local.length} root-relative URLs under /blog or /docs${bad.length ? `; outside: ${bad.join(', ')}` : ''}`);
+      console.log(`${ok ? 'PASS' : 'FAIL'} blog HTML ${page}: ${local.length} root-relative URLs under /blog, /docs or /changelog${bad.length ? `; outside: ${bad.join(', ')}` : ''}`);
       if (!ok) failed += 1;
       const docsHostUrls = [...new Set(urls.filter((u) => u.startsWith(`https://${DOCS}/`)))];
       let broken = 0;

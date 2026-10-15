@@ -5,7 +5,7 @@ import { BLOG_DOCS_ORIGIN } from '@/lib/site';
  */
 const FOOTER_LINKS = [
   { label: 'Docs', href: `${BLOG_DOCS_ORIGIN}/docs` },
-  { label: 'Changelog', href: `${BLOG_DOCS_ORIGIN}/docs/changelog` },
+  { label: 'Changelog', href: '/changelog' },
   { label: 'About', href: 'https://affitor.com/about' },
   { label: 'X @affitor_ai', href: 'https://x.com/affitor_ai' },
 ];

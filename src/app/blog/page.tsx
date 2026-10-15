@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { blog } from '@/../.source/server';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_DOCS_ORIGIN, BLOG_URL } from '@/lib/site';
+import { BLOG_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
@@ -99,7 +99,7 @@ export default function BlogIndexPage() {
         {posts.length === 0 ? (
           <p className="text-[17px] leading-[28px] text-fd-muted-foreground">
             First post coming soon. Meanwhile, the{' '}
-            <Link href={`${BLOG_DOCS_ORIGIN}/docs/changelog`} className="text-fd-primary font-medium hover:underline">
+            <Link href="/changelog" className="text-fd-primary font-medium hover:underline">
               changelog
             </Link>{' '}
             has everything we&rsquo;ve shipped.
