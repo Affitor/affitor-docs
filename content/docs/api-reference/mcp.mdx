@@ -17,23 +17,100 @@ The `@affitor/mcp` and `@affitor/sdk` packages are **Beta**. The documented happ
 
 ## Add it to your MCP client
 
-Add Affitor to your client's MCP server config — `claude_desktop_config.json` for Claude Desktop, or `.cursor/mcp.json` for Cursor:
+Pick your client. Every option runs the same local server with `npx -y @affitor/mcp` and passes your **program API key** as `AFFITOR_API_KEY`. Replace `your_program_key` with your key.
 
-```json
-{
+<CodeGroup items={[
+  {
+    label: "Claude Code",
+    lang: "bash",
+    code: `claude mcp add affitor --env AFFITOR_API_KEY=your_program_key -- npx -y @affitor/mcp`
+  },
+  {
+    label: "Codex",
+    lang: "bash",
+    code: `codex mcp add affitor --env AFFITOR_API_KEY=your_program_key -- npx -y @affitor/mcp`
+  },
+  {
+    label: "Gemini CLI",
+    lang: "bash",
+    code: `gemini mcp add -e AFFITOR_API_KEY=your_program_key affitor npx -y @affitor/mcp`
+  },
+  {
+    label: "Claude Desktop",
+    lang: "json",
+    code: `{
   "mcpServers": {
     "affitor": {
       "command": "npx",
       "args": ["-y", "@affitor/mcp"],
-      "env": {
-        "AFFITOR_API_KEY": "your_program_key"
-      }
+      "env": { "AFFITOR_API_KEY": "your_program_key" }
     }
   }
-}
-```
+}`
+  },
+  {
+    label: "Cursor",
+    lang: "json",
+    code: `{
+  "mcpServers": {
+    "affitor": {
+      "command": "npx",
+      "args": ["-y", "@affitor/mcp"],
+      "env": { "AFFITOR_API_KEY": "your_program_key" }
+    }
+  }
+}`
+  },
+  {
+    label: "VS Code",
+    lang: "json",
+    code: `{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "affitor-api-key",
+      "description": "Affitor program API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "affitor": {
+      "command": "npx",
+      "args": ["-y", "@affitor/mcp"],
+      "env": { "AFFITOR_API_KEY": "\${input:affitor-api-key}" }
+    }
+  }
+}`
+  },
+  {
+    label: "Other clients",
+    lang: "json",
+    code: `{
+  "mcpServers": {
+    "affitor": {
+      "command": "npx",
+      "args": ["-y", "@affitor/mcp"],
+      "env": { "AFFITOR_API_KEY": "your_program_key" }
+    }
+  }
+}`
+  }
+]} />
 
-Restart your client and the `affitor_*` tools become available to the agent. To let the agent report sales and refunds, also add `"AFFITOR_MCP_WRITE": "1"` to `env` (see below).
+Where each JSON goes:
+
+- **Claude Desktop:** `claude_desktop_config.json`, in `~/Library/Application Support/Claude/` on macOS or `%APPDATA%\Claude\` on Windows.
+- **Cursor:** `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for every project.
+- **VS Code:** `.vscode/mcp.json` in your project. VS Code asks for the key once and stores it securely.
+- **Other clients** (Windsurf, Cline and most others): the client's MCP config file, in the same `mcpServers` shape.
+
+Restart your client (or reload its MCP servers) and the `affitor_*` tools become available to the agent. To let the agent report sales and refunds, also add `"AFFITOR_MCP_WRITE": "1"` to `env` (see below).
+
+:::note
+
+Gemini CLI: some Google plans moved from Gemini CLI to Antigravity CLI. If you use Antigravity CLI, follow [Google's migration guide](https://antigravity.google/docs/cli/gcli-migration).
+
+:::
 
 ### Environment variables
 
