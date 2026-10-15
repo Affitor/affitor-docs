@@ -6,14 +6,16 @@ import { remarkMermaid } from './src/lib/remark-mermaid';
 // `:::note / :::tip / :::warning / :::caution` colon-fence callouts -> <Callout>.
 // Without this, Fumadocs 16 leaves the `:::` markers as literal text on every
 // page that uses them. Cover every type used across the docs (the default
-// typeMap omits `caution`).
+// typeMap omits `caution`). The plugin takes the first key the line starts
+// with, so `warning` must come before `warn` or `:::warning[Title]` loses its
+// title. Values must be a type <Callout> styles (`warning`, not `warn`).
 const admonitionTypeMap = {
   info: 'info',
   note: 'info',
   tip: 'info',
-  warn: 'warn',
-  warning: 'warn',
-  caution: 'warn',
+  warning: 'warning',
+  warn: 'warning',
+  caution: 'warning',
   danger: 'error',
   error: 'error',
   success: 'success',
