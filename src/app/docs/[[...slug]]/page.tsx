@@ -4,7 +4,6 @@ import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page
 import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
-import { DocsFooter } from '@/components/docs-footer';
 
 const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
 
@@ -41,7 +40,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
           View as Markdown
         </a>
       </div>
-      <DocsFooter />
     </DocsPage>
   );
 }

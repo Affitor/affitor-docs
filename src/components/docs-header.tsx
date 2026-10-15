@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import { LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
+import { Logo } from '@/components/logo';
 import { useTheme } from 'next-themes';
 import { useSearchContext } from 'fumadocs-ui/contexts/search';
 
@@ -11,14 +12,8 @@ export function DocsHeader() {
   return (
     <header className="bg-fd-background/80 backdrop-blur-md">
       <div className="flex h-14 items-center gap-4 px-5 max-w-[1536px] mx-auto">
-      {/* Left: Logo */}
-      <Link href="/docs" className="flex items-center gap-2 shrink-0">
-        <img
-          src="/docs/affitor-logo.svg"
-          alt="Affitor"
-          style={{ height: '22px', width: 'auto' }}
-        />
-      </Link>
+      {/* Left: Logo (the affitor.com wordmark, links home) */}
+      <Logo />
 
       {/* Center: wide search (Mintlify-style) */}
       <div className="flex-1 flex justify-center px-6">
@@ -52,21 +47,18 @@ export function DocsHeader() {
 
       {/* Right: nav + CTA + theme toggle (Changelog lives in the tab row, not here) */}
       <div className="flex items-center gap-3 shrink-0">
-        <Link
-          href="https://affitor.com/affiliate-management"
+        <a
+          href={LOGIN_LINK.href}
           className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden md:block"
         >
-          Dashboard
-        </Link>
-        <Link
-          href="/docs/brand/quickstart/create-account"
-          className="hidden sm:inline-flex items-center gap-1 h-8 rounded-md bg-fd-primary px-3.5 text-[13px] font-medium text-fd-primary-foreground transition-[opacity,transform] duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
+          {LOGIN_LINK.label}
+        </a>
+        <a
+          href={SIGNUP_LINK.href}
+          className="hidden sm:inline-flex items-center h-8 rounded-lg bg-[#155DFC] px-3.5 text-[13px] font-medium text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#1047C9] active:scale-[0.97]"
         >
-          Get Started
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="-mr-0.5">
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </Link>
+          {SIGNUP_LINK.label}
+        </a>
 
         {/* Theme toggle — Son's existing sun/moon icon, kept verbatim */}
         <button

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import { DocsHeader } from '@/components/docs-header';
 import { TabNav } from '@/components/tab-nav';
+import { SiteFooter } from '@/components/site-footer';
 
 export function DocsShell({ children }: { children: ReactNode }) {
   return (
@@ -26,6 +27,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
       >
         {children}
       </DocsLayout>
+      <SiteFooter />
     </div>
   );
 }

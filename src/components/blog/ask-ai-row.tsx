@@ -10,7 +10,7 @@ import { BLOG_URL } from '@/lib/site';
  * page's AskAI footer row.
  */
 
-const ENGINES: { name: string; base: string; path: string }[] = [
+export const ENGINES: { name: string; base: string; path: string }[] = [
   {
     name: 'ChatGPT',
     base: 'https://chatgpt.com/?q=',
