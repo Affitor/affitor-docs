@@ -1,18 +1,17 @@
 import type { ReactNode } from 'react';
 import { BlogNav } from '@/components/blog/blog-nav';
-import { BlogFooter } from '@/components/blog/blog-footer';
+import { SiteFooter } from '@/components/site-footer';
 
 /**
- * Blog chrome — affitor.com-style marketing nav + compact footer.
- * No docs header, no search, no tab row, no sidebar: the blog wears the
- * landing brand, not docs clothing.
+ * Blog and changelog chrome: the affitor.com header and footer (src/config/site-nav.ts).
+ * No docs header, no search, no tab row, no sidebar.
  */
-export function BlogShell({ children, active = 'Blog' }: { children: ReactNode; active?: 'Blog' | 'Changelog' }) {
+export function BlogShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-fd-background">
-      <BlogNav active={active} />
+      <BlogNav />
       <main className="flex-1">{children}</main>
-      <BlogFooter />
+      <SiteFooter />
     </div>
   );
 }
