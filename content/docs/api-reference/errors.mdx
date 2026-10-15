@@ -54,7 +54,7 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 
 `POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with the recorded sale in `error.details.sale_id`), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
 
-Elsewhere, errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
+Most other errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
 
 - A suspended account signing in to the CLI gets `error.details.code` set to [`ACCOUNT_BLOCKED`](#account_blocked).
 - A CLI `500` carries `error.details.request_id` — see [request IDs](#request-ids).

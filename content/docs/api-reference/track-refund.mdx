@@ -31,10 +31,10 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    This refund's amount in the same unit as the sale's `amount_cents` — not the running total refunded so far. Omit it to refund the rest of the sale. Must be a positive integer when provided.
+    This refund's amount in the same unit as the sale's `amount_cents` — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
   </ParamField>
   <ParamField name="refund_id" type="string">
-    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted (refunding the rest is already safe to retry).
+    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted or `0` (refunding the rest is already safe to retry).
   </ParamField>
   <ParamField name="refund_reason" type="string">
     Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
@@ -103,7 +103,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 |-------|------|-------------|
 | `success` | boolean | Always `true` on a 200 response. |
 | `status` | string | `"reversed"` (sale fully refunded), `"refunded"` (partially refunded), or `"skipped"` (refund already applied, or commission already reversed). |
-| `deductionAmount` | number | Commission amount reversed by this call, in USD. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). Present when `status` is `reversed` or `refunded`. |
+| `deductionAmount` | number | Commission amount reversed by this call, in the commission's currency. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). Present when `status` is `reversed` or `refunded`. |
 | `commission_id` | integer | ID of the affected commission record. |
 
 ### Success — sale has no commission

@@ -892,11 +892,11 @@ components:
           description: The ORIGINAL sale's `transaction_id` (not the refund event's ID).
         refund_amount_cents:
           type: integer
-          minimum: 1
-          description: This refund's amount (not the running total), in the sale's currency and unit, same basis as the sale's `amount_cents`. Omit to refund the rest of the sale.
+          minimum: 0
+          description: This refund's amount (not the running total), in the same unit as the sale's `amount_cents`. Omit or send 0 to refund the rest of the sale.
         refund_id:
           type: string
-          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted.
+          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted or 0.
         refund_reason:
           type: string
           description: Free-text reason, stored for audit.
