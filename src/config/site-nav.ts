@@ -39,10 +39,6 @@ export const FOOTER_COLUMNS: { title: string; links: SiteLink[] }[] = [
     ],
   },
   {
-    title: 'Free Tools',
-    links: [{ label: 'Transcript', href: `${SITE_URL}/script` }],
-  },
-  {
     title: 'Resources',
     links: [
       { label: 'Blog', href: '/blog' },

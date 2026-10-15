@@ -13,7 +13,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-white border-t border-[#E5E7EB] dark:bg-fd-background dark:border-fd-border">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand column */}
           <div className="col-span-2">
             <Logo full />
