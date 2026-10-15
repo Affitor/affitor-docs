@@ -1,8 +1,8 @@
 import './globals.css';
-import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { PostHog } from '@/components/posthog';
+import { ThemeRoot } from '@/components/theme-root';
 import { BLOG_DOCS_ORIGIN } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -34,11 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        {/* Under /docs so it rides the affitor.com/docs zone rewrite: /api/* on
-            affitor.com belongs to the main app. */}
-        <RootProvider search={{ options: { api: '/docs/api/search' } }}>
-          {children}
-        </RootProvider>
+        <ThemeRoot>{children}</ThemeRoot>
         <PostHog />
       </body>
     </html>

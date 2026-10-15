@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BLOG_DOCS_ORIGIN } from '@/lib/site';
+import { ThemeSwitch } from '@/components/theme-switch';
 
 /**
  * Marketing top bar for blog pages — recreates affitor.com's landing navbar
@@ -54,7 +55,8 @@ export function BlogNav({ active }: { active: 'Blog' | 'Changelog' }) {
           </nav>
 
           {/* Right: Sign In pill CTA (landing blue) */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeSwitch />
             <a
               href="https://affitor.com"
               className="px-5 py-2 text-sm font-medium text-white bg-[#155DFC] hover:bg-[#1047C9] rounded-full transition-colors duration-150"
@@ -103,6 +105,9 @@ export function BlogNav({ active }: { active: 'Blog' | 'Changelog' }) {
                   {link.label}
                 </a>
               ))}
+              <div className="px-3 pt-2">
+                <ThemeSwitch large />
+              </div>
               <a
                 href="https://affitor.com"
                 className="mt-3 px-5 py-2.5 text-sm font-medium text-white bg-[#155DFC] hover:bg-[#1047C9] rounded-full text-center transition-colors duration-150"
