@@ -1,0 +1,19 @@
+---
+title: Rebuilt tracking with ?aff= links and SDK 2.0
+date: 2026-03-17
+type: feature
+audience: [developers, brands]
+surfaces: [tracking, sdk, api]
+version: 2.0.0
+description: Partner links use ?aff=, clicks, leads and sales are recorded as separate events tied by a click ID, and the SDK adds signup().
+---
+
+Tracking is rebuilt from the ground up. Partner links now carry `?aff=` instead of `?ref=`. Clicks, leads and sales are recorded as separate events, tied together by a `click_id`, so every sale can be traced back to the click that started it.
+
+SDK 2.0 adds `signup(userId, email)`. It waits for the script to load, so the signup is never lost, and replaces `trackLead()`, which stays as a deprecated alias.
+
+```js
+await affitor.signup(user.id, user.email);
+```
+
+The setup page now shows events live as they arrive, so you can watch your integration work. [Read how attribution works](/docs/api-reference/attribution)
