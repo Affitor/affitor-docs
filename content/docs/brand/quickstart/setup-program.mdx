@@ -101,7 +101,7 @@ After signup succeeds, send your internal customer ID to Affitor.
 await window.affitor.signup('user_123', 'user@example.com');
 ```
 
-On new programs a browser-only lead is provisional: it counts once your server sends the lead (below) or the first payment settles.
+By default a browser-only lead is provisional: it counts once your server sends the lead (below) or a Stripe Checkout payment for that customer arrives through your connected Stripe account.
 
 **Server API:**
 

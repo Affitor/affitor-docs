@@ -171,7 +171,7 @@ await affitor.trackLead({
 });
 ```
 
-> New programs default to `lead_auth: server_required`. On those, a **browser-only** lead is recorded as *provisional* and only settles when your **server** sends the lead (5b) or the first verified payment lands. When in doubt, do **both** 5a and 5b — they are idempotent on the customer.
+> Every program uses `lead_auth: server_required` unless it is explicitly set to `browser_allowed`. Under `server_required`, a **browser-only** lead is recorded as *provisional* and only settles when your **server** sends the lead (5b) or a Stripe Checkout payment for that customer arrives through your connected Stripe account (a sale sent to `/api/v1/track/sale` does not settle it). When in doubt, do **both** 5a and 5b: they are idempotent on the customer.
 
 ---
 

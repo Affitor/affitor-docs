@@ -79,9 +79,9 @@ if (clickId) {
 
 A lead needs the click: without a `clickId` (or a `customerExternalId` Affitor already knows), the API returns `400` and records nothing, which is expected for visitors who did not come through a partner link.
 
-:::note[Browser `signup()` is provisional on new programs]
+:::note[Browser `signup()` is provisional by default]
 
-The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (from `useAffitor()` in `@affitor/sdk/react`). New programs require server-verified leads, so a browser-only signup is stored as **provisional**: the API returns `200` with `provisional: true`, but the lead does not settle, does not save your user ID, and does not count or pay per lead until your server sends the lead above or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy).
+The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (from `useAffitor()` in `@affitor/sdk/react`). Every program requires server-verified leads unless it is set to `browser_allowed`, so a browser-only signup is stored as **provisional**: the API returns `200` with `provisional: true`, but the lead does not settle, does not save your user ID, and does not count or pay per lead until your server sends the lead above or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy).
 
 :::
 
@@ -146,7 +146,7 @@ await affitor.trackSale({
   "Different customer IDs at signup vs sale — `affitor_customer_key` must equal the `customer_key`/`customerExternalId` you sent at signup.",
   "Subscriptions missing `subscription_data.metadata` — renewals won't attribute.",
   "Loading the tracker on the server — `AffitorProvider` and `loadAffitor()` must run in a client component (on the server they resolve to `null`).",
-  "Relying on the browser `signup()` alone — on new programs it stays provisional until your server sends the lead.",
+  "Relying on the browser `signup()` alone — by default it stays provisional until your server sends the lead.",
   "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
 ]} />
 

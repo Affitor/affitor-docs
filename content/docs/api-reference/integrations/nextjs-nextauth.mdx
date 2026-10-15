@@ -136,9 +136,9 @@ A lead is recorded once per customer. A repeat call for the same customer (for e
 
 :::
 
-:::note[Browser `signup()` is provisional on new programs]
+:::note[Browser `signup()` is provisional by default]
 
-The tracker's browser helper, `affitor.signup(id, email)` from `useAffitor()`, sends the lead without your API key. New programs require server-verified leads, so a browser-only lead is stored as **provisional** and does not settle, save the user ID, or count until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy).
+The tracker's browser helper, `affitor.signup(id, email)` from `useAffitor()`, sends the lead without your API key. Every program requires server-verified leads unless it is set to `browser_allowed`, so a browser-only lead is stored as **provisional** and does not settle, save the user ID, or count until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. See [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy).
 
 :::
 

@@ -20,13 +20,13 @@ The mode is decided by the header: a request with a valid Bearer key is server m
 
 ### Lead auth policy
 
-Each program has a lead auth policy. **New programs default to server-verified leads** (`server_required`). Under that policy, a browser-mode lead is recorded as **provisional**:
+Each program has a lead auth policy. **Every program requires server-verified leads** (`server_required`) unless it is explicitly set to allow browser leads (`browser_allowed`). Under `server_required`, a browser-mode lead is recorded as **provisional**:
 
 - the API still returns `200`, with `provisional: true` in the body
 - the lead does not settle attribution, does not save your `customer_key` on the customer, and does not count in partner metrics or pay a per-lead commission
 - it settles only when your backend sends the same lead with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it, and a Bearer lead sent after that sale returns `400`
 
-Programs created before this policy existed keep the older behavior, where a browser lead settles directly. Send leads from your server with a Bearer key so the lead settles under either policy.
+A browser lead settles directly only on a program set to `browser_allowed`. The **Lead capture mode** line in your program's tracking settings shows which policy applies. Send leads from your server with a Bearer key so the lead settles under either policy.
 
 ---
 

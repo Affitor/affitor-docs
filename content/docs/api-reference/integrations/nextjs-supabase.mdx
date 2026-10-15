@@ -23,7 +23,7 @@ Follow [Step 1 of the Next.js guide](/docs/api-reference/integrations/nextjs#1-c
 
 ## 2. Track the signup
 
-Send the lead from your server with your program API key, which is what settles it: new programs require server-verified leads (see [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy)).
+Send the lead from your server with your program API key, which is what settles it: every program requires server-verified leads unless it is set to `browser_allowed` (see [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy)).
 
 The `affitor_click_id` is a first-party browser cookie. A Supabase Edge Function or DB trigger runs with no access to that cookie, so you must forward the click ID yourself.
 
@@ -75,9 +75,9 @@ if (clickId) {
 
 Without a forwarded `clickId`, Affitor cannot find the click: the lead call returns `400` and nothing is recorded. That is expected for users who did not arrive through a partner link.
 
-### Browser `signup()` (provisional on new programs)
+### Browser `signup()` (provisional by default)
 
-The tracker also has a browser helper, `affitor.signup(userId, email)`, which you can call from Supabase's client-side `onAuthStateChange` listener. It reads the cookie automatically, but it sends the lead without your API key. On programs that require server-verified leads (the default for new programs), that lead is stored as **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use it alongside the Edge Function path, not instead of it.
+The tracker also has a browser helper, `affitor.signup(userId, email)`, which you can call from Supabase's client-side `onAuthStateChange` listener. It reads the cookie automatically, but it sends the lead without your API key. On programs that require server-verified leads (every program unless it is set to `browser_allowed`), that lead is stored as **provisional**: it does not settle, does not save the user ID, and does not count or pay per lead until your server sends the lead or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use it alongside the Edge Function path, not instead of it.
 
 ## 3. Track the sale
 
@@ -95,7 +95,7 @@ Follow [Step 3 of the Next.js guide](/docs/api-reference/integrations/nextjs#3-t
 ## Common mistakes
 
 <CommonMistakes items={[
-  "Relying on the browser signup() alone — on new programs it stays provisional until your server sends the lead.",
+  "Relying on the browser signup() alone — by default it stays provisional until your server sends the lead.",
   "Using different IDs at signup vs sale — `session.user.id` must match the `customerExternalId` / `affitor_customer_key` sent at sale time.",
   "Tracking leads from a server webhook without forwarding the click ID — the browser cookie is not available server-side, so the lead call returns 400 and nothing is recorded. Store and forward the click ID explicitly.",
   "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to the originating partner click.",
