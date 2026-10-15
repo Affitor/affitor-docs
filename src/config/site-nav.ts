@@ -19,9 +19,11 @@ export const HEADER_LINKS: SiteLink[] = [
   { label: 'Docs', href: '/docs' },
 ];
 
-// The docs app does not know the login state, so it always shows the logged-out pair.
+// Logged out: Log in + Create free account. Signed in (src/lib/signed-in.ts): Log in is hidden
+// and the CTA reads Go to Dashboard, like the dashboard's useLandingCTA.
 export const LOGIN_LINK: SiteLink = { label: 'Log in', href: `${SITE_URL}/login` };
 export const SIGNUP_LINK: SiteLink = { label: 'Create free account', href: `${SITE_URL}/signup` };
+export const DASHBOARD_LABEL = 'Go to Dashboard';
 
 export const FOOTER_TAGLINE =
   'The AI-native affiliate network. Built for modern SaaS companies who want to grow through partnerships.';
