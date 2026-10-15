@@ -96,7 +96,7 @@ document.getElementById('signup-form').addEventListener('submit', async function
 - signup happens in the browser
 - you want the simplest supported flow
 
-On new programs a browser-only lead is provisional: it does not count as a signup until your server sends the lead (Option B) or the first payment settles. See [lead auth policy](/docs/brand/tracking/lead-tracking-signup/).
+By default a browser-only lead is provisional: it does not count as a signup until your server sends the lead (Option B) or a Stripe Checkout payment for that customer arrives through your connected Stripe account. See [lead auth policy](/docs/brand/tracking/lead-tracking-signup/).
 
 ### Option B — Server-side lead API
 
@@ -137,7 +137,7 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 - For reliable payment attribution later, always send a stable internal customer ID:
   - `customerKey` in `signup()`
   - `customer_key` in the API
-- Browser-side `signup()` is the easiest to add, but on new programs it stays provisional until the server-side lead or the first payment
+- Browser-side `signup()` is the easiest to add, but by default it stays provisional until the server-side lead or a Stripe Checkout payment through your connected Stripe account
 - Server-side API is best when signup completes on your backend
 
 **Response:**

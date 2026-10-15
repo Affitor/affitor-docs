@@ -15,7 +15,7 @@ When a lead settles, Affitor:
 2. stores your internal customer identifier for later payment attribution
 3. advances the customer journey from click → lead
 
-A lead sent from your server with your program API key settles right away. On new programs, a lead sent only from the browser is stored as provisional and does none of the above until it is confirmed (see [Lead auth policy](#lead-auth-policy)).
+A lead sent from your server with your program API key settles right away. By default, a lead sent only from the browser is stored as provisional and does none of the above until it is confirmed (see [Lead auth policy](#lead-auth-policy)).
 
 Use the same customer identifier across all three contexts:
 
@@ -41,7 +41,7 @@ A tracked click means the browser already has `affitor_click_id` from the pagevi
 
 ## Option A — Server-side Lead API (recommended)
 
-Send the lead from your backend with your program API key. This is the path that settles the lead: new programs require server-verified leads (see [Lead auth policy](#lead-auth-policy)).
+Send the lead from your backend with your program API key. This is the path that settles the lead: every program requires server-verified leads unless it is set to `browser_allowed` (see [Lead auth policy](#lead-auth-policy)).
 
 ### Endpoint
 
@@ -122,9 +122,9 @@ requests.post(
 
 Use this when signup completes in the browser and the tracker script is loaded on the page.
 
-:::warning[Browser leads are provisional on new programs]
+:::warning[Browser leads are provisional by default]
 
-On programs that require server-verified leads (the default for new programs), a browser `signup()` call is recorded as **provisional**. It does not settle the lead, does not save your `customerKey` on the customer, and does not count in partner metrics or pay a per-lead commission. It settles only when your backend sends the same lead (Option A) or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use `signup()` alongside the server-side call, not instead of it.
+On programs that require server-verified leads (every program unless it is set to `browser_allowed`), a browser `signup()` call is recorded as **provisional**. It does not settle the lead, does not save your `customerKey` on the customer, and does not count in partner metrics or pay a per-lead commission. It settles only when your backend sends the same lead (Option A) or a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it. Use `signup()` alongside the server-side call, not instead of it.
 
 :::
 

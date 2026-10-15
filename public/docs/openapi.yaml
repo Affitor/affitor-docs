@@ -144,9 +144,12 @@ paths:
           cookie server-side and pass it as `click_id`.
         - **Browser mode** — called by `window.affitor.signup(customerKey, email)`
           with no Bearer token; the click cookie proves attribution. Programs
-          configured with `lead_auth: server_required` record browser leads as
-          **provisional** only — attribution settles when your backend sends
-          the server-side lead (or on the first verified payment event).
+          configured with `lead_auth: server_required` (every program unless it
+          is set to `browser_allowed`) record browser leads as **provisional**
+          only. Attribution settles when your backend sends the server-side
+          lead, or when a Stripe Checkout payment for that customer arrives
+          through your connected Stripe account. A sale sent to
+          `/api/v1/track/sale` does not settle it.
 
         Either `click_id` or `customer_key` is required. The email, when
         provided, is hashed server-side before storage.
