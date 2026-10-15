@@ -2,24 +2,31 @@
 
 import { LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
 import { Logo } from '@/components/logo';
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useSearchContext } from 'fumadocs-ui/contexts/search';
 
 export function DocsHeader() {
   const { setTheme, resolvedTheme } = useTheme();
   const { setOpenSearch } = useSearchContext();
+  // The theme is only known in the browser: render the server's icon until mounted, or
+  // hydration fails for visitors whose OS is dark (React #418).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === 'dark';
 
   return (
     <header className="bg-fd-background/80 backdrop-blur-md">
-      <div className="flex h-14 items-center gap-4 px-5 max-w-[1536px] mx-auto">
+      <div className="flex h-14 items-center gap-2 sm:gap-4 px-4 sm:px-5 max-w-[1536px] mx-auto">
       {/* Left: Logo (the affitor.com wordmark, links home) */}
       <Logo />
 
-      {/* Center: wide search (Mintlify-style) */}
-      <div className="flex-1 flex justify-center px-6">
+      {/* Center: wide search (Mintlify-style); an icon button on phones */}
+      <div className="flex-1 flex justify-end sm:justify-center sm:px-6">
         <button
           onClick={() => setOpenSearch(true)}
-          className="flex items-center gap-2 h-9 w-full max-w-[440px] rounded-lg border border-fd-border bg-fd-muted/40 px-3.5 text-[13px] text-fd-muted-foreground hover:border-fd-muted-foreground/30 transition-colors cursor-text"
+          aria-label="Search"
+          className="flex items-center justify-center sm:justify-start gap-2 h-9 w-9 sm:w-full max-w-[440px] rounded-lg border border-fd-border bg-fd-muted/40 sm:px-3.5 text-[13px] text-fd-muted-foreground hover:border-fd-muted-foreground/30 transition-colors cursor-text"
         >
           <svg
             width="15"
@@ -33,8 +40,8 @@ export function DocsHeader() {
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
-          <span className="opacity-70">Search...</span>
-          <span className="ml-auto flex gap-0.5 text-[11px] opacity-50">
+          <span className="hidden sm:inline opacity-70">Search...</span>
+          <span className="ml-auto hidden sm:flex gap-0.5 text-[11px] opacity-50">
             <kbd className="rounded border border-fd-border bg-fd-background px-1.5 py-0.5 font-sans">
               ⌘
             </kbd>
@@ -45,17 +52,17 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: nav + CTA + theme toggle (Changelog lives in the tab row, not here) */}
-      <div className="flex items-center gap-3 shrink-0">
+      {/* Right: Log in + CTA + theme toggle (Changelog lives in the tab row, not here) */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <a
           href={LOGIN_LINK.href}
-          className="text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors hidden md:block"
+          className="whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
         >
           {LOGIN_LINK.label}
         </a>
         <a
           href={SIGNUP_LINK.href}
-          className="hidden sm:inline-flex items-center h-8 rounded-lg bg-[#155DFC] px-3.5 text-[13px] font-medium text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#1047C9] active:scale-[0.97]"
+          className="inline-flex items-center whitespace-nowrap h-8 rounded-lg bg-[#155DFC] px-2.5 sm:px-3.5 text-[12px] sm:text-[13px] font-medium text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#1047C9] active:scale-[0.97]"
         >
           {SIGNUP_LINK.label}
         </a>
@@ -63,12 +70,12 @@ export function DocsHeader() {
         {/* Theme toggle — Son's existing sun/moon icon, kept verbatim */}
         <button
           onClick={() =>
-            setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+            setTheme(isDark ? 'light' : 'dark')
           }
           className="rounded-md p-1.5 text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted transition-colors"
           aria-label="Toggle theme"
         >
-          {resolvedTheme === 'dark' ? (
+          {isDark ? (
             <svg
               width="16"
               height="16"
