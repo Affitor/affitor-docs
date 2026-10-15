@@ -15,6 +15,15 @@ export function generateStaticParams() {
   return sortedEntries().map((entry) => ({ slug: entrySlug(entry) }));
 }
 
+/**
+ * Admonitions (`:::warning`) and <Callout> are banned in the changelog: a warning renders as
+ * a yellow box, and breaking changes use the neutral Action required block instead. The MDX
+ * admonition plugin emits <Callout>, so failing here catches every syntax it accepts.
+ */
+function NoCallout(): never {
+  throw new Error('Callouts and :::admonitions are not allowed in changelog entries; use the action frontmatter');
+}
+
 async function getEntry(params: Promise<{ slug: string }>) {
   const { slug } = await params;
   const all = sortedEntries();
@@ -68,7 +77,7 @@ function jsonLd(entry: ReturnType<typeof sortedEntries>[number], slug: string) {
 export default async function ChangelogEntryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { entry, slug, older, newer } = await getEntry(params);
   const Body = entry.body;
-  const components = useMDXComponents({});
+  const components = useMDXComponents({ Callout: NoCallout });
 
   return (
     <main className="cl-entry">

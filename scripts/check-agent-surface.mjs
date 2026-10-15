@@ -135,8 +135,9 @@ function changelogInventory() {
     assert.ok(TYPES.includes(data.type), `${where}: unknown type ${data.type}`);
     assert.ok(Array.isArray(data.audience) && data.audience.length, `${where}: audience is required`);
     assert.equal(typeof data.description, 'string', `${where}: description is required`);
-    // remarkAdmonition turns any paragraph starting `:::<type>` into a Callout, at any depth.
-    assert.doesNotMatch(data.raw, /:::(?:info|note|tip|warn|warning|caution|danger|error|success)\b/, `${where}: admonitions (:::) are not allowed in the changelog`);
+    // Early, readable failure; the entry page also throws on any Callout the parser emits.
+    assert.equal(data.raw.includes(':::'), false, `${where}: admonitions (:::) are not allowed in the changelog`);
+    assert.doesNotMatch(data.raw, /<Callout\b/, `${where}: <Callout> is not allowed in the changelog`);
     assert.equal(data.raw.includes('\u2014'), false, `${where}: em dash in a changelog entry`);
     assert.doesNotMatch(data.raw, /<Media\b[^>]*\btodo=/, `${where}: media placeholder left`);
     const media = [...data.raw.matchAll(/<Media\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);

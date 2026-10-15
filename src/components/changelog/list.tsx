@@ -18,15 +18,26 @@ function read(): Filter {
 
 const has = (list: string | undefined, value: string) => (list ?? '').split(' ').includes(value);
 
+const matches = (row: HTMLElement, filter: Filter) =>
+  (!filter.for || has(row.dataset.for, filter.for)) && (!filter.surface || has(row.dataset.surface, filter.surface));
+
 /** Show the first `limit` rows matching the filter; returns how many rows match. */
 function apply(root: HTMLElement, filter: Filter, limit: number) {
   let matched = 0;
   root.querySelectorAll<HTMLElement>('.cl-row').forEach((row) => {
-    const ok = (!filter.for || has(row.dataset.for, filter.for)) && (!filter.surface || has(row.dataset.surface, filter.surface));
+    const ok = matches(row, filter);
     if (ok) matched += 1;
     row.hidden = !(ok && matched <= limit);
   });
   return matched;
+}
+
+/** The batch size that reveals the #YYYY-MM-DD row in the URL, or null when it is not a row. */
+function limitForHash(root: HTMLElement, filter: Filter, pageSize: number) {
+  const id = decodeURIComponent(window.location.hash.slice(1));
+  const rows = [...root.querySelectorAll<HTMLElement>('.cl-row')].filter((row) => matches(row, filter));
+  const rank = id ? rows.findIndex((row) => row.id === id) : -1;
+  return rank < 0 ? null : Math.ceil((rank + 1) / pageSize) * pageSize;
 }
 
 /**
@@ -51,9 +62,23 @@ export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Reco
     return () => window.removeEventListener('popstate', sync);
   }, [pageSize]);
 
+  // Old links such as /changelog#2026-09-30: open enough batches to show that day, then scroll to it.
+  const [hash, setHash] = useState('');
   useEffect(() => {
-    if (ref.current) setMatched(apply(ref.current, filter, limit));
-  }, [filter, limit]);
+    const sync = () => setHash(window.location.hash);
+    sync();
+    window.addEventListener('hashchange', sync);
+    return () => window.removeEventListener('hashchange', sync);
+  }, []);
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const needed = hash ? limitForHash(root, filter, pageSize) : null;
+    if (needed && needed > limit) return setLimit(needed);
+    setMatched(apply(root, filter, limit));
+    if (needed) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
+  }, [filter, limit, hash, pageSize]);
 
   function go(next: Filter) {
     const q = new URLSearchParams();
@@ -61,6 +86,7 @@ export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Reco
     if (next.surface) q.set('surface', next.surface);
     const s = q.toString();
     window.history.pushState(null, '', s ? `?${s}` : window.location.pathname);
+    setHash('');
     setFilter(next);
     setLimit(pageSize);
   }
