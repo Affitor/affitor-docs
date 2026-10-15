@@ -31,13 +31,16 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    This refund's amount in cents — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
+    This refund's amount in the same unit as the sale's `amount_cents` — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
   </ParamField>
   <ParamField name="refund_id" type="string">
     Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted or `0` (refunding the rest is already safe to retry).
   </ParamField>
   <ParamField name="refund_reason" type="string">
     Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
+  </ParamField>
+  <ParamField name="reason" type="string" enum={["refund", "chargeback"]}>
+    `refund` or `chargeback`. Recorded as the reason when `refund_reason` is not sent or empty.
   </ParamField>
 </ParamList>
 
@@ -100,7 +103,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 |-------|------|-------------|
 | `success` | boolean | Always `true` on a 200 response. |
 | `status` | string | `"reversed"` (sale fully refunded), `"refunded"` (partially refunded), or `"skipped"` (refund already applied, or commission already reversed). |
-| `deductionAmount` | number | Dollar amount deducted from the partner's commission balance. Present when `status` is `reversed` or `refunded`. |
+| `deductionAmount` | number | Commission amount reversed by this call, in the commission's currency. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). Present when `status` is `reversed` or `refunded`. |
 | `commission_id` | integer | ID of the affected commission record. |
 
 ### Success — sale has no commission
@@ -128,12 +131,14 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 
 ## Errors
 
-| Status | When |
-|--------|------|
-| 400 | `transaction_id` is missing from the request body. |
-| 401 | `Authorization` header is missing, malformed, or the API token is invalid. |
-| 404 | No sale record found for the given `transaction_id` in the authenticated program. |
-| 500 | Internal error during commission reversal. |
+Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envelope) with a stable `error.code`, except a retired API key and rate limiting, which use the [typed envelope](/docs/api-reference/errors#the-typed-envelope).
+
+| Status | `error.code` | When |
+|--------|--------------|------|
+| 400 | `invalid_request` | `transaction_id` is missing, or `reason` is not `refund` or `chargeback`. |
+| 401 | `unauthorized` | `Authorization` header is missing, malformed, or the API token is invalid. |
+| 404 | `not_found` | No sale record found for the given `transaction_id` in the authenticated program. |
+| 500 | `internal_error` | Internal error during commission reversal. |
 
 ---
 
@@ -142,11 +147,11 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 When a commission is reversed or refunded, Affitor:
 
 - transitions the commission to `reversed` or `refunded` status
-- deducts the proportional commission amount from the partner's and partner-program's balance (clamped at zero unless the commission was already paid, in which case the balance can go negative)
+- if the commission was already credited to the partner (any status past `pending`, and not a test), deducts the proportional amount from the partner's balance in the same transaction as the status change; the balance can go negative, and open withdrawals are reduced to fit
 - sends an in-app notification to the partner
 - sends a manual-review warning to the advertiser if the commission had already been paid out
 
-These side effects are fire-and-forget and do not affect the HTTP response.
+The status change and the deduction are applied before the response. The notifications are sent afterwards and never change the response.
 
 ---
 

@@ -183,6 +183,7 @@ Send a server-to-server request once payment succeeds.
 |-----------|----------|------|-------------|
 | `transaction_id` | **Yes** | string | Unique transaction identifier used for deduplication |
 | `amount_cents` | **Yes** | number | Positive integer amount in cents |
+| `tax_cents` | No | number | The tax included in `amount_cents`; accepted but not used yet |
 | `customer_key` | Conditional | string | Your internal customer ID |
 | `click_id` | Conditional | string | Tracked click identifier |
 | `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |

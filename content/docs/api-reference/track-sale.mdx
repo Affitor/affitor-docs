@@ -34,6 +34,9 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
   <ParamField name="amount_cents" type="integer" required>
     Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer.
   </ParamField>
+  <ParamField name="tax_cents" type="integer">
+    The tax included in `amount_cents`, in the same unit. Accepted but not used yet: commissions are calculated on `amount_cents` as sent.
+  </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
     Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. At least one of `customer_key` or `click_id` must match an existing customer record.
   </ParamField>
@@ -41,7 +44,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
   </ParamField>
   <ParamField name="currency" type="string">
-    `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
+    `USD`, `EUR`, or `VND`. Defaults to `USD`. Another code returns `422 unsupported_currency` and creates no sale, commission or fee. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
   </ParamField>
   <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
     `"payment"` (default) or `"subscription"`.
@@ -60,6 +63,18 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
   </ParamField>
   <ParamField name="product_id" type="string">
     Your product identifier. Used for per-product commission policy matching.
+  </ParamField>
+  <ParamField name="occurred_at" type="string">
+    When the payment happened, as ISO 8601 with an offset (for example `2026-10-16T09:30:00Z`), no more than 30 days old and at most 5 minutes in the future. Stored for reporting only: commissions, attribution windows and hold periods still use the time Affitor receives the call.
+  </ParamField>
+  <ParamField name="provider" type="string" enum={["stripe", "polar", "dodo", "paddle", "lemonsqueezy", "creem", "sepay", "payos", "apipay", "x402", "other"]}>
+    Your payment provider. Stored for reporting.
+  </ParamField>
+  <ParamField name="provider_payment_id" type="string">
+    The provider's own payment id (1 to 255 characters). Stored for reporting; duplicate detection still uses `transaction_id`.
+  </ParamField>
+  <ParamField name="livemode" type="boolean">
+    `false` records a test sale, the same as `additional_data.test_mode: true`. `true` or omitted does not force a live sale: `additional_data.test_mode: true` or a test API key still records a test sale.
   </ParamField>
 </ParamList>
 
@@ -160,9 +175,12 @@ data = response.json()`
     label: "200 Window Expired",
     code: `{
   "success": true,
-  "sale_id": 43,
-  "commission_id": null,
-  "message": "Sale tracked — attribution window expired, no commission created"
+  "attributed": false,
+  "reason": "attribution_window_expired",
+  "click_age_days": 75,
+  "window_days": 60,
+  "sale_id": null,
+  "commission_id": null
 }`
   },
   {
@@ -174,7 +192,8 @@ data = response.json()`
     "status": 409,
     "name": "ConflictError",
     "message": "Duplicate transaction_id. This sale has already been recorded.",
-    "details": {}
+    "details": { "sale_id": 42 },
+    "code": "duplicate_transaction"
   }
 }`
   },
@@ -183,12 +202,12 @@ data = response.json()`
 | Field | Type | Description |
 |-------|------|-------------|
 | `success` | boolean | `true` on success. |
-| `sale_id` | integer | ID of the created sale event record. |
-| `commission_id` | integer | ID of the created commission record. |
+| `sale_id` | integer or null | ID of the created sale event record; `null` when the attribution window expired. |
+| `commission_id` | integer or null | ID of the created commission record; `null` when the attribution window expired. |
 | `message` | string | Human-readable confirmation. |
 
 <Callout type="info" title="Idempotency">
-  Re-sending the same `transaction_id` returns `409 Conflict` — Affitor does not create a duplicate sale. This is intentional: you can safely retry on network failure by checking for 409 before treating the call as failed.
+  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and the first sale's id in `error.details.sale_id`. Affitor does not create a duplicate sale, so you can safely retry on network failure.
 </Callout>
 
 <Callout type="warning" title="409 is not an error">
@@ -199,23 +218,24 @@ data = response.json()`
 
 ## Error Responses
 
-| Status | When |
-|--------|------|
-| `400` | `transaction_id` missing or not a string |
-| `400` | `amount_cents` missing, not a positive integer |
-| `400` | Neither `customer_key` nor `click_id` resolved a customer record |
-| `400` | Customer does not belong to the program identified by the API key |
-| `400` | No partner-program relationship found for the resolved customer |
-| `401` | Missing or malformed `Authorization` header |
-| `401` | API key does not match any active program |
-| `409` | `transaction_id` already recorded — duplicate sale |
-| `500` | Commission creation failed internally |
+Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-envelope) `{ "data": null, "error": { "status", "name", "message", "details", "code" } }`. A retired API key and rate limiting use the [typed envelope](/docs/api-reference/errors#the-typed-envelope) `{ "error": { "code", "message", ... } }`. Either way, branch on `error.code`; the message text may change.
+
+| Status | `error.code` | When |
+|--------|--------------|------|
+| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
+| `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
+| `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
+| `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
+| `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is the recorded sale |
+| `422` | `unsupported_currency` | `currency` is not `USD`, `EUR` or `VND`; no sale, commission or fee is created |
+| `429` | `rate_limited` | Too many requests; wait `retry_after_seconds` |
+| `500` | `internal_error` | Sale or commission creation failed internally |
 
 ---
 
 ## Test Mode
 
-Send `additional_data.test_mode: true` to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode.
+Send `additional_data.test_mode: true` (or `livemode: false`) to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode.
 
 ```json
 {
