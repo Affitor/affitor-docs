@@ -1,6 +1,19 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
-import { bannerSrc, bullets, capitalize, entrySlug, formatDay, surfaceLabel, type Entry } from '@/lib/changelog';
+import { bannerSrc, bullets, capitalize, entrySlug, formatDay, surfaceLabel, type Entry, type MdNode } from '@/lib/changelog';
+
+/** Inline MDAST (text, code, bold, italic, links) to React, for the digest preview. */
+function inline(nodes: MdNode[]): ReactNode[] {
+  return nodes.map((node, i) => {
+    const kids = node.children ? inline(node.children) : node.value;
+    if (node.type === 'inlineCode') return <code key={i}>{node.value}</code>;
+    if (node.type === 'strong') return <strong key={i}>{kids}</strong>;
+    if (node.type === 'emphasis') return <em key={i}>{kids}</em>;
+    if (node.type === 'link') return <a key={i} href={node.url}>{kids}</a>;
+    return <span key={i}>{kids}</span>;
+  });
+}
 
 /** Type, version, audience and surface chips. Surface chips filter the index. */
 export function Chips({ entry, compact = false, onIndex = false }: { entry: Entry; compact?: boolean; onIndex?: boolean }) {
@@ -21,7 +34,7 @@ export function Chips({ entry, compact = false, onIndex = false }: { entry: Entr
         </span>
       ))}
       {entry.surfaces.map((s) => (
-        <a key={s} className="cl-tag" href={onIndex ? `?surface=${s}` : `/changelog?surface=${s}`} data-filter={onIndex ? '' : undefined}>
+        <a key={s} className="cl-tag" href={`/changelog?surface=${s}`} data-surface-filter={onIndex ? s : undefined}>
           {surfaceLabel(s)}
         </a>
       ))}
@@ -39,7 +52,7 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
   const slug = entrySlug(entry);
   const href = `/changelog/${slug}`;
   const digest = entry.type === 'digest';
-  const list = digest ? bullets(await entry.getText('processed')) : [];
+  const list = digest ? await bullets(entry) : [];
 
   return (
     <section
@@ -74,8 +87,8 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
         {list.length ? (
           <>
             <ul className="cl-peek">
-              {list.slice(0, 3).map((item) => (
-                <li key={item}>{renderInlineMarkdown(item)}</li>
+              {list.slice(0, 3).map((item, i) => (
+                <li key={i}>{inline(item)}</li>
               ))}
             </ul>
             {list.length > 3 ? (

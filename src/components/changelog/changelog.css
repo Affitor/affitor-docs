@@ -34,9 +34,8 @@
 .cl-links { margin-top: 16px; font-size: 14px; display: flex; gap: 16px; }
 .cl-links a { color: var(--cl-muted); }
 .cl-filters { display: flex; gap: 8px; padding: 8px 0 40px 200px; overflow-x: auto; }
-.cl-chip { display: inline-flex; align-items: center; border: 1px solid var(--cl-line); color: var(--cl-body); border-radius: 999px; padding: 6px 14px; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; min-height: 36px; text-decoration: none; }
-.cl a.cl-chip { color: var(--cl-body); }
-.cl a.cl-chip[aria-pressed='true'] { background: var(--cl-ink); color: var(--color-fd-background); border-color: var(--cl-ink); }
+.cl-chip { display: inline-flex; align-items: center; border: 1px solid var(--cl-line); background: none; color: var(--cl-body); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; min-height: 36px; cursor: pointer; }
+.cl-chip[aria-pressed='true'], .cl-chip-on { background: var(--cl-ink); color: var(--color-fd-background); border-color: var(--cl-ink); }
 
 .cl-row { display: grid; grid-template-columns: 200px 1fr; position: relative; padding-bottom: 72px; }
 .cl-row::before { content: ''; position: absolute; left: 168px; top: 10px; bottom: 0; width: 1px; background: var(--cl-line); }
@@ -59,20 +58,10 @@
 .cl-more { font-size: 14px; color: var(--cl-muted); text-decoration: underline; }
 .cl-peek a { text-decoration: underline; }
 .cl-pin { font-size: 12px; color: var(--cl-muted); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; }
-.cl-pages { display: flex; gap: 16px; padding-left: 200px; font-size: 14px; }
+.cl-row[hidden] { display: none; }
+.cl-empty { padding-left: 200px; color: var(--cl-muted); }
+.cl-older { margin-left: 200px; border: 1px solid var(--cl-line); background: none; border-radius: 8px; padding: 8px 14px; color: var(--cl-body); font: inherit; font-size: 14px; cursor: pointer; min-height: 40px; }
 .cl code { font: 14px/20px 'JetBrains Mono', ui-monospace, monospace; background: var(--cl-soft); border: 1px solid var(--cl-line); border-radius: 5px; padding: 1px 5px; color: var(--cl-ink); }
-
-/* Filters: ?for=<audience> and ?surface=<surface> hide the rows that do not match. */
-.cl-list[data-for='brands'] .cl-row:not([data-for~='brands']),
-.cl-list[data-for='partners'] .cl-row:not([data-for~='partners']),
-.cl-list[data-for='developers'] .cl-row:not([data-for~='developers']),
-.cl-list[data-surface='dashboard'] .cl-row:not([data-surface~='dashboard']),
-.cl-list[data-surface='marketplace'] .cl-row:not([data-surface~='marketplace']),
-.cl-list[data-surface='tracking'] .cl-row:not([data-surface~='tracking']),
-.cl-list[data-surface='api'] .cl-row:not([data-surface~='api']),
-.cl-list[data-surface='sdk'] .cl-row:not([data-surface~='sdk']),
-.cl-list[data-surface='cli'] .cl-row:not([data-surface~='cli']),
-.cl-list[data-surface='mcp'] .cl-row:not([data-surface~='mcp']) { display: none; }
 
 /* Entry */
 .cl-entry { max-width: 806px; margin: 0 auto; padding: 48px 32px 96px; }
@@ -118,7 +107,8 @@
   .cl-rail time { position: static; margin-bottom: 10px; }
   .cl-card h2 { font-size: 22px; line-height: 30px; }
   .cl-lede { font-size: 16px; line-height: 26px; }
-  .cl-pages { padding-left: 0; }
+  .cl-empty { padding-left: 0; }
+  .cl-older { margin-left: 0; min-height: 44px; }
   .cl-entry { padding: 24px 16px 72px; }
   .cl-media { width: 100%; max-width: 100%; }
   .cl h1 { font-size: 32px; line-height: 40px; }

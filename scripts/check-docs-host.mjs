@@ -101,7 +101,6 @@ function invariants() {
     ['/changelog', 'https://affitor.com/changelog'],
     ['/changelog?for=brands', 'https://affitor.com/changelog?for=brands'],
     ['/changelog/invite-partners', 'https://affitor.com/changelog/invite-partners'],
-    ['/changelog/page/2', 'https://affitor.com/changelog/page/2'],
     ['/changelog.md', 'https://affitor.com/changelog.md'],
     ['/changelog/invite-partners.md', 'https://affitor.com/changelog/invite-partners.md'],
     ['/changelog/rss.xml', 'https://affitor.com/changelog/rss.xml'],

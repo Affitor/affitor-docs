@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 import { marked } from 'marked';
-import { CHANGELOG_SUB, CHANGELOG_URL, bannerSrc, entrySlug, entryUrl, sortedEntries } from '@/lib/changelog';
+import { CHANGELOG_SUB, CHANGELOG_URL, bannerSrc, entrySlug, entryUrl, preamble, sortedEntries, type Entry } from '@/lib/changelog';
 import { SITE_URL } from '@/lib/site';
 
 // Built once per deploy: the entry bodies are read from disk at build time.
@@ -12,10 +12,9 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 const cdata = (s: string) => `<![CDATA[${s.replace(/]]>/g, ']]]]><![CDATA[>')}]]>`;
 const light = (src: string) => src.replace(/(\.[a-z0-9]+)$/i, '-light$1');
 
-/** Entry MDX to feed HTML: light media, a video becomes its poster linking to the entry. */
-function toHtml(raw: string, url: string) {
-  const md = raw
-    .replace(FRONTMATTER, '')
+/** Entry to feed HTML: Action required + deprecations first, light media, a video becomes its poster linking to the entry. */
+function toHtml(entry: Entry, raw: string, url: string) {
+  const md = `${preamble(entry)}${raw.replace(FRONTMATTER, '')}`
     .replace(/<Media\s+([^>]*?)\/>/g, (_, attrs: string) => {
       const a = Object.fromEntries([...attrs.matchAll(/(\w+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
       if (a.src.endsWith('.mp4')) return `[![${a.alt}](${light(a.src).replace(/\.mp4$/, '.poster.png')})](${url})`;
@@ -43,7 +42,7 @@ export async function GET() {
 <pubDate>${new Date(`${entry.date}T12:00:00Z`).toUTCString()}</pubDate>
 <category>${entry.type}</category>
 <description>${esc(entry.description)}</description>
-<content:encoded>${cdata(toHtml(await entry.getText('raw'), url))}</content:encoded>
+<content:encoded>${cdata(toHtml(entry, await entry.getText('raw'), url))}</content:encoded>
 ${enclosure}
 </item>`;
     }),

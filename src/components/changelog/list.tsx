@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 
 const AUDIENCES = [
   ['', 'All'],
@@ -16,54 +16,83 @@ function read(): Filter {
   return { for: q.get('for') ?? '', surface: q.get('surface') ?? '' };
 }
 
+const has = (list: string | undefined, value: string) => (list ?? '').split(' ').includes(value);
+
+/** Show the first `limit` rows matching the filter; returns how many rows match. */
+function apply(root: HTMLElement, filter: Filter, limit: number) {
+  let matched = 0;
+  root.querySelectorAll<HTMLElement>('.cl-row').forEach((row) => {
+    const ok = (!filter.for || has(row.dataset.for, filter.for)) && (!filter.surface || has(row.dataset.surface, filter.surface));
+    if (ok) matched += 1;
+    row.hidden = !(ok && matched <= limit);
+  });
+  return matched;
+}
+
 /**
- * The index list with its filter row. ?for=<audience> and ?surface=<surface> filter
- * in place (changelog.css hides rows that do not match), so the page stays static and
- * every entry is in the HTML. Any link marked data-filter inside updates the query.
+ * The index list with its filters. Every entry is in the static HTML; ?for=<audience> and
+ * ?surface=<surface> filter in place, then the first `pageSize` matches show and
+ * "Older updates" reveals the next batch. Surface chips on cards (data-surface-filter)
+ * add to the current audience filter instead of replacing it.
  */
-export function ChangelogList({ surfaces, children }: { surfaces: Record<string, string>; children: ReactNode }) {
+export function ChangelogList({ surfaces, pageSize, children }: { surfaces: Record<string, string>; pageSize: number; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<Filter>({ for: '', surface: '' });
+  const [limit, setLimit] = useState(pageSize);
+  const [matched, setMatched] = useState<number | null>(null);
 
   useEffect(() => {
-    const sync = () => setFilter(read());
+    const sync = () => {
+      setFilter(read());
+      setLimit(pageSize);
+    };
     sync();
     window.addEventListener('popstate', sync);
     return () => window.removeEventListener('popstate', sync);
-  }, []);
+  }, [pageSize]);
 
-  function onClick(event: MouseEvent<HTMLDivElement>) {
-    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-filter]');
-    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
-    event.preventDefault();
-    const url = new URL(link.href);
-    window.history.pushState(null, '', `${url.pathname}${url.search}`);
-    setFilter(read());
+  useEffect(() => {
+    if (ref.current) setMatched(apply(ref.current, filter, limit));
+  }, [filter, limit]);
+
+  function go(next: Filter) {
+    const q = new URLSearchParams();
+    if (next.for) q.set('for', next.for);
+    if (next.surface) q.set('surface', next.surface);
+    const s = q.toString();
+    window.history.pushState(null, '', s ? `?${s}` : window.location.pathname);
+    setFilter(next);
+    setLimit(pageSize);
   }
 
-  const href = (next: Partial<Filter>) => {
-    const q = new URLSearchParams();
-    const merged = { ...filter, ...next };
-    if (merged.for) q.set('for', merged.for);
-    if (merged.surface) q.set('surface', merged.surface);
-    const s = q.toString();
-    return s ? `?${s}` : '?';
-  };
+  function onClick(event: MouseEvent<HTMLDivElement>) {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-surface-filter]');
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    go({ ...filter, surface: link.dataset.surfaceFilter ?? '' });
+  }
 
   return (
-    <div className="cl-list" data-for={filter.for || undefined} data-surface={filter.surface || undefined} onClick={onClick}>
-      <div className="cl-filters" role="toolbar" aria-label="Filter updates">
+    <div ref={ref} className="cl-list" onClick={onClick}>
+      <div className="cl-filters" role="group" aria-label="Show updates for">
         {AUDIENCES.map(([value, label]) => (
-          <a key={label} className="cl-chip" data-filter href={href({ for: value })} aria-pressed={filter.for === value}>
+          <button key={label} type="button" className="cl-chip" aria-pressed={filter.for === value} onClick={() => go({ ...filter, for: value })}>
             {label}
-          </a>
+          </button>
         ))}
         {filter.surface && surfaces[filter.surface] ? (
-          <a className="cl-chip" data-filter href={href({ surface: '' })} aria-pressed="true" aria-label={`Clear ${surfaces[filter.surface]} filter`}>
+          <button type="button" className="cl-chip cl-chip-on" aria-label={`Clear the ${surfaces[filter.surface]} filter`} onClick={() => go({ ...filter, surface: '' })}>
             {surfaces[filter.surface]} ×
-          </a>
+          </button>
         ) : null}
       </div>
       {children}
+      {matched === 0 ? <p className="cl-empty">No updates match this filter yet.</p> : null}
+      {matched !== null && matched > limit ? (
+        <button type="button" className="cl-older" onClick={() => setLimit((n) => n + pageSize)}>
+          Older updates
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -36,8 +36,11 @@ const day = z.preprocess(
 export const changelog = defineCollections({
   type: 'doc',
   dir: 'content/changelog',
-  // Bundled into the page module, so the daily ISR render of the index never reads the disk.
-  postprocess: { includeProcessedMarkdown: true },
+  // The MDAST is bundled into the page module, so the daily ISR render of the index reads the
+  // digest bullets without touching the disk. (Not includeProcessedMarkdown: its serializer
+  // recursed forever on bold text in the fumadocs-mdx release Vercel installs, 14/10/2026.
+  // And not { removePosition: true }: it serializes removePosition()'s return, undefined.)
+  postprocess: { includeMDAST: true },
   schema: frontmatterSchema.extend({
     date: day,
     type: z.enum(['feature', 'digest', 'breaking', 'deprecation', 'security', 'pricing']),

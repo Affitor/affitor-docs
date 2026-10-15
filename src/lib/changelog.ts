@@ -5,15 +5,10 @@ import { SITE_URL } from '@/lib/site';
 export const CHANGELOG_URL = `${SITE_URL}/changelog`;
 export const CHANGELOG_TITLE = 'Changelog';
 export const CHANGELOG_SUB = 'New features, improvements and fixes in Affitor.';
+/** Entries shown at once on the index; "Older updates" reveals the next batch. */
 export const PAGE_SIZE = 30;
 
 export type Entry = (typeof changelog)[number];
-
-export const AUDIENCES = [
-  ['brands', 'Brands'],
-  ['partners', 'Partners'],
-  ['developers', 'Developers'],
-] as const;
 
 const UPPER = new Set(['api', 'sdk', 'cli', 'mcp']);
 export const surfaceLabel = (s: string) => (UPPER.has(s) ? s.toUpperCase() : s[0].toUpperCase() + s.slice(1));
@@ -51,9 +46,34 @@ export function indexOrder(today = todayPT()): Entry[] {
   return [...all.filter((e) => isPinned(e, today)), ...all.filter((e) => !isPinned(e, today))];
 }
 
-/** Top-level bullets of a digest body, in order (remark writes `*` and escapes punctuation). */
-export function bullets(markdown: string): string[] {
-  return [...markdown.matchAll(/^[-*] (.+)$/gm)].map((m) => m[1].trim().replace(/\\([!-/:-@[-`{-~])/g, '$1'));
+/** Minimal MDAST shape: enough to read a digest's bullets from the bundled tree. */
+export type MdNode = { type: string; value?: string; url?: string; children?: MdNode[] };
+
+/** The inline content of every top-level bullet in a digest body, in order. */
+export async function bullets(entry: Entry): Promise<MdNode[][]> {
+  const root = (await entry.getMDAST()) as unknown as MdNode;
+  return (root.children ?? [])
+    .filter((node) => node.type === 'list')
+    .flatMap((list) => list.children ?? [])
+    .map((item) => item.children?.find((c) => c.type === 'paragraph')?.children ?? []);
+}
+
+/**
+ * What the entry page shows above the body (Action required, deprecation table), as
+ * Markdown, so the .md twin and the RSS item carry it too. check-agent-surface.mjs
+ * rebuilds the same text.
+ */
+export function preamble(entry: Entry) {
+  const parts: string[] = [];
+  if (entry.action) {
+    const by = entry.action.by ? ` by ${formatDay(entry.action.by)}` : '';
+    parts.push(`**Action required${by}.** ${capitalize(entry.action.who)}: ${entry.action.what}`);
+  }
+  if (entry.deprecations?.length) {
+    const rows = entry.deprecations.map((d) => `| ${d.what} | ${d.replacement} | ${formatDay(d.sunset)} |`);
+    parts.push(['| What | Replacement | Sunset |', '| --- | --- | --- |', ...rows].join('\n'));
+  }
+  return parts.length ? `${parts.join('\n\n')}\n\n` : '';
 }
 
 /** Deprecations whose sunset has not passed yet, for the top of /changelog.md. */

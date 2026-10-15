@@ -115,6 +115,17 @@ function changelogInventory() {
   const SUB = 'New features, improvements and fixes in Affitor.';
   const TYPES = ['feature', 'digest', 'breaking', 'deprecation', 'security', 'pricing'];
   const variant = (src, theme) => src.replace(/(\.[a-z0-9]+)$/i, `-${theme}$1`);
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = (d) => { const [y, m, n] = d.split('-').map(Number); return `${MONTHS[m - 1]} ${n}, ${y}`; };
+  // Mirror of preamble() in src/lib/changelog.ts: what the entry page shows above the body.
+  const preamble = (e) => {
+    const parts = [];
+    if (e.action) parts.push(`**Action required${e.action.by ? ` by ${day(e.action.by)}` : ''}.** ${e.action.who[0].toUpperCase()}${e.action.who.slice(1)}: ${e.action.what}`);
+    if (e.deprecations?.length) {
+      parts.push(['| What | Replacement | Sunset |', '| --- | --- | --- |', ...e.deprecations.map((d) => `| ${d.what} | ${d.replacement} | ${day(d.sunset)} |`)].join('\n'));
+    }
+    return parts.length ? `${parts.join('\n\n')}\n\n` : '';
+  };
   const entries = walk(dir).filter((file) => /\.mdx?$/.test(file)).map((file) => {
     const data = document(file);
     const slug = relative(dir, file).replace(/\.mdx?$/, '');
@@ -124,7 +135,8 @@ function changelogInventory() {
     assert.ok(TYPES.includes(data.type), `${where}: unknown type ${data.type}`);
     assert.ok(Array.isArray(data.audience) && data.audience.length, `${where}: audience is required`);
     assert.equal(typeof data.description, 'string', `${where}: description is required`);
-    assert.doesNotMatch(data.raw, /^:::/m, `${where}: admonitions (:::) are not allowed in the changelog`);
+    // remarkAdmonition turns any paragraph starting `:::<type>` into a Callout, at any depth.
+    assert.doesNotMatch(data.raw, /:::(?:info|note|tip|warn|warning|caution|danger|error|success)\b/, `${where}: admonitions (:::) are not allowed in the changelog`);
     assert.equal(data.raw.includes('\u2014'), false, `${where}: em dash in a changelog entry`);
     assert.doesNotMatch(data.raw, /<Media\b[^>]*\btodo=/, `${where}: media placeholder left`);
     const media = [...data.raw.matchAll(/<Media\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
@@ -155,7 +167,7 @@ function changelogInventory() {
     { id: 'changelog', type: 'changelog', url: `${ORIGIN}/changelog`, updated: entries[0].date, sourceDate: entries[0].date, body: index },
     ...entries.map((e) => ({
       id: `changelog/${e.slug}`, type: 'changelog', url: e.url,
-      updated: e.date, sourceDate: e.date, body: markdown(e, e.slug),
+      updated: e.date, sourceDate: e.date, body: markdown({ ...e, raw: `${preamble(e)}${e.raw.replace(FRONTMATTER, '')}` }, e.slug),
     })),
   ];
 }
