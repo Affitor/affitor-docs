@@ -63,6 +63,6 @@ export const SOCIAL_LINKS = {
 // Same prompt as the dashboard's AskAI footer row.
 export const ASK_AI_PROMPT =
   'As a SaaS founder, I want to understand how Affitor can help me launch and grow ' +
-  'an affiliate program — recruiting the right partners, tracking sales through Stripe, ' +
-  'and automating commission payouts — without building any of it in-house. ' +
+  'an affiliate program (recruiting the right partners, tracking sales through Stripe, ' +
+  'and automating commission payouts) without building any of it in-house. ' +
   "Summarize the highlights from Affitor's website: https://affitor.com and their docs: https://affitor.com/docs";
