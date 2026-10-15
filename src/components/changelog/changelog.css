@@ -7,6 +7,13 @@
   --cl-line: #e3e8ee;
   --cl-soft: #f6f8fa;
   --cl-action-bg: var(--color-fd-muted);
+  /* Code is dark in both themes, as in the preview: Shiki paints github-dark tokens in
+     light mode too (source.config.ts), so a light card made them unreadable (1.6:1). */
+  --cl-code-bg: #0b0d12;
+  --cl-code-line: #1f2430;
+  --cl-code-ink: #e6edf3;
+  --cl-code-muted: #9aa4b5;
+  --cl-code-accent: #5881ff;
   color: var(--cl-body);
   font-size: 16px;
   line-height: 28px;
@@ -17,6 +24,22 @@
   --cl-muted: #9aa4b5;
   --cl-line: #1f2430;
   --cl-soft: #12151c;
+}
+
+/* Code blocks and code tabs (fumadocs): point their color tokens at the dark code surface,
+   so the card, tab bar, border and copy button all follow, in both themes. */
+.cl-prose figure.shiki,
+.cl-prose div:has(> [role='tablist']) {
+  --color-fd-card: var(--cl-code-bg);
+  --color-fd-secondary: var(--cl-code-bg);
+  --color-fd-muted: var(--cl-code-line);
+  --color-fd-border: var(--cl-code-line);
+  --color-fd-foreground: var(--cl-code-ink);
+  --color-fd-muted-foreground: var(--cl-code-muted);
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: var(--cl-code-ink);
+  --color-fd-primary: var(--cl-code-accent);
+  color: var(--cl-code-ink);
 }
 
 /* Theme-swapped media: banners, screenshots, video loops (scoped to beat .cl-banner / .cl-media). */
