@@ -1,28 +1,28 @@
 ---
 title: Improvements and fixes, February 2026
-date: 2026-02-27
+date: 2026-02-28
 type: digest
 audience: [brands, partners, developers]
 surfaces: [dashboard, marketplace, tracking, sdk]
-description: A redesigned homepage, the tracker on npm, sales credited even without a cookie, partial refunds, private customer emails, and a free transcript tool.
+description: A redesigned homepage, the tracker on npm, sales credited even without a cookie, partial refunds, private customer emails, and timestamps in the transcript tool.
 ---
 
 ### New
 
-- The tracker is on npm as `@affitor/tracker`, and calls made before it loads are queued instead of lost.
+- The tracker is on npm as `@affitor/tracker` (since replaced by `@affitor/sdk`), and calls made before it loads are queued instead of lost.
 - When the browser cookie is missing, a sale can still be credited to the right partner by matching the customer's user ID or email.
-- A free YouTube transcript tool: paste a video link and read the transcript with timestamps.
 - Terms of Service and Privacy Policy pages.
 
 ### Improved
 
-- **A redesigned homepage**, with how it works, the features, a live dashboard preview, a pricing calculator and an FAQ.
-- Partial refunds are tracked and reduce the commission by the refunded amount.
+- **A redesigned homepage**, with how it works, the features, a dashboard preview, pricing and an FAQ.
+- The free YouTube transcript tool was rebuilt, and transcripts now show timestamps.
+- Partial refunds are tracked and reduce the commission in proportion to the amount refunded.
 - Customer emails are masked in the brand's customer list.
-- The partner dashboard shows your balance and a commission summary.
+- On each program page, the Balance card shows your actual balance, and commission totals include approved commissions.
 - The setup page shows whether tracking is verified.
-- Program pages in the directory can be read by search engines, with sharing previews.
-- A helpful 404 page with search.
+- Program pages in the directory can be read by search engines, with sharing previews. These pages now open the marketplace.
+- A simpler 404 page with Go back and Go home buttons.
 - Pages load faster.
 - The docs have a sitemap and `llms.txt`.
 
@@ -30,4 +30,4 @@ description: A redesigned homepage, the tracker on npm, sales credited even with
 
 - A brand owner can no longer apply to their own program.
 - Logging out returns you to the homepage.
-- The Categories page and the Show more button on program lists work again.
+- The Categories page and the Show more button on the program list work again (both have since moved to the marketplace).
