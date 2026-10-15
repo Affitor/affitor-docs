@@ -413,6 +413,7 @@ paths:
                   name: NotFoundError
                   message: "Sale not found for transaction_id"
                   details: {}
+                  code: not_found
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
@@ -824,7 +825,7 @@ components:
         currency:
           type: string
           default: USD
-          description: ISO 4217 code. Non-USD sales are converted to USD when recorded (rolling out; until your start date only USD, EUR and VND). Unsupported code → 422 `unsupported_currency`, nothing recorded.
+          description: ISO 4217 code. Non-USD sales are converted to USD when recorded (rolling out; until your start date only USD, EUR and VND). Unsupported code → 422 `unsupported_currency`; no sale, commission or fee is created.
         occurred_at:
           type: string
           format: date-time

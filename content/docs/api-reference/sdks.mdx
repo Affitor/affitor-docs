@@ -271,7 +271,7 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
     const result = await affitor.trackSale({
       customerExternalId: session.client_reference_id ?? undefined,
       amount: session.amount_total ?? 0,
-      taxCents: session.total_details?.amount_tax ?? undefined, // commissions use the pre-tax amount
+      taxCents: session.total_details?.amount_tax ?? undefined, // deducted from your money-basis start date
       invoiceId: session.payment_intent as string,
       currency: session.currency?.toUpperCase(),
       saleType: 'payment',
@@ -292,6 +292,8 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
   }
 }
 ```
+
+Stripe amounts are in the currency's ISO 4217 smallest unit, which is what the API expects, except for three currencies: ISK and UGX (Stripe counts hundredths, ISO has none: divide by 100) and MGA (Stripe has no decimals, ISO has two: multiply by 100). Convert those before calling `trackSale` or `trackRefund`, or use the Stripe Connect integration, which handles them.
 
 ---
 

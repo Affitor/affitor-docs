@@ -212,8 +212,8 @@ data = response.json()`
 | Field | Type | Description |
 |-------|------|-------------|
 | `success` | boolean | `true` on success. |
-| `sale_id` | integer | ID of the created sale event record. |
-| `commission_id` | integer | ID of the created commission record. |
+| `sale_id` | integer or null | ID of the created sale event record; `null` when the attribution window expired. |
+| `commission_id` | integer or null | ID of the created commission record; `null` when the attribution window expired or `money_status` is `fx_pending`. |
 | `message` | string | Human-readable confirmation. |
 | `money_status` | string | Present only as `"fx_pending"`: the sale is recorded, but no exchange rate from the last 7 days was available, so no commission or fee was created. |
 
@@ -233,7 +233,7 @@ Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-
 
 | Status | `error.code` | When |
 |--------|--------------|------|
-| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; `tax_cents` not an integer between `0` and `amount_cents` (checked from your money-basis start date, see [Currencies and tax](#currencies-and-tax)); an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
+| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; `tax_cents` not an integer between `0` and `amount_cents` (checked on live sales from your money-basis start date, see [Currencies and tax](#currencies-and-tax)); an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
 | `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
 | `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
 | `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
