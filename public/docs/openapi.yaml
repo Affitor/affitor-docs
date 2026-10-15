@@ -20,9 +20,10 @@ info:
     regenerating issues a new key and invalidates the old one immediately).
 
     ## Test mode
-    Every endpoint accepts `additional_data: { "test_mode": true }` to create
-    isolated test events (`is_test: true`) that never touch production
-    attribution, commissions, or metrics.
+    The click, lead and sale endpoints accept `additional_data: { "test_mode": true }`
+    to create isolated test events (`is_test: true`) that never touch production
+    attribution, commissions, or metrics. `POST /api/v1/track/refund` has no
+    test mode: with a live key it reverses the real commission.
 
     ## Attribution rules
     - Model: last-click. A new `?aff=` click overwrites the previous partner.
@@ -323,7 +324,7 @@ paths:
                     sale_id: 123
                   code: duplicate_transaction
         '422':
-          description: The `currency` is not supported. Nothing was recorded.
+          description: The `currency` is not supported. No sale, commission or fee was created.
           content:
             application/json:
               schema:
@@ -819,7 +820,7 @@ components:
         tax_cents:
           type: integer
           minimum: 0
-          description: The tax included in `amount_cents`, same unit, at most `amount_cents`. Commissions use `amount_cents - tax_cents`. Omit when unknown.
+          description: The tax included in `amount_cents`, same unit, at most `amount_cents`. From your money-basis start date commissions use `amount_cents - tax_cents`; before it the field is ignored. Omit when unknown.
         currency:
           type: string
           default: USD
@@ -827,7 +828,7 @@ components:
         occurred_at:
           type: string
           format: date-time
-          description: When the payment happened (ISO 8601 with offset, last 30 days). Stored for reporting only.
+          description: When the payment happened (ISO 8601 with offset, at most 30 days old and 5 minutes ahead). Stored for reporting only.
         provider:
           type: string
           enum: [stripe, polar, dodo, paddle, lemonsqueezy, creem, sepay, payos, apipay, x402, other]
@@ -839,7 +840,7 @@ components:
           description: The provider's payment id. Stored for reporting.
         livemode:
           type: boolean
-          description: '`false` records a test sale (same as `additional_data.test_mode: true`).'
+          description: '`false` records a test sale (same as `additional_data.test_mode: true`). `true` does not override `test_mode` or a test key.'
         sale_type:
           type: string
           enum: [payment, subscription]
@@ -865,7 +866,7 @@ components:
       properties:
         success: { type: boolean }
         sale_id: { type: integer }
-        commission_id: { type: integer }
+        commission_id: { type: [integer, 'null'], description: '`null` when `money_status` is `fx_pending`.' }
         message: { type: string, example: "Sale tracked successfully" }
         money_status:
           type: string
@@ -897,14 +898,14 @@ components:
           description: This refund's amount (not the running total), in the sale's currency and unit, same basis as the sale's `amount_cents`. Omit to refund the rest of the sale.
         refund_id:
           type: string
-          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted or 0.
+          description: Your id for this refund (e.g. the Stripe refund id). A refund_id already applied is ignored. Not used when refund_amount_cents is omitted.
         refund_reason:
           type: string
           description: Free-text reason, stored for audit.
         reason:
           type: string
           enum: [refund, chargeback]
-          description: Stored as the reason when `refund_reason` is not sent.
+          description: Stored as the reason when `refund_reason` is not sent or empty.
 
     RefundResponse:
       type: object

@@ -179,7 +179,7 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 
 - `customerExternalId?: string` — your own user id; resolves attribution (no `clickId` needed once bound at lead time).
 - `clickId?: string` — Affitor click id.
-- `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
+- `amount: number` — what the customer paid, in the currency's smallest unit (e.g. `4999` = $49.99 USD, `490000` = 490,000 VND).
 - `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
 - `currency?: string` — ISO 4217 code. Defaults to `USD`. Non-USD sales are converted to USD when recorded; see [Currencies and tax](/docs/api-reference/track-sale#currencies-and-tax).
 - `saleType?: "payment" | "subscription"` — one-off payment or subscription.
@@ -191,7 +191,7 @@ The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`
 **`affitor_track_refund`**:
 
 - `invoiceId: string` — the sale's idempotency key (the `invoiceId` you passed to `affitor_track_sale`).
-- `refundAmountCents?: number` — integer cents, **this refund's own amount** (not a running total). Omit (or `0`) = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
+- `refundAmountCents?: number` — **this refund's own amount** in the sale currency's smallest unit (not a running total). Omit = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
 - `refundReason?: string` — optional human-readable refund reason.
 - `testMode?: boolean`: a dry run that returns the refund that would be sent and calls nothing. The API has no test mode for refunds.
 

@@ -31,16 +31,16 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    This refund's amount in the smallest unit of the sale's currency (cents for USD, đồng for VND), on the same basis as the sale's `amount_cents` — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
+    This refund's amount in the smallest unit of the sale's currency (cents for USD, đồng for VND), on the same basis as the sale's `amount_cents` — not the running total refunded so far. Omit it to refund the rest of the sale. Must be a positive integer when provided.
   </ParamField>
   <ParamField name="refund_id" type="string">
-    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted or `0` (refunding the rest is already safe to retry).
+    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted (refunding the rest is already safe to retry).
   </ParamField>
   <ParamField name="refund_reason" type="string">
     Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
   </ParamField>
   <ParamField name="reason" type="string" enum={["refund", "chargeback"]}>
-    `refund` or `chargeback`. Recorded as the reason when `refund_reason` is not sent.
+    `refund` or `chargeback`. Recorded as the reason when `refund_reason` is not sent or empty.
   </ParamField>
 </ParamList>
 
@@ -131,7 +131,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 
 ## Errors
 
-Errors use the envelope described in [Errors](/docs/api-reference/errors#the-platform-envelope), with a stable `error.code`.
+Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envelope) with a stable `error.code`, except a retired API key and rate limiting, which use the [typed envelope](/docs/api-reference/errors#the-typed-envelope).
 
 | Status | `error.code` | When |
 |--------|--------------|------|
@@ -147,11 +147,11 @@ Errors use the envelope described in [Errors](/docs/api-reference/errors#the-pla
 When a commission is reversed or refunded, Affitor:
 
 - transitions the commission to `reversed` or `refunded` status
-- deducts the proportional commission amount from the partner's and partner-program's balance (clamped at zero unless the commission was already paid, in which case the balance can go negative)
+- if the commission was already credited to the partner (any status past `pending`, and not a test), deducts the proportional amount from the partner's balance in the same transaction as the status change; the balance can go negative, and open withdrawals are reduced to fit
 - sends an in-app notification to the partner
 - sends a manual-review warning to the advertiser if the commission had already been paid out
 
-These side effects are fire-and-forget and do not affect the HTTP response.
+The status change and the deduction are applied before the response. The notifications are sent afterwards and never change the response.
 
 ---
 

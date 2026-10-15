@@ -44,7 +44,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
   </ParamField>
   <ParamField name="currency" type="string">
-    ISO 4217 code of the payment. Defaults to `USD`. Non-USD sales are converted to USD when recorded (see [Currencies and tax](#currencies-and-tax)). An unsupported code returns `422 unsupported_currency` and records nothing.
+    ISO 4217 code of the payment. Defaults to `USD`. Non-USD sales are converted to USD when recorded (see [Currencies and tax](#currencies-and-tax)). An unsupported code returns `422 unsupported_currency` and creates no sale, commission or fee.
   </ParamField>
   <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
     `"payment"` (default) or `"subscription"`.
@@ -65,7 +65,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     Your product identifier. Used for per-product commission policy matching.
   </ParamField>
   <ParamField name="occurred_at" type="string">
-    When the payment happened, as ISO 8601 with an offset (for example `2026-10-16T09:30:00Z`), within the last 30 days. Stored for reporting only: commissions, attribution windows and hold periods still use the time Affitor receives the call.
+    When the payment happened, as ISO 8601 with an offset (for example `2026-10-16T09:30:00Z`), no more than 30 days old and at most 5 minutes in the future. Stored for reporting only: commissions, attribution windows and hold periods still use the time Affitor receives the call.
   </ParamField>
   <ParamField name="provider" type="string" enum={["stripe", "polar", "dodo", "paddle", "lemonsqueezy", "creem", "sepay", "payos", "apipay", "x402", "other"]}>
     Your payment provider. Stored for reporting.
@@ -74,7 +74,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The provider's own payment id (1 to 255 characters). Stored for reporting; duplicate detection still uses `transaction_id`.
   </ParamField>
   <ParamField name="livemode" type="boolean">
-    `false` records a test sale, the same as `additional_data.test_mode: true`. `true` or omitted records a live sale.
+    `false` records a test sale, the same as `additional_data.test_mode: true`. `true` or omitted does not force a live sale: `additional_data.test_mode: true` or a test API key still records a test sale.
   </ParamField>
 </ParamList>
 
@@ -175,9 +175,12 @@ data = response.json()`
     label: "200 Window Expired",
     code: `{
   "success": true,
-  "sale_id": 43,
-  "commission_id": null,
-  "message": "Sale tracked — attribution window expired, no commission created"
+  "attributed": false,
+  "reason": "attribution_window_expired",
+  "click_age_days": 75,
+  "window_days": 60,
+  "sale_id": null,
+  "commission_id": null
 }`
   },
   {
@@ -226,16 +229,16 @@ data = response.json()`
 
 ## Error Responses
 
-Errors use one envelope: `{ "data": null, "error": { "status", "name", "message", "details", "code" } }`. Branch on `error.code`; the message text may change.
+Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-envelope) `{ "data": null, "error": { "status", "name", "message", "details", "code" } }`. A retired API key and rate limiting use the [typed envelope](/docs/api-reference/errors#the-typed-envelope) `{ "error": { "code", "message", ... } }`. Either way, branch on `error.code`; the message text may change.
 
 | Status | `error.code` | When |
 |--------|--------------|------|
-| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; `tax_cents` not an integer between `0` and `amount_cents`; an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
+| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; `tax_cents` not an integer between `0` and `amount_cents` (checked from your money-basis start date, see [Currencies and tax](#currencies-and-tax)); an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
 | `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
 | `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
 | `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
 | `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is the recorded sale |
-| `422` | `unsupported_currency` | `currency` is not supported; nothing is recorded |
+| `422` | `unsupported_currency` | `currency` is not supported; no sale, commission or fee is created |
 | `429` | `rate_limited` | Too many requests; wait `retry_after_seconds` |
 | `500` | `internal_error` | Sale or commission creation failed internally |
 
