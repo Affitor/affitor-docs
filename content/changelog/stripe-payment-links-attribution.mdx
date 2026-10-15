@@ -1,0 +1,43 @@
+---
+title: Partner sales from Stripe Payment Links, Buy Buttons and Pricing Tables
+date: 2026-10-14
+type: feature
+audience: [brands, partners, developers]
+surfaces: [tracking]
+description: If you sell with Stripe's no-code checkouts, partner sales are now credited automatically. Nothing to change in your checkout.
+banner: { pill: New, subject: code }
+---
+
+If you sell through a Stripe Payment Link, a Buy Button or a Pricing Table, Affitor now credits the sale to the partner who sent the customer. You do not need to change your checkout or add a parameter.
+
+## How it works
+
+When a visitor arrives from a partner link, the Affitor tracker already on your page passes that click to Stripe. It adds a `client_reference_id` to every `buy.stripe.com` link and to every `<stripe-buy-button>` and `<stripe-pricing-table>` on the page, including ones that load later. Stripe returns it with the completed checkout, and Affitor credits the partner.
+
+```text tab="Payment Link"
+https://buy.stripe.com/…?client_reference_id=aff_<click id>
+```
+
+```html tab="Buy Button"
+<stripe-buy-button buy-button-id="…" publishable-key="…"
+  client-reference-id="aff_<click id>"></stripe-buy-button>
+```
+
+```html tab="Pricing Table"
+<stripe-pricing-table pricing-table-id="…" publishable-key="…"
+  client-reference-id="aff_<click id>"></stripe-pricing-table>
+```
+
+It works for one-time payments, subscriptions, the first invoice and renewals.
+
+## What you need
+
+- Stripe connected to Affitor.
+- The hosted tracker on the page that holds the checkout.
+
+## Good to know
+
+- **First click wins.** If the buyer is already a customer of another partner, they stay with that partner.
+- A `client_reference_id` you set yourself is kept, unless it starts with `aff_`.
+- Visitors who have not given tracking consent, when you use consent mode, are not passed to Stripe.
+- If you record clicks yourself and set `data-affitor-clicks="off"` on the tracker, it does not add the value.

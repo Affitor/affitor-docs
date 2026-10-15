@@ -1,0 +1,50 @@
+---
+title: Send leads from your server to count them
+date: 2026-09-30
+type: breaking
+audience: [developers, brands]
+surfaces: [tracking, api]
+description: A signup sent only from the browser is now recorded as provisional on older programs too. Send the lead from your server with your program API key so it counts.
+banner: { pill: Action required, subject: code }
+action: { who: developers, what: "If you send signups only from the browser, also send them from your server with your program API key and the visitor's click ID." }
+---
+
+Leads sent only from the browser are now recorded as provisional on every program unless it explicitly allows browser leads. New programs already worked this way. Older programs that never chose a policy now do too.
+
+## What changes
+
+A provisional lead does not credit a partner on its own. It settles when your server sends the lead with your program API key, or when that customer's first payment arrives through your connected Stripe account.
+
+## What to do
+
+When a customer signs up, send the lead from your server. Forward the visitor's `affitor_click_id` cookie as `click_id`, so the lead is tied to the partner's click:
+
+```bash tab="cURL"
+curl -X POST https://api.affitor.com/api/v1/track/lead \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"click_id":"<affitor_click_id cookie>","customer_key":"usr_abc123","email":"jane@example.com"}'
+```
+
+```js tab="Node.js"
+await fetch('https://api.affitor.com/api/v1/track/lead', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.AFFITOR_API_TOKEN}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    click_id: req.cookies.affitor_click_id,
+    customer_key: newUser.id,
+    email: newUser.email,
+  }),
+});
+```
+
+If you take payments through Stripe Checkout on a connected account, the first payment settles the lead for you.
+
+## How to tell
+
+The browser call answers with `"provisional": true`. In the dashboard, your partners' signups stay flat while clicks keep rising.
+
+See [Lead tracking](https://affitor.com/docs/brand/tracking/lead-tracking-signup) for the full setup.

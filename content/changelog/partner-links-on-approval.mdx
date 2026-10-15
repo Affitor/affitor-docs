@@ -1,0 +1,29 @@
+---
+title: Partners get their link the moment you approve them
+date: 2026-09-24
+type: feature
+audience: [brands, partners]
+surfaces: [dashboard, tracking]
+description: Approving a partner now creates their referral link right away, every referral code has one owner, and links can use your own /r/ short link.
+banner: { pill: New, subject: code }
+---
+
+When you approve a partner, or your program accepts them automatically, Affitor now creates their referral link right away. It is waiting on their program page, ready to copy.
+
+## A link that is ready to share
+
+The link points to your program's website with the partner's own code, for example `yourbrand.com/?aff=k7Qm2xa`. Your program needs a website set; if it has none, the link is created once you add one.
+
+Every code belongs to exactly one partner. A code a partner picks must be unique across Affitor, so nobody can use someone else's.
+
+## Use your own /r/ short link
+
+If you would rather share short links on your own domain, add a redirect from `/r/<code>` to `/?aff=<code>` on your site:
+
+```text tab="Redirect"
+yourbrand.com/r/k7Qm2xa  →  301  →  yourbrand.com/?aff=k7Qm2xa
+```
+
+Then open **Settings**, **Click Tracking**, and press **Check /r/** on the **Short link /r/** card. Once the check passes, new links to your homepage use `yourbrand.com/r/<code>`. Links to other pages keep `?aff=`. If your redirect drops `?aff=`, the check tells you.
+
+<Media src="/docs/changelog/partner-links-on-approval/rpath.png" alt="The Short link /r/ card in Settings showing Installed, with the redirect rule and a Check /r/ button" />

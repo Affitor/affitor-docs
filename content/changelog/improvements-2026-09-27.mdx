@@ -1,0 +1,24 @@
+---
+title: Improvements and fixes, Sep 21–27
+date: 2026-09-27
+type: digest
+audience: [brands, partners, developers]
+surfaces: [dashboard, marketplace, api]
+description: Commission notifications that point to the exact commission, a featured carousel on the marketplace, and access fixes for workspace members.
+---
+
+### Improved
+
+- Commission notifications name the program and open the exact commission.
+- The marketplace shows featured programs in a carousel.
+- The old CLI endpoint for connecting Stripe now answers `410 Gone`. Connect Stripe from the dashboard instead.
+
+### Fixed
+
+- Workspace members can see the partner applications of the programs they work on.
+- Pages opt out of browser auto-translate, so program terms stay exactly as the brand wrote them.
+- Screenshots in the docs load again.
+
+### Security
+
+- Suspending an account now blocks every way to sign in, and API responses and error messages carry only what the caller needs.
