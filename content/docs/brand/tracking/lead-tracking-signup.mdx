@@ -195,12 +195,12 @@ A call without a Bearer key is treated as browser mode, even when it comes from 
 
 ### Lead auth policy
 
-Each program has a lead auth policy. New programs default to **server-verified** leads (`server_required`):
+Each program has a lead auth policy. Every program requires **server-verified** leads (`server_required`) unless it is explicitly set to allow browser leads (`browser_allowed`):
 
 - a browser-mode lead returns `200` with `"provisional": true` and is stored, but it does not settle attribution, save `customer_key`, count in partner metrics, or pay a per-lead commission
 - the lead settles when your backend sends it with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account (a sale sent to `/api/v1/track/sale` does not settle it)
 
-Programs created before this policy existed keep the older behavior, where a browser lead settles directly. The **Lead capture mode** line in your program's tracking settings shows which policy applies.
+A browser lead settles directly only on a program set to `browser_allowed`. The **Lead capture mode** line in your program's tracking settings shows which policy applies.
 
 ---
 

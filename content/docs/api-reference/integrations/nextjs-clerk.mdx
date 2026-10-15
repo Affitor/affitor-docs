@@ -124,7 +124,7 @@ export function AffitorSignup() {
 
 :::note
 
-Place `<AffitorSignup />` only on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page adds nothing: on programs that require server-verified leads, a repeat browser lead returns `200` with `provisional: true` and records nothing new, and on older programs where a browser lead settles directly, a repeat after the lead has settled is rejected with `400`.
+Place `<AffitorSignup />` only on the page a new user lands on right after registration (e.g. `/onboarding`, `/welcome`, or wherever your post-signup redirect goes). Rendering it on every page adds nothing: on programs that require server-verified leads, a repeat browser lead returns `200` with `provisional: true` and records nothing new, and on programs set to allow browser leads, a repeat after the lead has settled is rejected with `400`.
 
 :::
 

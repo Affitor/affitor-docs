@@ -3,7 +3,7 @@ title: Payouts
 description: How partner commissions move through Affitor's payout workflow.
 ---
 
-When a commission clears its hold period, it is credited to the partner's balance. The partner then requests a withdrawal, and Affitor approves and sends it. This page explains the lifecycle, payout methods, and your role as advertiser.
+When a commission clears its hold period, it is credited to the partner's balance. Once you pay the invoice that covers it, the partner can request a withdrawal, and Affitor approves and sends it. This page explains the lifecycle, payout methods, and your role as advertiser.
 
 <PageMeta
   items={[
@@ -24,9 +24,10 @@ When a commission clears its hold period, it is credited to the partner's balanc
   E --> F[Affitor approves and sends it]
   C --> G[Affitor invoices you weekly]
   G --> H[You pay the invoice]
+  H -->|unlocks the withdrawal| E
 `} />
 
-Partner payouts are not held until you pay your invoice: once a commission is approved, the partner can withdraw it. Your weekly invoice covers those approved commissions plus the platform fee. See [Overdue invoices & program pause policy](/docs/brand/billing/overdue-policy).
+Partners can withdraw a commission only after you pay the invoice that covers it. An approved commission is added to the partner's balance right away, but it shows as **Awaiting brand payment** until that invoice is marked paid. Your weekly invoice covers the approved commissions plus the platform fee. Commissions approved before October 9, 2026 became withdrawable on approval. See [Overdue invoices & program pause policy](/docs/brand/billing/overdue-policy).
 
 ![Billing — platform fee, outstanding balance, and your next invoice date](/docs/brand/billing.png)
 
@@ -37,6 +38,7 @@ The platform fee follows the same principle: **$0 until your program earns its f
   <FlowStep>Commission created</FlowStep>
   <FlowStep>Hold period</FlowStep>
   <FlowStep>Commission approved</FlowStep>
+  <FlowStep>You pay the invoice</FlowStep>
   <FlowStep>Partner requests withdrawal</FlowStep>
 </Flow>
 
@@ -44,7 +46,7 @@ At a high level:
 1. A sale is attributed.
 2. A commission is created.
 3. The commission waits out the program's hold period. You can approve, reject, or extend the hold on it from the **Commissions** page.
-4. When approved, the commission is added to the partner's balance and becomes withdrawable.
+4. When approved, the commission is added to the partner's balance. It becomes withdrawable once you pay the invoice that covers it.
 5. The partner requests a withdrawal; Affitor approves it and sends the transfer.
 
 You do not need to manage individual partner transfers yourself.
