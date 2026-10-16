@@ -1134,6 +1134,8 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   background: transparent !important;
   padding: 0 !important;
   border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ── <Callout> — Mintlify-style with icon + label ── */
@@ -1280,4 +1282,10 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 @media (prefers-reduced-motion: reduce) {
   .quad-anim .chip-pop,
   .quad-anim.in .chip-pop { transform: none; opacity: 1; animation: none; }
+}
+
+/* <AgentPrompt>: a prompt line wraps rather than scrolls sideways. */
+.docs-agent-prompt .docs-code-group-body pre {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
