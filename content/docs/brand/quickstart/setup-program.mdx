@@ -16,9 +16,10 @@ Complete these steps before you invite partners or install tracking.
 
 ## What you are setting up
 
-1. **Program details** — business info, approval settings, commission rules
-2. **Tracking & integrations** — click, signup, and sale tracking
-3. **Share program** — your partner-facing program link
+1. **Program details**: business info, approval settings, commission rules
+2. **Tracking & integrations**: click, signup, and sale tracking
+3. **Go live**: publish the program once payments are connected
+4. **Share program**: your partner-facing program link
 
 ![Program Settings — the checklist walks you through details, tracking, and sharing](/docs/brand/settings.png)
 
@@ -31,7 +32,7 @@ Complete these steps before you invite partners or install tracking.
 | Company name | Yes | pre-filled from your account |
 | Website URL | Yes | main product/site URL |
 | Tagline | No | shown to partners |
-| Logo | Yes | PNG, JPG, or SVG |
+| Logo | No | PNG, JPG, or SVG; until you add one, the marketplace shows your program's initial |
 | Terms of Service URL | No | affiliate terms / program terms |
 | Resources URL | No | partner-facing marketing resources |
 
@@ -137,9 +138,30 @@ For subscriptions, put the same values in both:
 
 ---
 
-## 3. Share Your Program
+## 3. Go live
 
-Once setup is complete, share your partner recruitment link so affiliates can apply.
+**Go live** publishes your program on the marketplace and lets you invite partners. It needs three things:
+
+| Requirement | Done when |
+|-------------|-----------|
+| Business details | the program has a name and a website URL (the logo is optional) |
+| Commission | a default commission is set |
+| Payments | Affitor can record your sales (see below) |
+
+Payments counts as connected in one of two ways, matching the method you chose on the **Payments** step:
+
+- **Stripe**: your Stripe account is connected to the program.
+- **Server API**: your server has sent at least one sale for this program to `POST /api/v1/track/sale`. A test sale counts (send it with `"livemode": false`), so you can go live before your first real customer. A test sale from the dashboard's verification run does not count; the sale has to come from your server.
+
+Click and signup tracking are not required to go live. Install them before you invite partners so their traffic is attributed.
+
+If the program is paused for an overdue invoice, pay the invoice first; Go live stays blocked until then.
+
+---
+
+## 4. Share Your Program
+
+Once the program is live, share your partner recruitment link so affiliates can apply.
 
 ---
 
