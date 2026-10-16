@@ -2,7 +2,7 @@
 title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 kind: guide
-last_updated: 2026-09-20
+last_updated: 2026-10-15
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and the same Settings page holds the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -18,31 +18,39 @@ Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-pro
 
 ## What lives in Settings
 
-Open your brand workspace and select **Settings** in the left menu. The page is organized as a checklist of sections:
+Settings belong to the program selected in the program menu. Open the program menu (your program's name at the top of the left menu, or the top bar on a phone) and choose **All settings**. Everything on the Settings pages applies to that program.
 
-![Program Settings — the left rail lists Business Profile, Approval mode, Commission, Branding, Tracking & Integrations, Share Program, and the Developer API Key section](/docs/brand/settings.png)
+**Program settings** are the same five steps as setup, one page each:
 
-| Section | What you edit there |
+| Page | What you edit there |
 |---------|--------------------|
-| **Business Profile** | Program name, marketplace handle, website URL, logo |
-| **Approval mode** | How partner applications are handled — manual review or auto-accept |
-| **Commission** | Default commission type, rate, and hold period |
-| **Branding** | How your program page looks to partners in the marketplace |
-| **Tracking & Integrations** | Status of click, lead (signup), and payment tracking |
-| **Share Program** | A shareable link for recruiting partners |
-| **API Key** (under **Developer**) | The per-program secret key for server-side tracking calls |
+| **Business** | Program name, website and logo, with a **Branding** section for how your program page looks in the marketplace |
+| **Commission** | Commission type, rate and duration, attribution window, hold period, and how new partners join (**Approve all** or **Review each**) |
+| **Tracking** | Click and signup (lead) tracking on your website |
+| **Payments** | How sales are counted: Stripe connected, or sales sent from your server |
+| **Go live** | What the program still needs to go live, and its live state |
+
+The rest of the Settings menu:
+
+| Group | Item | What it is |
+|---------|------|------------|
+| **Developers** | **API keys** | The per-program secret key for server-side tracking calls, and the line for an AI coding agent |
+| **Team** | **Members** | Who can work on the program |
+| **Billing** | **Invoices** | Platform-fee invoices |
+| **Personal** | **Your account** | Your own profile and sign-in, shared with the partner side |
+| **Explore** | **Refer a brand** | Your link for referring brands to Affitor |
 
 ## Step 1: Edit program terms after launch
 
 Programs evolve — rates get adjusted, branding gets refreshed, approval policies tighten or loosen. None of this requires recreating the program.
 
-1. Select **Settings** in the left menu of your brand workspace.
-2. Choose the section you want to change: **Commission** for the default rate and hold period, **Approval mode** to switch between manual review and auto-accept, **Business Profile** for the program name, website, and logo, or **Branding** for your marketplace page.
-3. Make the change and save the section.
+1. In the program menu, choose **All settings**.
+2. Open the page you want to change: **Commission** for the rate, hold period and how new partners join, or **Business** for the program name, website, logo and branding.
+3. Make the change and save.
 
 :::tip
 
-The **Commission** section sets your program-wide default. To pay different rates to different sets of partners, [organize partners into groups](/docs/brand/groups) — each group carries its own commission policy.
+The **Commission** page sets your program-wide default. To pay different rates to different sets of partners, [organize partners into groups](/docs/brand/groups) — each group carries its own commission policy.
 
 :::
 
@@ -50,10 +58,10 @@ The **Commission** section sets your program-wide default. To pay different rate
 
 Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI's tracking setup, and AI agents all use this same key. CLI commands that create or list programs act as your account instead, and authenticate with your CLI login.
 
-1. Select **Settings** in the left menu.
-2. Under **Developer**, select **API Key**.
+1. In the program menu, choose **All settings**.
+2. Under **Developers**, select **API keys**.
 
-The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to an owner's **Generate** or **Regenerate** action on the **API Key** tab. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
+The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to an owner's **Generate** or **Regenerate** action on the **API keys** page. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
 
 Store the key as a server-side environment variable:
 
@@ -64,7 +72,7 @@ AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 
 :::note
 
-The **API Key** section also gives you a one-line instruction for an AI coding agent. It points the agent at [skill.md](https://affitor.com/docs/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/docs/api-reference/agent-integration).
+The **API keys** page also gives you a one-line instruction for an AI coding agent, under **Set up with your AI agent**. It points the agent at [skill.md](https://affitor.com/docs/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/docs/api-reference/agent-integration).
 
 :::
 
@@ -81,7 +89,7 @@ The two keys never overlap. Regenerating replaces the key in place, and you rece
 :::
 
 1. Line up every place `AFFITOR_API_KEY` is stored — deployment environment, secret manager, CI — so you can update them straight away.
-2. In **Settings** → **API Key**, regenerate the key. The old key stops working at that moment.
+2. In **Settings** → **API keys**, regenerate the key. The old key stops working at that moment.
 3. Copy the new key from the one-time reveal, update those places, and redeploy.
 
 ## Verify it worked
