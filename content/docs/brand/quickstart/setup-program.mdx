@@ -69,7 +69,7 @@ The **Tracking** step (**Install tracking**) puts the click tracker on your site
 
 - **Your agent**: select **Connect your AI** to connect Claude, Cursor or another AI app and let it add the tracker. Shown only when AI agents are available for your program.
 - **Script tag**: paste the tag in `<head>` on every page of your site.
-- **npm**: install the SDK and wrap your root layout.
+- **npm**: install the SDK and wrap your app in the provider.
 
 The snippets on the page already carry your Program ID:
 
@@ -86,22 +86,34 @@ The snippets on the page already carry your Program ID:
 npm install @affitor/sdk
 ```
 
+On Next.js App Router, put the provider in a client component and render it once in your layout:
+
 ```tsx
-// app/layout.tsx (or your root layout)
+// app/providers.tsx (a client component)
+'use client';
 import { AffitorProvider } from '@affitor/sdk/react';
 
-export default function RootLayout({ children }) {
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <AffitorProvider programId="YOUR_PROGRAM_ID">{children}</AffitorProvider>;
+}
+```
+
+```tsx
+// app/layout.tsx (Next.js App Router): render it once around your app
+import { Providers } from './providers';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html>
+    <html lang="en">
       <body>
-        <AffitorProvider programId="YOUR_PROGRAM_ID">
-          {children}
-        </AffitorProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
 ```
+
+The provider runs in the browser, so it lives in a client component: in the App Router, `layout.tsx` is a Server Component. With the Pages Router, wrap your app in `AffitorProvider` in `pages/_app.tsx`.
 
 Below the snippets, **Tracker on** your site shows **Waiting for the first visit**, **Tracker not found on your site yet**, or **First click** and how long ago it arrived. **Check now** asks Affitor to look for the tracker on your website again. Nothing is saved on this step: **Continue** turns on after the first click, and **Skip for now** moves on to Payments.
 
