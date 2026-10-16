@@ -1,6 +1,8 @@
 ---
 title: Track Click
 description: Record an affiliate click event when a visitor lands via a referral link
+kind: reference
+last_updated: 2026-10-02
 ---
 
 `POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter, creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
