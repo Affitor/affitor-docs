@@ -1281,3 +1281,9 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   .quad-anim .chip-pop,
   .quad-anim.in .chip-pop { transform: none; opacity: 1; animation: none; }
 }
+
+/* <AgentPrompt>: a prompt line wraps rather than scrolls sideways. */
+.docs-agent-prompt .docs-code-group-body pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -13,6 +13,7 @@ import { RecommendedPath } from '@/components/mdx/recommended-path';
 import { VerifySuccess } from '@/components/mdx/verify-success';
 import { ParamList, ParamField } from '@/components/mdx/param-field';
 import { CodeGroup } from '@/components/mdx/code-group';
+import { AgentPrompt } from '@/components/mdx/agent-prompt';
 import { ResponseTabs } from '@/components/mdx/response-tabs';
 import { Callout } from '@/components/mdx/callout';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
@@ -39,6 +40,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ParamList,
     ParamField,
     CodeGroup,
+    AgentPrompt,
     ResponseTabs,
     Callout,
     // Changelog entries (content/changelog)
