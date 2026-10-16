@@ -55,6 +55,18 @@ export function changelogMove(path: string, host: string | null): string | null 
   return null;
 }
 
+// Pages that left the docs for another affitor.com page: absolute and permanent on every host,
+// the .md twin included (the dashboard has no twins, so it lands on the page). The Refer Program
+// terms have one copy at /legal/refer-program since 16/10/2026 (dashboard src/content/legal).
+const MOVED_OUT: Record<string, string> = {
+  '/docs/partners/refer-program': 'https://affitor.com/legal/refer-program',
+};
+
+export function movedOut(path: string, host: string | null): string | null {
+  const page = path.replace(/(?:\.md|\/)$/, '');
+  return MOVED_OUT[host === DOCS_HOST && !/^\/docs(?:\/|$)/.test(page) ? `/docs${page}` : page] ?? null;
+}
+
 /** The current path for a renamed page or its .md twin, or null when nothing changed. */
 export function currentPath(path: string): string | null {
   const md = path.endsWith('.md');
@@ -140,8 +152,8 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
   }
 
   const host = req.headers.get('host');
-  const changelog = changelogMove(req.nextUrl.pathname, host);
-  if (changelog) return NextResponse.redirect(`${changelog}${req.nextUrl.search}`, 301);
+  const elsewhere = changelogMove(req.nextUrl.pathname, host) ?? movedOut(req.nextUrl.pathname, host);
+  if (elsewhere) return NextResponse.redirect(`${elsewhere}${req.nextUrl.search}`, 301);
 
   if (host === DOCS_HOST) return docsHost(req);
 
