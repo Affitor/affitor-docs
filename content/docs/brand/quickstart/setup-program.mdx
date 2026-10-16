@@ -42,8 +42,8 @@ Complete these steps before you invite partners or install tracking.
 
 | Mode | Description | Best for |
 |------|-------------|----------|
-| **Manual review** | review each partner application | quality control, B2B motions |
-| **Auto-approve** | approve applicants automatically | higher-volume programs |
+| **Review each** | review each partner application | quality control, B2B motions |
+| **Approve all** | approve applicants automatically | higher-volume programs |
 
 ### Commission details
 
@@ -182,16 +182,16 @@ Once the program is live, share your partner recruitment link so affiliates can 
 
 ## Verify it worked
 
-Reload **Settings** and confirm each choice survived the save — every tab (business details, approval mode, commission) saves separately:
+Reload **Settings** and confirm each choice survived the save. Each page (Business, Commission) saves on its own:
 
 <VerifySuccess
   dashboard={[
     "Settings → Business shows your company name, website URL, and logo",
     "Settings → Commission shows your rate and duration, and Approve all or Review each, whichever you picked",
-    "The Quick start checklist in the top bar marks the program-details step complete, leaving tracking and sharing",
+    "Until the program is live, Quick start in the top bar shows how many setup steps are left",
   ]}
   ifNotWorking={[
-    "A tab shows old values? Each tab saves on its own — reopen it, re-enter, and save that tab again",
+    "A page shows old values? Each page saves on its own: reopen it, re-enter, and save that page again",
     "Set up with the CLI instead? Run npx affitor status from your project root — it prints your program card (name, domain, Program ID) plus Stripe state, and should match what Settings shows",
     "Tracking steps still show as pending? That's expected — integration status is recalculated from real click, lead, and payment events, which you'll send in the tracking quickstart next",
   ]}

@@ -56,7 +56,7 @@ A program is given a key the moment it is created, but creating a program does n
 AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 ```
 
-After that the tab shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/docs/brand/settings).
+After that the page shows a masked value with only the last few characters visible. If you no longer have the current value stored anywhere, you cannot recover it: generate a new one instead. The full click-path, including the one-time reveal, is in [Manage program settings and your API key](/docs/brand/settings).
 
 Program read endpoints never return the key. They expose `api_token_masked` only, so a leaked read response cannot be used to forge tracking calls. The value itself is returned in exactly one place: the response to the owner's own regenerate request.
 
