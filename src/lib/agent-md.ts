@@ -64,8 +64,10 @@ export type AgentPage = {
   type: 'doc' | 'blog' | 'changelog';
   url: string;
   markdownUrl: string;
-  /** Real content date from frontmatter. Omitted for docs — they have none. */
+  /** Real content date from frontmatter: `last_updated` for docs, `updated ?? date` for posts. */
   updated?: string;
+  /** Docs only: the page kind (docs standard §3). */
+  kind?: string;
 };
 
 function getDocMetadata(page: DocPage): AgentPage {
@@ -76,6 +78,8 @@ function getDocMetadata(page: DocPage): AgentPage {
     type: 'doc',
     url: `${SITE_URL}${page.url}`,
     markdownUrl: `${DOCS_URL}/${id}.md`,
+    kind: page.data.kind,
+    updated: page.data.last_updated,
   };
 }
 
@@ -120,7 +124,7 @@ export function getAgentPages(): AgentPage[] {
 
 export function getDocArticle(page: DocPage) {
   const metadata = getDocMetadata(page);
-  // Docs have no trustworthy content date — omit dateModified rather than invent one.
+  // dateModified is the page's own last_updated, set by whoever changed its content.
   return {
     id: metadata.id,
     url: metadata.url,
@@ -131,6 +135,7 @@ export function getDocArticle(page: DocPage) {
       identifier: metadata.id,
       headline: page.data.title,
       description: page.data.description,
+      dateModified: metadata.updated,
     }).replace(/</g, '\\u003c'),
   };
 }
@@ -147,6 +152,7 @@ export async function render(slug: string[]): Promise<string | null> {
     type: page.type,
     url: page.url,
   };
+  if (page.kind) fields.kind = page.kind;
   if (page.updated) fields.updated = page.updated;
   const frontmatter = Object.entries(fields)
     .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)

@@ -21,15 +21,26 @@ const admonitionTypeMap = {
   success: 'success',
 };
 
-export const docs = defineDocs({
-  dir: 'content/docs',
-});
-
-// YAML reads an unquoted 2026-09-20 as a Date; keep every changelog date a YYYY-MM-DD string.
+// YAML reads an unquoted 2026-09-20 as a Date; keep every docs and changelog date a YYYY-MM-DD string.
 const day = z.preprocess(
   (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value),
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 );
+
+// Docs page kinds (docs standard STANDARD.md §3): each kind has its template. last_updated is the
+// day the page's content last changed, set by whoever edits it; it drives "Last updated", the .md
+// twin's `updated`, dateModified and the sitemap lastmod.
+const DOC_KINDS = ['concept', 'quickstart', 'guide', 'reference', 'terms', 'explainer', 'faq'] as const;
+
+export const docs = defineDocs({
+  dir: 'content/docs',
+  docs: {
+    schema: frontmatterSchema.extend({
+      kind: z.enum(DOC_KINDS),
+      last_updated: day,
+    }),
+  },
+});
 
 // affitor.com/changelog (src/app/changelog). One file per entry; the slug is the file name.
 // Admonitions (`:::warning`) are banned here: check-agent-surface.mjs fails on them.

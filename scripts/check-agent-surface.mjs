@@ -13,6 +13,8 @@ const APP = join(ROOT, '.next/server/app');
 const ORIGIN = 'https://affitor.com';
 const SITE = `${ORIGIN}/docs`;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+// Mirror of DOC_KINDS in source.config.ts.
+const DOC_KINDS = ['concept', 'quickstart', 'guide', 'reference', 'terms', 'explainer', 'faq'];
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const read = (path) => readFileSync(path, 'utf8');
 // The .md twin URL: the docs landing (/docs) has /docs/index.md, every other page <url>.md.
@@ -77,10 +79,21 @@ function inventory() {
     },
   }).getPages().map((page) => {
     const id = page.url.replace(/^\/docs\/?/, '') || 'index';
-    assert.equal(page.data.date, undefined, `${id}: docs must not invent a date field`);
-    assert.equal(page.data.updated, undefined, `${id}: docs must not invent an updated field`);
+    // The content date is last_updated (set by whoever edits the page), never date/updated.
+    assert.equal(page.data.date, undefined, `${id}: docs use last_updated, not date`);
+    assert.equal(page.data.updated, undefined, `${id}: docs use last_updated, not updated`);
+    assert.ok(DOC_KINDS.includes(page.data.kind), `${id}: kind must be one of ${DOC_KINDS.join(', ')}`);
+    assert.equal(typeof page.data.last_updated, 'string', `${id}: missing last_updated`);
+    assert.match(page.data.last_updated, ISO_DAY, `${id}: last_updated must be YYYY-MM-DD`);
+    if (page.data.kind === 'terms') {
+      // A terms page states "Last updated: <Month D, YYYY>" in its header; it must be last_updated.
+      const [y, m, d] = page.data.last_updated.split('-').map(Number);
+      const long = `${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][m - 1]} ${d}, ${y}`;
+      assert.ok(page.data.raw.includes(`Last updated: ${long}`), `${id}: terms header must say "Last updated: ${long}" (last_updated)`);
+    }
     return {
-      id, type: 'doc', url: `${ORIGIN}${page.url}`,
+      id, type: 'doc', url: `${ORIGIN}${page.url}`, kind: page.data.kind,
+      updated: page.data.last_updated, sourceDate: page.data.last_updated,
       body: markdown(page.data, id), title: page.data.title, description: page.data.description,
     };
   });
@@ -192,12 +205,11 @@ function checkHtml(page, route) {
   const schema = schemas[0];
   for (const [key, expected] of Object.entries({
     '@context': 'https://schema.org', '@id': page.url, identifier: page.id,
-    headline: page.title, description: page.description,
+    headline: page.title, description: page.description, dateModified: page.updated,
   })) {
     assert.equal(typeof schema[key], 'string', `${route}: missing TechArticle ${key}`);
     assert.equal(schema[key], expected, `${route}: TechArticle ${key}`);
   }
-  assert.equal('dateModified' in schema, false, `${route}: docs TechArticle must omit dateModified`);
 }
 
 function main() {
@@ -257,26 +269,18 @@ function main() {
     const htmlLastmod = dates.get(page.url);
     const mdLastmod = dates.get(markdownUrl(page));
 
-    if (page.type === 'doc') {
-      assert.equal(page.updated, undefined, `${page.id}: docs inventory must omit updated`);
-      assert.equal('updated' in metadata, false, `${page.id}: docs twin must omit updated`);
-      assert.equal(htmlLastmod, undefined, `${page.id}: docs sitemap HTML must omit lastmod`);
-      assert.equal(mdLastmod, undefined, `${page.id}: docs sitemap .md must omit lastmod`);
-      assert.deepEqual(metadata, { id: page.id, type: page.type, url: page.url }, `${page.id}: twin metadata`);
-    } else {
-      assert.equal(typeof page.sourceDate, 'string', `${page.id}: missing source frontmatter date`);
-      assert.equal(metadata.updated, page.sourceDate, `${page.id}: twin updated must equal source frontmatter`);
-      assert.equal(htmlLastmod, page.sourceDate, `${page.id}: sitemap lastmod must equal source frontmatter`);
-      assert.equal(mdLastmod, page.sourceDate, `${page.id}: .md sitemap lastmod must equal source frontmatter`);
-      assert.equal(metadata.updated, htmlLastmod, `${page.id}: twin updated must equal sitemap lastmod`);
-      assert.deepEqual(
-        metadata,
-        { id: page.id, type: page.type, url: page.url, updated: page.sourceDate },
-        `${page.id}: twin metadata`,
-      );
-      assert.match(metadata.updated, ISO_DAY, `${page.id}: updated must be YYYY-MM-DD`);
-      assert.doesNotMatch(metadata.updated, BUILD_TIME, `${page.id}: updated must not be build/mtime ISO`);
-    }
+    assert.equal(typeof page.sourceDate, 'string', `${page.id}: missing source frontmatter date`);
+    assert.equal(metadata.updated, page.sourceDate, `${page.id}: twin updated must equal source frontmatter`);
+    assert.equal(htmlLastmod, page.sourceDate, `${page.id}: sitemap lastmod must equal source frontmatter`);
+    assert.equal(mdLastmod, page.sourceDate, `${page.id}: .md sitemap lastmod must equal source frontmatter`);
+    assert.equal(metadata.updated, htmlLastmod, `${page.id}: twin updated must equal sitemap lastmod`);
+    assert.deepEqual(
+      metadata,
+      { id: page.id, type: page.type, url: page.url, ...(page.kind ? { kind: page.kind } : {}), updated: page.sourceDate },
+      `${page.id}: twin metadata`,
+    );
+    assert.match(metadata.updated, ISO_DAY, `${page.id}: updated must be YYYY-MM-DD`);
+    assert.doesNotMatch(metadata.updated, BUILD_TIME, `${page.id}: updated must not be build/mtime ISO`);
 
     assert.equal(twin.slice(header[0].length), page.body, `${page.id}: twin differs from original source body`);
     const position = corpus.indexOf(twin);

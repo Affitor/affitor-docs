@@ -1,6 +1,8 @@
 ---
 title: API key reference
 description: Which credential each Affitor call needs, where the program API key lives, how to replace it, and how mandatory rotation is signalled.
+kind: reference
+last_updated: 2026-09-20
 ---
 
 Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key the integration guides, the SDKs, the CLI's tracking setup, and the agent skill all refer to. CLI commands that create or list programs are different: they act as your account, so they authenticate with your CLI login rather than with this key.

@@ -4,6 +4,7 @@ import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page
 import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
+import { formatDay } from '@/lib/changelog';
 
 const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
 
@@ -28,6 +29,10 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      {/* Terms pages state their own "Last updated" in the header line (checked to match). */}
+      {page.data.kind !== 'terms' ? (
+        <p className="-mt-4 mb-2 text-sm text-fd-muted-foreground">Last updated {formatDay(page.data.last_updated)}</p>
+      ) : null}
       <DocsBody>
         <MDX components={useMDXComponents({})} />
       </DocsBody>
