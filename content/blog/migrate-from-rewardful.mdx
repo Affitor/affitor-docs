@@ -1,0 +1,139 @@
+---
+title: "How to Migrate from Rewardful to Affitor"
+description: "Move from Rewardful to Affitor step by step: set up tracking, invite partners, run both tools safely, then retire Rewardful. And what is missing."
+date: '2026-10-12'
+updated: '2026-10-12'
+category: Guide
+authors: ["Son Piaz, Founder"]
+readTime: "8 min read"
+howto: true
+faq:
+  - q: "Can Affitor import my partners and sales from Rewardful automatically?"
+    a: "No, not today. You invite partners by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Rewardful, and Affitor starts counting from the day each partner moves."
+  - q: "Will my partners' existing Rewardful links keep working?"
+    a: "They keep working in Rewardful for as long as the Rewardful script stays on your site. Affitor does not read Rewardful's ?via= links. Each partner gets a new Affitor link that uses ?aff=, so ask partners to update the links they have posted."
+  - q: "Can I run Rewardful and Affitor at the same time?"
+    a: "Yes, and for most programs that is the safe way to switch. Set up Affitor's sale tracking first, then keep each partner on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool."
+  - q: "How long should I run both tools?"
+    a: "At least as long as your Rewardful cookie window, which is 60 days by default and configurable per campaign. That lets referrals already in flight finish in Rewardful while new ones land in Affitor."
+  - q: "What happens to recurring commissions my partners earn in Rewardful?"
+    a: "They stop when you disconnect Rewardful from Stripe, and Affitor cannot pick them up because it does not import history. Either keep Rewardful connected until those commissions run out, or pay them yourself, and tell partners which one you chose."
+---
+
+To migrate from Rewardful to Affitor, set up Affitor's sale tracking first, then invite your partners by name and email and give each a new `?aff=` link. Run both tools through Rewardful's cookie window with each partner on one tool only, then disconnect Rewardful from Stripe and remove its script. Affitor does not import history yet.
+
+I wrote this as the guide I would want if I were the one switching: what each step involves, where things can go wrong, and what Affitor does not do yet. We build Affitor, so read the last part as carefully as the rest.
+
+## Before you start
+
+You need admin access to Rewardful, an Affitor account, and access to your site code and Stripe. Plan for the switch to take at least one full cookie window. Rewardful's default window is 60 days, and you can change it per campaign, so check yours before you set a date.
+
+Make one decision up front: will you move every partner at once, or move them in batches? Both work. Batches are easier to watch, and they make it easier to keep each partner on one tool at all times.
+
+## Step 1: Export your partners from Rewardful
+
+Pull your partner list out of Rewardful and keep it as a spreadsheet. You will use it to invite partners and, later, to check that nobody was left behind. If you would rather script the export than copy it by hand, [Rewardful's REST API](https://developers.rewardful.com/) has an endpoint that lists affiliates.
+
+For each partner, capture at least their name, email, commission rate, and unpaid balance. Affitor needs only the name and email. The other columns are for you: unpaid balances get paid out of Rewardful, not Affitor.
+
+## Step 2: Set up Affitor's sale tracking before anyone moves
+
+Create your program on Affitor and set the commission to match what partners earn today. Then connect sale tracking now, before you invite a single partner, so every sale from a partner who moves is recorded from their first day on Affitor.
+
+Pick one sale path for the program and stay on it:
+
+- **Stripe path.** You keep charging in your own Stripe account, connect it to Affitor, and pass the Affitor metadata on Checkout. Follow [Payment tracking](/docs/brand/tracking/payment-tracking-stripe).
+- **Server-side path.** Your backend reports each sale to Affitor when the payment succeeds. Follow the [quickstart](/docs/getting-started/quickstart).
+
+Do not run both paths for the same program. Add the Affitor tracking script to your site next to the Rewardful script, and run one test purchase end to end before you move on.
+
+## Step 3: Invite your partners to Affitor
+
+Open **Partners**, click **Invite partners**, and paste the emails or import a CSV with `name,email` columns. You can invite up to 50 people per batch. Each partner gets an email with your program terms and an Accept button. They sign in, accept, and get their Affitor link right away. Invites expire after 30 days, so follow up with anyone who has not accepted. Details are in [Inviting partners](/docs/brand/quickstart/inviting-partners).
+
+This is a real ask of your partners. Tell them before the invite arrives why you are moving and what changes for them.
+
+## Step 4: Give every partner a new link
+
+Rewardful links look like `yoursite.com/?via=jane`. Affitor links look like `yoursite.com/?aff=CODE`. Affitor does not read the `?via=` parameter, so a partner's old link only counts in Rewardful.
+
+Ask each partner to replace the links they control: their bio, their newsletter footer, their pinned post. Old links buried in videos and old articles will keep crediting through Rewardful until you remove its script in Step 7, and after that they stop tracking.
+
+## Step 5: Run both tools through the cookie window
+
+Keep Rewardful running while partners move. Partners who have moved send traffic with `?aff=`, partners who have not moved yet keep using `?via=`, and because the two tools use different parameters, each one only tracks its own links.
+
+Run like this for at least one full Rewardful cookie window. Referrals that started in Rewardful get the time to convert there, and new referrals from moved partners land in Affitor, because its sale tracking has been live since Step 2. The next section covers the rules that keep this safe.
+
+## Step 6: Disconnect Rewardful from Stripe
+
+When the window has passed and every partner who is coming has moved, settle the last Rewardful payout run. Disconnect Rewardful from Stripe only once the recurring commissions on customers referred before the switch are settled, or keep it connected until they run out (see the note below).
+
+:::note
+
+Disconnecting Rewardful from Stripe also ends the recurring commissions partners still earn on customers they referred before the switch. Affitor cannot take those over, because it does not import history. Decide this before you disconnect: either keep Rewardful connected until those commissions run out, or pay them yourself from your own records. Then tell your partners which one you chose.
+
+:::
+
+## Step 7: Remove the Rewardful script
+
+Remove the Rewardful script from your site last. From this point, any Rewardful link still out in the wild stops tracking, so send partners one more reminder to update old links before you do it. Cancel your Rewardful plan only after you disconnect it from Stripe in Step 6 and the final payouts, including any remaining recurring commissions, are done.
+
+## Run both in parallel without paying twice
+
+Running two affiliate tools at once is normal during a move. It is safe when you follow one rule: **each partner is on one tool at a time.** Do not enroll the same partner in both Rewardful and Affitor.
+
+Here is what can go wrong if you do not:
+
+- **The same partner is active in both tools.** They post both links, a customer clicks one and later the other, and each tool records the sale. You pay that partner twice for one customer.
+- **Two partners claim the same customer.** A customer clicks partner A's Rewardful link, then partner B's Affitor link, then buys. Each tool credits its own partner. Affitor does not check Rewardful's records, and Rewardful does not check Affitor's.
+- **The numbers will not match.** Two tools with different windows and rules will credit some sales differently. That is expected, not a bug. Reconcile at the end of each month so every sale has a commission in at most one tool.
+
+Affitor ignores Stripe sales it cannot connect to one of its own partners, so it creates no commission and charges no fee on them. That keeps Rewardful's sales out of Affitor, but it does not stop the cases above, which is why the one-partner-one-tool rule matters.
+
+## What Affitor does not do yet
+
+I would rather you hear this from me than find it on cutover day.
+
+- **Partners are invited, not imported.** Affitor does not connect to Rewardful to pull your partners, customers, or referrals. You invite partners by name and email, and each partner accepts.
+- **Old links stay with Rewardful.** Affitor only tracks `?aff=` links. Rewardful's `?via=` links keep working only while the Rewardful script stays installed.
+- **History stays in Rewardful.** Past sales, clicks, unpaid commissions, and recurring commissions on existing customers are not moved. Settle them in Rewardful or pay them yourself.
+- **Duplicates across tools are up to you.** Affitor cannot see Rewardful's data, so keeping each partner on one tool is your call, and the software does not enforce it.
+
+## What it costs
+
+Affitor is free until your first $10k in affiliate revenue, then 3.5%. The $10k is counted per program, and there is no monthly subscription or setup fee, so you can run both tools during the move without paying for a second plan. The [pricing model](/docs/getting-started/pricing-performance-model) explains how the fee is counted.
+
+## FAQ
+
+### Can Affitor import my partners and sales from Rewardful automatically?
+
+No, not today. You invite partners by name and email (paste or CSV, up to 50 per batch), and each partner accepts the invite. Past referrals, sales, and unpaid commissions stay in Rewardful, and Affitor starts counting from the day each partner moves.
+
+### Will my partners' existing Rewardful links keep working?
+
+They keep working in Rewardful for as long as the Rewardful script stays on your site. Affitor does not read Rewardful's `?via=` links. Each partner gets a new Affitor link that uses `?aff=`, so ask partners to update the links they have posted.
+
+### Can I run Rewardful and Affitor at the same time?
+
+Yes, and for most programs that is the safe way to switch. Set up Affitor's sale tracking first, then keep each partner on one tool at a time. Do not enroll the same partner in both, or the same customer can earn a commission in each tool.
+
+### How long should I run both tools?
+
+At least as long as your Rewardful cookie window, which is 60 days by default and configurable per campaign. That lets referrals already in flight finish in Rewardful while new ones land in Affitor.
+
+### What happens to recurring commissions my partners earn in Rewardful?
+
+They stop when you disconnect Rewardful from Stripe, and Affitor cannot pick them up because it does not import history. Either keep Rewardful connected until those commissions run out, or pay them yourself, and tell partners which one you chose.
+
+## What's next
+
+Start with the partners most likely to accept quickly, move them first, and watch one cookie window before you move the rest.
+
+[Launch your program free](https://affitor.com), or read [Inviting partners](/docs/brand/quickstart/inviting-partners) first.
+
+## Related guides
+
+- [The best Rewardful alternatives for SaaS](/blog/rewardful-alternatives)
+- [Tolt vs Rewardful](/blog/tolt-vs-rewardful)
+- [How to migrate from Tolt to Affitor](/blog/migrate-from-tolt)
