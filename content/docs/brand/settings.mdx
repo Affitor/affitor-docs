@@ -2,7 +2,7 @@
 title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 kind: guide
-last_updated: 2026-10-15
+last_updated: 2026-10-16
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and Settings also hold the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -28,10 +28,10 @@ Settings belong to the program selected in the program menu. Open the program me
 
 | Page | What you edit there |
 |---------|--------------------|
-| **Business** | Business name, website, program URL (your public page), tagline and logo, with a **Branding** section for how your program page looks in the marketplace |
+| **Business** | Business name, website, program URL (your public page), tagline and logo, with a **Branding** section for how your program page looks in the marketplace. **Program ID** is shown read-only with **Copy** |
 | **Commission** | Commission type, rate and duration, attribution window, hold period, and how new partners join (**Approve all** or **Review each**) |
-| **Tracking** | Click and signup (lead) tracking on your website |
-| **Payments** | How sales are counted: Stripe connected, or sales sent from your server |
+| **Tracking** | Click and signup (lead) tracking on your website, and the **Partner link parameter** (`?via=` or `?aff=`) |
+| **Payments** | How sales are counted: two cards, **Stripe** and **Server API**, each with its own state. Either one is enough |
 | **Go live** (**Status** once the program is live) | What the program still needs to go live, and its live state |
 
 The rest of the Settings menu:
@@ -42,7 +42,7 @@ The rest of the Settings menu:
 | **Team** | **Members** | Who can work on the program |
 | **Billing** | **Invoices** | Platform-fee invoices |
 | **Personal** | **Your account** | Your own profile and sign-in, shared with the partner side |
-| **Explore** | **Refer a brand** | Your link for referring brands to Affitor |
+| **Explore** | **Refer a brand** | Your link for referring brands to Affitor, **Invite via email**, and the brands you referred ([how it works](/docs/partners/quickstart/get-your-referral-link#refer-a-brand-to-affitor)) |
 
 ## Step 1: Edit program terms after launch
 

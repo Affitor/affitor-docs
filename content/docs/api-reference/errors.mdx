@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-16
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -501,7 +501,7 @@ The tracking API (`api.affitor.com`) must allow your site's origin for browser-m
 
 ### Attribution window edge cases
 
-The attribution window defaults to 60 days and is set per program (`cookie_window_days`). The actual value is returned in the click response:
+The attribution window defaults to 60 days and is set per program (`attribution_window_days`, shown as **Attribution window** in the dashboard). The click response returns the value as `cookie_window_days`:
 
 ```json
 {

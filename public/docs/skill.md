@@ -65,7 +65,7 @@ npm i @affitor/sdk
 
 ## 4. Click tracking (browser)
 
-Load the tracker on **every page** so `?aff=<code>` visits are captured into the `affitor_click_id` first-party cookie. **Always pass `API_BASE`** when it is not prod.
+Load the tracker on **every page** so `?via=<code>` and `?aff=<code>` visits are captured into the `affitor_click_id` first-party cookie. **Always pass `API_BASE`** when it is not prod.
 
 ### 4a. Next.js — App Router
 

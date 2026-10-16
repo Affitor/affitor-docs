@@ -2,7 +2,7 @@
 title: Set Up Your Program
 description: Complete the five setup steps (Business, Commission, Tracking, Payments, Go live) and publish your program on the marketplace.
 kind: quickstart
-last_updated: 2026-10-15
+last_updated: 2026-10-16
 ---
 
 Setup takes your program from created to live in five steps: **Business**, **Commission**, **Tracking**, **Payments** and **Go live**. It opens at the Business step as soon as you [create your program](/docs/brand/quickstart/create-account), at `affitor.com/brand/setup/business`.
@@ -11,7 +11,7 @@ Setup takes your program from created to live in five steps: **Business**, **Com
   items={[
     { label: 'Who this is for', value: 'Brand owners and operators' },
     { label: 'Time required', value: '10–15 minutes' },
-    { label: 'Prerequisites', value: 'A brand account with a program. Choosing the payment method needs the program owner.' },
+    { label: 'Prerequisites', value: 'A brand account with a program. Connecting Stripe needs the program owner.' },
     { label: 'Outcome', value: 'Your program is live on the marketplace, with its commission and payments set' },
   ]}
 />
@@ -28,7 +28,7 @@ Setup takes your program from created to live in five steps: **Business**, **Com
 
 The top of each step shows **Step N of 5** and **Save and exit**. **Continue** saves the step and opens the next one. **Save and exit** saves Business or Commission first, then opens that page in Settings; the other steps have nothing to save and open their Settings page directly. On a wide screen the step list sits on the left, where a done step shows a check (Business also shows your website, Commission your rate), and **What partners see** previews your program card on the right.
 
-The same five pages are also **Settings** → **Program settings**, so anything you set here stays editable there. Until the program is live, Program settings shows how many of the five steps are done. After launch the pages have no **Back** or **Continue**: **Business** and **Commission** have **Save**, **Payments** saves when you pick a method, and **Go live** is named **Status**.
+The same five pages are also **Settings** → **Program settings**, so anything you set here stays editable there. Until the program is live, Program settings shows how many of the five steps are done. After launch the pages have no **Back** or **Continue**: **Business** and **Commission** have **Save**, **Payments** has nothing to save, the **Partner link parameter** on **Tracking** saves when you pick it, and **Go live** is named **Status**.
 
 ## Step 1: Describe your business
 
@@ -39,6 +39,7 @@ The **Business** step (**Your business**) sets what partners see first.
 | **Business name** | Yes | 1 to 80 characters |
 | **Website** | Yes | Your product or site URL. `example.com` is saved as `https://example.com` |
 | **Program URL** | Yes | Your public program page, `affitor.com/marketplace/<handle>`. Lowercase letters, numbers and dashes, up to 48 characters. You can change it later |
+| **Program ID** | Shown, not edited | Used by the tracking script, the API and AI agents. **Copy** copies it |
 | **Logo** | No | PNG, JPG or SVG, square, under 5 MB |
 | **Tagline** | No | In Settings only (**Program settings** → **Business**): one line on your marketplace card, up to 160 characters |
 
@@ -67,11 +68,11 @@ The step is done once a sale commission is saved and a **New partners** choice i
 
 The **Tracking** step (**Install tracking**) puts the click tracker on your site. Pick an **Install method**:
 
-- **Your agent**: select **Connect your AI** to connect Claude, Cursor or another AI app and let it add the tracker. Shown only when AI agents are available for your program.
+- **Your agent**: select **Connect your AI** to connect Claude, Cursor or another AI app and let it add the tracker. The last step gives you a prompt to paste to your agent; it first checks that the agent sees this program's ID. Shown only when AI agents are available for your program.
 - **Script tag**: paste the tag in `<head>` on every page of your site.
 - **npm**: install the SDK and wrap your app in the provider.
 
-The snippets on the page already carry your Program ID:
+The snippets on the page already carry your Program ID (also shown on **Business**, with **Copy**):
 
 ```html
 <!-- Include Affitor Tracking Script -->
@@ -89,7 +90,7 @@ npm install @affitor/sdk
 On Next.js App Router, put the provider in a client component and render it once in your layout:
 
 ```tsx
-// app/providers.tsx (a client component)
+// app/affitor-provider.tsx (a client component)
 'use client';
 import { AffitorProvider } from '@affitor/sdk/react';
 
@@ -100,7 +101,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // app/layout.tsx (Next.js App Router): render it once around your app
-import { Providers } from './providers';
+import { Providers } from './affitor-provider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -115,20 +116,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 The provider runs in the browser, so it lives in a client component: in the App Router, `layout.tsx` is a Server Component. With the Pages Router, wrap your app in `AffitorProvider` in `pages/_app.tsx`.
 
-Below the snippets, **Tracker on** your site shows **Waiting for the first visit**, **Tracker not found on your site yet**, or **First click** and how long ago it arrived. **Check now** asks Affitor to look for the tracker on your website again. Nothing is saved on this step: **Continue** turns on after the first click, and **Skip for now** moves on to Payments.
+Below the snippets, **Tracker on** your site shows **Waiting for the first visit**, **Checking…**, **Tracker not found on your site yet**, **Tracker found on** your site, **Receiving events**, **Couldn't load** your site, or **First click** and how long ago it arrived. **Check now** asks Affitor to look for the tracker on your website again; it is gone once a first click arrives. **Continue** turns on once the step is done (see below) or a first click arrives, and **Skip for now** moves on to Payments.
+
+**Partner link parameter** sets how partner links name the partner: `yoursite.com/?via=PARTNER` or `yoursite.com/?aff=PARTNER`. The tracker reads both. Programs created from October 16, 2026 (UTC) use `?via=` unless you pick `?aff=`; older programs keep `?aff=`. If you change it, links partners already shared keep working. If your own server reads the partner code, read both `?aff=` and `?via=`.
 
 The step is done once Affitor finds the tracker on your website or receives real tracking events. Signup tracking is a separate install: see [signup tracking](/docs/brand/tracking/lead-tracking-signup), and [click tracking](/docs/brand/tracking/click-tracking) for the full click guide.
 
 ## Step 4: Connect payments
 
-The **Payments** step (**Connect payments**) sets how Affitor records your sales. Choosing an option saves it right away. Only the program owner can choose the method or connect Stripe; other members see its state and "Only the program owner can connect payments."
+The **Payments** step sets how Affitor records your sales: **Connect Stripe, your server, or both.** It shows two cards, each with its own state, and there is no method to choose. Only the program owner can connect Stripe; other members see "Only the program owner can connect Stripe."
 
-![Setup step 4 of 5, Connect payments: choose Stripe (one click, no checkout code) or the Server API, then connect; a note explains how refunds and chargebacks reverse commissions](/docs/brand/setup-payments.png)
-
-| Option | On the page | What to do |
+| Card | States | What to do |
 |--------|-------------|------------|
-| **Stripe** | One click. No checkout code. | Select **Connect Stripe**. Stripe opens in a new tab; finish there and this page updates when you come back. If you started and did not finish, the button reads **Finish in Stripe**. Once connected, the page shows **Connected** |
-| **Server API** | Your backend sends each sale. | Run the test sale below once from your server. The page shows **Waiting for a test sale from your server** until it arrives, then **Received**. **Check again** reads the status now |
+| **Stripe** | **Not connected**, **Not finished**, **Connected** | Select **Connect Stripe**. Stripe opens in a new tab; finish there and this page updates when you come back. If you started and did not finish, the button reads **Finish in Stripe** |
+| **Server API** | **No sale yet**, **Received** | Select **Send a test sale** to see the call, then run it once from your server. **Check again** reads the status now |
+
+If Stripe is connected and your server has also sent a sale, the page warns that sending the same purchase through both can count it twice: use one source per purchase.
 
 The Server API test sale uses your program API key ([where to find it](/docs/brand/settings#step-2-find-your-api-key)). With `"livemode": false` it is a test sale and creates no commission:
 
@@ -146,11 +149,11 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   }'
 ```
 
-Once payments are connected, **Check Affitor's tracking** offers **Run check**: Affitor sends a test click, signup and sale through your program and shows each as **Matched**, **Not matched**, **Wrong partner** or **Waiting**. It is a pipeline check and does not count toward Go live.
+Once payments are connected, **Check Affitor's tracking** offers **Run check**: Affitor sends a test click, signup and sale through your program and shows each as **Matched**, **Not matched**, **Wrong partner** or **Waiting**. It is a pipeline check: it does not complete either card and does not count toward Go live.
 
 **Refunds and chargebacks**: with Stripe, Affitor reads refunds and disputes from your connected account. With the Server API, report each refund with [Track a refund](/docs/api-reference/track-refund).
 
-The step is done when Stripe is connected, or, with the Server API, when Affitor has received a sale from your server. **Skip for now** moves on to Go live, which shows what is still missing.
+The step is done when either card is: Stripe is connected, or Affitor has received a sale from your server. **Skip for now** moves on to Go live, which shows what is still missing.
 
 ## Step 5: Go live
 
@@ -165,7 +168,7 @@ The step is done when Stripe is connected, or, with the Server API, when Affitor
 
 A row that is not done has **Fix** (**Set up** for click tracking), which opens its step. The page also shows the address your program page opens at. **Go live** turns on once the three required rows are done, and Affitor checks them again when you select it.
 
-Payments counts as connected in one of two ways, matching the method you chose on the **Payments** step:
+Payments counts as connected when either card on the **Payments** step is done:
 
 - **Stripe**: your Stripe account is connected to the program.
 - **Server API**: your server has sent at least one sale for this program to `POST /api/v1/track/sale`. A test sale counts (send it with `"livemode": false`), so you can go live before your first real customer. **Run check** does not count; the sale has to come from your server.

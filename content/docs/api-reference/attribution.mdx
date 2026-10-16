@@ -2,7 +2,7 @@
 title: Attribution Mechanics
 description: How Affitor assigns credit to partners — the cookie, the click ID, the attribution windows, and what happens on re-click.
 kind: concept
-last_updated: 2026-09-24
+last_updated: 2026-10-16
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -25,7 +25,7 @@ Program settings have no option for last-click or multi-touch (linear) credit. C
 
 ## The `affitor_click_id` cookie
 
-When a visitor lands on a URL containing `?aff=<code>`, the SDK calls `POST /api/v1/track/click` and stores two first-party cookies:
+When a visitor lands on a URL containing `?aff=<code>` or `?via=<code>` (the program's **Partner link parameter**; `?aff=` wins if both are present), the SDK calls `POST /api/v1/track/click` and stores two first-party cookies:
 
 | Cookie | Purpose |
 |--------|---------|
@@ -69,11 +69,11 @@ If a visitor already has an `affitor_click_id` cookie and clicks a **different**
 
 | Scenario | Outcome |
 |----------|---------|
-| No existing cookie, `?aff=` present | New click tracked, new customer created, new `affitor_click_id` written |
+| No existing cookie, `?aff=` or `?via=` present | New click tracked, new customer created, new `affitor_click_id` written |
 | Same partner link clicked again | Existing cookie reused — no new click event |
 | Different partner link clicked | New click counted for the new partner; the customer and its `click_id` stay with the original partner |
-| No `?aff=` in URL, cookie present | Existing attribution restored from cookie silently |
-| No `?aff=` in URL, no cookie | No `click_id`. A lead call without a `click_id` or a known `customer_key` returns `400` and nothing is recorded |
+| No partner parameter in URL, cookie present | Existing attribution restored from cookie silently |
+| No partner parameter in URL, no cookie | No `click_id`. A lead call without a `click_id` or a known `customer_key` returns `400` and nothing is recorded |
 
 ---
 
