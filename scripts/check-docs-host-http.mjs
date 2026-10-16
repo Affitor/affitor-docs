@@ -51,6 +51,10 @@ const ALWAYS = [
   [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml'],
   [PROXY, '/changelog/no-such-entry', 404, null],
   [PROXY, '/docs/changelog', 301, 'https://affitor.com/changelog'],
+  // The Refer Program terms moved to affitor.com/legal/refer-program (16/10/2026).
+  [PROXY, '/docs/partners/refer-program', 301, 'https://affitor.com/legal/refer-program'],
+  [PROXY, '/docs/partners/refer-program.md', 301, 'https://affitor.com/legal/refer-program'],
+  [DOCS, '/partners/refer-program', 301, 'https://affitor.com/legal/refer-program'],
   [PROXY, '/docs/changelog.md', 301, 'https://affitor.com/changelog.md'],
   [PROXY, '/docs/changelog/invite-partners/invite-compose.png', 200, null, 'image/png'],
   [PROXY, '/docs', 200, null, 'text/html'],

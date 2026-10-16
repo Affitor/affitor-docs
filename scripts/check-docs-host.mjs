@@ -106,6 +106,9 @@ function invariants() {
     ['/changelog/rss.xml', 'https://affitor.com/changelog/rss.xml'],
     ['/docs/changelog', 'https://affitor.com/changelog'],
     ['/docs/changelog.md', 'https://affitor.com/changelog.md'],
+    ['/partners/refer-program', 'https://affitor.com/legal/refer-program'],
+    ['/partners/refer-program.md', 'https://affitor.com/legal/refer-program'],
+    ['/docs/partners/refer-program', 'https://affitor.com/legal/refer-program'],
   ]) check(`docs host ${path} -> 301 ${location}`, redirects(DOCS, path, location));
   // Files that moved under /docs: served in place with a canonical Link.
   for (const [path, internal] of [
@@ -157,6 +160,12 @@ function invariants() {
     // The old docs changelog moved to the zone: absolute, permanent, on every host.
     check(`${host}/docs/changelog -> 301 affitor.com/changelog`, redirects(host, '/docs/changelog', 'https://affitor.com/changelog'));
     check(`${host}/docs/changelog.md -> 301 affitor.com/changelog.md`, redirects(host, '/docs/changelog.md', 'https://affitor.com/changelog.md'));
+    // The Refer Program terms left the docs for affitor.com/legal (one copy), twin included.
+    for (const path of ['/docs/partners/refer-program', '/docs/partners/refer-program.md', '/docs/partners/refer-program?x=1']) {
+      const query = path.includes('?') ? '?x=1' : '';
+      check(`${host}${path.replace('?x=1', '')} -> 301 affitor.com/legal/refer-program${query}`, redirects(host, path, `https://affitor.com/legal/refer-program${query}`));
+    }
+    check(`${host}/docs/partners/referral-rewards is not moved`, passes(host, '/docs/partners/referral-rewards'));
     for (const path of ['/changelog', '/changelog/invite-partners', '/changelog.md', '/changelog/invite-partners.md', '/changelog/rss.xml', '/docs/changelog/invite-partners/invite-compose.png']) {
       check(`${host}${path} is served by the changelog zone (no redirect)`, passes(host, path));
     }
