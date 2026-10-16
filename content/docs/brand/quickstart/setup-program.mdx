@@ -151,7 +151,7 @@ For subscriptions, put the same values in both:
 Payments counts as connected in one of two ways, matching the method you chose on the **Payments** step:
 
 - **Stripe**: your Stripe account is connected to the program.
-- **Server API**: your server has sent at least one sale for this program to `POST /api/v1/track/sale`. A test sale counts (send it with `"livemode": false`), so you can go live before your first real customer. A test sale from the dashboard's verification run does not count; the sale has to come from your server.
+- **Server API**: your server has sent at least one sale for this program to `POST /api/v1/track/sale`. A test sale counts (send it with `"livemode": false`), so you can go live before your first real customer. The Payments step waits for that sale and says when it reached Affitor. The dashboard's **Run check** (Check Affitor's tracking) is a pipeline check and does not count; the sale has to come from your server.
 
 Click and signup tracking are not required to go live. Install them before you invite partners so their traffic is attributed.
 
