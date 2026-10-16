@@ -15,7 +15,7 @@ Before going live, verify each layer in order to confirm that your identifiers, 
 
 ## The synthetic verification chain
 
-Once your tracking code is live on your **public site**, Affitor **detects it automatically** (no debug mode required). **Go live** publishes the program once its business details, commission and payments are set ([what each needs](/docs/brand/quickstart/setup-program#3-go-live)). It does not test your integration, and the sale in the synthetic chain below does not count as your payment connection: with the Server API, the sale that unlocks Go live has to come from your server.
+Once your tracking code is live on your **public site**, Affitor **detects it automatically** (no debug mode required). **Go live** publishes the program once its business details, commission and payments are set ([what each needs](/docs/brand/quickstart/setup-program#step-5-go-live)). It does not test your integration, and the sale in the synthetic chain below does not count as your payment connection: with the Server API, the sale that unlocks Go live has to come from your server.
 
 To check the whole pipeline without a real customer, run the synthetic `click → signup → sale` chain through Affitor's real attribution and commission pipeline, with no real money. Three ways run it:
 
@@ -251,7 +251,7 @@ Treat dashboard status, test-event checks, and Stripe webhook delivery logs as c
 
 ## Before You Send Partner Traffic
 
-Go live itself needs only business details, commission and payments ([Go live](/docs/brand/quickstart/setup-program#3-go-live)). Before partners start sending traffic, confirm all of the following:
+Go live itself needs only business details, commission and payments ([Go live](/docs/brand/quickstart/setup-program#step-5-go-live)). Before partners start sending traffic, confirm all of the following:
 
 - tracker installed on all landing pages
 - signup tracking sends a stable internal customer ID
