@@ -28,7 +28,7 @@ Setup takes your program from created to live in five steps: **Business**, **Com
 
 The top of each step shows **Step N of 5** and **Save and exit**. **Continue** saves the step and opens the next one. **Save and exit** saves Business or Commission first, then opens that page in Settings; the other steps have nothing to save and open their Settings page directly. On a wide screen the step list sits on the left, where a done step shows a check (Business also shows your website, Commission your rate), and **What partners see** previews your program card on the right.
 
-The same five pages are also **Settings** → **Program settings**, so anything you set here stays editable there. Until the program is live, Program settings shows how many of the five steps are done. After launch, each page saves in place with no **Back** or **Continue**, and **Go live** is named **Status**.
+The same five pages are also **Settings** → **Program settings**, so anything you set here stays editable there. Until the program is live, Program settings shows how many of the five steps are done. After launch the pages have no **Back** or **Continue**: **Business** and **Commission** have **Save**, **Payments** saves when you pick a method, and **Go live** is named **Status**.
 
 ## Step 1: Describe your business
 
@@ -160,7 +160,7 @@ Payments counts as connected in one of two ways, matching the method you chose o
 
 Click and signup tracking are not required to go live. Install them before you invite partners so their traffic is attributed.
 
-If the program is paused for an overdue invoice, Go live stays blocked and the page links to **Open billing**; pay the invoice first.
+If the program is paused for an overdue invoice, Go live stays blocked: selecting **Go live** shows the overdue notice with **Open billing**. Pay the invoice first.
 
 Once live, the page says your program is live and shows its link with **Copy link**, plus **Open dashboard** and **Invite partners**.
 
@@ -188,7 +188,7 @@ Open **Settings** → **Program settings** and check that each page kept what yo
   ifNotWorking={[
     "A page shows old values? Business and Commission save only when you select Continue, Save or Save and exit: reopen the page, re-enter, and save again",
     "Go live stays off? Each row that is not done has Fix, which opens the step it needs",
-    "Set up with the CLI instead? Run npx affitor status from your project root. It prints your program card (name, domain, program ID) and Stripe state, which should match Settings",
+    "Set up with the CLI instead? Run npx affitor status from your project root. It prints your program card (name, domain, program ID). For payments, trust the Payments page: it is what Go live counts",
     "Click tracking not done yet? It turns done once Affitor finds the tracker on your website or receives real events, which the tracking quickstart covers next",
   ]}
 />
