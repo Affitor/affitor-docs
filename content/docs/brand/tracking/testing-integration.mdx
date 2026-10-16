@@ -17,7 +17,7 @@ Once your tracking code is live on your **public site**, Affitor **detects it au
 
 To check the whole pipeline without a real customer, run the synthetic `click → signup → sale` chain through Affitor's real attribution and commission pipeline, with no real money. Three ways run it:
 
-- **Send test sale** on the **Payments** step of setup, when you chose Server API
+- **Send test sale** on the **Payments** step of setup, once payments are connected (Stripe connected, or with the Server API, a first sale received from your server)
 - `npx affitor onboard`, which fires the chain and then polls readiness until `integration_verified` is reached (see [CLI commands](/docs/brand/cli/commands))
 - the MCP `affitor_run_verification` tool, followed by `affitor_readiness`
 
