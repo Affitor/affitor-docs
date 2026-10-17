@@ -62,9 +62,11 @@ export const SOCIAL_LINKS = {
   linkedin: 'https://linkedin.com/company/affitor',
 };
 
-// Same prompt as the dashboard's AskAI footer row.
+// Same prompt as the dashboard's AskAI footer row (affiliate-dashboard LandingRedesign/AskAI.tsx, dash#758):
+// two readers, no numbers, Affitor's own sources last.
 export const ASK_AI_PROMPT =
-  'As a SaaS founder, I want to understand how Affitor can help me launch and grow ' +
-  'an affiliate program (recruiting the right partners, tracking sales through Stripe, ' +
-  'and automating commission payouts) without building any of it in-house. ' +
-  "Summarize the highlights from Affitor's website: https://affitor.com and their docs: https://affitor.com/docs";
+  "I'm looking at Affitor (affitor.com), an affiliate platform for SaaS. Explain how it helps " +
+  "a SaaS company launch and run an affiliate program (recruiting partners, tracking sales " +
+  "through Stripe or its API, paying commissions), how its pricing works, and how a creator " +
+  "can earn by promoting SaaS products there. Use Affitor's own sources: " +
+  'https://affitor.com/llms.txt and https://affitor.com/docs';
