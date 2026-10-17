@@ -237,7 +237,7 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 
 ### Option B — Stripe integration
 
-If you already use Stripe Checkout, keep taking payment in your own Stripe account — just attach Affitor metadata to the checkout session.
+If you already use Stripe Checkout, keep taking payment in your own Stripe account. Connect it under **Program settings** › **Payments** (Affitor receives its events through Stripe Connect, with no webhook to add), then attach Affitor metadata to the checkout session.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -284,7 +284,7 @@ const session = await stripe.checkout.sessions.create({
 
 - **One-time payments** are attributed from Stripe checkout metadata and webhook processing
 - **Subscriptions and renewals** rely on `invoice.payment_succeeded`
-- If `subscription_data.metadata` is missing, renewal attribution can fail
+- If `subscription_data.metadata` is missing, the click does not reach the subscription's invoices (first payment and renewals), and Affitor attributes the subscription only by the buyer's email or Stripe customer ID
 - Required metadata fields:
   - `affitor_click_id`
   - `affitor_customer_key`
@@ -299,7 +299,7 @@ const session = await stripe.checkout.sessions.create({
 | **Server-side tracking** — `POST /api/v1/track/sale` | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
 | **Stripe integration** | Existing Stripe Checkout integration |
 
-Use server-side tracking when your backend controls the revenue event. Use Stripe integration when you want Affitor to attribute sales directly from your Stripe webhook flow.
+Use server-side tracking when your backend controls the revenue event. Use Stripe integration when you want Affitor to attribute sales directly from the payment events of your connected Stripe account.
 
 ---
 
@@ -307,7 +307,7 @@ Use server-side tracking when your backend controls the revenue event. Use Strip
 
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
-  network={["Your signup handler's `trackLead` call returns 2xx; your Stripe webhook (or S2S call) fires `trackSale` on a test payment"]}
+  network={["Your signup handler's `trackLead` call returns 2xx; with the Server API, your server's `trackSale` call on a test payment returns 2xx; with Stripe connected, a test-mode payment shows under Commissions as Test"]}
   dashboard={["Click, lead, and sale all appear under your program's tracking events — or run `npx affitor onboard verify` to fire the whole synthetic chain in one command"]}
   ifNotWorking={["Use `additional_data: { test_mode: true }` so test events never create real commissions"]}
 />

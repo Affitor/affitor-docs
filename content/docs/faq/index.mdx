@@ -75,7 +75,7 @@ They represent the same business concept in different integration contexts:
 Use the same internal user/customer ID across all three.
 
 ### Can I use Affitor without changing my checkout?
-Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you already use Stripe Checkout and can attach Affitor metadata, you can integrate without replacing your existing payment stack.
+Usually yes. If your backend can call `POST /api/v1/track/sale`, or if you take payments with Stripe and connect your Stripe account to the program, you can integrate without replacing your existing payment stack. On Stripe Payment Links, the Buy Button and the Pricing Table, the Affitor tracker passes the click to Stripe for you; with your own Checkout Session, your server adds `affitor_click_id` to the session metadata (and to `subscription_data.metadata` for a subscription).
 
 ### Does Affitor only work with Stripe?
 No. Stripe is the best-documented integration path, but server-side tracking works with any backend/payment provider that can send revenue events after payment succeeds.
@@ -89,7 +89,7 @@ Affitor uses:
 The full model is documented in the [attribution reference](/docs/api-reference/attribution). For the most reliable results, install the tracker first, send a stable internal customer ID at signup, and reuse that identifier in sale tracking.
 
 ### What happens if the customer later pays on Stripe?
-With Stripe integration, Affitor attributes the sale from metadata and webhook events. For subscriptions, renewals also require `subscription_data.metadata` to be populated.
+Connect your Stripe account to the program and Affitor receives its payment events through Stripe Connect; you do not add a webhook. Affitor attributes each payment from the click it carries (your Checkout Session metadata, or `client_reference_id` on Payment Links, the Buy Button and the Pricing Table), or by matching the buyer's email or Stripe customer ID to a customer it already has. Renewals do not need `subscription_data.metadata`: once a subscription's first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal to it. On your own Checkout Session, still set `affitor_click_id` in `subscription_data.metadata`, because a subscription's payments are read from its invoices, which carry that metadata and not the session's.
 
 ---
 

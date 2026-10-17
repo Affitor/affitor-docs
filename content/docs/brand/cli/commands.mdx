@@ -232,6 +232,16 @@ From CLI 0.4.3 this command only prints those directions and exits `1` (`{"error
 
 ---
 
+## `affitor setup dns`
+
+```bash
+npx affitor setup dns
+```
+
+DNS tracking is not available yet. This command only prints a "coming soon" notice (`"status": "not_implemented"` with `--json`) and changes nothing. It reads `.affitor/config.json` first and exits `1` without it (`no_config`).
+
+---
+
 ## `affitor status`
 
 Check program health — tracking status, Stripe connection, and recent events.

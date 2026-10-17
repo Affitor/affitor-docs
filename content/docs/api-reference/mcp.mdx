@@ -151,6 +151,7 @@ After you sign in, Affitor sends you back to the app. It accepts only these retu
 - `www.cursor.com` (Cursor)
 - `vscode.dev/redirect` and `insiders.vscode.dev/redirect` (VS Code)
 - `www.perplexity.ai/rest/connections/oauth_callback` (Perplexity)
+- `manufact.com/inspector/oauth/callback` (Manufact inspector)
 - apps on your own computer: `http://127.0.0.1` or `http://localhost`, any port
 
 An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost". Organizations that use Perplexity on its Enterprise address, `enterprise.perplexity.ai`, cannot connect: that address is not on the list.
@@ -251,10 +252,13 @@ The server cannot approve an application, change a commission, create a link or 
 | Limit | Value |
 |---|---|
 | Requests to `/mcp` | 120 per minute per connection, then `429` with `{ "error": "rate_limited" }` |
-| Token requests | 60 per minute per app |
+| App registration | 300 per hour across all apps, then `429` with `{ "error": "rate_limited" }` |
+| Token requests | 60 per minute per app, and 600 per minute across all apps |
 | Access token | 1 hour, bound to `https://mcp.affitor.com/mcp` |
 | Refresh token | Rotates on every use, expires after 30 days |
 | Sign-in | Finish within 10 minutes of the page opening; each **Allow** is valid once, for 2 minutes |
+
+Each server instance keeps its own request counts in memory, so the request limits apply per instance.
 
 - **Read-only by design.** The only scope is `read`. There are no tools that write, delete or move money.
 - **Access is checked on every call.** A brand connection works only while you are an active member of its program; a partner connection, only while your partner account exists. A blocked account stops working at once.

@@ -2,7 +2,7 @@
 title: Tracking Overview
 description: How Affitor links clicks, signups, and sales together
 kind: concept
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 Affitor tracking links three events into one attribution chain:
@@ -131,7 +131,7 @@ If you use Stripe subscriptions:
 - Include metadata on the checkout session.
 - Include the same metadata on `subscription_data.metadata`.
 
-Without subscription metadata, renewals may not be attributable.
+Without subscription metadata, the click does not reach the subscription's invoices (first payment and renewals), and Affitor can attribute them only by the buyer's email or Stripe customer ID.
 
 ---
 

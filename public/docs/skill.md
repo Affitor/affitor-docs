@@ -207,7 +207,7 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-Missing `subscription_data.metadata` is the most common subscription-attribution bug — renewals lose the click id without it.
+Missing `subscription_data.metadata` is the most common subscription-attribution bug: without it the click id never reaches the subscription's invoices (its first payment and renewals), and Affitor can only match the buyer by email or Stripe customer id.
 
 ### 6b. `@affitor/sdk/server` at your payment webhook (Stripe-but-custom, or non-Checkout)
 
@@ -316,7 +316,8 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
     "profile":   { "status": "pass" },
     "economics": { "status": "pass" },
     "payout":    { "status": "pass", "mode": "stripe" },
-    "tracking":  { "status": "pass", "detail": "receiving_events" },
+    "payments":  { "status": "pass", "method": "stripe_connect" },
+    "tracking":  { "status": "pass", "detail": "tracker_installed" },
     "live":      { "status": "pass", "test_chain": { "click": "attributed", "lead": "attributed", "sale": "attributed" } }
   },
   "last_event_at": { "click": null, "lead": null, "sale": null },
@@ -327,17 +328,18 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 ### 8c. Self-correct from the gates
 
-`blocker` names the first failing gate; each failing gate carries a `next_action` string. Map it to an action:
+`blocker` names the first of the four completion gates (`profile`, `economics`, `tracking`, `live`, in that order) that has not passed. `payout` and `payments` are reported but never become `blocker`. Each failing gate carries a `next_action` string. Map it to an action:
 
 | Gate / `next_action` | What it means | What to do |
 |---|---|---|
-| `profile` / `complete_program_profile` | Program profile incomplete (name, logo, webpage, category, descriptions) | Tell the founder to finish the program profile in the dashboard |
+| `profile` / `complete_program_profile` | The program has no name or no webpage URL | Tell the founder to finish the program profile in the dashboard |
 | `economics` / `set_commission_policy` | No active sale-commission policy → synthetic sale can't resolve | Founder sets a commission policy (CPS) in the dashboard |
-| `payout` / `surface_stripe_connect_url` | Stripe Connect not live | Founder connects Stripe (gate `endpoint` points to the connect URL) |
+| `payout` / `surface_stripe_connect_url` | Stripe Connect not live (reported only, never `blocker`) | Founder connects Stripe (gate `endpoint` points to the connect URL) |
+| `payments` / `send_test_sale` or `connect_stripe` | The program cannot record sales yet: its Stripe account is not connected and your server has not sent a sale. Required to go live, never `blocker` | `send_test_sale`: send one sale from your server to `/api/v1/track/sale` (§6c; a test sale with `additional_data.test_mode: true` counts). `connect_stripe`: founder connects Stripe in the dashboard |
 | `tracking` / `install_tracker_or_send_events` | No tracker tag found AND no real/S2S events yet | Re-check §4 (client) or that your server is hitting `/api/v1/track/*` |
 | `live` / `run_synthetic_sale_chain` | No real event and no attributed synthetic chain | Run §8a |
 
-`integration_verified: true` is your **done** signal (the synthetic chain attributed and all gates pass). `state: live_verified` is even stronger — it appears once a **real** (non-test) event flows.
+`integration_verified: true` is your **done** signal: the four completion gates pass, and `live` passed through an attributed synthetic chain or a **real** (non-test) event. `state` tells the two apart: `integration_verified` while no real event exists, `live_verified` (even stronger) once one has flowed.
 
 ---
 
@@ -355,7 +357,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 - **Mismatched customer ids** — `user.id` at signup but `user.email` (or a Stripe customer id) at sale. Use the same id everywhere (§2).
 - **Missing `affitor_click_id` in Stripe metadata** — the webhook can't link the payment to the click. Always set it on the Checkout Session.
-- **Missing `subscription_data.metadata`** — one-time payment attributes but renewals don't, because the click id never reaches the subscription.
+- **Missing `subscription_data.metadata`**: one-time payments attribute but subscriptions may not, because the click id never reaches the subscription's invoices.
 - **Firing the verify chain (§8) before the tracker is deployed** — readiness will report `tracking`/`live` failing and you'll chase a non-bug. Deploy first, verify last.
 - **Hardcoding `https://api.affitor.com`** when the founder gave a uat/staging `API_BASE` — events land in the wrong environment.
 - **Shipping the API key to the client** — `@affitor/sdk/server` and the Bearer key are server-only; the browser uses `@affitor/sdk` (no key).
@@ -372,6 +374,6 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 | `/api/v1/track/sale` | POST | Bearer | Report revenue; Affitor creates the commission |
 | `/api/v1/track/refund` | POST | Bearer | Reverse a commission on refund/chargeback |
 | `/api/v1/cli/test-event` `{ "type": "chain" }` | POST | Bearer | Fire a synthetic click→lead→sale to verify the pipeline |
-| `/api/v1/programs/me/readiness` | GET | Bearer | Poll the 5-gate verdict until `integration_verified: true` |
+| `/api/v1/programs/me/readiness` | GET | Bearer | Poll the 6-gate verdict until `integration_verified: true` |
 
 Full spec: `<API_BASE>/openapi.yaml`  ·  Docs: https://affitor.com/docs

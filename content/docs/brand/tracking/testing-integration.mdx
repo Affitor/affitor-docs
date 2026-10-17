@@ -2,7 +2,7 @@
 title: Testing Integration
 description: Verify click, signup, and server-side tracking before going live
 kind: guide
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 Before going live, verify each layer in order to confirm that your identifiers, metadata, and revenue path line up correctly:
@@ -164,7 +164,7 @@ If you use Stripe Checkout:
 
 1. switch Stripe to test mode
 2. complete a test checkout
-3. verify webhook delivery in Stripe
+3. check that the program's Stripe card under **Program settings** › **Payments** reads **Connected**. Affitor receives the events through Stripe Connect, so there is no webhook delivery to verify on your side
 4. inspect the metadata on the checkout/payment objects
 
 Check that metadata includes:
@@ -178,20 +178,9 @@ For subscriptions, also confirm the same values exist in `subscription_data.meta
 
 ## 4. Verify Test Events Were Received
 
-After sending test events, query the test-event checker to confirm they were received.
+Each test-mode call above answers with `"test_mode": true` and an `eventId` when the event was recorded, so the response is your first check.
 
-```bash
-curl -X POST https://api.affitor.com/api/tracking/check-test-events \
-  -H "Content-Type: application/json" \
-  -d '{
-    "program_id": "YOUR_PROGRAM_ID"
-  }'
-```
-
-You can also filter by step:
-- `pageview`
-- `referrals`
-- `payments`
+The dashboard also looks up recent test events through `POST /api/tracking/check-test-events`, for every step or for one (`pageview`, `referrals` or `payments`). It is a [dashboard endpoint](/docs/api-reference/overview): it needs a signed-in dashboard session from a member of the program and does not accept a program API key, so you cannot call it from your backend.
 
 ---
 
@@ -216,7 +205,7 @@ You can also filter by step:
 
 1. create a Stripe Checkout subscription in test mode
 2. ensure both `metadata` and `subscription_data.metadata` are present
-3. verify the initial invoice/webhook delivery
+3. check that the subscription's first payment appears under **Commissions**, marked **Test**
 4. confirm your renewal setup will preserve those identifiers
 
 ---
@@ -234,7 +223,7 @@ Usually caused by one of these:
 ### One-time Stripe works but renewals do not
 
 Usually caused by:
-- missing `subscription_data.metadata`
+- missing `subscription_data.metadata`: the subscription's invoices carry it, not the checkout's `metadata`, so the first subscription payment never sees the click (renewals follow the first payment)
 - relying only on initial checkout metadata
 - mismatched customer key between signup and Stripe metadata
 
@@ -245,7 +234,7 @@ The dashboard combines:
 - Stripe connection/configuration state for payment setup
 - real sale events for broader integration completeness
 
-Treat dashboard status, test-event checks, and Stripe webhook delivery logs as complementary signals — no single source is the full picture.
+Treat dashboard status, test-event checks, and the payments in your Stripe Dashboard as complementary signals: no single source is the full picture.
 
 ---
 
