@@ -1,17 +1,24 @@
 import { source } from '@/lib/source';
 import { getDocArticle } from '@/lib/agent-md';
 import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
-import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
+import { findNeighbour, findPath } from 'fumadocs-core/page-tree';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
 import { formatDay } from '@/lib/changelog';
-
-const GITHUB_REPO = 'https://github.com/Affitor/affitor-docs';
+import { CopyForLLM, MarkdownIcon, ShareFeedback } from '@/components/page-actions';
 
 // Docs pages live under /docs: https://affitor.com/docs/<slug> proxies here
 // (dashboard multi-zone rewrite), and /docs is the landing page.
 function markdownPath(slug: string[] = []) {
   return `/docs/${slug.join('/') || 'index'}.md`;
+}
+
+/** The sidebar group a page sits under (a `---Group---` separator in meta.json), shown as the eyebrow. */
+function groupLabel(url: string) {
+  const path = findPath(source.pageTree.children, (node) => node.type === 'page' && node.url === url) ?? [];
+  const separator = path.filter((node) => node.type === 'separator').pop();
+  return typeof separator?.name === 'string' ? separator.name : undefined;
 }
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
@@ -21,30 +28,72 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
 
   const article = getDocArticle(page);
   const MDX = page.data.body;
-  const filePath = `content/docs/${params.slug?.join('/') ?? 'index'}.mdx`;
-  const editUrl = `${GITHUB_REPO}/edit/main/${filePath}`;
+  const md = markdownPath(params.slug);
+  const group = groupLabel(page.url);
+  // Previous / next in sidebar order, within the page's own tab (Fumadocs' footer logic).
+  const { previous, next } = findNeighbour(source.pageTree, page.url);
 
   return (
-    <DocsPage data-page-id={article.id} toc={page.data.toc} full={page.data.full} footer={{ enabled: false }} tableOfContent={{ single: true }}>
+    <DocsPage
+      data-page-id={article.id}
+      toc={page.data.toc}
+      full={page.data.full}
+      breadcrumb={{ enabled: false }}
+      footer={{ enabled: false }}
+      // Below the rail breakpoint the actions sit under the title (mock P1), not in an "On this page" bar.
+      tableOfContentPopover={{ enabled: false }}
+      tableOfContent={{
+        single: true,
+        // The right rail: On this page, then the page actions (spec §7.1).
+        footer: (
+          <div className="aff-rail-actions">
+            <CopyForLLM href={md} className="aff-rail-action" />
+            <ShareFeedback title={page.data.title} className="aff-rail-action" />
+          </div>
+        ),
+      }}
+    >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
-      {/* Terms pages state their own "Last updated" in the header line (checked to match). */}
-      {page.data.kind !== 'terms' ? (
-        <p className="-mt-4 mb-2 text-sm text-fd-muted-foreground">Last updated {formatDay(page.data.last_updated)}</p>
-      ) : null}
+      <header className="aff-page-head">
+        {group ? <p className="aff-eyebrow">{group}</p> : null}
+        <DocsTitle className="aff-title">{page.data.title}</DocsTitle>
+        <DocsDescription className="aff-description">{page.data.description}</DocsDescription>
+        <div className="aff-page-actions">
+          <CopyForLLM href={md} className="aff-action" />
+          <a href={md} className="aff-action">
+            <MarkdownIcon />
+            View as Markdown
+          </a>
+        </div>
+      </header>
       <DocsBody>
         <MDX components={useMDXComponents({})} />
       </DocsBody>
-      <div className="flex flex-row flex-wrap items-center gap-4">
-        <EditOnGitHub href={editUrl} />
-        <a
-          href={markdownPath(params.slug)}
-          className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground"
-        >
-          View as Markdown
-        </a>
-      </div>
+      <footer className="aff-page-foot">
+        <div className="aff-page-foot-row">
+          <ShareFeedback title={page.data.title} className="aff-btn aff-btn-secondary aff-btn-sm" />
+          {/* Terms pages state their own "Last updated" in the header line (checked to match). */}
+          {page.data.kind !== 'terms' ? (
+            <p className="aff-updated">Last updated {formatDay(page.data.last_updated)}</p>
+          ) : null}
+        </div>
+        {previous || next ? (
+          <nav className="aff-page-nav" aria-label="Previous and next pages">
+            {previous ? (
+              <Link href={previous.url} className="aff-page-nav-card">
+                <span>Previous</span>
+                <span>{previous.name}</span>
+              </Link>
+            ) : null}
+            {next ? (
+              <Link href={next.url} className="aff-page-nav-card aff-page-nav-next">
+                <span>Next</span>
+                <span>{next.name}</span>
+              </Link>
+            ) : null}
+          </nav>
+        ) : null}
+      </footer>
     </DocsPage>
   );
 }

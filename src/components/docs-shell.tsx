@@ -2,14 +2,14 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import { DocsHeader } from '@/components/docs-header';
-import { TabNav } from '@/components/tab-nav';
+import { NavDrawerBridge, TabNav } from '@/components/tab-nav';
 import { SiteFooter } from '@/components/site-footer';
 
 export function DocsShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Full-width sticky top bar: header row + tab row (above the sidebar) */}
-      <div className="sticky top-0 z-50">
+      {/* Full-width sticky top bar: header row + tab row (above the sidebar, under the phone nav drawer) */}
+      <div className="sticky top-0 z-30">
         <DocsHeader />
         <TabNav />
       </div>
@@ -26,6 +26,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
         searchToggle={{ enabled: false }}
       >
         {children}
+        <NavDrawerBridge />
       </DocsLayout>
       <SiteFooter />
     </div>
