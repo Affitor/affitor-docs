@@ -1,0 +1,40 @@
+---
+title: Connect Claude, ChatGPT and Cursor to Affitor
+date: 2026-10-16
+type: feature
+audience: [brands, partners, developers]
+surfaces: [mcp]
+description: The hosted Affitor MCP server at mcp.affitor.com lets AI apps read your program or partner data after you sign in. No API key, read-only.
+version: "Affitor MCP 0.1.2"
+---
+
+You can now connect Claude, ChatGPT, Cursor, Claude Code, Codex and other AI apps to Affitor with one URL, `https://mcp.affitor.com/mcp`, and ask about your program in plain words. You sign in with your Affitor account; there is no API key to copy.
+
+## Add it to your AI app
+
+```bash tab="Claude Code"
+claude mcp add --transport http affitor https://mcp.affitor.com/mcp
+```
+
+```bash tab="Codex"
+codex mcp add affitor --url https://mcp.affitor.com/mcp
+```
+
+```json tab="MCP config"
+{ "mcpServers": { "affitor": { "url": "https://mcp.affitor.com/mcp" } } }
+```
+
+In Claude, add it as a custom connector; in ChatGPT, as a custom MCP server, with the same URL. Your browser opens affitor.com, where a brand picks one program and a partner connects their partner account. Then click **Allow**.
+
+## What the app can read
+
+- **Brands:** the program and its tracker snippet, partners, applications, commissions, a commission summary and billing.
+- **Partners:** your programs, links, earnings, commissions and payouts. Bank and PayPal details are never included.
+
+The connection is read-only: it cannot change data or move money. Remove it any time, in **All settings** › **Developers** › **AI agents** for brands or **Settings** › **Integrations** for partners, and it stops working at once.
+
+```text tab="Agent prompt"
+Use the Affitor tools. Who are my top partners by earned commission in the last 30 days?
+```
+
+The older `@affitor/mcp` stdio server, which tracks events with a program API key, is unchanged. See [Affitor MCP server](https://affitor.com/docs/api-reference/mcp) for every client, the tool list and the limits.
