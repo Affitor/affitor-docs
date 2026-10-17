@@ -1,0 +1,130 @@
+---
+title: Connect a new Stripe account
+description: "Create a separate Stripe account under the login you already have, connect it to an Affitor program, test it with Stripe test mode, and check that the connection is right."
+kind: guide
+last_updated: 2026-10-17
+---
+
+Create a second Stripe account under your existing Stripe login, activate it, connect it to your Affitor program, and test it before partners send real customers. Affitor connects through Stripe Connect, so you do not create an API key or a webhook for it.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'The owner of an Affitor program who wants its sales to come from a new Stripe account' },
+    { label: 'Time required', value: 'About 15 minutes, plus the time Stripe takes to review the new account' },
+    { label: 'Prerequisites', value: 'A Stripe login, and the owner role on the Affitor program' },
+    { label: 'Outcome', value: 'Payments shows the new account as Connected, and a one-time test purchase shows up as a Test commission' },
+  ]}
+/>
+
+**Quick reference**
+
+1. Stripe: account name (top left) › **New account**, then activate it.
+2. Affitor: program menu › **Program settings** › **Payments** › **Connect Stripe**, and choose the new account at Stripe.
+3. Make a one-time purchase in the new account's test mode through a partner link, then look for **Test** under **Commissions**.
+
+## Step 1: Create the new account in Stripe
+
+In the Stripe Dashboard, click the name of your current account in the upper-left corner and select **New account**. The new account uses the same login, and you switch between accounts from the same menu. Each account can have its own business details and its own bank account for payouts. Stripe asks for a separate account for each project, website or business that runs independently ([Stripe: multiple accounts](https://docs.stripe.com/get-started/account/multiple-accounts)).
+
+## Step 2: Activate it
+
+Complete Stripe's activation for the new account: your business details and the bank account Stripe pays out to ([Stripe: activate your account](https://docs.stripe.com/get-started/account/activate)). Do this before you connect it. Affitor shows a Stripe account as **Connected** only once Stripe lets it take charges and send payouts; until then the card reads **Not finished**.
+
+## Step 3: Connect it to your program
+
+1. In Affitor, open the program menu, choose **Program settings**, then **Payments**.
+2. On the **Stripe** card, select **Connect Stripe**. Stripe opens in a new tab.
+3. At Stripe, sign in, choose the new account from your accounts, and allow the connection.
+4. Come back to the Affitor tab. The page reads the status again on its own; there is no confirmation message, the card itself changes.
+
+![Program settings, Payments, before anything is set up: the Stripe card says Not connected, with a Connect Stripe button that opens Stripe in a new tab. The Server API card beside it has no sale yet.](/docs/brand/stripe/payments-not-connected.png)
+
+Only the program owner can connect Stripe. Other members see "Only the program owner can connect Stripe." Finish the Stripe steps within 10 minutes; if the card still shows **Not connected** after that, select **Connect Stripe** again. If the program is already connected to another Stripe account, there is no **Connect Stripe** button: [switch the program to the new account](#switch-a-program-to-the-new-account) first.
+
+One Stripe account can be connected to several programs, and each program connects to one Stripe account.
+
+## Step 4: Test with Stripe test mode
+
+Affitor reads the test-mode purchases of the account you connected and keeps them apart from real money: a test purchase creates a sale and a commission marked **Test**, which is never approved on its own, never invoiced and never paid out.
+
+1. Open one of your partners' referral links, so the Affitor tracker on your site records the click ([click tracking](/docs/brand/tracking/click-tracking)).
+2. In Stripe, switch the new account to its test mode: the account's test mode sandbox, under **Sandboxes** in the account picker ([Stripe: sandboxes](https://docs.stripe.com/sandboxes)). A sandbox you create separately is a different environment, and it is not connected to Affitor.
+3. Buy a one-time price through your checkout or Payment Link with a Stripe test card, such as `4242 4242 4242 4242` ([Stripe: testing](https://docs.stripe.com/testing)), and an email that no real customer uses.
+4. In Affitor, open **Commissions**. The purchase appears with the status **Test**.
+
+![Commissions table where the first row has a Test status pill, followed by Pending and Approved rows.](/docs/brand/stripe/commission-test.png)
+
+Use a one-time price for this test. In test mode, Affitor cannot always read the partner of a subscription bought through a Payment Link, Buy Button or Pricing Table, so a test subscription can show no commission.
+
+How the partner reaches Stripe depends on your checkout:
+
+| Checkout | What carries the partner |
+|---|---|
+| Payment Link, Buy Button, Pricing Table | The Affitor tracker on the page adds the click as `client_reference_id` ([how it works](https://affitor.com/changelog/stripe-payment-links-attribution)). It works on `buy.stripe.com` links that do not carry your own `client_reference_id`, when the visitor allows tracking |
+| Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata ([Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe)) |
+
+If Stripe is connected and your server also sends sales through the Server API, send each purchase through one of them only, or it can count twice.
+
+## What you do not set up
+
+**No webhook.** Stripe sends the events of every connected account to Affitor's own Connect endpoint, so you do not add a webhook endpoint in the new account. These are the events Affitor acts on:
+
+| Stripe event | What Affitor does |
+|---|---|
+| `checkout.session.completed` | Records a one-time purchase |
+| `invoice.payment_succeeded` | Records a subscription's first payment and each renewal |
+| `charge.refunded` | Reverses the commission ([refund handling](/docs/brand/quickstart/commission-approval-cash-flow#refund-handling)) |
+| `charge.dispute.funds_withdrawn` | Reverses the commission when a chargeback takes the money |
+| `charge.dispute.funds_reinstated`, `charge.dispute.closed` (won) | Sends you a notification to review the commission. It stays reversed: Affitor does not re-credit the partner on its own |
+| `account.updated` | Updates the card between **Not finished** and **Connected** |
+| `account.application.deauthorized` | Marks every program on that account **Not connected** |
+
+**No API key.** Affitor never asks for a Stripe secret key or a restricted key. You approve the connection on Stripe's own page, and you can revoke it in Stripe at any time.
+
+## Check the connection
+
+![Payments after connecting: the Stripe card says Connected and shows the account ID, with a note to disconnect from the Stripe dashboard. A Check Affitor's tracking card now appears below.](/docs/brand/stripe/payments-connected.png)
+
+<VerifySuccess
+  dashboard={[
+    "Program settings › Payments: the Stripe card reads Connected and shows the account ID, masked as acct_… with its last four characters, which match the new account's ID in Stripe",
+    "Program settings › Status (Go live before the program is live): the Payments row reads Stripe connected",
+    "Commissions: your one-time test purchase is listed with the status Test",
+  ]}
+  ifNotWorking={[
+    "Not finished: Stripe still needs details for that account. Finish its activation in that account's Stripe Dashboard; the card changes once Stripe reports the account ready",
+    "Not connected after you came back: the connection was canceled or took longer than 10 minutes. Select Connect Stripe again",
+    "No test commission: check that you opened a partner link first, in the same browser; that the tracker is on the page with the checkout, or that your server passed affitor_click_id in the Checkout Session metadata; and that the purchase was a one-time price made in the test mode of the connected account",
+    "Run check under Check Affitor's tracking sends a test click, signup and sale through your program. It tests Affitor's side only and does not touch Stripe",
+  ]}
+/>
+
+## Switch a program to the new account
+
+If the program is connected to an older Stripe account, disconnect that one first. Affitor has no disconnect button; the card says "To disconnect, use your Stripe dashboard."
+
+1. Sign in to the **old** account in Stripe and revoke Affitor's access under **Apps** › **Apps Overview** › **Installed Apps** ([Stripe: disconnect a platform](https://support.stripe.com/questions/disconnect-your-stripe-account-from-a-connected-third-party-platform)).
+2. Affitor receives the disconnect, and every program connected to the old account shows **Not connected**. If the old account served several programs, connect each of them again.
+3. Connect the new account as in [Step 3](#step-3-connect-it-to-your-program).
+
+Sales and commissions Affitor already recorded stay as they are. After the switch, Affitor no longer receives the old account's events:
+
+- Subscriptions that keep billing on the old account no longer create commissions.
+- Refunds and chargebacks on the old account no longer reach Affitor, so they do not reverse commissions, and a pending commission still becomes approved when its hold period ends. Review the old account's pending commissions under **Commissions** before you switch.
+
+<CommonMistakes items={[
+  "Creating the account inside the Connect Stripe tab. Stripe allows it, but activation can take longer than the 10 minutes the connection waits. Create and activate the account first (Steps 1 and 2), then connect.",
+  "Testing in a separate Stripe sandbox. Only the test mode of the connected account reaches Affitor.",
+  "Testing with a subscription bought through a Payment Link. Use a one-time price for the test.",
+  "Sending the same purchase through Stripe and the Server API. Use one source per purchase.",
+  "Revoking the old account while other programs still use it, without reconnecting them. Every program on that account is disconnected.",
+]} />
+
+## Related
+
+- [Set up your program](/docs/brand/quickstart/setup-program#step-4-connect-payments): the Payments step during setup
+- [Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe): metadata for your own Checkout Sessions
+- [Testing your integration](/docs/brand/tracking/testing-integration): the full click, signup and sale check
+- [Track a refund](/docs/api-reference/track-refund): refunds when you use the Server API instead of Stripe
+
+<NextStep title="Send partners to your new checkout" description="Check how Stripe sales are tracked and attributed, including subscriptions and repeat purchases." href="/docs/brand/tracking/payment-tracking-stripe" />

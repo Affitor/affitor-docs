@@ -91,7 +91,7 @@ Before a first withdrawal, each partner adds a legal name, a payout method and a
 ## Verify it worked
 
 <VerifySuccess
-  dashboard={["Test-mode sales create no commission. The synthetic verification chain (see Testing your integration) checks attribution end to end, but its test commission does not appear under Commissions. A live sale's commission starts in Pending and moves to Approved when its hold period ends", "Billing shows the platform-fee card ($0 until the program's first $10,000 through affiliates) and the Next invoice date"]}
+  dashboard={["Server API test sales (test_mode or livemode false) create no commission. A Stripe test-mode purchase and the synthetic verification chain (see Testing your integration) create a commission labeled Test under Commissions; it is never approved on its own, invoiced or paid out. A live sale's commission starts in Pending and moves to Approved when its hold period ends", "Billing shows the platform-fee card ($0 until the program's first $10,000 through affiliates) and the Next invoice date"]}
   ifNotWorking={["Commissions stuck in Pending usually mean the hold period has not elapsed — the per-program default is in your program settings"]}
 />
 

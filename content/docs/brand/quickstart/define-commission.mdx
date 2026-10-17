@@ -2,7 +2,7 @@
 title: Define Commission
 description: Set up commission rates and structures for your affiliate program
 kind: concept
-last_updated: 2026-10-12
+last_updated: 2026-10-17
 ---
 
 Commission determines what partners earn when they drive results. Configure the right type and duration to attract quality partners and align incentives with your business model.
@@ -154,7 +154,7 @@ Use [partner groups](/docs/brand/groups) to give different partner segments diff
 ## Verify it worked
 
 <VerifySuccess
-  dashboard={["Groups shows your group with the new rate in the Commission column", "Test-mode sales (`additional_data: { test_mode: true }`) create no commission. The synthetic verification chain (see [Testing Integration](/docs/brand/tracking/testing-integration)) checks that a click, lead and sale attribute end to end; its test commission is kept out of Commissions and partner earnings, so the rate itself shows on the first live sale"]}
+  dashboard={["Groups shows your group with the new rate in the Commission column", "Server API test sales (`additional_data: { test_mode: true }`) create no commission. The synthetic verification chain (see [Testing Integration](/docs/brand/tracking/testing-integration)) checks that a click, lead and sale attribute end to end; its test commission is listed under Commissions with the label Test but kept out of the summary counts and partner earnings, so the rate itself shows on the first live sale"]}
   ifNotWorking={["Partners inherit the policy of the group they are IN — check the partner's group on the Partners table before assuming the rate is wrong"]}
 />
 

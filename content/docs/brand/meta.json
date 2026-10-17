@@ -20,6 +20,7 @@
     "tracking/tracking-overview",
     "tracking/click-tracking",
     "tracking/lead-tracking-signup",
+    "tracking/connect-stripe-account",
     "tracking/payment-tracking-stripe",
     "tracking/payment-flow",
     "tracking/testing-integration",
