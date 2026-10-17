@@ -2,7 +2,7 @@
 title: Track Refund
 description: Reverse a commission when a sale is refunded
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 `POST /api/v1/track/refund`
@@ -128,6 +128,17 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
   "commission_id": 88
 }
 ```
+
+### Test API key
+
+```json
+{
+  "success": true,
+  "test": true
+}
+```
+
+A request with a test API key gets this answer before the body is checked or the sale is looked up. Nothing is refunded, so a test key cannot reverse a real commission.
 
 ---
 

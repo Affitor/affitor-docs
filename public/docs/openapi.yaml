@@ -171,8 +171,9 @@ paths:
           through your connected Stripe account. A sale sent to
           `/api/v1/track/sale` does not settle it.
 
-        Either `click_id` or `customer_key` is required. The email, when
-        provided, is hashed server-side before storage.
+        Either `click_id` or `customer_key` is required; without a Bearer
+        key, `click_id` is required. The email, when provided, is hashed
+        server-side before storage.
       security:
         - bearerAuth: []
         - {}
@@ -220,15 +221,32 @@ paths:
         '400':
           description: |
             Validation error. Causes: neither `click_id` nor `customer_key`
-            provided; customer not found; customer belongs to a different
-            program than the authenticated one; customer status cannot
-            transition to lead.
+            provided; a `customer_key` without `click_id` and without a Bearer
+            key (`click_id is required when no API key is sent`); customer not
+            found, including in browser mode a customer that does not belong to
+            the `program_id` sent; customer belongs to a different program than
+            the authenticated one; customer status cannot transition to lead.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: |
+            Test mode only: the Bearer key and `additional_data.program_id`
+            name different programs (`program_id does not match the API key`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                data: null
+                error:
+                  status: 403
+                  name: ForbiddenError
+                  message: "program_id does not match the API key"
+                  details: {}
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
@@ -590,7 +608,7 @@ paths:
                   economics: { status: pass }
                   payout: { status: pass, mode: stripe }
                   payments: { status: pass, method: stripe_connect }
-                  tracking: { status: pass, detail: receiving_events, checked_at: "2026-06-11T00:00:00.000Z" }
+                  tracking: { status: pass, detail: tracker_installed, checked_at: "2026-06-11T00:00:00.000Z" }
                   live:
                     status: pass
                     test_chain: { click: attributed, lead: attributed, sale: attributed }
@@ -812,7 +830,7 @@ components:
 
     LeadRequest:
       type: object
-      description: Either `click_id` or `customer_key` is required.
+      description: Either `click_id` or `customer_key` is required; without a Bearer key, `click_id` is required.
       properties:
         click_id:
           type: string
@@ -830,6 +848,9 @@ components:
           type: array
           items: { type: string }
           description: Optional list of candidate click IDs from the tracker SDK (shadow attribution lane).
+        program_id:
+          type: [string, integer]
+          description: The program of the page (the tracker sends it). Read only in browser mode (no Bearer key); with a key, the key's program decides. When sent, the customer found by `click_id` or `customer_key` must belong to this program; otherwise the lead answers `400` `Customer not found. Provide a valid click_id or customer_key.`
         additional_data:
           $ref: '#/components/schemas/AdditionalData'
 

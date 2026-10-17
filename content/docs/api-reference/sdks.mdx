@@ -228,7 +228,7 @@ This endpoint does not require authentication.
 | `affiliateUrl` | `string` | No | The full affiliate URL containing the `?aff=` parameter. |
 | `pageUrl` | `string` | No | The landing page URL. |
 | `referrerUrl` | `string` | No | The HTTP referrer. |
-| `existingClickId` | `string` | No | An existing click id. Affitor reuses the customer that owns it: first click wins inside a program, so the partner does not change. |
+| `existingClickId` | `string` | No | An existing click id. Affitor reuses the customer that has this click id, so that customer's partner does not change. `trackClick` sends no `program_id`, so this lookup is not limited to one program. When no customer has the click id, a new customer is created with it. |
 
 ---
 

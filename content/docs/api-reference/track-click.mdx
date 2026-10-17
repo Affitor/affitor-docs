@@ -53,10 +53,10 @@ No API key is required. This endpoint is public — the referral link embedded i
     IANA timezone string, e.g. `America/New_York`.
   </ParamField>
   <ParamField name="existing_click_id" type="string">
-    Previously issued `click_id` to reuse instead of generating a new one.
+    The `click_id` stored for this visitor (the tracker sends it when the visitor comes back through another partner's link). A customer that already has this click ID is reused and keeps its first partner; the click is still recorded for the new partner. With `program_id`, a click ID whose customer belongs to another program is not reused, and the click gets a new click ID and customer. When no customer has the click ID, a new customer is created with it.
   </ParamField>
-  <ParamField name="program_id" type="integer">
-    The program of the page (the tracker sends it). When sent, the `aff` code is looked up only inside this program, and an id that is not a program returns `400` `Unknown program_id`. Without it, the lookup covers every program.
+  <ParamField name="program_id" type="string | integer">
+    The program of the page (the tracker sends it). A numeric string such as `"42"` is accepted. When sent, the `aff` code is looked up only inside this program, and an id that is not a program returns `400` `Unknown program_id`. Without it, the lookup covers every program.
   </ParamField>
   <ParamField name="visitor_ip" type="string">
     Your visitor's IP address, when your server records the click for that visitor. Used for the click's location only when the request carries the Bearer API key of the program the link belongs to (not a key past its rotation deadline) and the value is an IP address; otherwise the request's own IP is used. It never causes the click to be refused.
@@ -162,7 +162,7 @@ When `additional_data.test_mode` is `true`:
 ## What happens on success
 
 1. The `aff` value is extracted from `affiliate_url` and matched to a referral link.
-2. If `existing_click_id` is provided and matches an existing customer, that customer record is reused. Otherwise a new customer record is created with `customer_status: click`.
+2. If `existing_click_id` is provided and a customer already has that click ID, that customer is reused and keeps its first partner. The exception: when `program_id` is sent and that customer belongs to another program, it is not reused and a new click ID is generated. When no customer is reused, a new customer record is created with `customer_status: click` under the returned `click_id`.
 3. A click event is created in `affiliate_click_events` with geo, device, and browser data derived server-side.
 4. The referral link's `clicks` counter and `last_clicked` timestamp are updated.
 5. The partner-program click metrics are incremented.
