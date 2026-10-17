@@ -207,7 +207,7 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-Missing `subscription_data.metadata` is the most common subscription-attribution bug — renewals lose the click id without it.
+Missing `subscription_data.metadata` is the most common subscription-attribution bug: without it the click id never reaches the subscription's invoices (its first payment and renewals), and Affitor can only match the buyer by email or Stripe customer id.
 
 ### 6b. `@affitor/sdk/server` at your payment webhook (Stripe-but-custom, or non-Checkout)
 
@@ -357,7 +357,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 - **Mismatched customer ids** — `user.id` at signup but `user.email` (or a Stripe customer id) at sale. Use the same id everywhere (§2).
 - **Missing `affitor_click_id` in Stripe metadata** — the webhook can't link the payment to the click. Always set it on the Checkout Session.
-- **Missing `subscription_data.metadata`** — one-time payment attributes but renewals don't, because the click id never reaches the subscription.
+- **Missing `subscription_data.metadata`**: one-time payments attribute but subscriptions may not, because the click id never reaches the subscription's invoices.
 - **Firing the verify chain (§8) before the tracker is deployed** — readiness will report `tracking`/`live` failing and you'll chase a non-bug. Deploy first, verify last.
 - **Hardcoding `https://api.affitor.com`** when the founder gave a uat/staging `API_BASE` — events land in the wrong environment.
 - **Shipping the API key to the client** — `@affitor/sdk/server` and the Bearer key are server-only; the browser uses `@affitor/sdk` (no key).

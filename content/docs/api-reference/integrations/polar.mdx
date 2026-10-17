@@ -110,7 +110,7 @@ async function reportRefund(refund: { status: string; orderId: string; amount: n
 
 :::
 
-**Attribution resolution.** Affitor resolves the partner from, in order: `clickId` (the planted `affitor_click_id`, or the checkout link's `reference_id`), then `customerExternalId` matched against the lead you tracked at signup. Supplying both is the recommended default.
+**Attribution resolution.** Affitor resolves the partner from, in order: `customerExternalId` matched against the lead you tracked at signup, then `clickId` (the planted `affitor_click_id`, or the checkout link's `reference_id`). Supplying both is the recommended default.
 
 ## Subscription renewals
 

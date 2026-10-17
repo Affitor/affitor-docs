@@ -100,7 +100,7 @@ Follow [Step 3 of the Next.js guide](/docs/api-reference/integrations/nextjs#3-t
   "Relying on the browser signup() alone — by default it stays provisional until your server sends the lead.",
   "Using different IDs at signup vs sale — `session.user.id` must match the `customerExternalId` / `affitor_customer_key` sent at sale time.",
   "Tracking leads from a server webhook without forwarding the click ID — the browser cookie is not available server-side, so the lead call returns 400 and nothing is recorded. Store and forward the click ID explicitly.",
-  "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to the originating partner click.",
+  "Subscriptions missing `subscription_data.metadata`. The click never reaches the subscription's invoices, so its payments are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
   "Trying to track a sale from the browser — sales are server-side only (Stripe metadata or the server SDK)."
 ]} />
 

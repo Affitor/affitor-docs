@@ -111,7 +111,7 @@ Sales must always be tracked server-side — never from the browser.
 
 ### Option A — Stripe integration (recommended for Stripe Checkout)
 
-Attach Affitor metadata when you create the Checkout Session. Affitor reads your `checkout.session.completed` and `invoice.payment_succeeded` webhooks and attributes the sale automatically — no extra `trackSale` call needed.
+Connect your Stripe account under **Program settings** › **Payments**, then attach Affitor metadata when you create the Checkout Session. Affitor receives the account's `checkout.session.completed` and `invoice.payment_succeeded` events through Stripe Connect (you add no webhook) and attributes the sale automatically, with no extra `trackSale` call needed.
 
 ```js
 // server — creating the Checkout Session
@@ -125,7 +125,7 @@ const session = await stripe.checkout.sessions.create({
     affitor_customer_key: user.id,      // SAME id used at signup
     program_id: 'YOUR_PROGRAM_ID',
   },
-  // Duplicate into subscription_data so renewals attribute correctly
+  // subscription_data reaches the subscription's invoices (first payment and renewals)
   subscription_data: {
     metadata: {
       affitor_click_id: affitorClickId,
@@ -216,7 +216,7 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   "Not forwarding `affitorClickId` from the client — your Express handler has no access to the browser cookie, so the lead arrives with no partner attribution.",
   "Different customer IDs at signup vs sale — `customerExternalId` / `customer_key` / `affitor_customer_key` must be the exact same stable user ID everywhere.",
   "Ignoring the 409 on `trackSale` — a duplicate `invoiceId` returns 409 by design; treat it as a no-op, not a failure.",
-  "Subscriptions missing `subscription_data.metadata` in Stripe — renewal invoices won't attribute to a partner.",
+  "Subscriptions missing `subscription_data.metadata`. The click never reaches the subscription's invoices, so its payments are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
   "Tracking a sale from the browser — sales are server-side only (Stripe metadata or the server SDK / REST API)."
 ]} />
 

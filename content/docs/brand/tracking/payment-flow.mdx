@@ -2,7 +2,7 @@
 title: Payment Flow
 description: End-to-end flow from affiliate click to attributed revenue and payout operations, covering server-side tracking and Stripe integration paths
 kind: concept
-last_updated: 2026-10-14
+last_updated: 2026-10-17
 ---
 
 Understand how attribution moves from click → signup → sale in the current public Affitor model.
@@ -136,7 +136,7 @@ Recurring setups must therefore include:
 - `metadata`
 - `subscription_data.metadata`
 
-If only the initial checkout metadata is present, renewals may not attribute correctly.
+If only the initial checkout metadata is present, the click does not reach the subscription's invoices, so its first payment and renewals are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.
 
 ---
 
@@ -147,7 +147,7 @@ If only the initial checkout metadata is present, renewals may not attribute cor
 | `customerKey` used at signup | links later payments back to the same internal user |
 | `transaction_id` unique (server-side tracking) | prevents duplicate sale records |
 | `program_id` in Stripe metadata | routes the event to the correct program |
-| `subscription_data.metadata` set | keeps renewals attributable |
+| `subscription_data.metadata` set | carries the click to the subscription's invoices (first payment and renewals) |
 | click tracked first | gives Affitor the strongest attribution signal |
 
 ---

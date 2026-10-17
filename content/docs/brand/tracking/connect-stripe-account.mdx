@@ -61,7 +61,7 @@ How the partner reaches Stripe depends on your checkout:
 | Checkout | What carries the partner |
 |---|---|
 | Payment Link, Buy Button, Pricing Table | The Affitor tracker on the page adds the click as `client_reference_id` ([how it works](https://affitor.com/changelog/stripe-payment-links-attribution)). Payment Links need a `buy.stripe.com` address. On all three, a `client_reference_id` you set yourself is kept, and if your tracker waits for consent, the visitor must have given it |
-| Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata ([Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe)) |
+| Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata, and for a subscription in `subscription_data.metadata` ([Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe)) |
 
 If Stripe is connected and your server also sends sales through the Server API, send each purchase through one of them only, or it can count twice.
 
