@@ -30,8 +30,10 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
   const MDX = page.data.body;
   const md = markdownPath(params.slug);
   const group = groupLabel(page.url);
-  // Previous / next in sidebar order, within the page's own tab (Fumadocs' footer logic).
-  const { previous, next } = findNeighbour(source.pageTree, page.url);
+  // Previous / next in sidebar order, within the page's own tab. The tree's `fallback` holds
+  // pages no meta.json lists, from every tab mixed together, so it is left out: a page that
+  // is only there gets no neighbours instead of links into another tab.
+  const { previous, next } = findNeighbour({ ...source.pageTree, fallback: undefined }, page.url);
 
   return (
     <DocsPage
