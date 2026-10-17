@@ -2,7 +2,7 @@
 title: Track Lead
 description: Record a signup or lead event that links a customer to an affiliate click.
 kind: reference
-last_updated: 2026-10-14
+last_updated: 2026-10-17
 ---
 
 `POST /api/v1/track/lead`
@@ -49,7 +49,7 @@ A browser lead settles directly only on a program set to `browser_allowed`. The 
 
 <ParamList>
   <ParamField name="click_id" type="string" requirement="conditional">
-    The `affitor_click_id` value from the affiliate click cookie. Required outside test mode unless `customer_key` is provided.
+    The `affitor_click_id` value from the affiliate click cookie. Required outside test mode unless `customer_key` is provided and the request carries a Bearer key.
   </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
     Your internal customer or user ID. Required outside test mode unless `click_id` is provided.
@@ -60,9 +60,12 @@ A browser lead settles directly only on a program set to `browser_allowed`. The 
   <ParamField name="additional_data" type="object">
     Optional metadata. Supports `test_mode` (boolean), `program_id` (number), and `event_name` (string).
   </ParamField>
+  <ParamField name="program_id" type="string | integer">
+    The program of the page (the tracker sends it). Read only in browser mode; with a Bearer key, the key's program decides. When sent, the customer found by `click_id` or `customer_key` must belong to this program; otherwise the lead answers `400` `Customer not found. Provide a valid click_id or customer_key.`
+  </ParamField>
 </ParamList>
 
-Outside test mode, **at least one of** `click_id` or `customer_key` must be provided. Providing both is recommended for reliable downstream payment attribution.
+Outside test mode, **at least one of** `click_id` or `customer_key` must be provided, and without a Bearer key `click_id` is required. Providing both is recommended for reliable downstream payment attribution.
 
 ### Request body example
 
@@ -138,10 +141,12 @@ When `additional_data.test_mode` is `true`, the response includes the created ev
 | Status | Condition |
 |--------|-----------|
 | `400 Bad Request` | `click_id` and `customer_key` are both missing (outside test mode) |
-| `400 Bad Request` | No customer record found for the provided `click_id` or `customer_key` |
+| `400 Bad Request` | Browser mode: `customer_key` was sent without `click_id` (`click_id is required when no API key is sent`) |
+| `400 Bad Request` | No customer record found for the provided `click_id` or `customer_key`, or (browser mode) the customer does not belong to the `program_id` sent |
 | `400 Bad Request` | Customer does not belong to the authenticated program (server mode cross-program mismatch) |
 | `400 Bad Request` | Customer status cannot transition to lead (e.g. already converted) |
 | `401 Unauthorized` | `Authorization` header is present but the token is invalid or not found |
+| `403 Forbidden` | Test mode only: the Bearer key and `additional_data.program_id` name different programs (`program_id does not match the API key`) |
 | `500 Internal Server Error` | Unexpected error during lead event creation |
 
 ---

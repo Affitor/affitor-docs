@@ -317,7 +317,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
     "economics": { "status": "pass" },
     "payout":    { "status": "pass", "mode": "stripe" },
     "payments":  { "status": "pass", "method": "stripe_connect" },
-    "tracking":  { "status": "pass", "detail": "receiving_events" },
+    "tracking":  { "status": "pass", "detail": "tracker_installed" },
     "live":      { "status": "pass", "test_chain": { "click": "attributed", "lead": "attributed", "sale": "attributed" } }
   },
   "last_event_at": { "click": null, "lead": null, "sale": null },
@@ -339,7 +339,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 | `tracking` / `install_tracker_or_send_events` | No tracker tag found AND no real/S2S events yet | Re-check §4 (client) or that your server is hitting `/api/v1/track/*` |
 | `live` / `run_synthetic_sale_chain` | No real event and no attributed synthetic chain | Run §8a |
 
-`integration_verified: true` is your **done** signal (the synthetic chain attributed and the four completion gates pass). `state: live_verified` is even stronger: it appears once a **real** (non-test) event flows.
+`integration_verified: true` is your **done** signal: the four completion gates pass, and `live` passed through an attributed synthetic chain or a **real** (non-test) event. `state` tells the two apart: `integration_verified` while no real event exists, `live_verified` (even stronger) once one has flowed.
 
 ---
 
