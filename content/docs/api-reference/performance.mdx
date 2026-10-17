@@ -2,7 +2,7 @@
 title: GET /tracking/performance/:programId
 description: Retrieve daily performance aggregates and period-over-period trend metrics for a program
 kind: reference
-last_updated: 2026-09-24
+last_updated: 2026-10-16
 ---
 
 Returns daily aggregated metrics (clicks, leads, conversions, revenue, partners, commissions) for a program, along with period-over-period trend comparisons. This endpoint is used by the Affitor dashboard performance chart.
@@ -93,13 +93,13 @@ HTTP `200` with the following shape:
     "totalPartners": 1,
     "totalSales": 2,
     "totalPartnersCommission": 20.00,
-    "clicksTrend": { "trend": 15.0, "trendDirection": "up" },
-    "leadsTrend": { "trend": 0, "trendDirection": "stable" },
-    "conversionsTrend": { "trend": 100, "trendDirection": "up" },
-    "revenueTrend": { "trend": 100, "trendDirection": "up" },
-    "partnersTrend": { "trend": 0, "trendDirection": "stable" },
-    "salesTrend": { "trend": 100, "trendDirection": "up" },
-    "commissionTrend": { "trend": 100, "trendDirection": "up" }
+    "clicksTrend": { "trend": 15.4, "trendDirection": "up", "previous": 52 },
+    "leadsTrend": { "trend": 0, "trendDirection": "stable", "previous": 7 },
+    "conversionsTrend": { "trend": null, "trendDirection": "up", "previous": 0 },
+    "revenueTrend": { "trend": null, "trendDirection": "up", "previous": 0 },
+    "partnersTrend": { "trend": 0, "trendDirection": "stable", "previous": 1 },
+    "salesTrend": { "trend": null, "trendDirection": "up", "previous": 0 },
+    "commissionTrend": { "trend": null, "trendDirection": "up", "previous": 0 }
   },
   "meta": {
     "period": "7d",
@@ -156,10 +156,11 @@ Each trend object:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `trend` | number | Absolute percentage change, rounded to 1 decimal place |
+| `trend` | number or null | Absolute percentage change, rounded to 1 decimal place. `null` when the previous period is `0` and the current one is not |
 | `trendDirection` | string | `"up"`, `"down"`, or `"stable"` |
+| `previous` | number | The same metric's value in the previous period |
 
-When the previous period value is `0` and the current value is greater than `0`, `trend` is `100` and `trendDirection` is `"up"`. When both are `0`, `trend` is `0` and `trendDirection` is `"stable"`.
+Growth from nothing has no percentage. When the previous period value is `0` and the current value is greater than `0`, `trend` is `null` and `trendDirection` is `"up"`; use `previous` to show it as new. When both are `0`, `trend` is `0` and `trendDirection` is `"stable"`. A change that rounds to `0.0` is `"stable"`.
 
 ### `meta` object
 
