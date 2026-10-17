@@ -2,13 +2,13 @@
 title: Payment Tracking
 description: Track completed sales with server-side tracking or Stripe integration
 kind: guide
-last_updated: 2026-06-08
+last_updated: 2026-10-17
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
 
-1. **Server-side tracking** — your backend calls POST /api/v1/track/sale when revenue is finalized
-2. **Stripe integration** — you keep charging in your own Stripe account and Affitor attributes sales from metadata plus webhook events
+1. **Server-side tracking**: your backend calls POST /api/v1/track/sale when revenue is finalized
+2. **Stripe integration**: you keep charging in your own Stripe account, connect it to the program, and Affitor attributes sales from the payment events its own Stripe Connect endpoint receives
 
 ---
 
@@ -19,7 +19,7 @@ Payment tracking records revenue after a customer pays. Affitor supports two sal
 | **Server-side tracking** | custom backend, any payment provider, Paddle/LemonSqueezy/manual revenue events |
 | **Stripe integration** | existing Stripe Checkout integration |
 
-Use server-side tracking when you control the exact moment revenue is finalized on your server. Use Stripe integration when you already use Stripe Checkout and want Affitor to attribute revenue from webhook events.
+Use server-side tracking when you control the exact moment revenue is finalized on your server. Use Stripe integration when you take payments on Stripe: connect your Stripe account under **Program settings** › **Payments**, and Affitor receives its payment events through Stripe Connect, with no webhook for you to add.
 
 ---
 
@@ -98,7 +98,7 @@ Use server-side tracking if you want one server-controlled source of truth for r
 
 ## Option B — Stripe integration
 
-With the Stripe integration, you keep charging customers through your own Stripe account — Affitor does **not** become merchant of record. Affitor attributes the conversion through Stripe metadata and webhook processing, then invoices you through its invoice billing workflow.
+With the Stripe integration, you keep charging customers through your own Stripe account; Affitor does **not** become merchant of record. Connect the account under **Program settings** › **Payments** ([Connect a Stripe account](/docs/brand/tracking/connect-stripe-account)). Stripe then sends the account's payment events to Affitor's own Connect endpoint, so you do not add a webhook. Affitor attributes the conversion from those events and the metadata on each payment, then invoices you through its invoice billing workflow.
 
 ### Recommended metadata fields
 
@@ -161,9 +161,10 @@ const session = await stripe.checkout.sessions.create({
 ### Why subscriptions need both locations
 
 - One-time payments are handled from Stripe checkout session completion
-- Subscription commissions are created from `invoice.payment_succeeded`
-- Renewals rely on subscription metadata still being present later
-- If `subscription_data.metadata` is missing, renewal attribution can fail
+- Subscription commissions, for the first payment and each renewal, are created from `invoice.payment_succeeded`
+- An invoice carries the subscription's metadata (`subscription_data.metadata`), not the Checkout Session's `metadata`, so that is where the click reaches the subscription
+- Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal to it
+- Without it, the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has
 
 ---
 
@@ -178,7 +179,7 @@ Every `checkout.session.completed` event with `mode: 'payment'` is processed ind
 :::note
 
 **`invoice.payment_succeeded` is not involved here.**
-Affitor only uses `invoice.payment_succeeded` for recurring subscription renewals. Pay-as-you-go purchases use `checkout.session.completed` — one event per purchase, each attributed and commissioned separately.
+Affitor uses `invoice.payment_succeeded` only for subscriptions: a subscription's first payment and each renewal. Pay-as-you-go purchases use `checkout.session.completed`, one event per purchase, each attributed and commissioned separately.
 
 :::
 
@@ -245,7 +246,8 @@ When a Stripe event arrives, Affitor resolves attribution through a fallback cha
 1. click metadata (`affitor_click_id`)
 2. customer email matching
 3. Stripe customer ID
-4. customer key (`affitor_customer_key`)
+4. the click in `client_reference_id`, used only when the metadata has no click (the Affitor tracker writes it on Payment Links, the Buy Button and the Pricing Table)
+5. customer key (`affitor_customer_key`)
 
 This is why the best production setup is:
 - install the tracker first
@@ -311,7 +313,7 @@ Check:
 - `program_id` is present in metadata
 - `affitor_click_id` and `affitor_customer_key` are passed when available
 - signup tracking used the same internal customer ID earlier
-- the Stripe webhook was delivered successfully
+- the program's Stripe card under **Program settings** › **Payments** reads **Connected**. Affitor receives the events through Stripe Connect, so there is no webhook of yours to check ([Connect a Stripe account](/docs/brand/tracking/connect-stripe-account))
 
 ### Stripe pay-as-you-go second/third purchase not attributed
 
@@ -323,8 +325,9 @@ Check:
 ### Stripe renewals not attributed
 
 Check:
+- the subscription's first payment was attributed: renewals follow it through the buyer's Stripe customer ID
 - `subscription_data.metadata` contains all three fields
-- `invoice.payment_succeeded` is enabled and delivered
+- the program's Stripe card under **Program settings** › **Payments** reads **Connected**, and the subscription bills on that Stripe account. Affitor receives `invoice.payment_succeeded` through Stripe Connect; you do not add a webhook
 - the same customer key was used at signup and in Stripe metadata
 
 ---

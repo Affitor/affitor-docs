@@ -150,7 +150,7 @@ Follow [Step 3 of the base Next.js guide](/docs/api-reference/integrations/nextj
   "Different customer IDs at signup vs sale — `user.id` from Clerk must be used as `affitor_customer_key` and `customerExternalId` consistently.",
   "Reading `getClickId()` too late — call it before Clerk redirects away from the sign-up page, otherwise the value may not be available in the new page context.",
   "Calling `signup()` in a server component or route handler — it must run in a client component where the cookie is accessible.",
-  "Subscriptions missing `subscription_data.metadata` — renewals won't attribute to any partner."
+  "Subscriptions missing `subscription_data.metadata`. The click never reaches the subscription's invoices, so its payments are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has."
 ]} />
 
 <NextStep title="Add Stripe for sales tracking" description="Attach Affitor metadata to Stripe Checkout Sessions so sales and renewals attribute automatically." href="/docs/api-reference/integrations/stripe" />

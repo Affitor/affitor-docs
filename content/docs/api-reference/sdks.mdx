@@ -74,6 +74,8 @@ The tracker sends events to `https://api.affitor.com`. To send them to a non-pro
 | `consent` | `(granted: boolean) => void` | With `data-affitor-consent="required"` on the script, nothing is stored or sent until `consent(true)`; `consent(false)` removes Affitor's cookies. |
 | `getData` | `() => AffitorData` | A snapshot of tracker state. |
 | `trackTest` | `(data?) => void` | Send a test event. |
+| `init` | `(options: { programId?: string \| number; debug?: boolean }) => void` | Starts the tracker. It runs on its own when the script loads (through `loadAffitor` or the script tag), so you do not need to call it. |
+| `trackLead` | `(data: TrackLeadData) => Promise<void>` | Deprecated: use `signup`. Older alias that calls `signup` with the object's `customer_key` (or `user_id`) and `email`. |
 
 > `signup()` requires `customerKey`, your own user id. Affitor uses it to bind the customer to a click so later backend sale calls can resolve attribution by id alone.
 
@@ -117,6 +119,8 @@ await affitor?.signup(userId, email);
 ```
 
 React apps can also use `AffitorProvider` and `useAffitor()` from `@affitor/sdk/react`.
+
+`@affitor/sdk/pure` exports the same `loadAffitor` and types as `@affitor/sdk`. Both inject the tracker script only when `loadAffitor()` runs; importing from `/pure` makes that explicit.
 
 ---
 
@@ -166,7 +170,7 @@ Constructor options for `new Affitor(opts)`.
 
 ### `AffitorResponse<T>`
 
-All methods return `Promise<AffitorResponse<T>>`.
+The `track*` methods return `Promise<AffitorResponse<T>>`. [`readiness()`](#readinessopts) returns the verdict itself.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -248,6 +252,14 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 | `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
 | `refundAmountCents` | `number` | No | This refund's amount in integer cents (not the running total). Omit or pass `0` to refund the rest of the sale. |
 | `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
+
+---
+
+#### `readiness(opts?)`
+
+Returns the program's readiness verdict from `GET /api/v1/programs/me/readiness`; the program comes from the API key. Pass `{ forceRecheck: true }` (`?force_recheck=true`) to check your site for the tracker again instead of using the cached result; a forced check runs at most once per minute per program.
+
+It resolves to the verdict object (`ReadinessResult`: `state`, `integration_verified`, `blocker`, `gates`, and more), not an `AffitorResponse`, and throws `AffitorApiError` (with `status`, `code` and `retryAfterSeconds`) on a non-2xx response.
 
 ---
 

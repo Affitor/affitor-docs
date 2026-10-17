@@ -18,7 +18,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 - Your **program ID** (program menu → **Program settings** → **Business**)
 - A **program API key** (program menu → **Program settings**, then **Developers** → **API keys**)
 - Stripe Checkout or Stripe Billing already working in your app
-- Affitor receiving your Stripe webhooks (program menu → **Program settings** → **Payments**, **Connect Stripe**)
+- Your Stripe account connected to the program (program menu → **Program settings** → **Payments**, **Connect Stripe**). Affitor then receives the account's events through Stripe Connect; you do not add a webhook
 
 ## 1. Capture clicks and track signups
 
@@ -58,7 +58,7 @@ Affitor listens to the `checkout.session.completed` webhook event and attributes
 
 ### Subscription (`mode: 'subscription'`)
 
-For subscriptions you must attach the metadata in **two places**: `metadata` (covers the first payment via `checkout.session.completed`) **and** `subscription_data.metadata` (covers every renewal via `invoice.payment_succeeded`).
+For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from `invoice.payment_succeeded`, and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal to it.
 
 ```ts
 const session = await stripe.checkout.sessions.create({
@@ -71,7 +71,7 @@ const session = await stripe.checkout.sessions.create({
     affitor_customer_key:  user.id,
     program_id:            'YOUR_PROGRAM_ID',
   },
-  // Required for renewals — omitting this loses partner attribution after the first payment
+  // The subscription's invoices (first payment and renewals) read the click from here
   subscription_data: {
     metadata: {
       affitor_click_id:      clickId,
@@ -84,7 +84,7 @@ const session = await stripe.checkout.sessions.create({
 
 :::note
 
-**Do not skip `subscription_data.metadata`.** Stripe copies `metadata` onto the Checkout Session object, not onto the Subscription. Renewals fire as `invoice.payment_succeeded` events against the Subscription — if the Subscription's metadata is empty, Affitor cannot attribute the renewal to any partner.
+**Set `subscription_data.metadata` on subscription checkouts.** Stripe keeps `metadata` on the Checkout Session; only `subscription_data.metadata` reaches the Subscription and its invoices. Without it the click never reaches the invoice, and Affitor can attribute the subscription only by matching the buyer's email or Stripe customer ID to a customer it already has.
 
 :::
 
@@ -94,15 +94,16 @@ Affitor processes two Stripe webhook events:
 
 | Event | When it fires | What Affitor does |
 |---|---|---|
-| `checkout.session.completed` | First payment (one-time or first subscription payment) | Records the sale; looks up the lead by `affitor_customer_key` |
-| `invoice.payment_succeeded` | Every subscription renewal | Records the recurring sale using the Subscription's metadata |
+| `checkout.session.completed` | A one-time payment | Records the sale. A subscription checkout records no sale here: its first invoice does |
+| `invoice.payment_succeeded` | A subscription's first payment and every renewal | Records the subscription sale |
 
 **Attribution fallback chain.** Affitor resolves the partner in this order:
 
-1. `affitor_click_id` — direct click attribution (most reliable)
-2. Email — matched against the lead record if `affitor_click_id` is missing
-3. Stripe customer ID — matched if the same customer appeared in a previous attributed session
-4. `affitor_customer_key` alone — matched against the lead record as a last resort
+1. `affitor_click_id`: direct click attribution (most reliable)
+2. Email: matched against the lead record if `affitor_click_id` is missing
+3. Stripe customer ID: matched if the same customer appeared in a previous attributed session
+4. `client_reference_id`: used only when the metadata has no click. The Affitor tracker writes the click there on Payment Links, the Buy Button and the Pricing Table, which cannot carry metadata
+5. `affitor_customer_key` alone: matched against the lead record as a last resort
 
 Supplying all three fields (`affitor_click_id`, `affitor_customer_key`, `program_id`) on every checkout is the recommended default — it ensures Affitor can attribute the sale even if the click cookie expired or was blocked.
 
@@ -181,7 +182,7 @@ This path requires a Bearer API key and is called from your server only — neve
 ## Common mistakes
 
 <CommonMistakes items={[
-  "Omitting `subscription_data.metadata` — the first payment attributes but every renewal is lost because Affitor reads the Subscription's own metadata for `invoice.payment_succeeded` events.",
+  "Putting the click only in the session `metadata` of a subscription checkout. Affitor records subscription payments from invoices, which carry `subscription_data.metadata`, not the session's; without it the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
   "Different customer IDs at signup vs checkout — `affitor_customer_key` must equal the `customerExternalId` / `customer_key` you sent at signup.",
   "Reading `affitor_click_id` from the wrong place on the server — it is a browser cookie, not a query param. Forward it from `req.cookies` or `cookies()` in your server handler.",
   "Tracking a sale from the browser — sale tracking is server-side only. Stripe metadata and `@affitor/sdk/server` both run on your server.",
