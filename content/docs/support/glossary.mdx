@@ -2,7 +2,7 @@
 title: Glossary
 description: Common terms used across Affitor docs — server-side tracking, Stripe integration, invoice billing, and more
 kind: reference
-last_updated: 2026-10-14
+last_updated: 2026-10-16
 ---
 
 ## A
@@ -11,7 +11,7 @@ last_updated: 2026-10-14
 The company running an affiliate program in Affitor.
 
 ### Affiliate Link
-A partner-specific referral link that includes tracking information, typically through the `?aff=` parameter.
+A partner-specific referral link that includes tracking information, through the `?via=` or `?aff=` parameter (the program's **Partner link parameter**).
 
 ### Attribution
 The process of crediting a conversion to the correct partner. Current public docs describe first-party tracking with a 60-day default window and first-click attribution: the partner whose click first brings in a customer keeps that customer.
@@ -58,7 +58,7 @@ A pricing model where fees are tied to partner-generated revenue rather than a m
 Affitor's fee on partner-generated revenue: $0 until a program's affiliate-driven revenue reaches $10,000, then 3.5% of each affiliate-driven sale. The threshold is counted per program.
 
 ### Program ID
-The identifier for your Affitor program. It is used in tracker setup, test flows, and Stripe metadata. You can find your program ID in the Affitor dashboard after creating your program.
+The identifier for your Affitor program. It is used in tracker setup, test flows, and Stripe metadata. Find it under **Settings** → **Program settings** → **Business**, where **Program ID** is shown with **Copy**.
 
 ## R
 
