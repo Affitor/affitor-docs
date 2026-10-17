@@ -26,7 +26,10 @@ info:
     test mode: with a live key it reverses the real commission.
 
     ## Attribution rules
-    - Model: last-click. A new `?aff=` click overwrites the previous partner.
+    - Model: first click wins inside a program. When a later click from
+      another partner sends the stored `click_id` as `existing_click_id` (the
+      tracker does), that click is recorded for the new partner, but the
+      customer, its `click_id` and its partner do not change.
     - Attribution window: program-level `attribution_window_days` (default 60).
       Sales for customers whose first-click anchor is outside the window return
       `attributed: false` and create nothing.
@@ -98,12 +101,28 @@ paths:
         '400':
           description: |
             Validation error. Causes: missing `affiliate_url`, URL not
-            parseable, no `aff` parameter present, referral link not found, or
-            invalid referral link configuration.
+            parseable, no `aff` parameter present, a `program_id` that is not a
+            program (`Unknown program_id`), referral link not found, or invalid
+            referral link configuration.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: |
+            Test mode only: the Bearer key and `additional_data.program_id`
+            name different programs (`program_id does not match the API key`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                data: null
+                error:
+                  status: 403
+                  name: ForbiddenError
+                  message: "program_id does not match the API key"
+                  details: {}
         '410':
           description: |
             The referral link exists but is inactive (turned off by the partner
@@ -376,8 +395,11 @@ paths:
       responses:
         '200':
           description: |
-            Refund processed, or sale found but had no commission to reverse
-            (`status: no_commission`).
+            Refund processed (`status: reversed` or `refunded`), nothing
+            changed (`status: skipped`, with a `reason`), or sale found but
+            had no commission to reverse (`status: no_commission`). A test key
+            answers `{ success: true, test: true }` before the sale lookup and
+            changes nothing.
           content:
             application/json:
               schema:
@@ -386,14 +408,26 @@ paths:
                 reversed:
                   value:
                     success: true
+                    status: "reversed"
+                    deductionAmount: 25.00
+                    commission_id: 456
+                skipped:
+                  value:
+                    success: true
+                    status: "skipped"
+                    reason: "already reversed"
                     commission_id: 456
                 no_commission:
                   value:
                     success: true
                     status: "no_commission"
                     message: "Sale has no commission to reverse"
+                test_key:
+                  value:
+                    success: true
+                    test: true
         '400':
-          description: '`transaction_id` is required.'
+          description: '`transaction_id` is required, or `reason` is not `refund` or `chargeback` (`reason must be refund or chargeback`).'
           content:
             application/json:
               schema:
@@ -511,17 +545,22 @@ paths:
     get:
       operationId: getMyReadiness
       tags: [Agent]
-      summary: Program readiness (5-gate verdict)
+      summary: Program readiness (6-gate verdict)
       description: |
         Returns a machine-verifiable readiness verdict for the program behind
         the Bearer program API key (the program is derived from the key — there
         is no `:id` in the path, so no IDOR and the agent never needs to know
         its own program id).
 
-        Five gates — `profile · economics · payout · tracking · live` — each
-        `pass | fail | unknown`. `blocker` is the first failing gate; each
-        failing gate carries a `next_action` string the agent can act on. Poll
-        every `poll.retry_after_seconds` (default 5) until
+        Six gates, each `pass | fail | unknown`. Four decide completion, in
+        this order: `profile · economics · tracking · live`. `blocker` is the
+        first of these four that has not passed. Two more are reported but
+        never become `blocker`: `payout` (the advertiser's Stripe Connect,
+        for billing) and `payments` (the program can record sales: its Stripe
+        account is connected, or your server has sent a sale to
+        `/api/v1/track/sale`; going live requires it). Each failing gate
+        carries a `next_action` string the agent can act on. Poll every
+        `poll.retry_after_seconds` (default 5) until
         `integration_verified: true`.
 
         READ-ONLY: this endpoint writes nothing. Errors use the typed agent
@@ -550,6 +589,7 @@ paths:
                   profile: { status: pass }
                   economics: { status: pass }
                   payout: { status: pass, mode: stripe }
+                  payments: { status: pass, method: stripe_connect }
                   tracking: { status: pass, detail: receiving_events, checked_at: "2026-06-11T00:00:00.000Z" }
                   live:
                     status: pass
@@ -747,7 +787,13 @@ components:
         timezone: { type: string, example: "America/New_York" }
         existing_click_id:
           type: string
-          description: Pass the stored click ID when the same visitor clicks again to reuse the customer record (last-click partner overwrite still applies).
+          description: Pass the stored click ID when the same visitor clicks again. A customer that already has this click ID is reused and keeps its first partner (first click wins inside a program); the click is still recorded for the new partner. With `program_id`, a click ID whose customer belongs to another program is not reused, and the click gets a new click ID and customer.
+        program_id:
+          type: [string, integer]
+          description: The program of the page (the tracker sends it). When sent, the `aff` code is looked up only inside this program, and an id that is not a program returns `400` `Unknown program_id`. Without it, the lookup covers every program.
+        visitor_ip:
+          type: string
+          description: Your visitor's IP address, when your server records the click for that visitor. Used for the click's location only when the request carries the Bearer API key of the program the link belongs to (not a key past its rotation deadline) and the value is an IP address; otherwise the request's own IP is used. It never causes the click to be refused.
         additional_data:
           $ref: '#/components/schemas/AdditionalData'
 
@@ -912,8 +958,21 @@ components:
         commission_id: { type: integer }
         status:
           type: string
-          description: '`no_commission` when the sale had no commission to reverse.'
-        message: { type: string }
+          enum: [reversed, refunded, skipped, no_commission]
+          description: '`reversed` once the whole sale is refunded, `refunded` while part of it remains, `skipped` when the call changed nothing (`reason` says why), `no_commission` when the sale had no commission to reverse.'
+        deductionAmount:
+          type: number
+          description: Commission amount reversed by this call, in the commission's currency. Present when `status` is `reversed` or `refunded`.
+        reason:
+          type: string
+          description: Why the call changed nothing. Present when `status` is `skipped`, e.g. `already reversed` or `refund already applied`.
+        message:
+          type: string
+          description: 'Present with `status: no_commission`.'
+        test:
+          type: boolean
+          const: true
+          description: Present (and the only other field) when the request used a test key. Nothing was refunded.
 
     AgentError:
       type: object
@@ -1011,16 +1070,16 @@ components:
           type: string
           enum: [draft, configuring, ready, integration_verified, live_verified]
           description: |
-            State machine. `integration_verified` = all gates pass via the
-            synthetic chain (no real event yet) — the agent's goal.
-            `live_verified` = a real (non-test) event has flowed.
+            State machine. `integration_verified` = the four completion gates
+            pass, `live` through the synthetic chain (no real event yet): the
+            agent's goal. `live_verified` = a real (non-test) event has flowed.
         integration_verified:
           type: boolean
           description: True when `state` is `integration_verified` or `live_verified`.
         blocker:
           type: [string, 'null']
-          enum: [profile, economics, payout, tracking, live, null]
-          description: First failing gate in canonical order; null when all pass.
+          enum: [profile, economics, tracking, live, null]
+          description: The first of the completion gates (`profile`, `economics`, `tracking`, `live`, in that order) whose status is not `pass`; null when all four pass. `payout` and `payments` never block.
         gates:
           type: object
           properties:
@@ -1036,11 +1095,26 @@ components:
                 next_action: { type: string, description: "e.g. set_commission_policy" }
             payout:
               type: object
+              description: The advertiser's Stripe Connect. Reported for billing; never blocks completion.
               properties:
                 status: { $ref: '#/components/schemas/GateStatus' }
                 mode: { type: string, enum: [stripe, manual] }
                 next_action: { type: string, description: "e.g. surface_stripe_connect_url" }
                 endpoint: { type: string, description: "Stripe-connect URL endpoint when payout fails." }
+            payments:
+              type: object
+              description: |
+                Passes when the program can record sales: its Stripe account is
+                connected, or your server has sent a sale to
+                `/api/v1/track/sale` (a test sale counts; the synthetic chain's
+                sale does not). Required to go live; never blocks completion.
+              properties:
+                status: { $ref: '#/components/schemas/GateStatus' }
+                method:
+                  type: string
+                  enum: [stripe_connect, s2s]
+                  description: The program's payment tracking mode. It picks `next_action`; either way of recording sales passes the gate.
+                next_action: { type: string, description: "connect_stripe or send_test_sale" }
             tracking:
               type: object
               properties:

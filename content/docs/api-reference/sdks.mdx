@@ -2,7 +2,7 @@
 title: SDKs
 description: Typed client libraries for browser tracking (@affitor/sdk) and server-side conversion reporting (@affitor/sdk/server).
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 > **Beta** — The @affitor/sdk package and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -228,7 +228,7 @@ This endpoint does not require authentication.
 | `affiliateUrl` | `string` | No | The full affiliate URL containing the `?aff=` parameter. |
 | `pageUrl` | `string` | No | The landing page URL. |
 | `referrerUrl` | `string` | No | The HTTP referrer. |
-| `existingClickId` | `string` | No | Pass an existing click id to enable last-partner attribution (overwrites old click). |
+| `existingClickId` | `string` | No | An existing click id. Affitor reuses the customer that owns it: first click wins inside a program, so the partner does not change. |
 
 ---
 
