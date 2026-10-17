@@ -2,7 +2,7 @@
 title: "Stripe"
 description: "Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring."
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
@@ -15,10 +15,10 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## Prerequisites
 
-- Your **program ID** (**Settings** → **Program settings** → **Business**)
-- A **program API key** (dashboard → program settings → API keys)
+- Your **program ID** (program menu → **Program settings** → **Business**)
+- A **program API key** (program menu → **Program settings**, then **Developers** → **API keys**)
 - Stripe Checkout or Stripe Billing already working in your app
-- Affitor receiving your Stripe webhooks (dashboard → program settings → Stripe connect)
+- Affitor receiving your Stripe webhooks (program menu → **Program settings** → **Payments**, **Connect Stripe**)
 
 ## 1. Capture clicks and track signups
 

@@ -2,7 +2,7 @@
 title: CLI Command Reference
 description: Complete reference for all npx affitor commands, flags, and options.
 kind: reference
-last_updated: 2026-10-12
+last_updated: 2026-10-17
 ---
 
 Every `npx affitor` command, flag, and option in one place.
@@ -96,7 +96,7 @@ Create a **new** affiliate program and generate config files. Requires a login s
 npx affitor init
 ```
 
-`init` always creates a new program. It does not adopt a program you already have and it does not issue a replacement key for one: if a program's key stopped working, a workspace owner regenerates it in Affitor under Settings → API Key. Running `init` in a directory that already has `.affitor/config.json` stops without changing anything.
+`init` always creates a new program. It does not adopt a program you already have and it does not issue a replacement key for one: if a program's key stopped working, a workspace owner regenerates it in the Affitor dashboard (program menu → **Program settings**, then **Developers** → **API keys**). Running `init` in a directory that already has `.affitor/config.json` stops without changing anything.
 
 | Flag | Description | Default |
 |---|---|---|
@@ -222,7 +222,7 @@ A readiness poll that succeeds after a failed chain still reports `integration_v
 
 ## `affitor setup stripe`
 
-Stripe is connected from the Affitor dashboard, not from the CLI: open the program, go to **Settings**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds for that account; nothing needs to be created on your Stripe account. To attribute each sale, add Affitor metadata to your Checkout Session, as described in the [Stripe integration guide](/docs/api-reference/integrations/stripe).
+Stripe is connected from the Affitor dashboard, not from the CLI: open the program menu, choose **Program settings**, open **Payments**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds for that account; nothing needs to be created on your Stripe account. To attribute each sale, add Affitor metadata to your Checkout Session, as described in the [Stripe integration guide](/docs/api-reference/integrations/stripe).
 
 ```bash
 npx affitor setup stripe
@@ -358,8 +358,8 @@ Two gaps are worth knowing before you build on this output:
 | Invalid event type | `invalid_event_type` | `test` | `affitor test` takes `click`, `lead`, or `sale` |
 | No API key | `no_api_key` | `onboard` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
 | API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session is invalid or expired — run `affitor login` again. Do **not** regenerate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
-| API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key under Settings → API Key and deploy the new one |
-| Stripe is connected elsewhere | `stripe_setup_moved` | `setup stripe` | Connect Stripe in the dashboard: program **Settings**, **Connect Stripe** |
+| API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key (program menu → **Program settings**, then **Developers** → **API keys**) and deploy the new one |
+| Stripe is connected elsewhere | `stripe_setup_moved` | `setup stripe` | Connect Stripe in the dashboard: program menu → **Program settings** → **Payments**, **Connect Stripe** |
 | No usable response | `network_error` | `init`, `status`, `test` | See below |
 | Anything else | `unexpected_error` | `init`, `status`, `test` | Re-run with `--verbose` and keep the output |
 

@@ -2,7 +2,7 @@
 title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and Settings also hold the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -18,13 +18,13 @@ Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-pro
 
 ## What lives in Settings
 
-Settings belong to the program selected in the program menu. Open the program menu (your program's name at the top of the left menu, or in the top bar on smaller screens) and choose **All settings**. Everything on the Settings pages applies to that program.
+Settings belong to the program selected in the program menu. Open the program menu (your program's name at the top of the left menu, or in the top bar on smaller screens) and choose **Program settings**. The same menu also has **Members** (only for people who can manage members) and **Billing**. Everything on the Settings pages applies to that program.
 
-![The program menu, opened from the program name at the top left: your programs with their status, Create program, then All settings, Team, Billing and Refer a brand](/docs/brand/program-menu.png)
+![The program menu, opened from the program name at the top left, with your programs, their status and Create program](/docs/brand/program-menu.png)
 
 **Program settings** are the same five steps as setup, one page each:
 
-![Settings for one program: the left menu groups Program settings, Developers (API keys), Team (Members), Billing (Invoices), Personal (Your account) and Explore (Refer a brand); Program settings opens Business, Commission, Tracking, Payments and Status, with the Business form on the right](/docs/brand/settings.png)
+![Settings for one program: the left menu with Program settings selected, its pages Business, Commission, Tracking, Payments and Status beside it, and the Business form on the right](/docs/brand/settings.png)
 
 | Page | What you edit there |
 |---------|--------------------|
@@ -41,14 +41,15 @@ The rest of the Settings menu:
 | **Developers** | **API keys** | The per-program secret key for server-side tracking calls, and the line for an AI coding agent |
 | **Team** | **Members** | Who can work on the program |
 | **Billing** | **Invoices** | Platform-fee invoices |
-| **Personal** | **Your account** | Your own profile and sign-in, shared with the partner side |
 | **Explore** | **Refer a brand** | Your link for referring brands to Affitor, **Invite via email**, and the brands you referred ([how it works](/docs/partners/quickstart/get-your-referral-link#refer-a-brand-to-affitor)) |
+
+Your own settings are not part of a program. To change your profile, sign-in or payout details, open the **⋯** menu next to your name at the bottom of the left menu and choose **Your account**: it has **Profile**, **Login and security** and **Payouts**.
 
 ## Step 1: Edit program terms after launch
 
 Programs evolve — rates get adjusted, branding gets refreshed, approval policies tighten or loosen. None of this requires recreating the program.
 
-1. In the program menu, choose **All settings**.
+1. In the program menu, choose **Program settings**.
 2. Open the page you want to change: **Commission** for the rate, hold period and how new partners join, or **Business** for the business name, website, logo and branding.
 3. Make the change and save. On **Commission**, once terms are saved, select **Set new terms** before you change them.
 
@@ -62,7 +63,7 @@ The **Commission** page sets your program-wide default. To pay different rates t
 
 Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI's tracking setup, and AI agents all use this same key. CLI commands that create or list programs act as your account instead, and authenticate with your CLI login.
 
-1. In the program menu, choose **All settings**.
+1. In the program menu, choose **Program settings**.
 2. Under **Developers**, select **API keys**.
 
 The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to an owner's **Generate** or **Regenerate** action on the **API keys** page. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
