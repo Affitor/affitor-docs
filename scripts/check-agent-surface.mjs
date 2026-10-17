@@ -139,10 +139,63 @@ function changelogInventory() {
     }
     return parts.length ? `${parts.join('\n\n')}\n\n` : '';
   };
-  const entries = walk(dir).filter((file) => /\.mdx?$/.test(file)).map((file) => {
+  // Mirror of entryMedia() and aiContext() in src/lib/changelog.ts: the media files that exist,
+  // and the "Context for AI" section that ends the twin of an entry with `context`.
+  const published = (path) => (existsSync(join(ROOT, 'public', path)) ? `${ORIGIN}${path}` : undefined);
+  const some = (files) => {
+    const kept = Object.fromEntries(Object.entries(files).filter(([, v]) => v));
+    return Object.keys(kept).length ? kept : undefined;
+  };
+  const entryMedia = (e, body) => {
+    const banner = e.banner ? (some({ light: published(`/docs/changelog/${e.slug}/banner-light.png`), dark: published(`/docs/changelog/${e.slug}/banner-dark.png`) }) ?? null) : null;
+    const images = [];
+    const videos = [];
+    for (const m of body.matchAll(/<Media\s+([^>]*?)\/>|!\[([^\]]*)\]\((\/[^)\s]+)\)/g)) {
+      if (m[3]) {
+        const src = published(m[3]);
+        if (src) images.push({ src, alt: m[2] });
+        continue;
+      }
+      const a = Object.fromEntries([...m[1].matchAll(/(\w+)="([^"]*)"/g)].map((x) => [x[1], x[2]]));
+      const [, base, ext] = a.src.match(/^(.*)(\.[a-z0-9]+)$/i) ?? [];
+      if (ext === '.mp4') {
+        const poster = some({ light: published(`${base}-light.poster.png`), dark: published(`${base}-dark.poster.png`) });
+        const steps = published(`${base}.steps.json`);
+        videos.push({ ...some({ light: published(`${base}-light.mp4`), dark: published(`${base}-dark.mp4`) }), ...(poster && { poster }), ...(steps && { steps }), alt: a.alt });
+      } else {
+        images.push({ ...some({ light: published(`${base}-light${ext}`), dark: published(`${base}-dark${ext}`), raw: published(`${base}-raw.png`) }), alt: a.alt });
+      }
+    }
+    return { banner, images, videos };
+  };
+  const mediaLine = (kind, { alt, ...files }) => {
+    const urls = Object.entries(files).flatMap(([k, v]) => (typeof v === 'string' ? [`${k} ${v}`] : Object.entries(v).map(([t, u]) => `${k} ${t} ${u}`)));
+    return `- ${kind}${alt ? ` (${alt})` : ''}: ${urls.join(', ')}`;
+  };
+  const aiContext = (e, media) => {
+    const c = e.context;
+    if (!c) return '';
+    const list = (items) => items.map((s) => `- ${s}`).join('\n');
+    const lines = [...(media.banner ? [mediaLine('Banner', media.banner)] : []), ...media.images.map((i) => mediaLine('Image', i)), ...media.videos.map((v) => mediaLine('Video', v))];
+    const parts = [
+      `Shared context for every entry (brand, facts, what never to say): ${ORIGIN}/changelog/context.md`,
+      ...(c.facts?.length ? [`### Facts\n\n${list(c.facts)}`] : []),
+      ...(c.ui?.length ? [`### UI labels\n\n${list(c.ui.map((label) => `\`${label}\``))}`] : []),
+      ...(c.avoid?.length ? [`### Avoid\n\n${list(c.avoid)}`] : []),
+      ...(c.cta ? [`### CTA\n\n[${c.cta.label}](${c.cta.url})`] : []),
+      `### Media\n\n${lines.length ? lines.join('\n') : 'None.'}`,
+    ];
+    return `\n\n## Context for AI\n\n${parts.join('\n\n')}`;
+  };
+  // The collection reads *.mdx only: anything else here would silently not be an entry.
+  for (const name of readdirSync(dir)) {
+    assert.ok(name.endsWith('.mdx') || name === '_context.md', `content/changelog/${name}: entries are .mdx files; only _context.md sits beside them`);
+  }
+  const entries = walk(dir).filter((file) => file.endsWith('.mdx')).map((file) => {
     const data = document(file);
-    const slug = relative(dir, file).replace(/\.mdx?$/, '');
+    const slug = relative(dir, file).replace(/\.mdx$/, '');
     const where = `content/changelog/${slug}.mdx`;
+    assert.notEqual(slug, 'context', `${where}: the slug context is /changelog/context.md (the AI context pack)`);
     assert.equal(typeof data.date, 'string', `${where}: missing date`);
     assert.match(data.date, ISO_DAY, `${where}: date must be YYYY-MM-DD`);
     assert.ok(TYPES.includes(data.type), `${where}: unknown type ${data.type}`);
@@ -165,7 +218,12 @@ function changelogInventory() {
         }
       }
     }
-    return { ...data, slug, surfaces: data.surfaces ?? [], url: `${ORIGIN}/changelog/${slug}` };
+    const body = data.raw.replace(FRONTMATTER, '');
+    const e = { ...data, slug, body, surfaces: data.surfaces ?? [], url: `${ORIGIN}/changelog/${slug}` };
+    const href = body.match(/^Learn more:?\s*\[[^\]]*\]\(([^)\s]+)\)/im)?.[1];
+    e.learnMore = href ? (href.startsWith('/') ? `${ORIGIN}${href}` : href) : (data.context?.cta?.url ?? null);
+    e.media = entryMedia(e, body);
+    return e;
   }).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
   assert.ok(entries.length, 'Changelog source is empty');
 
@@ -181,9 +239,44 @@ function changelogInventory() {
     { id: 'changelog', type: 'changelog', url: `${ORIGIN}/changelog`, updated: entries[0].date, sourceDate: entries[0].date, body: index },
     ...entries.map((e) => ({
       id: `changelog/${e.slug}`, type: 'changelog', url: e.url,
-      updated: e.date, sourceDate: e.date, body: markdown({ ...e, raw: `${preamble(e)}${e.raw.replace(FRONTMATTER, '')}` }, e.slug),
+      updated: e.date, sourceDate: e.date, entry: e,
+      body: markdown({ ...e, raw: `${preamble(e)}${e.body.trimEnd()}${aiContext(e, e.media)}` }, e.slug),
     })),
   ];
+}
+
+/**
+ * /changelog/context.md is content/changelog/_context.md as is, and /changelog.json carries every
+ * entry newest first with its source fields, the media files that exist, and the brand kit and
+ * "Never say" rules of the context pack.
+ */
+function checkChangelogData(entries, artifact) {
+  const pack = read(join(ROOT, 'content/changelog/_context.md'));
+  assert.equal(artifact('/changelog/context.md', 'text/markdown'), pack, '/changelog/context.md differs from content/changelog/_context.md');
+  const feed = JSON.parse(artifact('/changelog.json', 'application/json'));
+  assert.match(feed.generated_at, /^\d{4}-\d{2}-\d{2}T/, '/changelog.json: generated_at');
+  assert.equal(feed.global.context_url, `${ORIGIN}/changelog/context.md`, '/changelog.json: global.context_url');
+  const never = (pack.split(/^## Never say\s*$/m)[1] ?? '').split(/^## /m)[0].match(/^- .+$/gm)?.map((l) => l.slice(2));
+  assert.ok(never?.length, '_context.md: no Never say rules');
+  assert.deepEqual(feed.global.rules, never, '/changelog.json: global.rules must be the Never say lines');
+  for (const [key, value] of [...Object.entries(feed.brand.logo), ...Object.entries(feed.brand.colors)]) {
+    assert.ok(typeof value === 'string' && pack.includes(value), `/changelog.json: brand ${key} ${value} is not in _context.md`);
+  }
+  assert.deepEqual(Object.keys(feed.brand.logo).sort(), ['mark_png', 'mark_svg', 'wordmark_svg'], '/changelog.json: brand.logo keys');
+  assert.deepEqual(Object.keys(feed.brand.colors).sort(), ['brand', 'ink', 'lines', 'muted', 'soft_bg', 'text'], '/changelog.json: brand.colors keys');
+  assert.deepEqual(feed.entries.map((e) => e.slug), entries.map((e) => e.slug), '/changelog.json: entries must be every changelog entry, newest first');
+  feed.entries.forEach((got, i) => {
+    const e = entries[i];
+    const { points, ...rest } = got;
+    assert.deepEqual(rest, {
+      slug: e.slug, url: e.url, date: e.date, type: e.type, audience: e.audience, surfaces: e.surfaces,
+      title: e.title, description: e.description, learn_more: e.learnMore, media: e.media, context: e.context ?? null,
+    }, `/changelog.json ${e.slug}`);
+    assert.ok(Array.isArray(points) && points.every((p) => typeof p === 'string' && p.trim()), `/changelog.json ${e.slug}: points must be non-empty strings`);
+    if (e.points) assert.deepEqual(points, e.points, `/changelog.json ${e.slug}: points must be the points frontmatter`);
+    if (e.type === 'digest') assert.ok(points.length, `/changelog.json ${e.slug}: a digest's points are its bullets`);
+  });
+  return feed.entries.length;
 }
 
 function decodeEntities(text) {
@@ -320,8 +413,10 @@ function main() {
   assert.equal(agentMd.includes('mtime'), false, 'agent-md.ts must not use mtime for content dates');
 
   const assets = checkContentAssets(pages);
+  const feedEntries = checkChangelogData(pages.filter((page) => page.entry).map((page) => page.entry), artifact);
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
+  console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }
 

@@ -22,3 +22,5 @@
 
 - [Blog](https://affitor.com/blog): The canonical blog home. All posts are included in the complete documentation above.
 - [Changelog](https://affitor.com/changelog.md): Every changelog entry, newest first, with open deprecations on top. Each entry also has its own twin at its URL + .md.
+- [Changelog JSON](https://affitor.com/changelog.json): Every entry as data (points, learn-more link, media files, AI context), newest first, with the brand kit.
+- [Changelog context for AI](https://affitor.com/changelog/context.md): Brand, facts that hold everywhere and what never to say, for AI-made posts and videos.

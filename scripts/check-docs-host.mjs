@@ -104,6 +104,8 @@ function invariants() {
     ['/changelog.md', 'https://affitor.com/changelog.md'],
     ['/changelog/invite-partners.md', 'https://affitor.com/changelog/invite-partners.md'],
     ['/changelog/rss.xml', 'https://affitor.com/changelog/rss.xml'],
+    ['/changelog.json', 'https://affitor.com/changelog.json'],
+    ['/changelog/context.md', 'https://affitor.com/changelog/context.md'],
     ['/docs/changelog', 'https://affitor.com/changelog'],
     ['/docs/changelog.md', 'https://affitor.com/changelog.md'],
     ['/partners/refer-program', 'https://affitor.com/legal/refer-program'],
@@ -166,7 +168,7 @@ function invariants() {
       check(`${host}${path.replace('?x=1', '')} -> 301 affitor.com/legal/refer-program${query}`, redirects(host, path, `https://affitor.com/legal/refer-program${query}`));
     }
     check(`${host}/docs/partners/referral-rewards is not moved`, passes(host, '/docs/partners/referral-rewards'));
-    for (const path of ['/changelog', '/changelog/invite-partners', '/changelog.md', '/changelog/invite-partners.md', '/changelog/rss.xml', '/docs/changelog/invite-partners/invite-compose.png']) {
+    for (const path of ['/changelog', '/changelog/invite-partners', '/changelog.md', '/changelog/invite-partners.md', '/changelog/rss.xml', '/changelog.json', '/changelog/context.md', '/docs/changelog/invite-partners/invite-compose.png']) {
       check(`${host}${path} is served by the changelog zone (no redirect)`, passes(host, path));
     }
   }

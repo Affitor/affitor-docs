@@ -1,7 +1,7 @@
 import { source } from '@/lib/source';
 import { blog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
-import { CHANGELOG_SUB, CHANGELOG_URL, entrySlug, entryUrl, openDeprecations, preamble, sortedEntries } from '@/lib/changelog';
+import { CHANGELOG_SUB, CHANGELOG_URL, aiContext, entrySlug, entryUrl, openDeprecations, preamble, sortedEntries } from '@/lib/changelog';
 import { DOCS_URL, SITE_URL } from '@/lib/site';
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
@@ -40,9 +40,10 @@ async function renderBody(slug: string[]): Promise<string | null> {
   if (slug[0] === 'changelog' && slug.length === 2) {
     const entry = sortedEntries().find((e) => entrySlug(e) === slug[1]);
     if (!entry) return null;
-    // The Action required block and deprecation table the entry page shows go first.
+    // The Action required block and deprecation table the entry page shows go first;
+    // an entry with `context` ends with "Context for AI".
     const raw = (await entry.getText('raw')).replace(FRONTMATTER, '');
-    return toMarkdown(entry.title, entry.description, `${preamble(entry)}${raw}`);
+    return toMarkdown(entry.title, entry.description, `${preamble(entry)}${raw.trimEnd()}${aiContext(entry, raw)}`);
   }
 
   // Docs pages, including the root landing (`/index.md`).
