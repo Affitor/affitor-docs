@@ -2,7 +2,7 @@
 title: "Polar"
 description: "Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed."
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor.
@@ -15,7 +15,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## Prerequisites
 
-- Your **program ID** and a **program API key** (run `npx affitor init`, or **Settings** → **Program settings** → **Business** for the ID and **Developers** → **API keys** for the key)
+- Your **program ID** and a **program API key** (run `npx affitor init`, or, in the program menu, **Program settings** → **Business** for the ID and **Developers** → **API keys** for the key)
 - A Polar organization with checkout working in your app
 - Access to your Polar organization's webhook settings. Sandbox is a separate environment with its own tokens and its own webhook endpoints (`sandbox-api.polar.sh`).
 

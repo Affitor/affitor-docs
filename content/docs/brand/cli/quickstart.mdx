@@ -2,7 +2,7 @@
 title: CLI Quickstart
 description: Set up your affiliate program in 3 commands with npx affitor.
 kind: quickstart
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 Get your affiliate program running in under 5 minutes -- program creation, Stripe webhooks, and live tracking all from your terminal.
@@ -104,7 +104,7 @@ Choose your payment tracking method: **Server-side tracking vs Stripe integratio
 
 ### Option A: Stripe integration (automatic)
 
-Connect Stripe in the Affitor dashboard: open the program, go to **Settings**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds. Add Affitor metadata to your Checkout Session so each sale is attributed; see the [Stripe integration guide](/docs/api-reference/integrations/stripe). The CLI does not connect Stripe (`affitor setup stripe` only points you to the dashboard).
+Connect Stripe in the Affitor dashboard: open the program menu, choose **Program settings**, open **Payments**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds. Add Affitor metadata to your Checkout Session so each sale is attributed; see the [Stripe integration guide](/docs/api-reference/integrations/stripe). The CLI does not connect Stripe (`affitor setup stripe` only points you to the dashboard).
 
 ### Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
 

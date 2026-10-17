@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -193,7 +193,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 
 This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
-**Fix:** In your Affitor dashboard, go to **Settings** → **API keys** and regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
+**Fix:** In your Affitor dashboard, open the program menu and choose **Program settings**. Under **Developers** → **API keys**, regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
 ---
 
@@ -437,7 +437,7 @@ An expired session is not an error on `/auth/poll`: it answers `200` with `"data
 |----------|--------|---------------|---------|-----|
 | both | `401` | `Missing or malformed Authorization header. Expected: Bearer <api_token>` | The `Authorization` header is missing or does not start with `Bearer ` | Send `Authorization: Bearer YOUR_PROGRAM_API_KEY` |
 | both | `401` | `Missing API token` | The token is empty after `Bearer ` | Check for an empty env variable |
-| both | `401` | `Invalid API key. To get a working key for the program you already have, ask a workspace owner of that program to open Affitor → Settings → API Key and click Regenerate, then replace the key you are sending with the new one.` | The key matches no program | Do as the message says. Running `affitor init` does not help: it creates a second program |
+| both | `401` | `Invalid API key. To get a working key for the program you already have, ask a workspace owner of that program to open Affitor → Settings → API Key and click Regenerate, then replace the key you are sending with the new one.` | The key matches no program | Do as the message says: the key is under program menu → **Program settings**, then **Developers** → **API keys**. Running `affitor init` does not help: it creates a second program |
 | both | `401` | [`api_key_rotation_required`](#api_key_rotation_required) | The key is retired | Create a new key |
 | `GET /status` | `500` | `Failed to get status (request_id: <id>)` | Status lookup failed on our side | Retry with backoff |
 | `POST /test-event` | `400` | `Invalid event_type: <value>. Valid: click, lead, sale` | Single-event mode got a missing or unknown `event_type` | Send `click`, `lead` or `sale`, or `{"type": "chain"}` for the full chain |

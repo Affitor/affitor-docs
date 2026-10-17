@@ -2,7 +2,7 @@
 title: API key reference
 description: Which credential each Affitor call needs, where the program API key lives, how to replace it, and how mandatory rotation is signalled.
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key the integration guides, the SDKs, the CLI's tracking setup, and the agent skill all refer to. CLI commands that create or list programs are different: they act as your account, so they authenticate with your CLI login rather than with this key.
@@ -46,7 +46,7 @@ Keys issued before the short prefix was introduced do not start with `aff_`. Aut
 
 ## Where to find it
 
-1. In the program menu (your program's name at the top of the left menu), choose **All settings**.
+1. In the program menu (your program's name at the top of the left menu), choose **Program settings**.
 2. Under **Developers**, select **API keys**.
 
 A program is given a key the moment it is created, but creating a program does not hand that value back to you. To get a key you can put in an environment variable, a workspace owner selects **Generate** — or **Regenerate**, if one was generated before — on the **API keys** page. The full value appears in the response to that action, and only there. Copy it then and store it server-side:
@@ -136,7 +136,7 @@ Send a test-mode call with the key in hand: it goes through the same authenticat
     "Read the status before the body: a 200 with no warnings array means this key is not flagged for mandatory rotation. A flagged key that is past its deadline returns 401 and carries no warnings array either, so warnings alone never proves a key is unflagged",
   ]}
   dashboard={[
-    "Settings → API keys shows a masked value whose visible characters match the key your server sends",
+    "The **API keys** page (program menu → **Program settings**, then **Developers** → **API keys**) shows a masked value whose visible characters match the key your server sends",
   ]}
   ifNotWorking={[
     "On a 401, read error.code first. api_key_rotation_required means the key passed its rotation deadline — regenerate it, because re-copying the same key will not bring it back. Any other 401 means the header is malformed or the key matches no program: check the Authorization: Bearer prefix and your environment variable for trailing whitespace",

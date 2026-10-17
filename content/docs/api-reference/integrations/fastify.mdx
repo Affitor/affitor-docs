@@ -2,7 +2,7 @@
 title: "Fastify"
 description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Fastify backend, including a raw-body Stripe webhook."
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 ---
 
 This guide wires Affitor into a Fastify app. Because Fastify is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`. The sale is tracked from your Stripe webhook handler, which needs the **raw request body** for signature verification.
@@ -15,7 +15,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 ## Prerequisites
 
-- Your **program ID** (**Settings** → **Program settings** → **Business**)
+- Your **program ID** (program menu → **Program settings** → **Business**)
 - A **program API key** for server-side calls (dashboard → API keys)
 - `@affitor/sdk` and `stripe` installed in your backend
 
