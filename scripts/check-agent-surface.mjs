@@ -4,6 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loader } from 'fumadocs-core/source';
+import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
 import { generateLlms } from './gen-llms.js';
 
@@ -67,7 +68,7 @@ function inventory() {
   const docsDir = join(ROOT, 'content/docs');
   // Use the installed loader's URL rules without importing the production renderer.
   const files = walk(docsDir).filter((file) => /\.mdx?$/.test(file) || /\/meta\.json$/.test(file));
-  const docs = loader({
+  const source = loader({
     baseUrl: '/docs',
     source: {
       files: files.map((file) => ({
@@ -77,7 +78,14 @@ function inventory() {
         data: file.endsWith('.json') ? json(file) : document(file),
       })),
     },
-  }).getPages().map((page) => {
+  });
+  // Every page sits in exactly one sidebar tree (a meta.json lists it; pointer links have no $ref),
+  // so none is reachable only by URL.
+  const listed = flattenTree(source.pageTree.children).filter((node) => node.$ref).map((node) => node.url);
+  for (const page of source.getPages()) {
+    assert.equal(listed.filter((url) => url === page.url).length, 1, `${page.url}: list it once in a content/docs meta.json`);
+  }
+  const docs = source.getPages().map((page) => {
     const id = page.url.replace(/^\/docs\/?/, '') || 'index';
     // The content date is last_updated (set by whoever edits the page), never date/updated.
     assert.equal(page.data.date, undefined, `${id}: docs use last_updated, not date`);

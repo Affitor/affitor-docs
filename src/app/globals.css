@@ -321,10 +321,53 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 }
 
 /* ── Sidebar ── */
-/* Hide fumadocs default nav (we have custom header) */
-#nd-sidebar > div:first-child {
+/* Hide fumadocs default nav (we have custom header); the block stays only for the
+   Brands | Partners switch (sidebar banner, Guides tab). */
+#nd-sidebar > div:first-child > div:first-child,
+#nd-sidebar > div:first-child:not(:has(.aff-audience)) {
   display: none;
 }
+#nd-sidebar > div:first-child { padding-bottom: 0; }
+
+/* Brands | Partners: two segments (mock D1 / P2) */
+.aff-audience {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 8px;
+  background: var(--color-fd-muted);
+}
+.aff-audience a {
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-fd-muted-foreground);
+  transition: color 0.15s ease;
+}
+.aff-audience a:hover { color: var(--color-fd-foreground); }
+.aff-audience a[aria-current='true'] {
+  color: var(--color-fd-foreground);
+  background: var(--color-fd-background);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+.dark .aff-audience a[aria-current='true'] { background: var(--color-fd-border); box-shadow: none; }
+
+/* Group labels (`---Group---` in meta.json): small uppercase, the same words as the eyebrow */
+:is(#nd-sidebar, #nd-sidebar-mobile) p {
+  margin-top: 20px;
+  font-size: 11.5px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) p:first-child { margin-top: 0; }
 
 #nd-sidebar > button:last-of-type {
   display: none;

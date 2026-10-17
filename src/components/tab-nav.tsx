@@ -20,25 +20,18 @@ export function NavDrawerBridge() {
   return null;
 }
 
-type Tab = { title: string; href: string; match: (p: string) => boolean };
+type Tab = { title: string; href: string; urls: string[] };
 
-const TABS: Tab[] = [
-  { title: 'Getting Started', href: '/docs', match: (p) => p === '/docs' || ['/docs/how-it-works', '/docs/pricing-performance-model'].some((x) => p.startsWith(x)) },
-  { title: 'For Brands', href: '/docs/brand/quickstart/create-account', match: (p) => p.startsWith('/docs/brand') },
-  { title: 'For Partners', href: '/docs/partners', match: (p) => p.startsWith('/docs/partners') },
-  { title: 'API Reference', href: '/docs/api-reference/overview', match: (p) => p.startsWith('/docs/api-reference') },
-  { title: 'Support', href: '/docs/support', match: (p) => p.startsWith('/docs/support') || p.startsWith('/docs/faq') },
-  { title: 'Blog', href: '/blog', match: (p) => p.startsWith('/blog') },
-  { title: 'Changelog', href: '/changelog', match: (p) => p.startsWith('/changelog') },
-];
-
-export function TabNav() {
-  const pathname = usePathname() || '/';
-  const activeIdx = (() => {
-    // most specific match wins; Getting Started is the fallback
-    for (let i = 1; i < TABS.length; i++) if (TABS[i].match(pathname)) return i;
-    return 0;
-  })();
+/**
+ * The docs tab row. `tabs` come from the sidebar trees (docs-shell.tsx): a page belongs to the first
+ * tab whose tree lists it, so a pointer link in a later tree (API Reference's MCP server) never
+ * steals the page from Guides. Unknown pages (the docs 404) fall back to Guides. Changelog is its
+ * own zone (affitor.com/changelog), so it is a plain link here.
+ */
+export function TabNav({ tabs }: { tabs: Tab[] }) {
+  const pathname = (usePathname() || '/').replace(/(.)\/$/, '$1');
+  const all = [...tabs, { title: 'Changelog', href: '/changelog', urls: [] }];
+  const activeIdx = Math.max(tabs.findIndex((tab) => tab.urls.includes(pathname)), 0);
 
   return (
     <nav className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
@@ -55,7 +48,7 @@ export function TabNav() {
           <path d="M9 3v18" />
         </svg>
       </button>
-      {TABS.map((tab, i) => {
+      {all.map((tab, i) => {
         const active = i === activeIdx;
         return (
           <Link
