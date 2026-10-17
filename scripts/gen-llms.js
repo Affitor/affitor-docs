@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-/** Regenerate the compact agent entry point from documentation section indexes. */
+/** Regenerate the compact agent entry point: every docs page, grouped as the sidebar groups them. */
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loader } from 'fumadocs-core/source';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 // Docs and blog are proxied at affitor.com/docs and affitor.com/blog (multi-zone).
 const SITE = 'https://affitor.com/docs';
 const BLOG_SITE = 'https://affitor.com/blog';
 
-// These section indexes use flat, single-line frontmatter values.
+// Docs titles and descriptions are flat, single-line frontmatter values.
 function frontmatter(file) {
   const src = readFileSync(file, 'utf8');
   const m = src.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -31,28 +32,38 @@ function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) return walk(path);
-    return /\.mdx?$/.test(entry.name) ? [path] : [];
+    return /\.mdx?$/.test(entry.name) || entry.name === 'meta.json' ? [path] : [];
   });
 }
 
-function docSlug(file) {
-  return relative(join(ROOT, 'content/docs'), file)
-    .replace(/\.mdx?$/, '')
-    .replace(/(^|\/)index$/, '')
-    .replace(/\/$/, '');
+/** One `## Tree: Group` section per sidebar group, in sidebar order (the meta.json files under content/docs). */
+function sections() {
+  const dir = join(ROOT, 'content/docs');
+  const files = walk(dir).sort().map((file) => ({
+    type: file.endsWith('.json') ? 'meta' : 'page',
+    path: relative(dir, file),
+    absolutePath: file,
+    data: file.endsWith('.json') ? JSON.parse(readFileSync(file, 'utf8')) : frontmatter(file),
+  }));
+  const out = [];
+  for (const tree of loader({ baseUrl: '/docs', source: { files } }).pageTree.children) {
+    if (tree.type !== 'folder') continue;
+    let lines = [`## ${tree.name}`, ''];
+    for (const node of tree.children) {
+      if (node.type === 'separator') {
+        if (lines.length > 2) out.push(lines.join('\n'));
+        lines = [`## ${tree.name}${node.name ? `: ${node.name}` : ''}`, ''];
+      } else if (node.type === 'page' && node.$ref) {
+        // Pointer links ($ref unset) lead to a page listed in another tree; each page appears once.
+        lines.push(`- [${node.name}](${SITE}/${node.url.replace(/^\/docs\/?/, '') || 'index'}.md)`);
+      }
+    }
+    if (lines.length > 2) out.push(lines.join('\n'));
+  }
+  return out.join('\n\n');
 }
 
 export function generateLlms() {
-  const files = walk(join(ROOT, 'content/docs')).sort();
-  const hasApiIndex = files.some((file) => /\/api-reference\/index\.mdx?$/.test(file));
-  const sections = files.filter((file) =>
-    /\/index\.mdx?$/.test(file) || (!hasApiIndex && docSlug(file) === 'api-reference/overview'),
-  ).map((file) => {
-    const metadata = frontmatter(file);
-    const slug = docSlug(file) || 'index';
-    return `- [${metadata.title}](${SITE}/${slug}.md)${metadata.description ? `: ${metadata.description}` : ''}`;
-  });
-
   return `# Affitor Documentation
 
 > Documentation for Affitor affiliate programs, tracking, commissions, and payouts.
@@ -63,9 +74,7 @@ export function generateLlms() {
 - [Complete documentation](${SITE}/llms-full.txt): Every documentation page, blog post, and changelog entry, with page identifiers and source metadata.
 - [Sitemap](https://affitor.com/sitemap.xml): Every public page on affitor.com, including the docs and the blog.
 
-## Documentation sections
-
-${sections.join('\n')}
+${sections()}
 
 ## Blog and changelog
 

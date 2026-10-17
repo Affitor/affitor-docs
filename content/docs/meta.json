@@ -2,7 +2,6 @@
   "title": "Documentation",
   "root": true,
   "pages": [
-    "getting-started",
     "brand",
     "partners",
     "api-reference",

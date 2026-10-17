@@ -8,15 +8,120 @@
 - [Complete documentation](https://affitor.com/docs/llms-full.txt): Every documentation page, blog post, and changelog entry, with page identifiers and source metadata.
 - [Sitemap](https://affitor.com/sitemap.xml): Every public page on affitor.com, including the docs and the blog.
 
-## Documentation sections
+## Brands: Get started
 
-- [API Reference](https://affitor.com/docs/api-reference/overview.md): Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
-- [Launch Your Program](https://affitor.com/docs/brand/quickstart.md): Set up your Affitor affiliate program in 20–30 minutes: account, program details, commissions, partner approval, and payouts — $0/month, free until your program's first $10,000 in affiliate revenue.
-- [Frequently Asked Questions](https://affitor.com/docs/faq.md): Common questions about Affitor's pricing, tracking, commissions, and integration options.
-- [Getting Started](https://affitor.com/docs/getting-started.md): Start here as an advertiser: what Affitor is, how click-to-payout tracking works, and the performance pricing — $0/month, 3.5% only after each program's first $10,000 in affiliate revenue.
-- [What is Affitor?](https://affitor.com/docs/index.md): Affitor is an affiliate growth platform for SaaS: $0/month with a 3.5% fee only after each program's first $10,000 in affiliate revenue, Stripe-native attribution, and an integration an AI agent can complete and verify.
-- [Become a Partner](https://affitor.com/docs/partners.md): Join a SaaS affiliate program on Affitor, get your referral link, and start earning commission.
-- [Support](https://affitor.com/docs/support.md): Get help with Affitor, follow the fastest self-serve path, and know when to contact the team.
+- [What is Affitor?](https://affitor.com/docs/index.md)
+- [Getting Started](https://affitor.com/docs/getting-started.md)
+- [How Affitor Works](https://affitor.com/docs/getting-started/how-it-works.md)
+- [How to Use Affitor](https://affitor.com/docs/getting-started/quickstart.md)
+- [Launch Your Program](https://affitor.com/docs/brand/quickstart.md)
+- [Create your advertiser account](https://affitor.com/docs/brand/quickstart/create-account.md)
+- [Set Up Your Program](https://affitor.com/docs/brand/quickstart/setup-program.md)
+- [Pricing](https://affitor.com/docs/getting-started/pricing-performance-model.md)
+
+## Brands: Track sales
+
+- [3-Step Integration Guide](https://affitor.com/docs/brand/tracking/quickstart-integration.md)
+- [Tracking Overview](https://affitor.com/docs/brand/tracking/tracking-overview.md)
+- [Click Tracking](https://affitor.com/docs/brand/tracking/click-tracking.md)
+- [Lead Tracking (Signup)](https://affitor.com/docs/brand/tracking/lead-tracking-signup.md)
+- [Connect a new Stripe account](https://affitor.com/docs/brand/tracking/connect-stripe-account.md)
+- [Payment Tracking](https://affitor.com/docs/brand/tracking/payment-tracking-stripe.md)
+- [Payment Flow](https://affitor.com/docs/brand/tracking/payment-flow.md)
+
+## Brands: Test your setup
+
+- [Testing Integration](https://affitor.com/docs/brand/tracking/testing-integration.md)
+
+## Brands: Integrations
+
+- [Stripe](https://affitor.com/docs/api-reference/integrations/stripe.md)
+- [Polar](https://affitor.com/docs/api-reference/integrations/polar.md)
+- [Next.js](https://affitor.com/docs/api-reference/integrations/nextjs.md)
+- [Next.js + Clerk](https://affitor.com/docs/api-reference/integrations/nextjs-clerk.md)
+- [Next.js + Supabase Auth](https://affitor.com/docs/api-reference/integrations/nextjs-supabase.md)
+- [Next.js + NextAuth](https://affitor.com/docs/api-reference/integrations/nextjs-nextauth.md)
+- [Node / Express](https://affitor.com/docs/api-reference/integrations/node-express.md)
+- [Fastify](https://affitor.com/docs/api-reference/integrations/fastify.md)
+
+## Brands: Partners
+
+- [Inviting Partners](https://affitor.com/docs/brand/quickstart/inviting-partners.md)
+- [Partner Approval & Quality Control](https://affitor.com/docs/brand/quickstart/partner-approval-quality-control.md)
+- [Organize partners into groups](https://affitor.com/docs/brand/groups.md)
+- [View Performance](https://affitor.com/docs/brand/quickstart/view-performance.md)
+
+## Brands: Commissions and payouts
+
+- [Define Commission](https://affitor.com/docs/brand/quickstart/define-commission.md)
+- [Commission Approval & Cash Flow](https://affitor.com/docs/brand/quickstart/commission-approval-cash-flow.md)
+- [Payouts](https://affitor.com/docs/brand/quickstart/payouts.md)
+- [Overdue Invoices & Program Pause Policy](https://affitor.com/docs/brand/billing/overdue-policy.md)
+
+## Brands: Settings and keys
+
+- [Manage program settings and your API key](https://affitor.com/docs/brand/settings.md)
+- [API key reference](https://affitor.com/docs/brand/api-keys.md)
+
+## Brands: AI agents (MCP)
+
+- [Affitor MCP server](https://affitor.com/docs/api-reference/mcp.md)
+- [Agent Integration](https://affitor.com/docs/api-reference/agent-integration.md)
+
+## Brands: CLI
+
+- [CLI Quickstart](https://affitor.com/docs/brand/cli/quickstart.md)
+- [CLI Command Reference](https://affitor.com/docs/brand/cli/commands.md)
+
+## Partners: Get started
+
+- [Become a Partner](https://affitor.com/docs/partners.md)
+- [Create Your Partner Account](https://affitor.com/docs/partners/quickstart/create-account.md)
+- [Find and Join Programs](https://affitor.com/docs/partners/quickstart/find-and-join-programs.md)
+- [Get Your Referral Link](https://affitor.com/docs/partners/quickstart/get-your-referral-link.md)
+- [Promote Your Link and Earn](https://affitor.com/docs/partners/quickstart/promote-your-link.md)
+
+## Partners: Earn
+
+- [Your Partner Dashboard](https://affitor.com/docs/partners/dashboard.md)
+- [Getting Paid](https://affitor.com/docs/partners/payouts.md)
+- [How referral rewards work](https://affitor.com/docs/partners/referral-rewards.md)
+- [Account and Payout Settings](https://affitor.com/docs/partners/account-settings.md)
+
+## Partners
+
+- [Partner FAQ](https://affitor.com/docs/partners/faq.md)
+
+## API Reference: Overview
+
+- [API Reference](https://affitor.com/docs/api-reference/overview.md)
+- [Errors & Troubleshooting](https://affitor.com/docs/api-reference/errors.md)
+- [Attribution Mechanics](https://affitor.com/docs/api-reference/attribution.md)
+
+## API Reference: Tracking API
+
+- [Track Click](https://affitor.com/docs/api-reference/track-click.md)
+- [Track Lead](https://affitor.com/docs/api-reference/track-lead.md)
+- [Track Sale](https://affitor.com/docs/api-reference/track-sale.md)
+- [Track Refund](https://affitor.com/docs/api-reference/track-refund.md)
+
+## API Reference: Dashboard API
+
+- [Get Tracking Status](https://affitor.com/docs/api-reference/status.md)
+- [List Tracking Events](https://affitor.com/docs/api-reference/events.md)
+- [GET /tracking/performance/:programId](https://affitor.com/docs/api-reference/performance.md)
+
+## API Reference: SDKs and MCP
+
+- [SDKs](https://affitor.com/docs/api-reference/sdks.md)
+
+## Support
+
+- [Support](https://affitor.com/docs/support.md)
+- [Frequently Asked Questions](https://affitor.com/docs/faq.md)
+- [Contact Us](https://affitor.com/docs/support/contact.md)
+- [System Status](https://affitor.com/docs/support/status.md)
+- [Glossary](https://affitor.com/docs/support/glossary.md)
 
 ## Blog and changelog
 

@@ -1,9 +1,9 @@
 {
-  "title": "For Partners",
+  "title": "Partners",
   "root": true,
   "pages": [
-    "index",
     "---Get started---",
+    "index",
     "quickstart/create-account",
     "quickstart/find-and-join-programs",
     "quickstart/get-your-referral-link",
@@ -13,6 +13,7 @@
     "payouts",
     "referral-rewards",
     "account-settings",
+    "---",
     "faq"
   ]
 }
