@@ -1,6 +1,6 @@
 ---
 title: Affitor MCP server
-description: Connect Claude, ChatGPT, Cursor, Claude Code, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Sign in with your Affitor account; access is read-only.
+description: Connect Claude, ChatGPT, Cursor, VS Code, Perplexity, Claude Code, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Sign in with your Affitor account; access is read-only.
 kind: reference
 last_updated: 2026-10-16
 ---
@@ -70,6 +70,15 @@ codex mcp login affitor`
 }`
   },
   {
+    label: "VS Code",
+    lang: "json",
+    code: `{
+  "servers": {
+    "affitor": { "type": "http", "url": "https://mcp.affitor.com/mcp" }
+  }
+}`
+  },
+  {
     label: "OpenClaw",
     lang: "bash",
     code: `openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth
@@ -100,6 +109,7 @@ hermes mcp login affitor`
   cursor://anysphere.cursor-deeplink/mcp/install?name=affitor&config=eyJ1cmwiOiJodHRwczovL21jcC5hZmZpdG9yLmNvbS9tY3AifQ%3D%3D
   ```
 
+- **VS Code:** put the JSON in `.vscode/mcp.json` in your workspace, or in the `mcp.json` of your user profile, or run **MCP: Add Server** from the Command Palette. Start the server and sign in when VS Code asks.
 - **Other clients:** put the JSON in the client's MCP config, restart it and sign in when it asks.
 
 ### Claude (claude.ai and Claude Desktop)
@@ -122,9 +132,26 @@ On Team and Enterprise plans, an owner adds the connector in **Organization sett
 
 Your workspace's policy may limit who can add custom MCP servers.
 
+### Perplexity
+
+1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
+2. Select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**.
+3. Enter a name, and under **MCP Server URL** paste `https://mcp.affitor.com/mcp`.
+4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. Affitor supports automatic registration, so no Client ID or Client Secret is needed.
+5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
+
 ### Which apps can connect
 
-After you sign in, Affitor sends you back to the app. It accepts only these return addresses: `claude.ai`, `claude.com`, `chatgpt.com`, `www.cursor.com`, and apps on your own computer (`http://127.0.0.1` or `http://localhost`, any port). An app that registers any other web address is refused when it registers. VS Code registers `vscode.dev`, so it cannot connect.
+After you sign in, Affitor sends you back to the app. It accepts only these return addresses:
+
+- `claude.ai` and `claude.com` (Claude)
+- `chatgpt.com` (ChatGPT)
+- `www.cursor.com` (Cursor)
+- `vscode.dev/redirect` and `insiders.vscode.dev/redirect` (VS Code)
+- `www.perplexity.ai/rest/connections/oauth_callback` (Perplexity)
+- apps on your own computer: `http://127.0.0.1` or `http://localhost`, any port
+
+An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost". Perplexity Enterprise's `enterprise.perplexity.ai` is not on the list yet.
 
 ---
 
