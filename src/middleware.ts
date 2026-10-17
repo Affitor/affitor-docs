@@ -44,9 +44,10 @@ const RENAMES: [string, string][] = [
 
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and
 // permanent on every host: the old /docs/changelog page and twin, and on docs.affitor.com every
-// changelog page, twin and the feed. Old screenshots (/changelog/<dir>/<file>.png) keep MOVED_FILE.
+// changelog page, twin, the feeds (rss.xml, changelog.json) and context.md. Old screenshots
+// (/changelog/<dir>/<file>.png) keep MOVED_FILE.
 const OLD_CHANGELOG = /^\/docs\/changelog(\.md)?\/?$/;
-const DOCS_HOST_CHANGELOG = /^\/changelog(?:\.md|\/rss\.xml|\/[^.]*?(?:\.md)?)?\/?$/;
+const DOCS_HOST_CHANGELOG = /^\/changelog(?:\.md|\.json|\/rss\.xml|\/[^.]*?(?:\.md)?)?\/?$/;
 
 export function changelogMove(path: string, host: string | null): string | null {
   const old = path.match(OLD_CHANGELOG);

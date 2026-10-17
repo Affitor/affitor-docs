@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { changelog } from '@/../.source/server';
 import { SITE_URL } from '@/lib/site';
 
@@ -81,4 +83,97 @@ export function openDeprecations(today = todayPT()) {
   return sortedEntries().flatMap((entry) =>
     (entry.deprecations ?? []).filter((d) => d.sunset >= today).map((d) => ({ ...d, entry })),
   );
+}
+
+/** The shared AI context pack, served verbatim at /changelog/context.md. Not an entry (the collection reads *.mdx). */
+export const CONTEXT_URL = `${CHANGELOG_URL}/context.md`;
+export const contextPack = () => readFileSync(join(process.cwd(), 'content/changelog/_context.md'), 'utf8');
+
+/** Inline MDAST to plain text: code keeps its backticks, a link keeps its label. */
+export const plainText = (nodes: MdNode[]): string =>
+  nodes.map((n) => (n.type === 'inlineCode' ? `\`${n.value}\`` : n.children ? plainText(n.children) : (n.value ?? ''))).join('');
+
+/** /changelog.json `points`: the `points` frontmatter, else the top-level bullets. */
+export async function points(entry: Entry) {
+  return entry.points ?? (await bullets(entry)).map(plainText);
+}
+
+const absolute = (href: string) => (href.startsWith('/') ? `${SITE_URL}${href}` : href);
+
+/** The body's "Learn more: [label](url)" link, else the context CTA. */
+export function learnMore(entry: Entry, raw: string) {
+  const href = raw.match(/^Learn more:?\s*\[[^\]]*\]\(([^)\s]+)\)/im)?.[1];
+  return href ? absolute(href) : (entry.context?.cta?.url ?? null);
+}
+
+/** One media item: its file URLs by name (video posters nested by theme) and its alt text. */
+export type MediaItem = { [key: string]: string | Record<string, string> };
+
+/** Absolute URL of a file in public/, or nothing when it is not there. */
+const published = (path: string) => (existsSync(join(process.cwd(), 'public', path)) ? `${SITE_URL}${path}` : undefined);
+const some = (files: Record<string, string | undefined>) => {
+  const kept = Object.fromEntries(Object.entries(files).filter(([, v]) => v)) as Record<string, string>;
+  return Object.keys(kept).length ? kept : undefined;
+};
+
+/**
+ * The entry's media files that exist, in body order: banner, <Media> shots (light, dark, the
+ * unframed -raw.png crop), <Media> loops (light, dark, posters, the capture-media .steps.json)
+ * and plain Markdown images. check-agent-surface.mjs rebuilds the same list.
+ */
+export function entryMedia(entry: Entry, raw: string) {
+  const slug = entrySlug(entry);
+  const banner = entry.banner ? (some({ light: published(bannerSrc(slug, 'light')), dark: published(bannerSrc(slug, 'dark')) }) ?? null) : null;
+  const images: MediaItem[] = [];
+  const videos: MediaItem[] = [];
+  for (const m of raw.matchAll(/<Media\s+([^>]*?)\/>|!\[([^\]]*)\]\((\/[^)\s]+)\)/g)) {
+    if (m[3]) {
+      const src = published(m[3]);
+      if (src) images.push({ src, alt: m[2] });
+      continue;
+    }
+    const a = Object.fromEntries([...m[1].matchAll(/(\w+)="([^"]*)"/g)].map((x) => [x[1], x[2]]));
+    const [, base, ext] = a.src.match(/^(.*)(\.[a-z0-9]+)$/i) ?? [];
+    if (ext === '.mp4') {
+      const poster = some({ light: published(`${base}-light.poster.png`), dark: published(`${base}-dark.poster.png`) });
+      const steps = published(`${base}.steps.json`);
+      videos.push({ ...some({ light: published(`${base}-light.mp4`), dark: published(`${base}-dark.mp4`) }), ...(poster && { poster }), ...(steps && { steps }), alt: a.alt });
+    } else {
+      images.push({ ...some({ light: published(`${base}-light${ext}`), dark: published(`${base}-dark${ext}`), raw: published(`${base}-raw.png`) }), alt: a.alt });
+    }
+  }
+  return { banner, images, videos };
+}
+
+/** "- Video (alt): light <url>, dark <url>, poster light <url>, ..." */
+function mediaLine(kind: string, { alt, ...files }: MediaItem) {
+  const urls = Object.entries(files).flatMap(([k, v]) =>
+    typeof v === 'string' ? [`${k} ${v}`] : Object.entries(v).map(([theme, url]) => `${k} ${theme} ${url}`),
+  );
+  return `- ${kind}${alt ? ` (${alt})` : ''}: ${urls.join(', ')}`;
+}
+
+/**
+ * "## Context for AI" at the end of an entry's .md twin, from its `context` frontmatter and its
+ * media; '' when the entry has no `context`. check-agent-surface.mjs rebuilds the same text.
+ */
+export function aiContext(entry: Entry, raw: string) {
+  const c = entry.context;
+  if (!c) return '';
+  const list = (items: string[]) => items.map((s) => `- ${s}`).join('\n');
+  const { banner, images, videos } = entryMedia(entry, raw);
+  const media = [
+    ...(banner ? [mediaLine('Banner', banner)] : []),
+    ...images.map((i) => mediaLine('Image', i)),
+    ...videos.map((v) => mediaLine('Video', v)),
+  ];
+  const parts = [
+    `Shared context for every entry (brand, facts, what never to say): ${CONTEXT_URL}`,
+    ...(c.facts?.length ? [`### Facts\n\n${list(c.facts)}`] : []),
+    ...(c.ui?.length ? [`### UI labels\n\n${list(c.ui.map((label) => `\`${label}\``))}`] : []),
+    ...(c.avoid?.length ? [`### Avoid\n\n${list(c.avoid)}`] : []),
+    ...(c.cta ? [`### CTA\n\n[${c.cta.label}](${c.cta.url})`] : []),
+    `### Media\n\n${media.length ? media.join('\n') : 'None.'}`,
+  ];
+  return `\n\n## Context for AI\n\n${parts.join('\n\n')}`;
 }

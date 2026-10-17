@@ -42,11 +42,13 @@ export const docs = defineDocs({
   },
 });
 
-// affitor.com/changelog (src/app/changelog). One file per entry; the slug is the file name.
+// affitor.com/changelog (src/app/changelog). One .mdx file per entry; the slug is the file name.
+// _context.md beside them is the shared AI context pack (/changelog/context.md), not an entry.
 // Admonitions (`:::warning`) are banned here: check-agent-surface.mjs fails on them.
 export const changelog = defineCollections({
   type: 'doc',
   dir: 'content/changelog',
+  files: ['*.mdx'],
   // The MDAST is bundled into the page module, so the daily ISR render of the index reads the
   // digest bullets without touching the disk. (Not includeProcessedMarkdown: its serializer
   // recursed forever on bold text in the fumadocs-mdx release Vercel installs, 14/10/2026.
@@ -65,6 +67,19 @@ export const changelog = defineCollections({
     deprecations: z.array(z.object({ what: z.string(), replacement: z.string(), sunset: day })).optional(),
     // The week still running: the date rail says "This week".
     draft: z.boolean().optional(),
+    // /changelog.json `points` when the body uses H2s instead of top-level bullets.
+    points: z.array(z.string()).optional(),
+    // Data for AI-made posts and videos, checked like the entry's sentences. Not shown on the
+    // page: it ends the .md twin ("Context for AI") and is `context` in /changelog.json.
+    context: z
+      .object({
+        facts: z.array(z.string()).optional(),
+        ui: z.array(z.string()).optional(),
+        avoid: z.array(z.string()).optional(),
+        cta: z.object({ label: z.string(), url: z.url({ protocol: /^https$/ }) }).strict().optional(),
+      })
+      .strict()
+      .optional(),
   }),
 });
 
