@@ -2,7 +2,7 @@
 title: Track Refund
 description: Reverse a commission when a sale is refunded
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 `POST /api/v1/track/refund`
@@ -150,6 +150,7 @@ When a commission is reversed or refunded, Affitor:
 
 - transitions the commission to `reversed` or `refunded` status
 - if the commission was already credited to the partner (any status past `pending`, and not a test), deducts the proportional amount from the partner's balance in the same transaction as the status change; the balance can go negative, and open withdrawals are reduced to fit
+- lowers the revenue counted toward your program's $10,000 fee-free tier by the refunded amount, never by more than that sale added
 - sends an in-app notification to the partner
 - sends a manual-review warning to the advertiser if the commission had already been paid out
 
