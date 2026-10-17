@@ -7,7 +7,7 @@ last_updated: 2026-10-17
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
-This page covers every error response the tracking, readiness and CLI endpoints can return, and practical fixes for the most common integration issues.
+This page lists the error responses of the click, lead, sale and refund tracking endpoints, the readiness endpoint and the CLI endpoints, and practical fixes for the most common integration issues.
 
 ---
 
@@ -19,7 +19,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 |--------|---------|-----------|--------|
 | `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again. Exception: after `partnerId required to create commission` the sale is already stored, so a resend returns `409` | Not unchanged |
 | `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
-| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) | Use the key or account that owns the resource | No |
+| `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) or [`PROVIDER_EMAIL_NOT_VERIFIED`](#provider_email_not_verified) | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
 | `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
@@ -56,9 +56,10 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 
 `POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with the recorded sale in `error.details.sale_id`), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
 
-Most other errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are two exceptions, both in `error.details`:
+Most other errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are three exceptions, all in `error.details`:
 
 - A suspended account signing in to the CLI gets `error.details.code` set to [`ACCOUNT_BLOCKED`](#account_blocked).
+- A CLI sign-in whose email address the sign-in provider has not verified gets `error.details.code` set to [`PROVIDER_EMAIL_NOT_VERIFIED`](#provider_email_not_verified).
 - A CLI `500` carries `error.details.request_id` — see [request IDs](#request-ids).
 
 ### The typed envelope
@@ -79,7 +80,7 @@ You get it from:
 | Source | Where | Code |
 |--------|-------|------|
 | `GET /api/v1/programs/me/readiness` | all of its errors | `invalid_key` on a `401`, `internal_error` on a `500` |
-| [Rate limiting](#rate-limits-429) | every `/api/v1/track/*`, `/api/v1/cli/*` and readiness route | `rate_limited` |
+| [Rate limiting](#rate-limits-429) | every `/api/v1/` route in the [rate-limit table](#rate-limits-429) | `rate_limited` |
 | [A retired API key](#api_key_rotation_required) | every endpoint that key authenticates | `api_key_rotation_required` |
 | [`POST /api/v1/track/click`](/docs/api-reference/track-click) | a `410` for an inactive referral link | `link_disabled` (the body also keeps the older top-level `success: false` and `message`) |
 
@@ -206,6 +207,7 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 | `400` | `affiliate_url is required` | Body did not include `affiliate_url` | Pass the full URL that contains the `?aff=` parameter |
 | `400` | `Invalid affiliate_url` | URL could not be parsed by `new URL()` | Ensure the value is a fully-qualified URL (includes scheme) |
 | `400` | `No aff parameter found in affiliate_url` | URL was valid but had no `aff` query parameter | Only call this endpoint when `?aff=` is present in the URL |
+| `400` | `Unknown program_id` | The body sent a top-level `program_id` that is not a program | Send your program's id, or leave `program_id` out |
 | `400` | `Referral link not found` | No referral link matched the `aff` value | Verify the partner link exists and `short_link` matches the `aff` value |
 | `400` | `Invalid referral link configuration` | Link exists but has no linked partner or program | Contact Affitor support — the referral link record is incomplete |
 
@@ -283,15 +285,22 @@ Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_i
 
 ### Rate limits (429)
 
-Every `/api/v1/` endpoint below is rate limited per minute. The click and lead endpoints are bucketed by client IP, because they are called without a key; the rest are bucketed by API key, falling back to IP when no key is sent.
+Every `/api/v1/` endpoint below is rate limited per minute. The click, lead, visit and config endpoints are bucketed by client IP, because they are called without a key; the rest are bucketed by the Bearer token they send (the API key, the `affitor login` token on the CLI's account-session routes, or the dashboard sign-in token on the settings routes), falling back to IP when no token is sent.
 
 | Endpoint | Limit per minute | Counted per |
 |----------|-----------------|-------------|
 | `POST /api/v1/track/click` | 60 | IP |
+| `POST /api/v1/track/visit` | 120 | IP |
+| `GET /api/v1/track/config` | 60 | IP |
 | `POST /api/v1/track/lead` | 30 | IP |
 | `POST /api/v1/track/sale` and `POST /api/v1/track/refund` | 120 combined | API key |
 | `GET /api/v1/programs/me/readiness` | 30 | API key |
-| `/api/v1/cli/*` | 60 | API key |
+| `GET /api/v1/programs/me/analytics/sources` | 30 | API key |
+| `GET /api/v1/programs/:id/settings` | 30 | Sign-in token |
+| `PATCH /api/v1/programs/:id/settings` | 30 | Sign-in token |
+| `/api/v1/cli/*` | 60 | API key or login token |
+
+Each API server instance keeps its own counts in memory, so the limits apply per instance.
 
 Every response on these routes carries the current budget, not just the ones that are refused:
 
@@ -385,6 +394,7 @@ These routes run the browser login that `affitor login` starts. They take no cre
 | `POST /auth/callback` | `404` | `Session not found or already used` | No pending login session has that `state` | Run `affitor login` again for a fresh link |
 | `POST /auth/callback` | `400` | `Session expired` | The login link is older than 5 minutes | Run `affitor login` again and finish within 5 minutes |
 | `POST /auth/callback` | `403` | `Your account has been suspended.` | [`ACCOUNT_BLOCKED`](#account_blocked) | Contact Affitor support |
+| `POST /auth/callback` | `403` | `Your email address is not verified with your sign-in provider. Verify it there, then try again.` | [`PROVIDER_EMAIL_NOT_VERIFIED`](#provider_email_not_verified) | Verify the address with your sign-in provider, then run `affitor login` again |
 | `POST /auth/callback` | `500` | `Auth callback failed (request_id: <id>)` | Sign-in could not be completed | Run `affitor login` again |
 | `GET /auth/poll` | `400` | `Missing state parameter` | The `state` query parameter was not sent | Poll with the `state` returned by `/auth/start` |
 | `GET /auth/poll` | `404` | `Session not found` | No login session has that `state` | Run `affitor login` again |
@@ -395,7 +405,7 @@ An expired session is not an error on `/auth/poll`: it answers `200` with `"data
 
 ##### `ACCOUNT_BLOCKED`
 
-`POST /api/v1/cli/auth/callback` refuses to log in a suspended account. It is the one platform-envelope error with a stable code, in `error.details.code`:
+`POST /api/v1/cli/auth/callback` refuses to log in a suspended account. It carries a stable code in `error.details.code`:
 
 ```json
 {
@@ -413,6 +423,26 @@ An expired session is not an error on `/auth/poll`: it answers `200` with `"data
 
 **Cause:** the Affitor account you signed in with is suspended. **Fix:** retrying or signing in again will not help. Contact Affitor support.
 
+##### `PROVIDER_EMAIL_NOT_VERIFIED`
+
+`POST /api/v1/cli/auth/callback` also refuses a sign-in when the sign-in provider has not verified the email address it sent. The address is checked before it is used to find, create or link an account. The stable code is in `error.details.code`:
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "Your email address is not verified with your sign-in provider. Verify it there, then try again.",
+    "details": {
+      "code": "PROVIDER_EMAIL_NOT_VERIFIED"
+    }
+  }
+}
+```
+
+**Cause:** your sign-in provider does not report the email address as verified. **Fix:** verify the address with that provider, then run `affitor login` again.
+
 #### Account-session routes (`init`, `programs`)
 
 | Endpoint | Status | Error message | Meaning | Fix |
@@ -425,6 +455,9 @@ An expired session is not an error on `/auth/poll`: it answers `200` with `"data
 | `POST /init` | `400` | `Missing required fields: name, domain, commission_type, commission_rate` | One of the four fields is missing | Send all four |
 | `POST /init` | `400` | `Invalid commission_type: <value>. Valid: percent, fixed, recurring_percent, recurring_fixed` | `commission_type` is not one of the four values | Use one of the listed values |
 | `POST /init` | `400` | `commission_rate must be a positive number` | `commission_rate` is not a number, or is zero or negative | Send a positive number, not a string |
+| `POST /init` | `400` | `commission_rate is a percentage for this type and cannot exceed 100` | `commission_type` is `percent` or `recurring_percent` and `commission_rate` is above 100 | Send a rate above 0 and at most 100 |
+| `POST /init` | `400` | `duration_months must be a whole number of months (0 = lifetime)` | `duration_months` was sent and is not a whole number of 0 or more | Send a whole number of months, `0` for lifetime, or leave it out |
+| `POST /init` | `400` | `cookie_duration must be a whole number of days from 1 to 365` | `cookie_duration` was sent and is not a whole number from 1 to 365 | Send a whole number of days from 1 to 365, or leave it out |
 | `POST /init` | `500` | `Failed to create program (request_id: <id>)` | Program creation failed on our side | Run `affitor programs` before retrying, in case the program was created |
 | `GET /programs` | `401` | ``Missing Authorization header. Run `affitor login` first.`` | No Bearer login token was sent | Run `affitor login` |
 | `GET /programs` | `401` | ``Invalid or expired token. Run `affitor login` to refresh.`` | The login token is invalid or expired | Run `affitor login` again |

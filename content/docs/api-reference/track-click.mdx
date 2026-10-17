@@ -2,7 +2,7 @@
 title: Track Click
 description: Record an affiliate click event when a visitor lands via a referral link
 kind: reference
-last_updated: 2026-10-02
+last_updated: 2026-10-17
 ---
 
 `POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter, creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
@@ -54,6 +54,12 @@ No API key is required. This endpoint is public — the referral link embedded i
   </ParamField>
   <ParamField name="existing_click_id" type="string">
     Previously issued `click_id` to reuse instead of generating a new one.
+  </ParamField>
+  <ParamField name="program_id" type="integer">
+    The program of the page (the tracker sends it). When sent, the `aff` code is looked up only inside this program, and an id that is not a program returns `400` `Unknown program_id`. Without it, the lookup covers every program.
+  </ParamField>
+  <ParamField name="visitor_ip" type="string">
+    Your visitor's IP address, when your server records the click for that visitor. Used for the click's location only when the request carries the Bearer API key of the program the link belongs to (not a key past its rotation deadline) and the value is an IP address; otherwise the request's own IP is used. It never causes the click to be refused.
   </ParamField>
   <ParamField name="additional_data" type="object">
     Pass `{"test_mode": true, "program_id": 1}` to create a test event that does not affect production attribution.
@@ -144,8 +150,10 @@ When `additional_data.test_mode` is `true`:
 | `400 Bad Request` | `affiliate_url` is missing |
 | `400 Bad Request` | `affiliate_url` cannot be parsed as a URL |
 | `400 Bad Request` | No `?aff=` parameter found in `affiliate_url` |
+| `400 Bad Request` | `program_id` was sent but is not a program (`Unknown program_id`) |
 | `400 Bad Request` | No referral link found matching the `aff` value |
 | `400 Bad Request` | Referral link configuration is invalid (missing partner or program) |
+| `403 Forbidden` | Test mode only: the Bearer key and `additional_data.program_id` name different programs (`program_id does not match the API key`) |
 | `410 Gone` | Referral link exists but is inactive. Body has `error.code: link_disabled`; no click is recorded |
 | `500 Internal Server Error` | Unexpected server error |
 
