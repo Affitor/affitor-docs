@@ -140,6 +140,8 @@ Your workspace's policy may limit who can add custom MCP servers.
 4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. Affitor supports automatic registration, so no Client ID or Client Secret is needed.
 5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
 
+In an organization, members can add custom connectors only if an admin allows it.
+
 ### Which apps can connect
 
 After you sign in, Affitor sends you back to the app. It accepts only these return addresses:
@@ -151,7 +153,7 @@ After you sign in, Affitor sends you back to the app. It accepts only these retu
 - `www.perplexity.ai/rest/connections/oauth_callback` (Perplexity)
 - apps on your own computer: `http://127.0.0.1` or `http://localhost`, any port
 
-An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost". Perplexity Enterprise's `enterprise.perplexity.ai` is not on the list yet.
+An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost". Organizations that use Perplexity on its Enterprise address, `enterprise.perplexity.ai`, cannot connect: that address is not on the list.
 
 ---
 
@@ -159,7 +161,7 @@ An app that registers any other address is refused when it registers, with the e
 
 When your AI app connects, your browser opens **Connect an AI tool** on affitor.com. If you are signed out, you sign in first and come back to the same screen.
 
-1. The title names the app: **Claude wants to access Affitor**, or **An app on this computer wants to access Affitor** for a desktop or terminal app. An app whose return address is not on the list above shows **Unverified**, and its name in quotes, because any app can call itself "Claude".
+1. The title names the app: **Claude wants to access Affitor**, or **An app on this computer wants to access Affitor** for a desktop or terminal app. A desktop or terminal app also shows **Unverified** and the name it gives itself in quotes ("It calls itself …"), because any app on your computer can call itself "Claude".
 2. Check **Signed in as** your email. To use another Affitor account, click **Switch**.
 3. If you are both a brand and a partner, choose **As a brand** or **As a partner**.
 4. A brand picks one **Program**. You need to be an active member of that program. A partner sees **Programs**: all programs you are a partner in.
