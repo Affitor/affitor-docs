@@ -23,7 +23,7 @@ Requests must be authenticated. The authenticated user must be an active workspa
 |--------|-------|
 | `Authorization` | Session token (Affitor dashboard session) |
 
-An unauthenticated request and a request from a user who is not a workspace member of the program both return `403`.
+An unauthenticated request, a request from a user who is not an active workspace member of the program, and a request for a program that does not exist all return `403`.
 
 :::note
 
@@ -61,8 +61,8 @@ HTTP `200` with the following shape:
 {
   "data": [
     {
-      "date": "2024-06-01",
-      "period": "2024-06-01",
+      "date": "2024-05-31",
+      "period": "2024-05-31",
       "clicks": 42,
       "leads": 5,
       "conversions": 2,
@@ -72,8 +72,8 @@ HTTP `200` with the following shape:
       "commission": 20.00
     },
     {
-      "date": "2024-06-02",
-      "period": "2024-06-02",
+      "date": "2024-06-01",
+      "period": "2024-06-01",
       "clicks": 18,
       "leads": 2,
       "conversions": 0,
@@ -166,7 +166,7 @@ Growth from nothing has no percentage. When the previous period value is `0` and
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `period` | string | The `period` query param value used (or `"all"` for default) |
+| `period` | string | The `period` query param value used (`"7d"` when none is sent) |
 | `dateFrom` | string (ISO 8601) | Actual start of the current period used in the query |
 | `dateTo` | string (ISO 8601) | Actual end of the current period used in the query |
 | `previousPeriod.dateFrom` | string (ISO 8601) | Start of the comparison period |
@@ -178,7 +178,5 @@ Growth from nothing has no percentage. When the previous period value is `0` and
 
 | Status | When |
 |--------|------|
-| `401 Unauthorized` | No authenticated session |
-| `403 Forbidden` | Authenticated user is not an active workspace member of `programId` |
-| `404 Not Found` | Program with the given `programId` does not exist |
+| `403 Forbidden` | No signed-in session, the user is not an active workspace member of `programId`, or the program does not exist |
 | `500 Internal Server Error` | Unexpected server error |
