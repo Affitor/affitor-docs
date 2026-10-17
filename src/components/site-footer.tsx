@@ -1,6 +1,7 @@
 import { ASK_AI_PROMPT, FOOTER_COLUMNS, FOOTER_TAGLINE, SOCIAL_LINKS } from '@/config/site-nav';
 import { ENGINES } from '@/components/blog/ask-ai-row';
 import { Logo } from '@/components/logo';
+import { AskAiLink } from '@/components/ask-ai-link';
 
 /**
  * The affitor.com footer (affiliate-dashboard LandingRedesign/Footer) for the docs, the blog
@@ -22,19 +23,17 @@ export function SiteFooter() {
               <p className="text-sm font-semibold text-[#0A2540] mb-3 dark:text-fd-foreground">Ask AI about Affitor</p>
               <div className="flex items-center gap-2">
                 {ENGINES.map((engine) => (
-                  <a
+                  <AskAiLink
                     key={engine.name}
+                    engine={engine.key}
                     href={engine.base + ASK_AI_Q}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Ask ${engine.name} about Affitor`}
-                    aria-label={`Ask ${engine.name} about Affitor`}
+                    label={`Ask ${engine.name} about Affitor`}
                     className="w-9 h-9 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#425466] hover:text-[#0A2540] hover:border-[#c7cdd6] hover:-translate-y-0.5 transition-all duration-150 dark:bg-fd-background dark:border-fd-border dark:text-fd-muted-foreground dark:hover:text-fd-foreground"
                   >
                     <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" fill="currentColor" aria-hidden="true">
                       <path d={engine.path} />
                     </svg>
-                  </a>
+                  </AskAiLink>
                 ))}
               </div>
             </div>
