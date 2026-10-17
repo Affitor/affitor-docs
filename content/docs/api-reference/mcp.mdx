@@ -1,115 +1,263 @@
 ---
-title: MCP Server
-description: The @affitor/mcp Model Context Protocol server — let AI agents (Claude Desktop, Cursor) track clicks, leads, sales and refunds, generate per-stack integration plans, and self-verify attribution as tool calls.
+title: Affitor MCP server
+description: Connect Claude, ChatGPT, Cursor, Claude Code, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Sign in with your Affitor account; access is read-only.
 kind: reference
-last_updated: 2026-10-14
+last_updated: 2026-10-16
 ---
 
-`@affitor/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) **stdio server** for Affitor. It exposes Affitor's affiliate-tracking capabilities as MCP tools, so an AI agent — Claude Desktop, Cursor, or any MCP client — can report clicks, leads, sales and refunds, fetch a per-stack integration plan, and prove attribution works, all as native tool calls.
+The Affitor MCP server lets an AI app read your Affitor data: a brand's program, partners, applications, commissions and billing, or a partner's programs, links, earnings, commissions and payouts. It is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server. You sign in with your Affitor account, no API key needed, and the connection is read-only: it cannot change data or move money.
 
-Under the hood it wraps the consolidated server client [`@affitor/sdk/server`](/docs/api-reference/sdks/) (the `Affitor` class). Authentication is your **program API key**, supplied via the `AFFITOR_API_KEY` environment variable.
+```text
+https://mcp.affitor.com/mcp
+```
 
-:::note
+| | |
+|---|---|
+| Server URL | `https://mcp.affitor.com/mcp` |
+| Transport | Streamable HTTP |
+| Sign-in | OAuth 2.1 with PKCE (S256) and dynamic client registration |
+| Scope | `read` (the only scope) |
+| Access | Read-only. One program per brand connection; a partner connection sees only that partner |
 
-The `@affitor/mcp` and `@affitor/sdk` packages are **Beta**. The documented happy-path works; report issues on GitHub.
-
-:::
+<Flow>
+  <FlowStep caption="Use the URL above, or follow your app's steps below.">
+    **Add the server** in your AI app
+  </FlowStep>
+  <FlowStep caption="Your browser opens affitor.com.">
+    **Sign in** with your Affitor account
+  </FlowStep>
+  <FlowStep caption="A brand picks one program. A partner connects their partner account.">
+    **Choose what to share** and click **Allow**
+  </FlowStep>
+  <FlowStep caption="The app sees the tools for your connection type.">
+    **Ask your AI app** about your program or earnings
+  </FlowStep>
+</Flow>
 
 ---
 
-## Install as a plugin
+## Connect your AI app
 
-In Claude Code and Gemini CLI, the plugin is the quickest way to install. It bundles the MCP server with Affitor's integration guide (a skill in Claude Code, a context file in Gemini CLI). Claude Code asks for your program API key when you enable the plugin; Gemini CLI asks during installation.
+In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, Cursor, Claude Code and Codex. Brands find it in **All settings** › **Developers** › **AI agents**, and on the program's **Tracking** step under **Your agent** › **Connect your AI**. Partners find it in **Settings** › **Integrations**.
 
 <CodeGroup items={[
   {
     label: "Claude Code",
     lang: "bash",
-    code: `/plugin marketplace add Affitor/claude-plugins
-/plugin install affitor@affitor`
-  },
-  {
-    label: "Gemini CLI",
-    lang: "bash",
-    code: `gemini extensions install https://github.com/Affitor/claude-plugins`
-  }
-]} />
-
-Run the Claude Code commands inside a Claude Code session. Claude Code keeps the key in secure storage, and Gemini CLI keeps it in the system keychain. Source: [github.com/Affitor/claude-plugins](https://github.com/Affitor/claude-plugins).
-
-The server is also listed in the [Official MCP Registry](https://registry.modelcontextprotocol.io) as `com.affitor/mcp`, so clients that browse the registry can find it there.
-
-## Add it to your MCP client
-
-For any other client, or to configure it yourself, pick your client below. Every option runs the same local server with `npx -y @affitor/mcp` and passes your **program API key** as `AFFITOR_API_KEY`. Replace `your_program_key` with your key.
-
-<CodeGroup items={[
-  {
-    label: "Claude Code",
-    lang: "bash",
-    code: `claude mcp add affitor --env AFFITOR_API_KEY=your_program_key -- npx -y @affitor/mcp`
+    code: `claude mcp add --transport http affitor https://mcp.affitor.com/mcp
+# Then, inside Claude Code: /mcp, pick affitor and sign in.`
   },
   {
     label: "Codex",
     lang: "bash",
-    code: `codex mcp add affitor --env AFFITOR_API_KEY=your_program_key -- npx -y @affitor/mcp`
+    code: `codex mcp add affitor --url https://mcp.affitor.com/mcp
+# If no sign-in page opens:
+codex mcp login affitor`
   },
   {
     label: "Gemini CLI",
     lang: "bash",
-    code: `gemini mcp add -e AFFITOR_API_KEY=your_program_key affitor npx -y @affitor/mcp`
-  },
-  {
-    label: "Claude Desktop",
-    lang: "json",
-    code: `{
-  "mcpServers": {
-    "affitor": {
-      "command": "npx",
-      "args": ["-y", "@affitor/mcp"],
-      "env": { "AFFITOR_API_KEY": "your_program_key" }
-    }
-  }
-}`
+    code: `gemini mcp add --transport http affitor https://mcp.affitor.com/mcp
+# Then, inside Gemini CLI: /mcp auth affitor`
   },
   {
     label: "Cursor",
     lang: "json",
     code: `{
   "mcpServers": {
-    "affitor": {
-      "command": "npx",
-      "args": ["-y", "@affitor/mcp"],
-      "env": { "AFFITOR_API_KEY": "your_program_key" }
-    }
+    "affitor": { "url": "https://mcp.affitor.com/mcp" }
   }
 }`
   },
   {
-    label: "VS Code",
-    lang: "json",
-    code: `{
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "affitor-api-key",
-      "description": "Affitor program API key",
-      "password": true
-    }
-  ],
-  "servers": {
-    "affitor": {
-      "command": "npx",
-      "args": ["-y", "@affitor/mcp"],
-      "env": { "AFFITOR_API_KEY": "\${input:affitor-api-key}" }
-    }
-  }
-}`
+    label: "OpenClaw",
+    lang: "bash",
+    code: `openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth
+openclaw mcp login affitor`
+  },
+  {
+    label: "Hermes",
+    lang: "bash",
+    code: `hermes mcp add affitor --url https://mcp.affitor.com/mcp --auth oauth
+# To sign in again later:
+hermes mcp login affitor`
   },
   {
     label: "Other clients",
     lang: "json",
     code: `{
+  "mcpServers": {
+    "affitor": { "url": "https://mcp.affitor.com/mcp" }
+  }
+}`
+  }
+]} />
+
+- **Claude Code:** add `--scope user` to use Affitor in every project.
+- **Cursor:** open this link to add the server in one click, or put the JSON in `~/.cursor/mcp.json`. Then, in **Cursor Settings** › **MCP**, click **Connect** and sign in.
+
+  ```text
+  cursor://anysphere.cursor-deeplink/mcp/install?name=affitor&config=eyJ1cmwiOiJodHRwczovL21jcC5hZmZpdG9yLmNvbS9tY3AifQ%3D%3D
+  ```
+
+- **Other clients:** put the JSON in the client's MCP config, restart it and sign in when it asks.
+
+### Claude (claude.ai and Claude Desktop)
+
+1. Open **Customize** › **Connectors**.
+2. Click **+ Add**, then **Add custom connector**.
+3. Name it Affitor, paste `https://mcp.affitor.com/mcp` and click **Continue**.
+4. Keep the detected sign-in settings. Affitor supports automatic registration, so under **OAuth client** pick **Register automatically** if Claude asks.
+5. Click **Add** and sign in to Affitor.
+
+On Team and Enterprise plans, an owner adds the connector in **Organization settings** › **Connectors**, and members click **Connect**.
+
+### ChatGPT
+
+1. Go to [chatgpt.com/plugins](https://chatgpt.com/plugins).
+2. Click the plus button, then **Add custom MCP server**.
+3. Enter a name, and under **Connection** paste `https://mcp.affitor.com/mcp`.
+4. Configure authentication (Affitor uses OAuth), review the warning and click **I understand and want to continue**.
+5. Click **Create as a plugin**, then sign in to Affitor.
+
+Your workspace's policy may limit who can add custom MCP servers.
+
+### Which apps can connect
+
+After you sign in, Affitor sends you back to the app. It accepts only these return addresses: `claude.ai`, `claude.com`, `chatgpt.com`, `www.cursor.com`, and apps on your own computer (`http://127.0.0.1` or `http://localhost`, any port). An app that registers any other web address is refused when it registers. VS Code registers `vscode.dev`, so it cannot connect.
+
+---
+
+## Sign in and allow access
+
+When your AI app connects, your browser opens **Connect an AI tool** on affitor.com. If you are signed out, you sign in first and come back to the same screen.
+
+1. The title names the app: **Claude wants to access Affitor**, or **An app on this computer wants to access Affitor** for a desktop or terminal app. An app whose return address is not on the list above shows **Unverified**, and its name in quotes, because any app can call itself "Claude".
+2. Check **Signed in as** your email. To use another Affitor account, click **Switch**.
+3. If you are both a brand and a partner, choose **As a brand** or **As a partner**.
+4. A brand picks one **Program**. You need to be an active member of that program. A partner sees **Programs**: all programs you are a partner in.
+5. **Access** is always **Read-only**: "Programs, partners, clicks and commissions." for a brand, "Your links, clicks and earnings." for a partner.
+6. Click **Allow**, or **Cancel** to refuse.
+
+To give an app a second program, connect again and pick that program. Each connection holds one program.
+
+<VerifySuccess
+  browser={[
+    "Your AI app lists the Affitor tools: `get_program` for a brand connection, `list_my_programs` for a partner connection",
+  ]}
+  dashboard={[
+    "Brands: the connection appears under **All settings** › **Developers** › **AI agents**, with **Added** and **Last used**",
+    "Partners: the connection appears under **Settings** › **Integrations**",
+  ]}
+  ifNotWorking={[
+    "**This request has expired**: start the connection again from your AI app",
+    "**Nothing to connect yet**: create a program, or join one as a partner, first",
+  ]}
+/>
+
+---
+
+## Tools
+
+Every tool is read-only, and the server declares it so on each tool: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`, `openWorldHint: false`. A brand connection gets the 7 brand tools for its one program. A partner connection gets the 5 partner tools across that partner's programs. A tool outside your connection's set is refused.
+
+### Brand tools
+
+| Tool | What it reads | Inputs |
+|---|---|---|
+| `get_program` | The program: name, status, commission terms, setup checklist, 24-hour tracking counts, and the tracker install snippet with where to put it and how to verify it. | none |
+| `list_partners` | Partners who joined, newest first, with lifetime clicks, leads and sales, and earned and pending money in the window. | `from`, `to`, `limit`, `cursor` |
+| `get_partner` | One partner by `partner_program_id`, with the same fields as `list_partners`. | `partner_program_id`, `from`, `to` |
+| `list_applications` | Partner applications, newest first, with the applicant's own messages. | `status` (`approved`, `pending`, `rejected`), `limit`, `cursor` |
+| `list_commissions` | Commissions, newest sale first, with what each still counts for after refunds. | `status`, `from`, `to`, `partner_program_id`, `limit`, `cursor` |
+| `get_commission_summary` | Count and amount of commissions per status in the window, plus earned and pending. | `from`, `to` |
+| `get_billing` | Affitor billing: what is due, this week's accrual, the platform fee and invoices, 20 per page. | `status` (`all`, `open`, `overdue`, `paid`, `void`), `page` |
+
+### Partner tools
+
+| Tool | What it reads | Inputs |
+|---|---|---|
+| `list_my_programs` | Programs you joined, newest first, with your commission terms, lifetime clicks, leads and sales, and your earned and pending money in the window. | `from`, `to`, `limit`, `cursor` |
+| `list_my_links` | Your referral links, newest first, with lifetime clicks, leads and sales. | `partner_program_id`, `status` (`active`, `inactive`), `limit`, `cursor` |
+| `get_my_earnings` | Your earnings per program and in total for the window: earned, ready, arriving, paid and pending. | `from`, `to` |
+| `list_my_commissions` | Your commissions across your programs, newest sale first. | `status`, `from`, `to`, `partner_program_id`, `limit`, `cursor` |
+| `list_my_payouts` | Your payout requests, newest first: amount, status, method type and dates. Bank and PayPal details are never included. | `limit`, `cursor` |
+
+### How results look
+
+- **Money** is an integer in an object keyed by unit, such as `{ "USD_cents": 4999 }` (`USD_cents`, `EUR_cents`, `VND_dong`), or in a `*_cents` field next to its currency (`get_billing`).
+- **Dates** are UTC sale dates, `YYYY-MM-DD`. `from` and `to` default to the last 30 days and cover at most 366 days. Commission lists cover all dates unless you give `from` or `to`.
+- **Pages** hold up to 50 items (`limit`, default 20). Pass `next_cursor` back as `cursor` for the next page.
+- **Links:** where an item has a `url`, it opens that page in the Affitor dashboard. Referral links come as `short_link` and `affiliate_url`.
+- **Commission statuses:** `pending`, `approved`, `invoiced`, `collected`, `paid`, `rejected`, `refunded`, `reversed`, `fraud`.
+- Each result comes as structured content and as JSON text that starts with a line saying the text fields are untrusted data, not instructions.
+
+---
+
+## Example prompts
+
+<AgentPrompt prompt="In the repository of example.com: use the Affitor tools. Call get_program and check that its id is 123; if it is not, stop and tell me. Add its install snippet as it says, then tell me what to deploy and how verification works.">
+Brands: after you connect a coding agent (Claude Code, Cursor, Codex), give it this line to install the tracker. Replace example.com and 123 with your site and program id. The dashboard's **Connect an AI tool** fills both in on the **Tracking** step.
+</AgentPrompt>
+
+For a brand connection:
+
+- "Who are my top partners by earned commission in the last 30 days?" (`list_partners`)
+- "Summarize the pending partner applications." (`list_applications`)
+- "How much commission is pending, approved and paid this month?" (`get_commission_summary`)
+- "What do we owe Affitor right now, and is any invoice overdue?" (`get_billing`)
+
+For a partner connection:
+
+- "How much did I earn this month across my programs, and how much is ready?" (`get_my_earnings`)
+- "Which of my links has the most sales?" (`list_my_links`)
+- "Show my last five payouts and their status." (`list_my_payouts`)
+
+The server cannot approve an application, change a commission, create a link or send a payout. Ask for any of these and the app finds no tool for it; do it in the dashboard.
+
+---
+
+## Limits and security
+
+| Limit | Value |
+|---|---|
+| Requests to `/mcp` | 120 per minute per connection, then `429` with `{ "error": "rate_limited" }` |
+| Token requests | 60 per minute per app |
+| Access token | 1 hour, bound to `https://mcp.affitor.com/mcp` |
+| Refresh token | Rotates on every use, expires after 30 days |
+| Sign-in | Finish within 10 minutes of the page opening; each **Allow** is valid once, for 2 minutes |
+
+- **Read-only by design.** The only scope is `read`. There are no tools that write, delete or move money.
+- **Access is checked on every call.** A brand connection works only while you are an active member of its program; a partner connection, only while your partner account exists. A blocked account stops working at once.
+- **Only Affitor sign-in tokens work.** The server refuses program API keys, staff keys and dashboard sessions with `401`. Do not add an `Authorization` header with your API key.
+- **Untrusted text is marked.** Partner names, application messages and other free text are cut at 280 characters (the cut fields are listed in `truncated`), and every result says its text is data, not instructions.
+- **What is logged.** One row per tool call: the connection, the tool name, the program, the number of rows, whether it worked and how long it took. Never your prompts, the arguments or the results. These rows are deleted after 30 days.
+
+### Remove access
+
+- **Brands:** **All settings** › **Developers** › **AI agents** lists the program's connections under **Connections** with **Client**, **Connected by**, **Added**, **Last used** and **Access**. Click **Remove** on your own connection. A program owner can remove any member's connection to that program.
+- **Partners:** **Settings** › **Integrations**, then **Remove**.
+
+Removal is immediate: the app's tokens are deleted and its next request gets `401`.
+
+---
+
+## Troubleshooting
+
+- **"This request has expired"** or **"This approval is no longer valid"**: the sign-in took too long. Start the connection again from your AI app.
+- **The app sees the wrong program:** remove the connection and connect again, picking the right program. The install prompt above checks the program id for this reason.
+- **Signed in with the wrong account:** click **Switch** on the sign-in screen.
+- **"Too many rows for this window"**: ask for a shorter `from`/`to` window.
+- **`401` with "Program API keys are not accepted here"**: remove the `Authorization` header from your client's config and sign in instead.
+
+---
+
+## Legacy local server
+
+`@affitor/mcp` on npm is an older, separate **stdio** server that runs on your computer and uses your **program API key** (`AFFITOR_API_KEY`) instead of sign-in. It does tracking, not reporting: `affitor_readiness`, `affitor_track_click`, `affitor_track_lead`, `affitor_get_integration_plan` and `affitor_run_verification`, plus `affitor_track_sale` and `affitor_track_refund` only when you set `AFFITOR_MCP_WRITE=1`. The [Affitor plugin](https://github.com/Affitor/claude-plugins) for Claude Code and Gemini CLI bundles this server.
+
+```json
+{
   "mcpServers": {
     "affitor": {
       "command": "npx",
@@ -117,142 +265,18 @@ For any other client, or to configure it yourself, pick your client below. Every
       "env": { "AFFITOR_API_KEY": "your_program_key" }
     }
   }
-}`
-  }
-]} />
+}
+```
 
-Where each JSON goes:
-
-- **Claude Desktop:** `claude_desktop_config.json`, in `~/Library/Application Support/Claude/` on macOS or `%APPDATA%\Claude\` on Windows.
-- **Cursor:** `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for every project.
-- **VS Code:** `.vscode/mcp.json` in your project. VS Code asks for the key once and stores it securely.
-- **Other clients** (Windsurf, Cline and most others): the client's MCP config file, in the same `mcpServers` shape.
-
-Restart your client (or reload its MCP servers) and the `affitor_*` tools become available to the agent. To let the agent report sales and refunds, also add `"AFFITOR_MCP_WRITE": "1"` to `env` (see below).
-
-:::note
-
-Gemini CLI: some Google plans moved from Gemini CLI to Antigravity CLI. If you use Antigravity CLI, follow [Google's migration guide](https://antigravity.google/docs/cli/gcli-migration).
-
-:::
-
-### Environment variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `AFFITOR_API_KEY` | Yes | Your Affitor **program API key** (Bearer). Server-side only — never ship it to a browser. |
-| `AFFITOR_API_URL` | No | API base override. Defaults to `https://api.affitor.com`. |
-| `AFFITOR_MCP_WRITE` | No | Set to `1` to add the two tools that move money: `affitor_track_sale` and `affitor_track_refund`. Off by default, so an agent exploring the tools cannot create a real sale or reverse a commission. |
-
-If `AFFITOR_API_KEY` is not set, the server prints a clear message to stderr and exits.
-
-:::note
-
-The program API key is a server-side secret. The MCP server runs locally and reads it from your client config — it is never exposed to the browser or sent to the agent's model.
-
-:::
-
----
-
-## Tools
-
-The server registers five tools by default, and seven with `AFFITOR_MCP_WRITE=1`. Each returns the Affitor API's JSON payload as text content; a failed request (a thrown error or an `{ ok: false }` envelope) returns an MCP error result with the message.
-
-| Tool | Inputs | Description |
-|---|---|---|
-| `affitor_readiness` | `forceRecheck?: boolean` | Check this program's integration/onboarding readiness — returns a 5-gate verdict + `blocker` + `next_action`. Poll until `integration_verified` is true. |
-| `affitor_track_click` | `affiliateUrl?`, `pageUrl?`, `referrerUrl?`, `existingClickId?` (all optional strings) | Report a click (usually browser-side; public, no customer needed). |
-| `affitor_track_lead` | `customerExternalId?: string`, `clickId?: string`, `email?: string`, `testMode?: boolean` (one of `customerExternalId` / `clickId` required) | Report a lead/signup. Binds the customer to the click so later sales attribute by `customerExternalId` alone. |
-| `affitor_track_sale` | `customerExternalId?` / `clickId?` (one required), `amount: number` (cents), `invoiceId: string`, `currency?`, `saleType?`, `isRecurring?`, `subscriptionId?`, `subscriptionInterval?`, `testMode?` | Needs `AFFITOR_MCP_WRITE=1`. Report a sale. Creates a real sale and commission unless `testMode` is true. Resolves attribution by `customerExternalId` (bound at lead time). |
-| `affitor_track_refund` | `invoiceId: string`, `refundAmountCents?: number`, `refundReason?: string`, `testMode?: boolean` | Needs `AFFITOR_MCP_WRITE=1`. Report one refund with its own amount; amounts add up on the sale (omit amount = refund the rest → commission reversed). A retry with the same amount is ignored. |
-| `affitor_get_integration_plan` | `framework`, `provider`, `mode?` | Return the deterministic per-stack integration plan — install, checkout-metadata snippet, `trackSale` snippet + where to inject it, and the verify step. |
-| `affitor_run_verification` | _(none)_ | Fire the synthetic click → lead → sale verification chain through the real attribution pipeline (isolated `is_test` rows). |
-
-### Tracking tool inputs
-
-**`affitor_track_lead`** — one of `customerExternalId` / `clickId` is required:
-
-- `customerExternalId?: string` — your own user id; binds this customer to the click.
-- `clickId?: string` — Affitor click id (from the `affitor_click_id` cookie).
-- `email?: string` — the lead's email address.
-- `testMode?: boolean`: record a test lead (flagged `is_test`) instead of a real one.
-
-**`affitor_track_sale`** — one of `customerExternalId` / `clickId` is required:
-
-- `customerExternalId?: string` — your own user id; resolves attribution (no `clickId` needed once bound at lead time).
-- `clickId?: string` — Affitor click id.
-- `amount: number` — sale amount in **integer cents** (e.g. `4999` = $49.99).
-- `invoiceId: string` — idempotency key; dedups retries (your invoice / transaction id).
-- `currency?: string` — `USD`, `EUR`, or `VND`; other codes are not supported. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
-- `saleType?: "payment" | "subscription"` — one-off payment or subscription.
-- `isRecurring?: boolean` — whether this sale recurs (subscription renewal).
-- `subscriptionId?: string` — provider subscription id, if applicable.
-- `subscriptionInterval?: "monthly" | "quarterly" | "annual"` — billing interval for a subscription sale.
-- `testMode?: boolean`: record a test sale (flagged `is_test`) that creates no commission. Leave it off for a real sale.
-
-**`affitor_track_refund`**:
-
-- `invoiceId: string` — the sale's idempotency key (the `invoiceId` you passed to `affitor_track_sale`).
-- `refundAmountCents?: number` — integer cents, **this refund's own amount** (not a running total). Omit (or `0`) = refund everything not yet refunded → commission reversed; otherwise added to earlier refunds → `refunded` until the total reaches the sale amount.
-- `refundReason?: string` — optional human-readable refund reason.
-- `testMode?: boolean`: a dry run that returns the refund that would be sent and calls nothing. The API has no test mode for refunds.
-
-**`affitor_track_click`** — all optional:
-
-- `affiliateUrl?: string` — the affiliate/referral URL that was clicked.
-- `pageUrl?: string` — the landing page URL the click arrived on.
-- `referrerUrl?: string` — the HTTP referrer URL, if any.
-- `existingClickId?: string` — reuse an existing Affitor click id instead of minting a new one.
-
----
-
-## `affitor_get_integration_plan`
-
-A **pure** tool: it reads the canonical recipe registry (`@affitor/recipes`) and returns the deterministic integration plan for a given stack. It never touches the network or the client — so the agent follows a fixed contract instead of guessing one.
-
-| Input | Values | Description |
-|---|---|---|
-| `framework` | `next-app`, `next-pages`, `fastify`, `express`, `node`, `unknown` | The detected app framework. Determines where `trackSale` is injected. |
-| `provider` | `stripe` (default), `polar`, `lemonsqueezy`, `paddle`, `unknown` | The detected payment provider. |
-| `mode` | `stripe_connect` (default), `s2s` | Payment-tracking mode. `stripe_connect` = Connect autocaptures the sale (metadata only, no `trackSale`); `s2s` = inject `trackSale` in your webhook. |
-
-The plan it returns includes:
-
-1. **install** — what to add (`npm i @affitor/sdk`).
-2. **metadata** — the checkout-session attribution snippet to plant at checkout creation (always required for Stripe).
-3. **sale** — the `trackSale` snippet and exactly where to inject it. For `mode: "stripe_connect"` this is `null` — Stripe Connect records the sale server-side, so the agent injects metadata only and must **not** also call `trackSale` (the double-count guard).
-4. **renewals** — for Stripe `s2s`, a separate `case 'invoice.paid'` handler so subscription renewals are not silently missed.
-5. **verify** — the self-verify step (synthetic chain → readiness gate).
-
-:::note
-
-Because the CLI (`affitor init` / `affitor onboard`), this MCP tool, and the public integration guides all read the same recipe registry, the integration contract can never drift between surfaces.
-
-:::
-
----
-
-## `affitor_run_verification`
-
-The agent's **proof step**. It fires Affitor's synthetic click → lead → sale chain through the **real** attribution pipeline, writing isolated `is_test` rows that never create real commissions. Run it, then poll `affitor_readiness` until `integration_verified: true`.
-
-The recommended agent loop:
-
-1. Call `affitor_run_verification` to fire the chain.
-2. Call `affitor_readiness` and check `integration_verified`.
-3. If not yet verified, read the `blocker` and its gate's `next_action`, self-correct, and repeat.
-
-<Callout type="warning" title="Rate limit — back off, don't hammer">
-`affitor_run_verification` is rate-limited to **10 runs per program per hour**. On a `rate_limited` result, read `retry_after_seconds` and wait that long before retrying. A non-2xx (including a 429) returns the parsed error body with the HTTP status merged in, so the agent can read `retry_after_seconds` and back off rather than crash.
-</Callout>
+Keep the key server-side; it is a secret. Source and tool details: [github.com/Affitor/cli](https://github.com/Affitor/cli/tree/main/packages/mcp). For tracking work an agent can also use the CLI: `npx affitor onboard`.
 
 ---
 
 ## Related
 
-- [Agent Integration](/docs/api-reference/agent-integration/) — how AI agents auto-install tracking from generated `AGENTS.md` instruction files.
-- [CLI Command Reference](/docs/brand/cli/commands/) — `npx affitor onboard`, the one-shot equivalent of the MCP flow.
-- [SDK Reference](/docs/api-reference/sdks/) — the `@affitor/sdk` package the MCP server wraps.
-- [Track Sale](/docs/api-reference/track-sale/) — the full API contract behind `affitor_track_sale`.
+- [Agent Integration](/docs/api-reference/agent-integration/): how coding agents install tracking from generated instruction files.
+- [Testing Integration](/docs/brand/tracking/testing-integration/): check that clicks, leads and sales arrive.
+- [CLI Command Reference](/docs/brand/cli/commands/): `npx affitor onboard` and the rest of the CLI.
+- [SDK Reference](/docs/api-reference/sdks/): the `@affitor/sdk` package.
 
-<NextStep title="Prefer a single command?" description="npx affitor onboard runs detect → install → inject → verify in one shot — the CLI equivalent of the MCP flow." href="/docs/brand/cli/commands" />
+<NextStep title="Install tracking with your agent" description="Connect a coding agent, then give it the install prompt above." href="/docs/brand/tracking/quickstart-integration" />
