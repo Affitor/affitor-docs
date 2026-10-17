@@ -60,7 +60,7 @@ How the partner reaches Stripe depends on your checkout:
 
 | Checkout | What carries the partner |
 |---|---|
-| Payment Link, Buy Button, Pricing Table | The Affitor tracker on the page adds the click as `client_reference_id` ([how it works](https://affitor.com/changelog/stripe-payment-links-attribution)). It works on `buy.stripe.com` links that do not carry your own `client_reference_id`, when the visitor allows tracking |
+| Payment Link, Buy Button, Pricing Table | The Affitor tracker on the page adds the click as `client_reference_id` ([how it works](https://affitor.com/changelog/stripe-payment-links-attribution)). Payment Links need a `buy.stripe.com` address. On all three, a `client_reference_id` you set yourself is kept, and if your tracker waits for consent, the visitor must have given it |
 | Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata ([Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe)) |
 
 If Stripe is connected and your server also sends sales through the Server API, send each purchase through one of them only, or it can count twice.
@@ -115,7 +115,7 @@ Sales and commissions Affitor already recorded stay as they are. After the switc
 <CommonMistakes items={[
   "Creating the account inside the Connect Stripe tab. Stripe allows it, but activation can take longer than the 10 minutes the connection waits. Create and activate the account first (Steps 1 and 2), then connect.",
   "Testing in a separate Stripe sandbox. Only the test mode of the connected account reaches Affitor.",
-  "Testing with a subscription bought through a Payment Link. Use a one-time price for the test.",
+  "Testing with a subscription bought through a Payment Link, Buy Button or Pricing Table. Use a one-time price for the test.",
   "Sending the same purchase through Stripe and the Server API. Use one source per purchase.",
   "Revoking the old account while other programs still use it, without reconnecting them. Every program on that account is disconnected.",
 ]} />
