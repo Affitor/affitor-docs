@@ -10,3 +10,6 @@ node_modules/
 .internal/
 .claude/
 .content-factory/
+
+# Written by scripts/fetch-programs.mjs (prebuild, predev)
+src/config/programs.json

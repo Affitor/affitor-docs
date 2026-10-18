@@ -13,8 +13,8 @@ export const PRICING = { freeUsd: 10000, feePct: 3.5 };
 // "per program" under "First $10,000": waits on Sơn's `per program` answer. true shows the note.
 export const PER_PROGRAM_NOTE = true;
 
-// Live programs on the Affitor marketplace and the day they were read: written once per build by
-// scripts/fetch-programs.mjs (prebuild); the committed file is the dated fallback.
+// Live programs on the Affitor marketplace and the day they were read (or the dated fallback):
+// written once per build by scripts/fetch-programs.mjs (prebuild, predev); gitignored.
 export { default as PROGRAMS } from './programs.json' with { type: 'json' };
 
 /** @param {number} n */

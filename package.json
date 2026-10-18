@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "predev": "node scripts/fetch-programs.mjs",
     "dev": "next dev",
     "prebuild": "node scripts/fetch-programs.mjs && node scripts/gen-llms.js",
     "build": "next build",
