@@ -2,7 +2,7 @@
 title: 3-Step Integration Guide
 description: Get Affitor tracking live with the supported click, signup, and server-side tracking flows
 kind: quickstart
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Three steps get Affitor tracking live: clicks → signups → sales. Steps 1 and 2 establish attribution; step 3 records revenue.
@@ -279,7 +279,7 @@ const session = await stripe.checkout.sessions.create({
 ### Stripe integration rules
 
 - **One-time payments** are attributed from Stripe checkout metadata and webhook processing
-- **Subscriptions and renewals** rely on `invoice.payment_succeeded`
+- **Subscriptions and renewals** rely on the invoice events (`invoice.payment_succeeded`, `invoice.paid`)
 - If `subscription_data.metadata` is missing, the click does not reach the subscription's invoices (first payment and renewals), and Affitor attributes the subscription only by the buyer's email or Stripe customer ID
 - Metadata fields to set on every checkout (recommended; none is strictly required):
   - `affitor_click_id`

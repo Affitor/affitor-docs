@@ -2,7 +2,7 @@
 title: Payment Tracking
 description: Track completed sales with server-side tracking or Stripe integration
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
@@ -161,7 +161,7 @@ const session = await stripe.checkout.sessions.create({
 ### Why subscriptions need `subscription_data.metadata`
 
 - One-time payments are handled from Stripe checkout session completion
-- Subscription commissions, for the first payment and each renewal, are created from `invoice.payment_succeeded`
+- Subscription commissions, for the first payment and each renewal, are created from the invoice events (`invoice.payment_succeeded`, `invoice.paid`)
 - An invoice carries the subscription's metadata (`subscription_data.metadata`), not the Checkout Session's `metadata`, so that is where the click reaches the subscription
 - Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email or that Stripe customer ID
 - Without it, the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has
@@ -178,8 +178,8 @@ Every `checkout.session.completed` event with `mode: 'payment'` is processed ind
 
 :::note
 
-**`invoice.payment_succeeded` is not involved here.**
-Affitor uses `invoice.payment_succeeded` only for subscriptions: a subscription's first payment and each renewal. Pay-as-you-go purchases use `checkout.session.completed`, one event per purchase, each attributed and commissioned separately.
+**The invoice events are not involved here.**
+Affitor uses the invoice events (`invoice.payment_succeeded`, `invoice.paid`) only for subscriptions: a subscription's first payment and each renewal. Pay-as-you-go purchases use `checkout.session.completed`, one event per purchase, each attributed and commissioned separately.
 
 :::
 
@@ -327,7 +327,7 @@ Check:
 Check:
 - the subscription's first payment was attributed: renewals follow it through the buyer's email or Stripe customer ID
 - `subscription_data.metadata` contains all three fields
-- the program's Stripe card under **Program settings** › **Payments** reads **Connected**, and the subscription bills on that Stripe account. Affitor receives `invoice.payment_succeeded` through Stripe Connect; you do not add a webhook
+- the program's Stripe card under **Program settings** › **Payments** reads **Connected**, and the subscription bills on that Stripe account. Affitor receives the invoice events (`invoice.payment_succeeded`, `invoice.paid`) through Stripe Connect; you do not add a webhook
 - the same customer key was used at signup and in Stripe metadata
 
 ---

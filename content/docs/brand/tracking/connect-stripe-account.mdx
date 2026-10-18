@@ -2,7 +2,7 @@
 title: Connect a new Stripe account
 description: "Create a separate Stripe account under the login you already have, connect it to an Affitor program, test it with Stripe test mode, and check that the connection is right."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Create a second Stripe account under your existing Stripe login, activate it, connect it to your Affitor program, and test it before partners send real customers. Affitor connects through Stripe Connect, so you do not create an API key or a webhook for it.
@@ -72,7 +72,7 @@ If Stripe is connected and your server also sends sales through the Server API, 
 | Stripe event | What Affitor does |
 |---|---|
 | `checkout.session.completed` | Records a one-time purchase |
-| `invoice.payment_succeeded` | Records a subscription's first payment and each renewal |
+| `invoice.payment_succeeded`, `invoice.paid` | Records a subscription's first payment and each renewal, at most once per invoice |
 | `charge.refunded` | Reverses the commission ([refund handling](/docs/brand/quickstart/commission-approval-cash-flow#refund-handling)) |
 | `charge.dispute.funds_withdrawn` | Reverses the commission when a chargeback takes the money |
 | `charge.dispute.funds_reinstated`, `charge.dispute.closed` (won) | Sends you a notification to review the commission. It stays reversed: Affitor does not re-credit the partner on its own |
