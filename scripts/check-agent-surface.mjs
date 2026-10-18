@@ -79,6 +79,28 @@ function inventory() {
       })),
     },
   });
+  // The tab row (docs-shell.tsx) and the Brands | Partners switch (audience-switch.tsx) find their
+  // trees by Fumadocs' root folder $id, today the folder path; checkNav() pins the rendered result.
+  const roots = source.pageTree.children.map((node) => (node.type === 'folder' ? node.$id : node.type));
+  assert.deepEqual(roots, ['brand', 'partners', 'api-reference', 'support'], 'root folder $id values changed; docs-shell.tsx TABS and audience-switch.tsx match on them');
+  // Each page is listed by exactly one meta.json entry. Fumadocs keeps the first tree that lists a
+  // page and silently drops any later listing, so the tree count below cannot see a page listed in
+  // two meta.json files (adding a page to a second tree would pass CI and change nothing).
+  const listings = new Map();
+  for (const meta of files.filter((file) => file.endsWith('/meta.json'))) {
+    const where = relative(ROOT, meta);
+    for (const entry of json(meta).pages ?? []) {
+      // Group labels (---Group---, ---) and links ([Text](url)) are not pages.
+      if (/^---(?:.*---)?$/.test(entry) || /^(?:external:)?(?:\[[^\]]*\])+\([^)]*\)$/.test(entry)) continue;
+      const path = join(dirname(relative(docsDir, meta)), entry);
+      const page = ['.mdx', '.md'].map((ext) => `${path}${ext}`).find((file) => existsSync(join(docsDir, file)));
+      if (page) listings.set(page, [...(listings.get(page) ?? []), where]);
+      else assert.ok(existsSync(join(docsDir, path, 'meta.json')), `${where}: "${entry}" is not a page or a folder with its own meta.json`);
+    }
+  }
+  for (const [page, metas] of listings) {
+    assert.equal(metas.length, 1, `content/docs/${page} is listed ${metas.length} times (${metas.join(', ')}); list it once, in one meta.json`);
+  }
   // Every page sits in exactly one sidebar tree (a meta.json lists it; pointer links have no $ref),
   // so none is reachable only by URL.
   const listed = flattenTree(source.pageTree.children).filter((node) => node.$ref).map((node) => node.url);
@@ -313,6 +335,39 @@ function checkHtml(page, route) {
   }
 }
 
+/**
+ * The docs tab row and the Brands | Partners switch as prerendered. Both find their tree by Fumadocs'
+ * root folder $id, so a change there would silently light Guides on every page and drop the switch.
+ */
+function checkNav() {
+  const cases = [
+    ['/docs/brand/quickstart', 'Guides', 'Brands'],
+    ['/docs/partners/dashboard', 'Guides', 'Partners'],
+    ['/docs/api-reference/overview', 'API Reference', null],
+    ['/docs/faq', 'Support', null],
+  ];
+  const html = (route) => read(join(APP, `${route.slice(1)}.html`));
+  const navs = (route, label) => [...html(route).matchAll(new RegExp(`<nav\\b[^>]*\\baria-label="${label}"[^>]*>([\\s\\S]*?)</nav>`, 'g'))].map((m) => m[1]);
+  const current = (nav) => [...nav.matchAll(/<a\b[^>]*\baria-current="true"[^>]*>([^<]*)</g)].map((m) => decodeEntities(m[1]));
+  for (const [route, tab, audience] of cases) {
+    const tabs = navs(route, 'Docs sections');
+    assert.equal(tabs.length, 1, `${route}: expected one docs tab row`);
+    assert.deepEqual(current(tabs[0]), [tab], `${route}: active tab`);
+    assert.deepEqual(navs(route, 'Guides for').map(current), audience ? [[audience]] : [], `${route}: Brands | Partners switch`);
+  }
+  // Previous / next stay in the page's own tree: the MCP server pointer links are never neighbours.
+  const pageNav = [
+    ['/docs/partners/account-settings', ['/docs/partners/referral-rewards', '/docs/partners/faq']],
+    ['/docs/partners/faq', ['/docs/partners/account-settings']],
+    ['/docs/api-reference/sdks', ['/docs/api-reference/performance']],
+  ];
+  for (const [route, hrefs] of pageNav) {
+    const links = navs(route, 'Previous and next pages').flatMap((nav) => [...nav.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map((m) => m[1]));
+    assert.deepEqual(links, hrefs, `${route}: previous / next`);
+  }
+  return cases.length + pageNav.length;
+}
+
 function main() {
   const pages = inventory();
   const ids = pages.map((page) => page.id);
@@ -422,8 +477,10 @@ function main() {
 
   const assets = checkContentAssets(pages);
   const feedEntries = checkChangelogData(pages.filter((page) => page.entry).map((page) => page.entry), artifact);
+  const navPages = checkNav();
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
+  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; root folder ids pinned; every page listed by one meta.json entry.`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }

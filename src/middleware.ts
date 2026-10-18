@@ -42,6 +42,13 @@ const RENAMES: [string, string][] = [
   ['/blog/free-affiliate-software-for-saas', '/blog/best-affiliate-software-saas'],
 ];
 
+// Folder URLs with no page of their own -> the page that opens the folder. Exact path only, also
+// after a rename, so /docs/advertisers lands on /docs/brand/quickstart in one hop while
+// /docs/advertisers/<page> keeps its /docs/brand/<page>. Drop an entry if its folder gets an index page.
+const FOLDER_HOMES: Record<string, string> = {
+  '/docs/brand': '/docs/brand/quickstart',
+};
+
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and
 // permanent on every host: the old /docs/changelog page and twin, and on docs.affitor.com every
 // changelog page, twin, the feeds (rss.xml, changelog.json) and context.md. Old screenshots
@@ -73,12 +80,11 @@ export function currentPath(path: string): string | null {
   const md = path.endsWith('.md');
   if (FILE.test(path) && !md) return null;
   const base = md ? path.slice(0, -3) : path;
-  for (const [from, to] of RENAMES) {
-    if (base !== from && !base.startsWith(`${from}/`)) continue;
-    const page = to + base.slice(from.length);
-    return md ? `${page === '/docs' ? '/docs/index' : page}.md` : page;
-  }
-  return null;
+  const rename = RENAMES.find(([from]) => base === from || base.startsWith(`${from}/`));
+  const renamed = rename ? rename[1] + base.slice(rename[0].length) : base;
+  const page = FOLDER_HOMES[renamed] ?? renamed;
+  if (page === base) return null;
+  return md ? `${page === '/docs' ? '/docs/index' : page}.md` : page;
 }
 
 function redirectStatus(): 301 | 302 | null {
