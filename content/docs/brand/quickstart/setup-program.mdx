@@ -149,6 +149,8 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   }'
 ```
 
+Replace `txn_test_001` with an id of your own, and use a new one for each run: a `transaction_id` that is already recorded answers `409` and records nothing.
+
 Once payments are connected, **Check Affitor's tracking** offers **Run check**: Affitor sends a test click, signup and sale through your program and shows each as **Matched**, **Not matched**, **Wrong partner** or **Waiting**. It is a pipeline check: it does not complete either card and does not count toward Go live.
 
 **Refunds and chargebacks**: with Stripe, Affitor reads refunds and disputes from your connected account. With the Server API, report each refund with [Track a refund](/docs/api-reference/track-refund).

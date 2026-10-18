@@ -199,7 +199,7 @@ const session = await stripe.checkout.sessions.create({
   cancel_url: 'https://yoursite.com/cancel',
   metadata: {
     affitor_click_id: getCookie('affitor_click_id') || '', // may be empty, that is expected
-    affitor_customer_key: currentUser.id,                  // required and must be stable
+    affitor_customer_key: currentUser.id,                  // links repeat purchases; must be stable
     program_id: 'YOUR_PROGRAM_ID',
   },
 });

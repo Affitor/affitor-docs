@@ -185,14 +185,14 @@ The `track*` methods return `Promise<AffitorResponse<T>>`. [`readiness()`](#read
 
 #### `trackLead(input: TrackLeadInput)`
 
-Binds `customerExternalId` to `clickId`. Once bound, later `trackSale` calls need only `customerExternalId` — no click id required.
+Binds `customerExternalId` to `clickId`. Once bound, later `trackSale` calls need only `customerExternalId`, no click id required.
 
-At least one of `customerExternalId` or `clickId` is required; throws synchronously if both are missing.
+The SDK throws synchronously only when both `customerExternalId` and `clickId` are missing. Send `clickId` on every lead: Affitor finds the customer through the click. A first lead with only `customerExternalId` returns `ok: false` with status `400` (`Customer not found. Provide a valid click_id or customer_key.`).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `customerExternalId` | `string` | Conditional | Your own user id. Binds the customer to the click for downstream sale attribution. |
-| `clickId` | `string` | Conditional | `affitor_click_id` cookie value from the browser. |
+| `clickId` | `string` | Conditional | `affitor_click_id` cookie value from the browser. Send it on every lead. |
 | `email` | `string` | No | Customer email (hashed server-side). |
 | `eventName` | `string` | No | Custom event label for segmentation. |
 | `additionalData` | `Record<string, unknown>` | No | Arbitrary metadata passed through to the event record. |
@@ -241,7 +241,7 @@ This endpoint does not require authentication.
 Reverses the commission for a previously tracked sale. Call it once per refund, from your payment provider's refund webhook.
 
 - Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
-- Pass **this refund's own amount** → it is added to what was already refunded on the sale, and the commission is reduced proportionally (`refunded`, or `reversed` once the total reaches the sale amount).
+- Pass **this refund's own amount** → it is added to what was already refunded on the sale. Once the total reaches the sale amount, the commission is `reversed`. Before that, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved) (`refunded`).
 - Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
 - A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
 

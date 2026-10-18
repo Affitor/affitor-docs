@@ -98,7 +98,7 @@ export default async function signupRoutes(fastify) {
 
 ## 3. Attach Affitor metadata to the Checkout Session
 
-When you create a Stripe Checkout Session on your server, attach `affitor_click_id`, `affitor_customer_key`, and `program_id`. For subscriptions, plant the metadata in **two places** so renewals attribute correctly.
+When you create a Stripe Checkout Session on your server, attach `affitor_click_id`, `affitor_customer_key`, and `program_id`. For subscriptions, put the same fields in `subscription_data.metadata` too: only that copy reaches the Subscription and its invoices (the first payment and every renewal).
 
 ```js
 // server — creating the Checkout Session
@@ -112,7 +112,7 @@ const session = await stripe.checkout.sessions.create({
     affitor_customer_key: user.id,         // SAME id used at signup
     program_id: 'YOUR_PROGRAM_ID',
   },
-  // REQUIRED for subscriptions — covers every renewal (invoice.paid)
+  // Subscriptions: only this copy reaches the Subscription and its invoices
   subscription_data: {
     metadata: {
       affitor_click_id: affitorClickId,
@@ -222,6 +222,8 @@ The `invoiceId` field acts as an idempotency key. If your webhook fires twice fo
 
 The handler above tracks the **first** subscription payment (`checkout.session.completed`). Subscription **renewals** arrive as a different event (`invoice.paid`) and need their own `case` — see [Subscription Renewals](/docs/api-reference/integrations/stripe#subscription-renewals) in the canonical Stripe guide.
 
+These handlers are only for self-hosted sale tracking. If your Stripe account is connected to the program, Affitor already records your Checkout payments and renewals from Stripe's events, so do **not** also call `trackSale`. A one-time payment or a renewal is recorded under the same id on both paths and Affitor refuses the second, but if your call lands first, its sale is not linked to the Stripe payment, so a refund in Stripe does not reverse its commission. A subscription's first payment can be counted twice: this handler records it under the Checkout Session id, and Stripe Connect records it again under the invoice id.
+
 :::
 
 ## Verify
@@ -237,11 +239,11 @@ The handler above tracks the **first** subscription payment (`checkout.session.c
 
 <CommonMistakes items={[
   "Parsing the Stripe webhook body — Fastify's default JSON parser re-serializes the body and breaks signature verification. Register a raw-body parser scoped to `/webhooks/stripe`.",
-  "Not forwarding `affitorClickId` from the client — your Fastify handler has no access to the browser cookie, so the lead arrives with no partner attribution.",
+  "Not forwarding `affitorClickId` from the client: your Fastify handler has no access to the browser cookie, so `trackLead` answers `400` and no lead is recorded.",
   "Different customer IDs at signup vs sale — `customerExternalId` / `affitor_customer_key` must be the exact same stable user ID everywhere.",
   "Ignoring the 409 on `trackSale` — a duplicate `invoiceId` returns 409 by design; treat it as a no-op, not a failure.",
-  "Subscriptions missing `subscription_data.metadata` in Stripe — renewal invoices won't attribute to a partner.",
-  "Forgetting the `invoice.paid` renewal handler — `checkout.session.completed` only covers the first payment; every renewal is silently missed without it."
+  "Subscriptions missing `subscription_data.metadata` in Stripe: the renewal handler finds no `affitor_customer_key` on the invoice, and with Stripe connected the click never reaches the invoices, so Affitor can match the subscription only by the buyer's email or Stripe customer ID.",
+  "Self-hosted sale tracking without the `invoice.paid` renewal handler: `checkout.session.completed` only covers the first payment, so every renewal is missed. With Stripe connected, leave the handler out: Affitor records renewals itself."
 ]} />
 
 <NextStep title="Tracking Stripe sales?" description="See the canonical Stripe guide for one-time payments, subscription renewals, and the attribution fallback chain." href="/docs/api-reference/integrations/stripe" />
