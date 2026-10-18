@@ -2,7 +2,7 @@
 title: Set Up Your Program
 description: Complete the five setup steps (Business, Commission, Tracking, Payments, Go live) and publish your program on the marketplace.
 kind: quickstart
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Setup takes your program from created to live in five steps: **Business**, **Commission**, **Tracking**, **Payments** and **Go live**. It opens at the Business step as soon as you [create your program](/docs/brand/quickstart/create-account), at `affitor.com/brand/setup/business`.
@@ -180,6 +180,17 @@ Click and signup tracking are not required to go live. Install them before you i
 If the program is paused for an overdue invoice, Go live stays blocked: selecting **Go live** shows the overdue notice with **Open billing**. Pay the invoice first.
 
 Once live, the page says your program is live and shows its link with **Copy link**, plus **Open dashboard** and **Invite partners**.
+
+## Get the Verified badge
+
+Partners see a **Verified** mark on live programs that Affitor has checked, and can filter the marketplace to **Verified only**. You don't apply for it: Affitor rechecks your program automatically, and the mark shows while all of these hold (a change can take a few minutes to show on the marketplace):
+
+- The program is live, its website is a public `https://` address, and your Affitor account is not blocked.
+- Payments are connected: Stripe is connected to the program and can take charges, or your server has sent Affitor a real, paid sale in the last 90 days that earned a partner a commission. Test sales and sales you refer yourself don't count.
+- Affitor has recorded at least one real click, signup or sale.
+- No Affitor invoice is overdue.
+
+Once a partner has been paid a commission through Affitor, the mark also lists **Partners have already been paid through Affitor**. If a check stops holding, for example an invoice goes overdue, or (without Stripe connected) your server sends no real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program. The CLI's **Integration verified** message is a different check: it tests your install and does not count toward the mark.
 
 ## Before you invite partners
 
