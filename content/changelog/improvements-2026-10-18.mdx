@@ -46,3 +46,5 @@ description: Simpler username rules, website suggestions for your Business detai
 - `affitor onboard` leaves your Stripe webhook alone when Stripe is connected in Affitor, so sales are not counted twice.
 - `@affitor/sdk` 2.1.3 marks its React entry `"use client"`, so it imports cleanly in the Next.js App Router.
 - `affitor status` and `affitor test` run with an API key alone, with no project config.
+- Stripe invoices now record their sale from `invoice.paid` as well as `invoice.payment_succeeded`, once per invoice. An invoice already refunded, even partly, when Affitor records it adds no sale.
+- `POST /api/v1/track/refund` with an empty Bearer token returns 401 `Empty Bearer token`.
