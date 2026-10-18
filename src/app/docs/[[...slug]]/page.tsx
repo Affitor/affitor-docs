@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
 import { formatDay } from '@/lib/changelog';
-import { CopyForLLM, MarkdownIcon, ShareFeedback } from '@/components/page-actions';
+import { CopyForLLM, MarkdownIcon, SendFeedback } from '@/components/page-actions';
 
 // Docs pages live under /docs: https://affitor.com/docs/<slug> proxies here
 // (dashboard multi-zone rewrite), and /docs is the landing page.
@@ -117,7 +117,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
               footer: (
                 <div className="aff-rail-actions">
                   <CopyForLLM href={md} className="aff-rail-action" />
-                  <ShareFeedback title={page.data.title} className="aff-rail-action" />
+                  <SendFeedback page={page.url} className="aff-rail-action" />
                 </div>
               ),
             }
@@ -149,7 +149,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       </DocsBody>
       <footer className="aff-page-foot">
         <div className="aff-page-foot-row">
-          <ShareFeedback title={page.data.title} className="aff-btn aff-btn-secondary aff-btn-sm" />
+          <SendFeedback page={page.url} className="aff-btn aff-btn-secondary aff-btn-sm" />
           {/* Terms pages state their own "Last updated" in the header line (checked to match). */}
           {page.data.kind !== 'terms' ? (
             <p className="aff-updated">Last updated {formatDay(page.data.last_updated)}</p>

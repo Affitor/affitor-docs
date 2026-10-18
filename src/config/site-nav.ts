@@ -12,6 +12,9 @@ export type SiteLink = { label: string; href: string };
 
 export const HOME_URL = SITE_URL;
 
+/** The app's feedback form: docs readers send feedback there, so the team has one inbox. */
+export const FEEDBACK_URL = `${SITE_URL}/feedback`;
+
 /**
  * Signed in, affitor.com `/` sends people into the app, so the home link and the `/#…` anchors point
  * at the public `/home` instead (dashboard twin: usePublicSiteHref). Anonymous visitors keep `/`.
