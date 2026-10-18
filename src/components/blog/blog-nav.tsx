@@ -311,11 +311,11 @@ export function BlogNav() {
               </a>
             </div>
 
-            {/* Below lg: the CTA and the drawer button */}
+            {/* Below lg: the CTA and the drawer button. Under 360 px only the drawer button, which holds the CTA too. */}
             <div className="flex lg:hidden items-center gap-2">
               <a
                 href={cta.href}
-                className="flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
+                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
               >
                 {cta.label}
               </a>

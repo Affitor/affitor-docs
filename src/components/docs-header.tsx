@@ -55,12 +55,13 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: Log in + CTA (Go to Dashboard when signed in) + theme toggle (Changelog lives in the tab row, not here) */}
+      {/* Right: Log in + CTA (Go to Dashboard when signed in) + theme toggle (Changelog lives in the tab row, not here).
+          Under 360 px only the CTA stays, so the header fits a 320 px screen; the theme follows the system there. */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {!dashboardHref && (
           <a
             href={LOGIN_LINK.href}
-            className="whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
+            className="max-[359px]:hidden whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
           >
             {LOGIN_LINK.label}
           </a>
@@ -77,7 +78,7 @@ export function DocsHeader() {
           onClick={() =>
             setTheme(isDark ? 'light' : 'dark')
           }
-          className="rounded-md p-1.5 text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted transition-colors"
+          className="max-[359px]:hidden rounded-md p-1.5 text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted transition-colors"
           aria-label="Toggle theme"
         >
           {isDark ? (
