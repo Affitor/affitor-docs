@@ -233,7 +233,7 @@ With no tag, nothing sets the `affitor_click_id` cookie, and a first lead withou
 
 ```ts
 // landing request handler, only when the URL carries ?via= or ?aff=
-const code = url.searchParams.get('via') ?? url.searchParams.get('aff');
+const code = url.searchParams.get('aff') ?? url.searchParams.get('via'); // same order as the server
 const stored = readClickCookie(req); // { clickId, code } saved on an earlier visit, if any
 if (stored?.code !== code) {        // same partner as last time (a reload): record nothing, like the tracker
   const res = await affitor.trackClick({
