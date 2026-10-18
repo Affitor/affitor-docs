@@ -12,6 +12,17 @@ export type SiteLink = { label: string; href: string };
 
 export const HOME_URL = SITE_URL;
 
+/**
+ * Signed in, affitor.com `/` sends people into the app, so the home link and the `/#…` anchors point
+ * at the public `/home` instead (dashboard twin: usePublicSiteHref). Anonymous visitors keep `/`.
+ */
+export function publicHref(href: string, signedIn: boolean): string {
+  if (!signedIn) return href;
+  if (href === SITE_URL || href === `${SITE_URL}/`) return `${SITE_URL}/home`;
+  if (href.startsWith(`${SITE_URL}/#`)) return `${SITE_URL}/home${href.slice(SITE_URL.length + 1)}`;
+  return href;
+}
+
 /** Icon names, the same in both twins; each header maps a name to its own icon. */
 export type NavIcon = 'store' | 'chart' | 'send' | 'grid' | 'gift' | 'bot' | 'code' | 'book' | 'help' | 'news';
 export type MenuItem = SiteLink & { description: string; icon: NavIcon };
