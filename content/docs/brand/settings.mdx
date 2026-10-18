@@ -2,7 +2,7 @@
 title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and Settings also hold the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -28,7 +28,7 @@ Settings belong to the program selected in the program menu. Open the program me
 
 | Page | What you edit there |
 |---------|--------------------|
-| **Business** | Business name, website, program URL (your public page), tagline and logo, with a **Branding** section for how your program page looks in the marketplace. **Program ID** is shown read-only with **Copy** |
+| **Business** | One card per field, each with its own **Save**: **Business name**, **Website**, **Program URL** (your public page), **Program ID** (read-only, with **Copy**), **Logo**, **Tagline**, **About**, **Terms of Service** and **Resources**. Saving a website suggests a logo, tagline and About for you to review |
 | **Commission** | Commission type, rate and duration, attribution window, hold period, and how new partners join (**Approve all** or **Review each**) |
 | **Tracking** | Click and signup (lead) tracking on your website, and the **Partner link parameter** (`?via=` or `?aff=`) |
 | **Payments** | How sales are counted: two cards, **Stripe** and **Server API**, each with its own state. Either one is enough |
@@ -38,12 +38,11 @@ The rest of the Settings menu:
 
 | Group | Item | What it is |
 |---------|------|------------|
-| **Developers** | **API keys** | The per-program secret key for server-side tracking calls, and the line for an AI coding agent |
 | **Team** | **Members** | Who can work on the program |
-| **Billing** | **Invoices** | Platform-fee invoices |
-| **Explore** | **Refer a brand** | Your link for referring brands to Affitor, **Invite via email**, and the brands you referred ([how it works](/docs/partners/quickstart/get-your-referral-link#refer-a-brand-to-affitor)) |
+| **Billing** | **Billing** | Platform-fee invoices |
+| **Developers** | **API keys** | The per-program secret key for server-side tracking calls, and the line for an AI coding agent |
 
-Your own settings are not part of a program. To change your profile, sign-in or payout details, open the **⋯** menu next to your name at the bottom of the left menu and choose **Your account**: it has **Profile**, **Login and security** and **Payouts**.
+Your own settings are not part of a program. To change your profile, sign-in or payout details, click your name at the bottom of the left menu to open the account menu, then the gear for **Your account**: it has **Profile**, **Login and security** and **Payouts**. **Refer a brand**, your link for referring brands to Affitor ([how it works](/docs/partners/quickstart/get-your-referral-link#refer-a-brand-to-affitor)), is a row in the same menu.
 
 ## Step 1: Edit program terms after launch
 
