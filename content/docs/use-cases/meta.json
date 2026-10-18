@@ -4,6 +4,7 @@
   "pages": [
     "index",
     "sell-on-stripe",
-    "any-payment-provider"
+    "any-payment-provider",
+    "subscriptions"
   ]
 }
