@@ -70,5 +70,11 @@
     "why": "Recurring earns until the months in For have passed since the customer's first click on the partner link, not for N payments or N months after signup; later payments get a $0 commission.",
     "since": "2026-10-17",
     "allow": []
+  },
+  {
+    "pattern": "no customer record exists|accept that the lead will be unattributed|lead is still recorded \\(unattributed\\)|unattributed unless you pass `customer_key`",
+    "why": "The customer is created at the click; a lead without a click answers 400 and records nothing, and customer_key alone cannot recover attribution (it is saved only when a lead settles).",
+    "since": "2026-10-17",
+    "allow": []
   }
 ]

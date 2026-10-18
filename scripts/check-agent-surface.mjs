@@ -493,7 +493,7 @@ function checkRetiredClaims() {
       });
     }
   }
-  assert.ok(!hits.length, `retired claims still in the docs (scripts/retired-claims.json):\n${hits.join('\n')}`);
+  assert.ok(!hits.length, `retired claims still in the docs (scripts/retired-claims.json). Reword each line, or add its path to that entry's allow if the sentence is true in context:\n${hits.join('\n')}`);
   return { claims: claims.length, files: files.length };
 }
 

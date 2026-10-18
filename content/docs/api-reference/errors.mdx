@@ -519,7 +519,7 @@ The Affitor browser SDK stores the click ID in a first-party cookie named `affit
 init({ programId: 123, cookieDomain: '.example.com' });
 ```
 
-There is no server-side fallback for blocked cookies — if the cookie is missing when `signup()` fires, pass `customer_key` alone and accept that the lead will be unattributed.
+There is no server-side fallback for blocked cookies: if the cookie is missing when `signup()` fires, Affitor cannot find the customer, so no lead is recorded and that signup stays unattributed.
 
 ---
 
@@ -549,9 +549,9 @@ The SDK applies this value as the cookie expiry. Edge cases:
 
 | Scenario | Behavior |
 |----------|----------|
-| User clears cookies before signup | Attribution is lost; lead and sale will be unattributed unless you pass `customer_key` server-side |
+| User clears cookies before signup | Attribution is lost: with no `click_id`, the lead answers `400` and nothing is recorded. A `customer_key` alone cannot recover it, because the key is saved on the customer only when a lead settles |
 | User visits with a different partner's link after the first click | First-click attribution: the SDK detects a new `aff` value and sends a new click with the existing `click_id`. The click is logged for the new partner, but the customer stays with the first partner and the cookie keeps the same `click_id` |
-| Signup fires after cookie expiry | `click_id` from cookie is null; lead is still recorded (unattributed) if `customer_key` is provided |
+| Signup fires after cookie expiry | `click_id` from the cookie is null, so the lead answers `400` and no lead is recorded, even with a `customer_key` |
 | Sale fires with a `customer_key` for a customer whose window expired | The attribution window (`attribution_window_days`, default 60) is checked on each payment until one is recorded as a conversion: the click must be at most that many days older than the customer's signup (or than the payment, when no signup was recorded). If it is older, that sale is not attributed and nothing is recorded, so the customer's next payment is checked again. Once a conversion has been recorded for the customer, later payments are not re-checked |
 
 ---

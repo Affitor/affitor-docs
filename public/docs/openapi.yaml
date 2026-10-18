@@ -175,8 +175,8 @@ paths:
         answers `400` (`click_id or customer_key is required`). A first lead
         with only `customer_key` answers `400` (`Customer not found. Provide a
         valid click_id or customer_key.`), because Affitor saves your key on
-        the customer only when a lead settles. Without a Bearer key,
-        `click_id` is always required. The email, when provided, is hashed
+        the customer only when a lead settles. Outside test mode and without a
+        Bearer key, `click_id` is required. The email, when provided, is hashed
         server-side before storage.
       security:
         - bearerAuth: []
@@ -835,7 +835,7 @@ components:
 
     LeadRequest:
       type: object
-      description: Send the `click_id` with your `customer_key`. A first lead with only `customer_key` answers `400` (`Customer not found. Provide a valid click_id or customer_key.`), because Affitor saves your key on the customer only when a lead settles. Without a Bearer key, `click_id` is always required.
+      description: Send the `click_id` with your `customer_key`. A first lead with only `customer_key` answers `400` (`Customer not found. Provide a valid click_id or customer_key.`), because Affitor saves your key on the customer only when a lead settles. Outside test mode and without a Bearer key, `click_id` is required.
       properties:
         click_id:
           type: string

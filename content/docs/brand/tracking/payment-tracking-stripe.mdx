@@ -232,7 +232,7 @@ If your commission **Type** is **Recurring**, the months in **For** (**Program s
 | Symptom | Likely cause |
 |---------|--------------|
 | First purchase attributed, later purchases are not | `affitor_customer_key` is missing or inconsistent across checkouts |
-| No purchases attributed at all | Signup tracker never fired — no customer record exists |
+| No purchases attributed at all | Checkouts carry no `affitor_click_id` (the tracker is missing on the checkout page, or your Checkout Session does not set it), or Stripe is not connected to the program |
 | Commissions are $0 after N months | The commission is **Recurring** with **For** set to N months, counted from the customer's first click: later payments are still recorded, and earn $0. Expected, not a bug |
 
 ---
@@ -320,7 +320,7 @@ Check:
 Check:
 - `affitor_customer_key` is present in the metadata of every checkout session (not just the first)
 - the value is exactly the same stable ID used at signup — any mismatch means the customer record cannot be found
-- the signup tracker fired for this user — without it, no customer record exists and attribution fails silently
+- the customer's first lead or purchase was attributed through a click: Affitor saves `affitor_customer_key` on the customer only then, so a later checkout with only the key finds no customer if the first one carried no click
 
 ### Stripe renewals not attributed
 
