@@ -34,7 +34,7 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
   const activeIdx = Math.max(tabs.findIndex((tab) => tab.urls.includes(pathname)), 0);
 
   return (
-    <nav className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
+    <nav aria-label="Docs sections" className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
       <div className="flex items-center gap-6 px-5 h-11 max-w-[1536px] mx-auto overflow-x-auto">
       {/* Phones: the left nav lives in Fumadocs' drawer (it switches below 768 px). */}
       <button
@@ -54,6 +54,7 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
           <Link
             key={tab.title}
             href={tab.href}
+            aria-current={active ? 'true' : undefined}
             className={`relative inline-flex items-center h-full text-[13.5px] font-medium whitespace-nowrap transition-colors ${
               active ? 'text-fd-foreground' : 'text-fd-muted-foreground hover:text-fd-foreground'
             }`}

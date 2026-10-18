@@ -5,6 +5,7 @@ import { source } from '@/lib/source';
 import { DocsHeader } from '@/components/docs-header';
 import { NavDrawerBridge, TabNav } from '@/components/tab-nav';
 import { AudienceSwitch } from '@/components/audience-switch';
+import { SidebarGroup } from '@/components/sidebar-group';
 import { SiteFooter } from '@/components/site-footer';
 
 // Docs tabs over the sidebar trees (root folders in content/docs/meta.json). Guides holds the Brands
@@ -40,7 +41,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
         }}
         // The tab row above replaces Fumadocs' root-folder dropdown.
         tabs={false}
-        sidebar={{ banner: <AudienceSwitch /> }}
+        sidebar={{ banner: <AudienceSwitch />, components: { Separator: SidebarGroup } }}
         themeSwitch={{ enabled: false }}
         searchToggle={{ enabled: false }}
       >

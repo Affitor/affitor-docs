@@ -358,8 +358,12 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 .dark .aff-audience a[aria-current='true'] { background: var(--color-fd-border); box-shadow: none; }
 
 /* Group labels (`---Group---` in meta.json): small uppercase, the same words as the eyebrow */
-:is(#nd-sidebar, #nd-sidebar-mobile) p {
-  margin-top: 20px;
+.aff-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 4px;
+  padding: 0 8px;
   font-size: 11.5px;
   line-height: 16px;
   font-weight: 600;
@@ -367,7 +371,7 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
   text-transform: uppercase;
   color: var(--color-fd-muted-foreground);
 }
-:is(#nd-sidebar, #nd-sidebar-mobile) p:first-child { margin-top: 0; }
+.aff-group:first-child { margin-top: 0; }
 
 #nd-sidebar > button:last-of-type {
   display: none;

@@ -1,7 +1,7 @@
 import { source } from '@/lib/source';
 import { getDocArticle } from '@/lib/agent-md';
 import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
-import { findNeighbour, findPath } from 'fumadocs-core/page-tree';
+import { findPath, flattenTree, getPageTreeRoots } from 'fumadocs-core/page-tree';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
@@ -21,6 +21,21 @@ function groupLabel(url: string) {
   return typeof separator?.name === 'string' ? separator.name : undefined;
 }
 
+/**
+ * Previous / next in sidebar order, within the page's own tab. Only the tree's own pages count: a
+ * pointer link (no $ref, e.g. MCP server under API Reference and Partners) leads into another tree.
+ * The tree's `fallback` holds pages no meta.json lists, from every tab mixed together, so it is left
+ * out: a page that is only there gets no neighbours instead of links into another tab.
+ */
+function neighbours(url: string) {
+  for (const root of getPageTreeRoots({ ...source.pageTree, fallback: undefined })) {
+    const pages = flattenTree(root.children).filter((node) => node.$ref);
+    const i = pages.findIndex((node) => node.url === url);
+    if (i !== -1) return { previous: pages[i - 1], next: pages[i + 1] };
+  }
+  return {};
+}
+
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
   const page = source.getPage(params.slug);
@@ -30,10 +45,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
   const MDX = page.data.body;
   const md = markdownPath(params.slug);
   const group = groupLabel(page.url);
-  // Previous / next in sidebar order, within the page's own tab. The tree's `fallback` holds
-  // pages no meta.json lists, from every tab mixed together, so it is left out: a page that
-  // is only there gets no neighbours instead of links into another tab.
-  const { previous, next } = findNeighbour({ ...source.pageTree, fallback: undefined }, page.url);
+  const { previous, next } = neighbours(page.url);
 
   return (
     <DocsPage
