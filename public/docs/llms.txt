@@ -130,6 +130,7 @@
 - [Sell on Stripe, credit partners without a sales API call](https://affitor.com/docs/use-cases/sell-on-stripe.md)
 - [Any payment provider, credit partners from your server](https://affitor.com/docs/use-cases/any-payment-provider.md)
 - [Subscriptions, credit partners on renewals](https://affitor.com/docs/use-cases/subscriptions.md)
+- [Partners get paid, without sending a transfer yourself](https://affitor.com/docs/use-cases/partner-payouts.md)
 
 ## Blog and changelog
 
