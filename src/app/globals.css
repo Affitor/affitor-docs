@@ -697,9 +697,9 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
    from the tab row). Centered hero, search, chips (wrap; one scrolling row on phones),
    card grid 3 / 2 / 1 columns.
    ═══════════════════════════════════════════════════════ */
-#nd-docs-layout:has(.aff-help) { --fd-sidebar-width: 0px; }
-#nd-docs-layout:has(.aff-help) > div[class*="grid-area:sidebar"] { display: none !important; }
-#nd-page.aff-help {
+#nd-docs-layout:has(:is(.aff-help, .aff-usecases, .aff-usecase)) { --fd-sidebar-width: 0px; }
+#nd-docs-layout:has(:is(.aff-help, .aff-usecases, .aff-usecase)) > div[class*="grid-area:sidebar"] { display: none !important; }
+#nd-page:is(.aff-help, .aff-usecases) {
   max-width: none;
   padding: 0 0 64px;
   gap: 0;
@@ -893,6 +893,195 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 @media (prefers-reduced-motion: reduce) {
   .aff-help-card, .aff-help-chips button { transition: none; }
   .aff-help-card:hover { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Use cases (spec §6 + §7.4, mock U1 / U2). The left nav goes away as on the help home
+   (rules above). Home (.aff-usecases): the help hero, then cards with the flow as a
+   strip, centred. Use case page (.aff-usecase): the doc column with no rail, a
+   breadcrumb, What you need as a 2 x 2 grid, numbered steps, a CTA row.
+   ═══════════════════════════════════════════════════════ */
+.aff-uc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+  justify-content: center;
+  gap: 16px;
+  margin: 8px auto 0;
+  padding: 0 32px;
+}
+.aff-uc-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 20px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 8px;
+  background: var(--color-fd-background);
+  transition: transform 180ms cubic-bezier(0.37, 0.06, 0.32, 1), box-shadow 180ms cubic-bezier(0.37, 0.06, 0.32, 1), border-color 180ms cubic-bezier(0.37, 0.06, 0.32, 1);
+}
+.aff-uc-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--aff-brand-line);
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.08);
+}
+.dark .aff-uc-card:hover { box-shadow: none; }
+.aff-uc-card:focus-visible { outline: 2px solid var(--color-fd-ring); outline-offset: 2px; }
+.aff-uc-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 104px;
+  margin-bottom: 16px;
+  padding: 16px 8px;
+  border-radius: 6px;
+  background: var(--color-fd-muted);
+}
+.aff-uc-chip {
+  padding: 3px 7px;
+  border: 1px solid var(--aff-border-strong);
+  border-radius: 6px;
+  background: var(--color-fd-background);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--color-fd-foreground);
+}
+.aff-uc-chip:last-child {
+  border-color: var(--aff-brand-line);
+  background: var(--color-fd-accent);
+  color: var(--color-fd-primary);
+}
+.aff-uc-arrow { font-size: 12px; color: var(--color-fd-muted-foreground); }
+.aff-uc-card h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--color-fd-foreground);
+}
+.aff-uc-card p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-uc-more {
+  margin-top: auto;
+  padding-top: 14px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-fd-primary);
+}
+
+.aff-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-crumbs a:hover { color: var(--color-fd-foreground); }
+.aff-crumbs [aria-current] { color: var(--color-fd-foreground); }
+
+.aff-usecase .docs-checklist { padding: 0; border: 0; }
+.aff-usecase .docs-checklist ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.aff-usecase .docs-checklist li {
+  padding: 10px 12px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 8px;
+}
+.aff-usecase .docs-checklist a { border-bottom: 0; }
+
+.aff-uc-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+.aff-uc-steps li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 8px;
+}
+.aff-uc-steps li > div { flex: 1; min-width: 0; }
+.aff-uc-step-n {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-fd-muted);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+}
+.aff-uc-step-title {
+  font-size: 14.5px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-fd-foreground);
+}
+.aff-uc-steps p {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-uc-steps code {
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--color-fd-muted);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+.aff-uc-steps strong { font-weight: 600; color: var(--color-fd-foreground); }
+.aff-uc-step-link {
+  border-bottom: 0;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-fd-primary);
+}
+.aff-uc-step-link:hover { text-decoration: underline; }
+
+.aff-uc-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+.aff-uc-cta .aff-btn { height: 40px; padding: 0 16px; }
+
+@media (max-width: 767px) {
+  .aff-uc-grid { padding: 0 16px; }
+}
+@media (max-width: 639px) {
+  .aff-uc-grid { grid-template-columns: 1fr; gap: 12px; }
+  .aff-usecase .docs-checklist ul { grid-template-columns: 1fr; }
+  .aff-uc-steps li { align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aff-uc-card { transition: none; }
+  .aff-uc-card:hover { transform: none; }
 }
 
 /* ── Section dividers (---) — unnecessary; sections separate by heading rhythm ── */

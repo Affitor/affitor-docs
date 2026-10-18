@@ -11,11 +11,12 @@ import { SiteFooter } from '@/components/site-footer';
 // Docs tabs over the sidebar trees (root folders in content/docs/meta.json). Guides holds the Brands
 // and Partners trees; the switch at the top of its sidebar picks one (audience-switch.tsx). Help Center
 // is the support tree (content/docs/support/meta.json), which lists the help home, the support pages
-// and the FAQ.
+// and the FAQ. Use cases is its own tree (content/docs/use-cases), so its pages never join Guides.
 const TABS = [
   { title: 'Guides', href: '/docs', roots: ['brand', 'partners'] },
   { title: 'API Reference', href: '/docs/api-reference/overview', roots: ['api-reference'] },
   { title: 'Help Center', href: '/docs/help', roots: ['support'] },
+  { title: 'Use cases', href: '/docs/use-cases', roots: ['use-cases'] },
 ];
 
 export function DocsShell({ children }: { children: ReactNode }) {

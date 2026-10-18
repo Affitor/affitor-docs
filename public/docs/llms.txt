@@ -124,6 +124,11 @@
 - [System Status](https://affitor.com/docs/support/status.md)
 - [Glossary](https://affitor.com/docs/support/glossary.md)
 
+## Use cases
+
+- [Use cases](https://affitor.com/docs/use-cases.md)
+- [Sell on Stripe, credit partners without a sales API call](https://affitor.com/docs/use-cases/sell-on-stripe.md)
+
 ## Blog and changelog
 
 - [Blog](https://affitor.com/blog): The canonical blog home. All posts are included in the complete documentation above.

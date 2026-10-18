@@ -52,10 +52,14 @@ async function renderBody(slug: string[]): Promise<string | null> {
   );
   if (!page) return null;
   const raw = await page.data.getText('raw');
-  // The help home renders its cards from frontmatter; its twin lists them, one line each.
-  const body = page.data.articles
-    ? `${raw.trimEnd()}\n\n${helpCards(page.data.articles).map((card) => `- [${card.title}](${SITE_URL}${card.href}.md) (${card.category}): ${card.description}`).join('\n')}`
-    : raw;
+  // The help and use cases homes render their cards from frontmatter; their twins list them, one
+  // line each.
+  const cards = page.data.articles
+    ? helpCards(page.data.articles).map((card) => `- [${card.title}](${SITE_URL}${card.href}.md) (${card.category}): ${card.description}`)
+    : page.data.use_cases
+      ? useCaseCards(page.data.use_cases).map((card) => `- [${card.title}](${SITE_URL}${card.href}.md): ${card.description}`)
+      : null;
+  const body = cards ? `${raw.trimEnd()}\n\n${cards.join('\n')}` : raw;
   return toMarkdown(page.data.title ?? slug.join('/'), page.data.description, body);
 }
 
@@ -70,6 +74,18 @@ export function helpCards(articles: NonNullable<DocPage['data']['articles']>) {
     const page = source.getPage(path.split('/'));
     if (!page) throw new Error(`help: ${path} is not a docs page`);
     return { href: page.url, title: page.data.title, description: page.data.description ?? '', category, tags };
+  });
+}
+
+/**
+ * The use cases home's cards (`use_cases` frontmatter of content/docs/use-cases/index.mdx): each use
+ * case page's own title, description and step strip, so a card never drifts from its page.
+ */
+export function useCaseCards(paths: string[]) {
+  return paths.map((path) => {
+    const page = source.getPage(path.split('/'));
+    if (!page?.data.use_case) throw new Error(`use cases: ${path} is not a use case page`);
+    return { href: page.url, title: page.data.title, description: page.data.description ?? '', strip: page.data.use_case.strip };
   });
 }
 
