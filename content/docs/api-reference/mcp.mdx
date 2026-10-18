@@ -287,21 +287,17 @@ Removal is immediate: the app's tokens are deleted and its next request gets `40
 
 ## Legacy local server
 
-`@affitor/mcp` on npm is an older, separate **stdio** server that runs on your computer and uses your **program API key** (`AFFITOR_API_KEY`) instead of sign-in. It does tracking, not reporting: `affitor_readiness`, `affitor_track_click`, `affitor_track_lead`, `affitor_get_integration_plan` and `affitor_run_verification`, plus `affitor_track_sale` and `affitor_track_refund` only when you set `AFFITOR_MCP_WRITE=1`. The [Affitor plugin](https://github.com/Affitor/claude-plugins) for Claude Code and Gemini CLI bundles this server.
+`@affitor/mcp` on npm is a separate **stdio** server that runs on your computer and uses your **program API key** (`AFFITOR_API_KEY`) instead of sign-in. It does tracking, not reporting: `affitor_readiness`, `affitor_track_click`, `affitor_track_lead`, `affitor_get_integration_plan` and `affitor_run_verification`, plus `affitor_track_sale` and `affitor_track_refund` only when you set `AFFITOR_MCP_WRITE=1`. The [Affitor plugin](https://github.com/Affitor/claude-plugins) for Claude Code and Gemini CLI bundles this server.
 
-```json
-{
-  "mcpServers": {
-    "affitor": {
-      "command": "npx",
-      "args": ["-y", "@affitor/mcp"],
-      "env": { "AFFITOR_API_KEY": "your_program_key" }
-    }
-  }
-}
+For a coding project, use [Set up a coding agent](/docs/brand/cli/agent-setup) with CLI 0.4.5:
+
+```bash
+npx affitor@0.4.5 agent setup --client claude_code --dry-run --json
 ```
 
-Keep the key server-side; it is a secret. Source and tool details: [github.com/Affitor/cli](https://github.com/Affitor/cli/tree/main/packages/mcp). For tracking work an agent can also use the CLI: `npx affitor onboard`.
+The generated launcher keeps the program key out of MCP JSON and pins `@affitor/mcp@0.2.2`. It leaves sale/refund tools disabled. This local setup does not create a hosted OAuth connection or read account reports. Its `doctor` check is static; restart your client and call `affitor_readiness` to check the live session. Ask before running synthetic verification or other writes.
+
+Source and tool details: [Affitor CLI](https://github.com/Affitor/cli/tree/main/packages/mcp).
 
 ---
 

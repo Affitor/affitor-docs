@@ -2,10 +2,10 @@
 title: CLI Command Reference
 description: Complete reference for all npx affitor commands, flags, and options.
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
-Every `npx affitor` command, flag, and option in one place.
+Every `npx affitor` command, flag, and option in one place. The agent setup, doctor, and Stripe-aware onboarding behavior below require CLI 0.4.5.
 
 ## Global Flags
 
@@ -147,9 +147,54 @@ The API key itself goes to `.affitor/.env`, which `init` adds to your `.gitignor
 
 ---
 
+## `affitor agent setup`
+
+Preview and install project-scoped local MCP configuration and an Affitor skill. Run from your app's project root; no account login is required for this file setup.
+
+```bash
+npx affitor@0.4.5 agent setup --client claude_code --dry-run --json
+npx affitor@0.4.5 agent setup --client claude_code --yes --json
+```
+
+| Flag | Behavior |
+|---|---|
+| `--client <name>` | `claude_code`, `cursor`, or `codex`; repeat to select more than one from your terminal |
+| `--dry-run` | Preview without writing files, even with `--yes` |
+| `--yes` | Apply the selected clients' plan; global `--auto-confirm` also applies it |
+| `--json` | One JSON result; does not prevent writes when apply is selected |
+
+A detected coding-agent caller defaults to itself and cannot select other clients. With no caller or explicit selection, an interactive run asks which clients to select; unattended runs need `--client`.
+
+| `status` | Exit | Meaning |
+|---|---|---|
+| `planned` | `0` | Dry-run only; no files written |
+| `needs_confirmation` | `1` | Not applied; review the preview and explicitly apply |
+| `needs_human` | `0` | Applied local files; restart the client and check readiness; Codex also needs the printed manual MCP step |
+| `error` | `1` | Setup failed; read `message` and run a fresh dry-run |
+
+A run with no selected clients and no `--dry-run` also exits `1`. The preview contains paths, operations, and backup paths, not the contents of existing configs. For file locations, private credentials, and Codex steps, follow [Set up a coding agent](/docs/brand/cli/agent-setup).
+
+---
+
+## `affitor doctor`
+
+Read-only static check of local agent configuration. It does not call Affitor, start an agent session, or verify integration readiness.
+
+```bash
+npx affitor@0.4.5 doctor --client claude_code --json
+```
+
+Repeat `--client` to check selected clients. Without it, a detected coding-agent caller selects itself; otherwise the command checks existing Claude Code/Cursor config files, or both clients when neither file exists. Codex must be selected explicitly when there is no detected caller.
+
+Results contain `mode: "static"`, per-client `status`, `credential`, `warnings`, and `liveSession: "not_checked"`. Exit `0` and top-level `aligned` require every client to have aligned files, a `present_unverified` credential, and no warnings. Other static results produce `needs_attention` and exit `1`; caught command errors report `status: "error"` and `message`.
+
+Codex always reports client status `manual`, so its static check exits `1` even after manual configuration. A `present_unverified` credential has only passed the local parser, not authentication. Doctor reads `AFFITOR_API_KEY` or `.affitor/.env`, not global `--api-key`/`--api-url` flags. See the [doctor results and next steps](/docs/brand/cli/agent-setup#4-check-the-local-files).
+
+---
+
 ## `affitor onboard`
 
-The recommended one-shot integration. Wires Affitor into this app end-to-end: detect the stack → install browser tracking → add the sale call → verify. Run it from your project root after `affitor init`.
+The recommended one-shot integration. Wires Affitor into this app end-to-end: detect the stack → install browser tracking → review sale tracking → verify. Run it from your project root after `affitor init`.
 
 ```bash
 npx affitor onboard
@@ -172,48 +217,52 @@ An API key is required. `onboard` resolves it from `--api-key`, the `AFFITOR_API
 
 1. **Detect** — inspects the project to identify the framework (Next.js app/pages router, Fastify, Express, plain Node) and the payment provider (Stripe, Polar, Lemon Squeezy, Paddle).
 2. **Browser tracking** — installs `@affitor/sdk` and wires the `<AffitorTracker />` component via a diff-preview, scaffolding `lib/affitor.ts` (the same install wizard `affitor init` uses).
-3. **Server sale** — for Stripe, locates your webhook handler and injects the `affitor.trackSale` call after `stripe.webhooks.constructEvent` in the `checkout.session.completed` case. Stripe is the only provider with an automatic edit; for every other provider it prints the snippet for you to paste and reports the step as `manual`. It also persists `AFFITOR_API_KEY` into `.env` / `.env.local` (never overwriting an existing value).
+3. **Server sale** — for Stripe, reads the program's binding before deciding whether a sale call is appropriate (see below). Only an explicitly confirmed manual Stripe path can auto-edit a recognized `checkout.session.completed` handler. Other providers report `manual` and print a recipe outside JSON mode. It also attempts to persist `AFFITOR_API_KEY` into `.env` / `.env.local`; an existing value or uncertain env layers are left unchanged.
 4. **Verify** — fires the synthetic click → lead → sale chain through the real attribution pipeline, then polls program readiness until `integration_verified` is reached.
 
-:::warning
+### Stripe binding in 0.4.5
 
-`onboard` adds the `trackSale` call whether or not the program's Stripe account is connected. If it is connected (the Stripe card under **Program settings** › **Payments** reads **Connected**), Affitor already records your Stripe sales through Stripe Connect, so use that path alone: remove the added call, or decline the diff.
+Before the install wizard, `onboard` reads `stripe_account_bound` from `GET /api/v1/cli/status` for the selected key, provided the app's env layers agree on that runtime key. It does not use `stripe_connected` as the sale-writer decision.
 
-- A one-time payment is not counted twice: both paths record it under the Checkout Session id, and Affitor refuses the second. If your call lands first, though, its sale is not linked to the Stripe payment, so a refund in Stripe does not reverse its commission.
-- A subscription's first payment can be counted twice: your call records it under the Checkout Session id, and Stripe Connect records it again from its invoice, under the invoice id.
+| Binding decision | `server_sale` result | Webhook behavior |
+|---|---|---|
+| `stripe_account_bound: true` and runtime key is certain | `skipped` | No `trackSale` added; use the Connect metadata recipe |
+| `false`, missing field, failed status request, or uncertain runtime key | `manual` in `--yes`, `--auto-confirm`, `--no-interactive`, or `--json` runs | Webhook unchanged; confirm the runtime program and sale path yourself |
+| Unknown binding, interactive run without auto-confirm | Asks whether to keep the webhook unchanged | Keeping it is the default; only choose No after ruling out current Connect sales, shared accounts, and delayed events after disconnect |
 
-Keep the added call only when you track sales from your server instead of connecting Stripe. It reports the `checkout.session.completed` payment only; `onboard` adds nothing for subscription renewals.
+A current `false` binding does not prove that Connect cannot still record a payment. After explicitly choosing manual tracking, the CLI previews a recognized handler change and asks before applying it. It does not add subscription renewal handlers.
 
-:::
+Existing `trackSale` calls are not removed automatically. Inspect them before using Connect and manual tracking together; see the [Stripe integration guide](/docs/api-reference/integrations/stripe).
 
 ### Safety and idempotency
 
-`onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape isn't cleanly recognized, or no webhook is found, or the provider is not Stripe, it degrades to **printing the exact snippet** for you to paste rather than guessing an edit site. Auto-edits to the payment handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).
+`onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape is not recognized, no webhook is found, or the provider is not Stripe, it reports `manual` and prints a recipe outside JSON mode rather than guessing an edit site. Auto-edits to the payment handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).
 
-In `--json` mode `onboard` performs **no file edits** — the steps that would have written a file report `manual` so an agent drives the edits explicitly, then it still fires the verification chain and polls readiness.
+In `--json` mode `onboard` performs **no file edits**. Steps may report `manual`, `skipped`, or `already` according to the binding and existing files. It still fires the synthetic verification chain and polls readiness, so JSON mode is not a read-only API check.
 
 ### Example (agent / non-interactive)
 
 ```bash
-npx affitor onboard --api-key aff_xxx --yes --json
+# Configure AFFITOR_API_KEY privately before running.
+npx affitor@0.4.5 onboard --yes --json
 ```
 
 The JSON summary reports the per-step status and the final verdict:
 
 ```json
 {
-  "program_id": "430",
+  "program_id": "42",
   "steps": [
-    { "step": "detect", "status": "ok", "detail": "framework=next-app, provider=stripe" },
+    { "step": "detect", "status": "ok", "detail": "framework=fastify, provider=stripe" },
     { "step": "browser_tracking", "status": "skipped", "detail": "json mode" },
-    { "step": "server_sale", "status": "manual", "detail": "json mode (no auto-edit)" },
+    { "step": "server_sale", "status": "skipped", "detail": "stripe connected: Affitor records the sale, no trackSale added" },
     { "step": "env_key", "status": "manual", "detail": ".env: json mode (no auto-edit)" }
   ],
   "integration_verified": true
 }
 ```
 
-`detect` reports `ok`, `browser_tracking` reports `skipped` in `--json` mode, and the steps that would edit a file report `manual`.
+This example has a confirmed Stripe binding and no runtime env file, so the sale step is `skipped` and the env step is `manual`. It shows the JSON shape, not a readiness guarantee for your program.
 
 Once `onboard` reaches the verification phase, `--json` always prints this summary. `program_id`, `steps` and `integration_verified` are always present, though `program_id` is `null` when no readiness verdict was obtained. `blocker`, `next_action` and `error` are omitted rather than sent as null, so read them with that in mind.
 
@@ -342,7 +391,7 @@ A command that cannot do its job exits non-zero. Since CLI 0.4.2 that includes `
 
 ### What `--json` puts on `error`
 
-`error` does not have one shape across the CLI. Check which of the three you are reading before you branch on it.
+`error` does not have one shape across the CLI. Check the command before you branch on it. `agent setup` and `doctor` instead report `status` and `message` on caught errors, as described above.
 
 | Shape | Where | Example |
 |---|---|---|

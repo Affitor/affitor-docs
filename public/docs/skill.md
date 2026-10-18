@@ -31,6 +31,12 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ---
 
+### Optional local agent connection
+
+CLI 0.4.5 can preview project-scoped MCP configuration and an Affitor skill with `npx affitor@0.4.5 agent setup --dry-run --json`. A detected agent selects itself and can configure only itself. Review the plan before applying it. See [Set up a coding agent](https://affitor.com/docs/brand/cli/agent-setup) for explicit client selection, private key configuration, and Codex's manual step.
+
+`affitor doctor` checks local files and credential format only; it does not authenticate the key or prove a live session. Restart the client, call `affitor_readiness`, and confirm the program identity. Ask before synthetic verification or other writes.
+
 ## 2. Identifier contract — the #1 attribution breaker
 
 Attribution only works if **one stable internal user ID** is identical across every surface. Pick the brand's canonical user id (e.g. `user.id`) and use the **same value** everywhere:
@@ -183,7 +189,7 @@ Pick the **first** mode that fits the brand's stack. Do not double-report the sa
 
 **Connect Stripe first.** This mode records nothing until the brand's Stripe account is connected to the program in the Affitor dashboard: program menu → **Program settings** → **Payments** → **Connect Stripe**. Only the program owner can do this, in the browser; the API key cannot. Ask the founder to do it, and rely on this mode only once the Stripe card there reads **Connected**. If Stripe will not be connected, use §6b or §6c instead.
 
-If the brand uses Stripe Checkout, you do **not** call a sale API. Inject the metadata fields below when creating the Checkout Session; Affitor's Stripe Connect webhook reads them and creates the sale + commission automatically. Once Stripe is connected, do not also call `trackSale` for the same Stripe payments (`npx affitor onboard` adds one to a `checkout.session.completed` handler; remove it): a subscription's first payment can be recorded twice.
+If the brand uses Stripe Checkout, you do **not** call a sale API. Inject the metadata fields below when creating the Checkout Session; Affitor's Stripe Connect webhook reads them and creates the sale + commission automatically. Once Stripe is connected, do not also call `trackSale` for the same Stripe payments (inspect any existing manual call before combining the paths): a subscription's first payment can be recorded twice.
 
 ```ts
 import { loadAffitor } from '@affitor/sdk';
@@ -210,6 +216,8 @@ const session = await stripe.checkout.sessions.create({
 ```
 
 Missing `subscription_data.metadata` is the most common subscription-attribution bug: without it the click id never reaches the subscription's invoices (its first payment and renewals), and Affitor can only match the buyer by email or Stripe customer id.
+
+With CLI 0.4.5, `onboard` reads the selected program's `stripe_account_bound` when the app's runtime key is certain. A confirmed binding skips sale injection. A false/missing binding, failed status read, or uncertain key leaves the webhook unchanged in unattended runs; false does not rule out shared-account or delayed Connect events. An interactive manual path needs explicit confirmation. Existing calls are never removed automatically. See [the CLI binding decision](https://affitor.com/docs/brand/cli/commands#stripe-binding-in-045).
 
 ### 6b. `@affitor/sdk/server` at your payment webhook (Stripe-but-custom, or non-Checkout)
 
