@@ -183,14 +183,14 @@ Once live, the page says your program is live and shows its link with **Copy lin
 
 ## Get the Verified badge
 
-Partners see a **Verified** mark on live programs that Affitor has checked, and can filter the marketplace to **Verified only**. You don't apply for it: Affitor checks your program every time the marketplace loads, and the mark shows while all of these hold:
+Partners see a **Verified** mark on live programs that Affitor has checked, and can filter the marketplace to **Verified only**. You don't apply for it: Affitor rechecks your program automatically, and the mark shows while all of these hold (a change can take a few minutes to show on the marketplace):
 
-- The program is live and its website is a public `https://` address.
-- Payments are connected: Stripe is connected to the program and can take charges, or your server has sent Affitor a real (not test) sale with a commission in the last 90 days.
+- The program is live, its website is a public `https://` address, and your Affitor account is not blocked.
+- Payments are connected: Stripe is connected to the program and can take charges, or your server has sent Affitor a real, paid sale in the last 90 days that earned a partner a commission. Test sales and sales you refer yourself don't count.
 - Affitor has recorded at least one real click, signup or sale.
 - No Affitor invoice is overdue.
 
-Once a partner has been paid a commission through Affitor, the mark also tells partners that partners have already been paid. If a check stops holding, for example an invoice goes overdue or your server sends no real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program.
+Once a partner has been paid a commission through Affitor, the mark also lists **Partners have already been paid through Affitor**. If a check stops holding, for example an invoice goes overdue, or (without Stripe connected) your server sends no real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program. The CLI's **Integration verified** message is a different check: it tests your install and does not count toward the mark.
 
 ## Before you invite partners
 
