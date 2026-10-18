@@ -45,6 +45,11 @@ export const docs = defineDocs({
         .array(z.object({ page: z.string(), category: z.enum(HELP_CATEGORIES), tags: z.array(z.string()).min(1) }).strict())
         .min(1)
         .optional(),
+      // The use cases home's cards (content/docs/use-cases/index.mdx): use case pages by their path
+      // under /docs, in display order. The card text is that page's own title and description.
+      use_cases: z.array(z.string()).min(1).optional(),
+      // A use case page: its short name (breadcrumb) and the steps its card shows as a strip.
+      use_case: z.object({ name: z.string(), strip: z.array(z.string()).min(2) }).strict().optional(),
     }),
   },
 });

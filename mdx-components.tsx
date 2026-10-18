@@ -16,6 +16,7 @@ import { CodeGroup } from '@/components/mdx/code-group';
 import { AgentPrompt } from '@/components/mdx/agent-prompt';
 import { ResponseTabs } from '@/components/mdx/response-tabs';
 import { Callout } from '@/components/mdx/callout';
+import { UseCaseSteps } from '@/components/mdx/use-case-steps';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { Media } from '@/components/changelog/media';
 
@@ -43,6 +44,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     AgentPrompt,
     ResponseTabs,
     Callout,
+    UseCaseSteps,
     // Changelog entries (content/changelog)
     Media,
     Accordion,

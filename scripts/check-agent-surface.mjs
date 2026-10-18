@@ -86,6 +86,32 @@ function helpCards(source) {
   });
 }
 
+/**
+ * The use cases home (the one docs page with `use_cases` frontmatter): it lists every use case page
+ * (a page with `use_case` frontmatter, under /docs/use-cases/) once, and only those, each with a
+ * description and no em dash in its card text. Returns the lines its .md twin ends with.
+ */
+function useCaseCards(source) {
+  const homes = source.getPages().filter((page) => page.data.use_cases);
+  assert.deepEqual(homes.map((page) => page.url), ['/docs/use-cases'], 'exactly one page (/docs/use-cases) has use_cases frontmatter');
+  const listed = homes[0].data.use_cases.map((path) => {
+    const where = `content/docs/use-cases/index.mdx: ${path}`;
+    const page = source.getPage(path.split('/'));
+    assert.ok(page, `${where} is not a docs page`);
+    assert.ok(page.data.use_case, `${where} has no use_case frontmatter`);
+    assert.equal(typeof page.data.description, 'string', `${where} has no description for its card`);
+    const text = [page.data.title, page.data.description, page.data.use_case.name, ...page.data.use_case.strip];
+    assert.ok(!text.some((part) => part.includes('\u2014')), `${where}: em dash in the card text`);
+    return page;
+  });
+  const urls = listed.map((page) => page.url);
+  assert.equal(new Set(urls).size, urls.length, 'content/docs/use-cases/index.mdx lists a use case twice');
+  const pages = source.getPages().filter((page) => page.data.use_case).map((page) => page.url);
+  assert.deepEqual([...urls].sort(), pages.sort(), 'content/docs/use-cases/index.mdx must list every use case page (use_case frontmatter), and only those');
+  for (const url of urls) assert.match(url, /^\/docs\/use-cases\/[^/]+$/, `${url}: use case pages live in content/docs/use-cases`);
+  return listed.map((page) => `- [${page.data.title}](${ORIGIN}${page.url}.md): ${page.data.description}`);
+}
+
 function inventory() {
   const docsDir = join(ROOT, 'content/docs');
   // Use the installed loader's URL rules without importing the production renderer.
@@ -104,7 +130,7 @@ function inventory() {
   // The tab row (docs-shell.tsx) and the Brands | Partners switch (audience-switch.tsx) find their
   // trees by Fumadocs' root folder $id, today the folder path; checkNav() pins the rendered result.
   const roots = source.pageTree.children.map((node) => (node.type === 'folder' ? node.$id : node.type));
-  assert.deepEqual(roots, ['brand', 'partners', 'api-reference', 'support'], 'root folder $id values changed; docs-shell.tsx TABS and audience-switch.tsx match on them');
+  assert.deepEqual(roots, ['brand', 'partners', 'api-reference', 'support', 'use-cases'], 'root folder $id values changed; docs-shell.tsx TABS and audience-switch.tsx match on them');
   // Each page is listed by exactly one meta.json entry. Fumadocs keeps the first tree that lists a
   // page and silently drops any later listing, so the tree count below cannot see a page listed in
   // two meta.json files (adding a page to a second tree would pass CI and change nothing).
@@ -130,6 +156,9 @@ function inventory() {
     assert.equal(listed.filter((url) => url === page.url).length, 1, `${page.url}: list it once in a content/docs meta.json`);
   }
   const helpLines = helpCards(source);
+  const useCaseLines = useCaseCards(source);
+  // The help and use cases homes' twins end with their cards (mirror of renderBody() in src/lib/agent-md.ts).
+  const cards = (data) => (data.articles ? helpLines : data.use_cases ? useCaseLines : null);
   const docs = source.getPages().map((page) => {
     const id = page.url.replace(/^\/docs\/?/, '') || 'index';
     // The content date is last_updated (set by whoever edits the page), never date/updated.
@@ -147,8 +176,7 @@ function inventory() {
     return {
       id, type: 'doc', url: `${ORIGIN}${page.url}`, kind: page.data.kind,
       updated: page.data.last_updated, sourceDate: page.data.last_updated,
-      // The help home's twin ends with its cards (mirror of renderBody() in src/lib/agent-md.ts).
-      body: markdown(page.data.articles ? { ...page.data, raw: `${page.data.raw.trimEnd()}\n\n${helpLines.join('\n')}` } : page.data, id),
+      body: markdown(cards(page.data) ? { ...page.data, raw: `${page.data.raw.trimEnd()}\n\n${cards(page.data).join('\n')}` } : page.data, id),
       title: page.data.title, description: page.data.description,
     };
   });
@@ -371,6 +399,8 @@ function checkNav() {
     ['/docs/api-reference/overview', 'API Reference', null],
     ['/docs/faq', 'Help Center', null],
     ['/docs/help', 'Help Center', null],
+    ['/docs/use-cases', 'Use cases', null],
+    ['/docs/use-cases/sell-on-stripe', 'Use cases', null],
   ];
   const html = (route) => read(join(APP, `${route.slice(1)}.html`));
   const navs = (route, label) => [...html(route).matchAll(new RegExp(`<nav\\b[^>]*\\baria-label="${label}"[^>]*>([\\s\\S]*?)</nav>`, 'g'))].map((m) => m[1]);
@@ -397,6 +427,21 @@ function checkNav() {
   const index = document(join(ROOT, 'content/docs/help/index.mdx')).articles.map((entry) => `/docs/${entry.page}`);
   assert.deepEqual(cards, index, '/docs/help: cards');
   assert.match(help, /<article\b[^>]*\bclass="[^"]*\baff-help\b/, '/docs/help: article must carry .aff-help (no left nav)');
+  // The use cases home prerenders one card per listed use case, in index order, with no left nav;
+  // each use case page drops the left nav and the rail, and its breadcrumb leads back home.
+  const home = html('/docs/use-cases');
+  const useCases = [...home.matchAll(/<a\b[^>]*\bclass="aff-uc-card"[^>]*>/g)].map((m) => m[0].match(/\bhref="([^"]*)"/)[1]);
+  const listed = document(join(ROOT, 'content/docs/use-cases/index.mdx')).use_cases.map((path) => `/docs/${path}`);
+  assert.deepEqual(useCases, listed, '/docs/use-cases: cards');
+  assert.match(home, /<article\b[^>]*\bclass="[^"]*\baff-usecases\b/, '/docs/use-cases: article must carry .aff-usecases (no left nav)');
+  for (const route of listed) {
+    const page = html(route);
+    assert.match(page, /<article\b[^>]*\bclass="[^"]*\baff-usecase\b/, `${route}: article must carry .aff-usecase (no left nav)`);
+    assert.doesNotMatch(page, /\bid="nd-toc"/, `${route}: no rail`);
+    const crumbs = navs(route, 'Breadcrumb');
+    assert.equal(crumbs.length, 1, `${route}: expected one breadcrumb`);
+    assert.match(crumbs[0], /<a\b[^>]*\bhref="\/docs\/use-cases"[^>]*>Use cases<\/a>/, `${route}: breadcrumb links Use cases`);
+  }
   return cases.length + pageNav.length;
 }
 
@@ -512,7 +557,7 @@ function main() {
   const navPages = checkNav();
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
-  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help home cards match its index; root folder ids pinned; every page listed by one meta.json entry.`);
+  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; use case pages have no left nav or rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }

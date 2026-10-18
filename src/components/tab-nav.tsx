@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDocsLayout } from 'fumadocs-ui/layouts/docs';
 
 // The tab row sits above Fumadocs' layout, outside its sidebar state, so the phone menu button
@@ -32,10 +32,19 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
   const pathname = (usePathname() || '/').replace(/(.)\/$/, '$1');
   const all = [...tabs, { title: 'Changelog', href: '/changelog', urls: [] }];
   const activeIdx = Math.max(tabs.findIndex((tab) => tab.urls.includes(pathname)), 0);
+  // Phones: the row scrolls sideways, so a later tab (Use cases) can sit past the edge; bring the
+  // active one into view.
+  const row = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const active = row.current?.querySelector('[aria-current="true"]');
+    if (!row.current || !active) return;
+    const overflow = active.getBoundingClientRect().right - row.current.getBoundingClientRect().right;
+    if (overflow > 0) row.current.scrollLeft += overflow + 20;
+  }, [pathname]);
 
   return (
     <nav aria-label="Docs sections" className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
-      <div className="flex items-center gap-6 px-5 h-11 max-w-[1536px] mx-auto overflow-x-auto">
+      <div ref={row} className="flex items-center gap-6 px-5 h-11 max-w-[1536px] mx-auto overflow-x-auto">
       {/* Phones: the left nav lives in Fumadocs' drawer (it switches below 768 px). */}
       <button
         type="button"

@@ -1,7 +1,8 @@
 import { source } from '@/lib/source';
-import { getDocArticle, helpCards } from '@/lib/agent-md';
+import { getDocArticle, helpCards, useCaseCards } from '@/lib/agent-md';
 import { HELP_CATEGORIES } from '@/lib/help';
 import { HelpCenter } from '@/components/help-center';
+import { UseCases } from '@/components/use-cases';
 import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
 import { findPath, flattenTree, getPageTreeRoots } from 'fumadocs-core/page-tree';
 import Link from 'next/link';
@@ -70,34 +71,69 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
     );
   }
 
+  if (page.data.use_cases) {
+    // The use cases home: hero and one card per use case, full width with no left nav, like the
+    // help home (globals.css drops the left nav for .aff-usecases).
+    return (
+      <DocsPage
+        data-page-id={article.id}
+        className="aff-usecases"
+        full
+        breadcrumb={{ enabled: false }}
+        footer={{ enabled: false }}
+        tableOfContent={{ enabled: false }}
+        tableOfContentPopover={{ enabled: false }}
+      >
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
+        <UseCases title={page.data.title} description={page.data.description} cards={useCaseCards(page.data.use_cases)} />
+      </DocsPage>
+    );
+  }
+
   const MDX = page.data.body;
   const md = markdownPath(params.slug);
   const group = groupLabel(page.url);
-  const { previous, next } = neighbours(page.url);
+  // A use case page (spec §7.4, mock U2): the doc page with no left nav and no rail, a breadcrumb
+  // back to the use cases home instead of the eyebrow, and no previous / next.
+  const useCase = page.data.use_case;
+  const { previous, next } = useCase ? { previous: undefined, next: undefined } : neighbours(page.url);
 
   return (
     <DocsPage
       data-page-id={article.id}
+      className={useCase ? 'aff-usecase' : undefined}
       toc={page.data.toc}
       full={page.data.full}
       breadcrumb={{ enabled: false }}
       footer={{ enabled: false }}
       // Below the rail breakpoint the actions sit under the title (mock P1), not in an "On this page" bar.
       tableOfContentPopover={{ enabled: false }}
-      tableOfContent={{
-        single: true,
-        // The right rail: On this page, then the page actions (spec §7.1).
-        footer: (
-          <div className="aff-rail-actions">
-            <CopyForLLM href={md} className="aff-rail-action" />
-            <ShareFeedback title={page.data.title} className="aff-rail-action" />
-          </div>
-        ),
-      }}
+      tableOfContent={
+        useCase
+          ? { enabled: false }
+          : {
+              single: true,
+              // The right rail: On this page, then the page actions (spec §7.1).
+              footer: (
+                <div className="aff-rail-actions">
+                  <CopyForLLM href={md} className="aff-rail-action" />
+                  <ShareFeedback title={page.data.title} className="aff-rail-action" />
+                </div>
+              ),
+            }
+      }
     >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
       <header className="aff-page-head">
-        {group ? <p className="aff-eyebrow">{group}</p> : null}
+        {useCase ? (
+          <nav aria-label="Breadcrumb" className="aff-crumbs">
+            <Link href="/docs/use-cases">Use cases</Link>
+            <span aria-hidden>›</span>
+            <span aria-current="page">{useCase.name}</span>
+          </nav>
+        ) : group ? (
+          <p className="aff-eyebrow">{group}</p>
+        ) : null}
         <DocsTitle className="aff-title">{page.data.title}</DocsTitle>
         <DocsDescription className="aff-description">{page.data.description}</DocsDescription>
         <div className="aff-page-actions">
