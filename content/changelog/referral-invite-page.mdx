@@ -6,6 +6,23 @@ audience: [brands, partners]
 surfaces: [dashboard]
 description: When someone opens your Refer a brand link, they see who invited them and how Affitor pricing works before they sign up.
 banner: { pill: New, subject: none }
+context:
+  facts:
+    - The link is affitor.com/r/<username>; the username is chosen in Account › Profile.
+    - Opening it shows the Affitor home page with an invite hero at the top. The hero has a chip "<Name> invited you", or "You were invited to Affitor" when no name is known.
+    - Under the title "Grow revenue through partners at any scale", the hero says "Free until partners drive $10,000, then 3.5%." That is this entry's pricing line.
+    - In the hero, the visitor types a work email and clicks "Get started" to sign up.
+    - Under the form, the hero keeps the home page's three small stats ("<1hr" Setup time, "Real-time" Tracking, "Performance-based" You earn first, then pay). They are not part of this entry; do not repeat them.
+    - If the link is no longer active, the hero says so, and the visitor can still create an account.
+    - If Affitor cannot look the link up at that moment, the ordinary home hero shows (chip "AI-Native Affiliate Network", button "Launch your program free"), with no invite chip.
+    - The nav bar above the hero and the sections below it (how it works, pricing, FAQ) are the normal home page. Nothing there is specific to the invite.
+    - On the sign-in page, someone who opened their Refer a brand link on this browser sees it again with "Copy".
+  ui: ["<Name> invited you", "You were invited to Affitor", "This invite link isn’t active. You can still create an account.", "Grow revenue through partners at any scale", "Work email", "Get started", "Refer a brand", "Copy"]
+  avoid:
+    - "affitor.com/invite/<name> (the link is affitor.com/r/<username>)"
+    - "As the invite hero's content (valid and inactive links): the subtitle 'Launch your affiliate program in under an hour.', the buttons 'Launch your program free' or 'Launch demo', or 'Create free account' / 'Already have an account? Log in'. The invite hero's action is 'Work email' + 'Get started'."
+    - "Home-page lines presented as the invite's message: 'Pay only for results' (pricing section below the hero), 'under an hour' or '<1hr' (ordinary hero subtitle, the stats row, how it works)"
+  cta: { label: "How referral rewards work", url: "https://affitor.com/docs/partners/referral-rewards" }
 ---
 
 Your Refer a brand link now opens a page made for the person you invited.
