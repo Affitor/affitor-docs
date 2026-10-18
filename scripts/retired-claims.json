@@ -78,8 +78,8 @@
     "allow": []
   },
   {
-    "pattern": "unless you approve, reject, or extend the hold",
-    "why": "Extending the hold only moves the approval date; the commission still auto-approves when the extended hold ends. Test commissions, own-team commissions and $0 commissions after the commission term are never auto-approved.",
+    "pattern": "unless you approve, reject,? or extend the hold|automatically if you enable auto-approve",
+    "why": "Extending the hold only moves the approval date; the commission still auto-approves when the extended hold ends. Commissions have no auto-approve setting (that setting is for partner applications). Test commissions, own-team commissions and $0 commissions after the commission term are not auto-approved while they stay at $0.",
     "since": "2026-10-18",
     "allow": []
   }
