@@ -27,8 +27,8 @@ jobs:
               'pane id (pNNN)': r'\bp[0-9]{3}\b',
               'agent name (b-affitor-)': r'b-affitor-',
               'agent name (cos-...)': r'\bcos-(board|monitor|affitor|oa|pidot|repo)\b',
-              # letters only Vietnamese uses (not â, ê, ô, which French shares); text is NFC-normalised, matching ignores case
-              'Vietnamese text': r'[đơưĩũạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]',
+              # letters French and Spanish never use (â, ê, ô are left out; ă is kept, rare outside Vietnamese); text is NFC-normalised, matching ignores case
+              'Vietnamese text': r'[ăđơưĩũạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]',
           }
           bad = 0
           for field in ('PR_TITLE', 'PR_BODY'):
