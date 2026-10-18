@@ -21,6 +21,12 @@ description: Simpler username rules, website suggestions for your Business detai
 - Brands see customers and commissions on one Commissions page, with a count for each status. Old Customers links open it.
 - Invoice emails put the amount first, in the subject and at the top of the email. Confirm and reset emails no longer show a long link under the button.
 
+- Invite a brand by email from Refer a brand: add up to five addresses, preview the message, and Affitor sends your link.
+- Program settings › Business shows your Program ID with a Copy button. It is the ID the tracking script, the API and AI agents use.
+- Program settings › Payments shows two cards, Stripe and Server API, each with its own status. Either one is enough to go live.
+- A partner invite page shows the commission, how long it pays and the attribution window before the partner signs in.
+- Team members with the Member role no longer see Invite member, Resend invite or Regenerate on the API key tab. Owners keep them.
+
 ### Fixed
 
 - A refund or chargeback on a subscription renewal now reaches the commission for that renewal.
@@ -33,6 +39,7 @@ description: Simpler username rules, website suggestions for your Business detai
 
 ### For developers
 
+- New programs use `?via=` in partner links instead of `?aff=`. Older programs keep `?aff=`, and tracking reads both.
 - `affitor` 0.4.5: `affitor agent setup` configures Claude Code, Cursor or Codex for your project, with a dry run and backups first.
 - `affitor doctor` checks your agent config and key without starting an agent or calling the API.
 - `affitor onboard` leaves your Stripe webhook alone when Stripe is connected in Affitor, so sales are not counted twice.
