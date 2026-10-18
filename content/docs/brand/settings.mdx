@@ -2,7 +2,7 @@
 title: Manage program settings and your API key
 description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and Settings also hold the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -22,15 +22,14 @@ Settings belong to the program selected in the program menu. Open the program me
 
 ![The program menu, opened from the program name at the top left: the current program with Program settings, Members and Billing, and beside it your programs with their status and Create program](/docs/brand/program-menu.png)
 
-**Program settings** are the same five steps as setup, one page each:
-
-![Settings for one program: the left menu with Program settings selected, its pages Business, Commission, Tracking, Payments and Status beside it, and the Business form on the right](/docs/brand/settings.png)
+**Program settings** include the setup pages and **Partner links**, which controls the destinations and number of additional links partners can create:
 
 | Page | What you edit there |
 |---------|--------------------|
 | **Business** | Business name, website, program URL (your public page), tagline and logo, with a **Branding** section for how your program page looks in the marketplace. **Program ID** is shown read-only with **Copy** |
 | **Commission** | Commission type, rate and duration, attribution window, hold period, and how new partners join (**Approve all** or **Review each**) |
 | **Tracking** | Click and signup (lead) tracking on your website, and the **Partner link parameter** (`?via=` or `?aff=`) |
+| **Partner links** | [Allowed domains and pages, an additional-link limit per partner, and the preferred link format](/docs/brand/partner-links) |
 | **Payments** | How sales are counted: two cards, **Stripe** and **Server API**, each with its own state. Either one is enough |
 | **Go live** (**Status** once the program is live) | What the program still needs to go live, and its live state |
 

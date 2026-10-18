@@ -42,6 +42,7 @@
     "billing/overdue-policy",
     "---Settings and keys---",
     "settings",
+    "partner-links",
     "api-keys",
     "---AI agents (MCP)---",
     "../api-reference/mcp",

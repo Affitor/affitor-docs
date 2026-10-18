@@ -2,7 +2,7 @@
 title: Click Tracking
 description: Track affiliate visits with the Affitor tracker SDK or script tag
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-18
 ---
 
 Click tracking is the first step in every Affitor integration. It detects affiliate visits, creates the click/customer relationship, and stores the browser identifier used by later signup and sale attribution.
@@ -142,14 +142,20 @@ Track referred signups the same way — call `signup()` from a client `<script>`
 
 ## How Affiliate Links Work
 
-Affitor looks for the `aff` query parameter on landing URLs, for example:
+The tracker reads `aff` first, then `via` when `aff` is absent. Use the saved referral URL so a page's unrelated campaign parameters are not mistaken for the partner code:
 
 ```text
 https://yoursite.com?aff=PARTNER123
-https://yoursite.com/pricing?aff=PARTNER123
+https://yoursite.com/pricing?via=PARTNER123
 ```
 
-When that parameter is present, the tracker records the click and creates the customer relationship used by signup and sale attribution.
+When a valid partner code is present and the tracker runs, it records the click and creates the customer relationship used by signup and sale attribution.
+
+### Track every allowed destination
+
+If partners can create page links, install the tracker on each destination allowed in [Partner links](/docs/brand/partner-links), including any separately configured subdomain or port. Allowing a domain and acknowledging ownership does not install or verify its tracker.
+
+A recent-click status only describes observed activity in a recent sample. It does not prove every page is tracked or that signup and sale tracking work. A short homepage redirect such as `/r/CODE` also does not enable short page links by itself; query page links remain in use until the extended handler is verified.
 
 ---
 
@@ -198,7 +204,7 @@ Debug mode helps with test verification, but a real affiliate landing flow using
 
 Check:
 - The tracker script loaded successfully
-- The page was visited with a valid `?aff=` parameter
+- The page was visited through a saved link with a valid `?aff=` or `?via=` parameter
 - Your program ID is correct
 - CSP rules or browser extensions are not blocking the script
 
