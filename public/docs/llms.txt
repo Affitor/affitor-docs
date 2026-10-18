@@ -61,6 +61,7 @@
 ## Brands: Settings and keys
 
 - [Manage program settings and your API key](https://affitor.com/docs/brand/settings.md)
+- [Choose where partners can link](https://affitor.com/docs/brand/partner-links.md)
 - [API key reference](https://affitor.com/docs/brand/api-keys.md)
 
 ## Brands: AI agents (MCP)
