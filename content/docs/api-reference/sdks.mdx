@@ -2,7 +2,7 @@
 title: SDKs
 description: Typed client libraries for browser tracking (@affitor/sdk) and server-side conversion reporting (@affitor/sdk/server).
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 > **Beta** — The @affitor/sdk package and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -18,7 +18,7 @@ One package covers the full attribution chain via subpaths: the browser entry ca
 
 ## @affitor/sdk (Browser)
 
-SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server — safe to import in Next.js and other SSR frameworks without guards.
+SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` (or `?via=`) attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server — safe to import in Next.js and other SSR frameworks without guards.
 
 ### Install
 
@@ -48,7 +48,7 @@ const affitor = await loadAffitor(123);
 await affitor?.signup('user_abc123', 'user@example.com');
 ```
 
-`loadAffitor` loads the tracker script once and resolves to the same instance on every later call. The tracker captures `?aff=` from the URL and sets the click id cookie by itself.
+`loadAffitor` loads the tracker script once and resolves to the same instance on every later call. The tracker captures `?aff=` (or `?via=`) from the URL and sets the click id cookie by itself.
 
 The tracker sends events to `https://api.affitor.com`. To send them to a non-production API, set `window.AFFITOR_API_BASE = '<API_BASE>'` before the first `loadAffitor` call, or use the script tag with `data-affitor-api-base`.
 
@@ -229,7 +229,7 @@ This endpoint does not require authentication.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `affiliateUrl` | `string` | No | The full affiliate URL containing the `?aff=` parameter. |
+| `affiliateUrl` | `string` | No | The full affiliate URL containing the `?aff=` or `?via=` parameter. |
 | `pageUrl` | `string` | No | The landing page URL. |
 | `referrerUrl` | `string` | No | The HTTP referrer. |
 | `existingClickId` | `string` | No | An existing click id. Affitor reuses the customer that has this click id, so that customer's partner does not change. `trackClick` sends no `program_id`, so this lookup is not limited to one program. When no customer has the click id, a new customer is created with it. |

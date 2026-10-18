@@ -2,10 +2,10 @@
 title: Track Click
 description: Record an affiliate click event when a visitor lands via a referral link
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
-`POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter, creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
+`POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter (or its alias `?via=`; `aff` wins when both are present), creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
 
 This endpoint is called automatically by `affitor-tracker.js`. You only need to call it directly if you are building a custom tracker integration.
 
@@ -23,7 +23,7 @@ No API key is required. This endpoint is public — the referral link embedded i
 
 <ParamList>
   <ParamField name="affiliate_url" type="string" required>
-    Full URL including the `?aff=` query parameter, e.g. `https://yoursite.com?aff=PARTNER123`
+    Full URL including the `?aff=` or `?via=` query parameter, e.g. `https://yoursite.com?aff=PARTNER123`
   </ParamField>
   <ParamField name="page_url" type="string">
     Canonical page URL where the click occurred.
@@ -149,7 +149,7 @@ When `additional_data.test_mode` is `true`:
 |--------|-----------|
 | `400 Bad Request` | `affiliate_url` is missing |
 | `400 Bad Request` | `affiliate_url` cannot be parsed as a URL |
-| `400 Bad Request` | No `?aff=` parameter found in `affiliate_url` |
+| `400 Bad Request` | No `?aff=` or `?via=` parameter found in `affiliate_url` |
 | `400 Bad Request` | `program_id` was sent but is not a program (`Unknown program_id`) |
 | `400 Bad Request` | No referral link found matching the `aff` value |
 | `400 Bad Request` | Referral link configuration is invalid (missing partner or program) |

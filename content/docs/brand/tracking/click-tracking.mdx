@@ -2,7 +2,7 @@
 title: Click Tracking
 description: Track affiliate visits with the Affitor tracker SDK or script tag
 kind: guide
-last_updated: 2026-10-16
+last_updated: 2026-10-18
 ---
 
 Click tracking is the first step in every Affitor integration. It detects affiliate visits, creates the click/customer relationship, and stores the browser identifier used by later signup and sale attribution.
@@ -20,7 +20,7 @@ https://yoursite.com?aff=PARTNER123
 
 the tracker:
 
-1. detects the `?via=` or `?aff=` parameter (which one your links use is the **Partner link parameter** on **Tracking**; the tracker reads both)
+1. detects the `?via=` or `?aff=` parameter (which one your links use is the **Partner link parameter** on **Tracking**; the tracker reads both, and `aff` wins when a URL has both)
 2. sends click data to Affitor
 3. creates or updates the tracked customer relationship
 4. stores `affitor_click_id` in a first-party cookie
@@ -198,7 +198,7 @@ Debug mode helps with test verification, but a real affiliate landing flow using
 
 Check:
 - The tracker script loaded successfully
-- The page was visited with a valid `?aff=` parameter
+- The page was visited with a valid `?aff=` (or `?via=`) parameter
 - Your program ID is correct
 - CSP rules or browser extensions are not blocking the script
 

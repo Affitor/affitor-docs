@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -204,11 +204,11 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `400` | `affiliate_url is required` | Body did not include `affiliate_url` | Pass the full URL that contains the `?aff=` parameter |
+| `400` | `affiliate_url is required` | Body did not include `affiliate_url` | Pass the full URL that contains the `?aff=` or `?via=` parameter |
 | `400` | `Invalid affiliate_url` | URL could not be parsed by `new URL()` | Ensure the value is a fully-qualified URL (includes scheme) |
-| `400` | `No aff parameter found in affiliate_url` | URL was valid but had no `aff` query parameter | Only call this endpoint when `?aff=` is present in the URL |
+| `400` | `No aff parameter found in affiliate_url` | URL was valid but had neither an `aff` nor a `via` query parameter | Only call this endpoint when `?aff=` or `?via=` is present in the URL |
 | `400` | `Unknown program_id` | The body sent a top-level `program_id` that is not a program | Send your program's id, or leave `program_id` out |
-| `400` | `Referral link not found` | No referral link matched the `aff` value | Verify the partner link exists and `short_link` matches the `aff` value |
+| `400` | `Referral link not found` | No referral link matched the `aff` (or `via`) value | Verify the partner link exists and `short_link` matches that value |
 | `400` | `Invalid referral link configuration` | Link exists but has no linked partner or program | Contact Affitor support — the referral link record is incomplete |
 
 #### Track lead
