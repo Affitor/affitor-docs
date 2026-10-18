@@ -82,5 +82,11 @@
     "why": "Extending the hold only moves the approval date; the commission still auto-approves when the extended hold ends. Test and own-team commissions are never auto-approved; $0 commissions after the commission term are not auto-approved while they stay at $0.",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "fee may apply depending on the (payout )?method",
+    "why": "The withdrawal processing fee is one setting for every withdrawal (a percentage or a fixed amount), not per payout method.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
