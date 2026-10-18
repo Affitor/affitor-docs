@@ -103,6 +103,7 @@ export const blog = defineCollections({
     description: z.string(),
     date: z.string(),
     category: z.string(),
+    // Ids from src/config/authors.ts (older posts: "Name, Title"; the title is never shown)
     authors: z.array(z.string()),
     readTime: z.string().optional(),
     image: z.string().optional(),
@@ -117,8 +118,9 @@ export const blog = defineCollections({
     // How-to posts -> HowTo JSON-LD (steps derived from "Step N" H2 headings)
     howto: z.boolean().optional(),
     // `comparison` renders the wide comparison shell (src/components/blog/comparison);
+    // `compare` renders an A vs B post (compare-post.tsx, mock r3);
     // route, sitemap, .md twin and JSON-LD stay the same
-    layout: z.enum(['comparison']).optional(),
+    layout: z.enum(['comparison', 'compare']).optional(),
     // A word of the title the comparison hero tints
     highlight: z.string().optional(),
   }),

@@ -48,7 +48,7 @@ function markdown(data, fallbackTitle) {
 }
 
 /**
- * `layout: comparison` posts: the FAQ rendered in the body must say exactly what the frontmatter
+ * `layout: comparison` and `layout: compare` posts: the FAQ rendered in the body must say exactly what the frontmatter
  * `faq` (FAQPage JSON-LD) says, and every logo the comparison components can draw must exist.
  */
 function checkComparison(data, id) {
@@ -196,7 +196,7 @@ function inventory() {
       assert.equal(typeof data.updated, 'string', `${id}: updated must be a string`);
       assert.match(data.updated, ISO_DAY, `${id}: updated must be YYYY-MM-DD`);
     }
-    if (data.layout === 'comparison') checkComparison(data, id);
+    if (data.layout === 'comparison' || data.layout === 'compare') checkComparison(data, id);
     return {
       id, type: 'blog', url: `${ORIGIN}/${id}`,
       updated: data.updated ?? data.date,

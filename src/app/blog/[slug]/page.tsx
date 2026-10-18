@@ -8,7 +8,9 @@ import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { articleComponents } from '@/components/blog/comparison/article-tables';
 import { ComparisonLayout, comparisonComponents } from '@/components/blog/comparison/comparison-layout';
+import { CompareLayout, compareComponents } from '@/components/blog/comparison/compare-post';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
+import { resolveAuthor } from '@/config/authors';
 import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
 
 function getPost(slug: string) {
@@ -25,11 +27,6 @@ function BlogPostLink({ href, ...props }: ComponentProps<typeof FdLink>) {
   const docsPath = href?.replace(/^https:\/\/affitor\.com(?=\/docs(?:[/?#]|$))/, '');
   const resolved = docsPath && /^\/docs(?:[/?#]|$)/.test(docsPath) ? `${BLOG_DOCS_ORIGIN}${docsPath}` : href;
   return <FdLink href={resolved} {...props} />;
-}
-
-/** "Son Piaz, Founder" -> "Son Piaz" (role suffix is byline decoration, not the Person name). */
-function authorName(author: string) {
-  return author.split(',')[0].trim();
 }
 
 /** Flatten a TOC title (ReactNode: string | element | array) to plain text. */
@@ -62,7 +59,7 @@ function buildJsonLd(post: Post, slug: string) {
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     author: post.authors.map((author) => ({
       '@type': 'Person',
-      name: authorName(author),
+      name: resolveAuthor(author).name,
       url: 'https://affitor.com',
     })),
     publisher: {
@@ -191,6 +188,26 @@ export default async function BlogPostPage(props: {
     />
   );
 
+  if (post.layout === 'compare') {
+    return (
+      <BlogShell>
+        {schema}
+        <CompareLayout
+          slug={slug}
+          title={post.title}
+          category={post.category}
+          authors={post.authors}
+          updated={post.updated ?? post.date}
+          toc={post.toc
+            .filter((item) => item.depth === 2)
+            .map((item) => ({ url: item.url, title: tocTitleToText(item.title) }))}
+        >
+          <Body components={{ ...components, ...compareComponents }} />
+        </CompareLayout>
+      </BlogShell>
+    );
+  }
+
   if (post.layout === 'comparison') {
     return (
       <BlogShell>
@@ -226,7 +243,7 @@ export default async function BlogPostPage(props: {
           </p>
           <div className="flex flex-wrap items-center gap-2 text-[14px] leading-[20px]">
             <span className="font-medium text-fd-foreground">
-              {post.authors.join(', ')}
+              {post.authors.map((author) => resolveAuthor(author).name).join(', ')}
             </span>
             <span className="text-fd-muted-foreground" aria-hidden>
               ·

@@ -1998,3 +1998,10 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Compare posts (src/components/blog/comparison/compare-post.tsx, mock r3): the article heading and
+   paragraph rules above are unlayered, so they win over utility classes; set the compare sizes here. */
+.compare-post h1 { font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.02em; }
+.compare-post details h3 { margin: 0; font-size: 15px; line-height: 24px; font-weight: 500; letter-spacing: 0; }
+.compare-post details p { margin: 0; }
+.compare-post details p + p { margin-top: 12px; }
