@@ -229,6 +229,21 @@ await affitor.trackSale({
 
 Many brands have **no browser tag at all** and track entirely server-side. This branch is fully supported: bind the customer at lead time (§5b), then report sales by `customer_key` alone. Authenticated with the Bearer key.
 
+With no tag, nothing sets the `affitor_click_id` cookie, and a first lead without a click id answers 400. So record the click on your server when a visitor lands with `?via=` or `?aff=`, keep the returned `click_id` in your own first-party cookie or session, and send it as `clickId` in §5b:
+
+```ts
+// landing request handler, only when the URL carries ?via= or ?aff=
+const res = await affitor.trackClick({
+  affiliateUrl: fullRequestUrl,     // includes ?via=<code> or ?aff=<code>
+  pageUrl: fullRequestUrl,
+  referrerUrl: req.headers.referer,
+});
+const clickId = (res.data as { click_id?: string } | null)?.click_id; // res.ok false → no click recorded
+// keep clickId for the program's cookie_window_days, then pass it to trackLead({ clickId, ... })
+```
+
+Raw HTTP: `POST /api/v1/track/click` with `affiliate_url` (no key needed; send the Bearer key and `visitor_ip` so the click gets your visitor's location, not your server's). See `/docs/api-reference/track-click`.
+
 ```bash
 curl -X POST "$AFFITOR_API_BASE/api/v1/track/sale" \
   -H "Authorization: Bearer $AFFITOR_API_KEY" \
