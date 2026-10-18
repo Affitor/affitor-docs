@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 
-// The changelog starts light (brand: light first) until a visitor picks System or Dark in
-// the header switch; the docs and the blog keep following the OS. A visitor's choice is
+// The changelog starts light (brand: light first) until a visitor picks Dark with
+// the header toggle; the docs and the blog keep following the OS. A visitor's choice is
 // stored once and applies across all zones. To default the changelog to dark, use 'dark'.
 // The provider is keyed by zone: next-themes reads defaultTheme only when it mounts, so a
 // client-side move from /docs to /changelog must remount it to pick up the zone's default
