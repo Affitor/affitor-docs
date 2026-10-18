@@ -171,8 +171,12 @@ paths:
           through your connected Stripe account. A sale sent to
           `/api/v1/track/sale` does not settle it.
 
-        Either `click_id` or `customer_key` is required; without a Bearer
-        key, `click_id` is required. The email, when provided, is hashed
+        Send the `click_id` with your `customer_key`. A request with neither
+        answers `400` (`click_id or customer_key is required`). A first lead
+        with only `customer_key` answers `400` (`Customer not found. Provide a
+        valid click_id or customer_key.`), because Affitor saves your key on
+        the customer only when a lead settles. Without a Bearer key,
+        `click_id` is always required. The email, when provided, is hashed
         server-side before storage.
       security:
         - bearerAuth: []
@@ -223,8 +227,9 @@ paths:
             Validation error. Causes: neither `click_id` nor `customer_key`
             provided; a `customer_key` without `click_id` and without a Bearer
             key (`click_id is required when no API key is sent`); customer not
-            found, including in browser mode a customer that does not belong to
-            the `program_id` sent; customer belongs to a different program than
+            found, including a first lead sent with only `customer_key` and, in
+            browser mode, a customer that does not belong to the `program_id`
+            sent; customer belongs to a different program than
             the authenticated one; customer status cannot transition to lead.
           content:
             application/json:
@@ -830,7 +835,7 @@ components:
 
     LeadRequest:
       type: object
-      description: Either `click_id` or `customer_key` is required; without a Bearer key, `click_id` is required.
+      description: Send the `click_id` with your `customer_key`. A first lead with only `customer_key` answers `400` (`Customer not found. Provide a valid click_id or customer_key.`), because Affitor saves your key on the customer only when a lead settles. Without a Bearer key, `click_id` is always required.
       properties:
         click_id:
           type: string
@@ -983,7 +988,7 @@ components:
           description: '`reversed` once the whole sale is refunded, `refunded` while part of it remains, `skipped` when the call changed nothing (`reason` says why), `no_commission` when the sale had no commission to reverse.'
         deductionAmount:
           type: number
-          description: Commission amount reversed by this call, in the commission's currency. Present when `status` is `reversed` or `refunded`.
+          description: "The commission share this refund covers, in the commission's currency: the refunded fraction of the commission, or all of what is left once the sale is fully refunded. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). A `pending` commission that is partly refunded is cancelled whole, so for it this number is informational. Present when `status` is `reversed` or `refunded`."
         reason:
           type: string
           description: Why the call changed nothing. Present when `status` is `skipped`, e.g. `already reversed` or `refund already applied`.

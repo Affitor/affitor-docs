@@ -215,9 +215,9 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `400` | `click_id or customer_key is required` | Neither identifier was sent in the body | Pass the `click_id` from the `affitor_click_id` cookie, or the `customer_key` set at signup |
-| `400` | `click_id is required when no API key is sent` | A browser-mode lead (no Bearer key) sent `customer_key` without `click_id` | Pass the `click_id` from the `affitor_click_id` cookie, or send the lead from your server with your program API key |
-| `400` | `Customer not found. Provide a valid click_id or customer_key.` | No customer record matched either identifier, or (browser mode) the customer does not belong to the `program_id` sent | The click was not tracked, the cookie was cleared, or the customer_key was never recorded: ensure `init()` and `signup()` ran successfully |
+| `400` | `click_id or customer_key is required` | Neither identifier was sent in the body | Send the `click_id` from the `affitor_click_id` cookie with your `customer_key` |
+| `400` | `click_id is required when no API key is sent` | A browser-mode lead (no Bearer key) sent `customer_key` without `click_id` | Pass the `click_id` from the `affitor_click_id` cookie with the `customer_key` (a server lead with only `customer_key` finds no customer on a first lead either) |
+| `400` | `Customer not found. Provide a valid click_id or customer_key.` | No customer matched the `click_id`, the `customer_key` is not saved on a customer yet (a first lead sent with only `customer_key`: Affitor saves the key only when a lead settles), or (browser mode) the customer does not belong to the `program_id` sent | Send the `click_id` from the `affitor_click_id` cookie on every lead. If you did, the click was not tracked or the cookie was cleared: check that the tracker loads on every page |
 | `400` | `Customer does not belong to this program` | Customer was found but is attributed to a different program (server mode only) | Use the API key for the program that originated the click |
 | `400` | `Customer status cannot be updated to lead. Current status: <status>` | Lead service rejected the status transition | A lead was already recorded for this customer, or the customer is at a later funnel stage — this is usually safe to ignore |
 

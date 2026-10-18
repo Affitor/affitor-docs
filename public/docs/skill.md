@@ -163,11 +163,11 @@ const affitor = new Affitor({
   apiUrl: process.env.AFFITOR_API_BASE, // = API_BASE; omit for prod
 });
 
-// in your signup handler — read the affitor_click_id cookie if you have it
+// in your signup handler: read the affitor_click_id cookie and send it on every lead
 await affitor.trackLead({
   customerExternalId: user.id, // → customer_key on the wire
   email: user.email,
-  clickId: req.cookies['affitor_click_id'], // optional but improves binding
+  clickId: req.cookies['affitor_click_id'], // a first lead without it answers 400 (Customer not found)
 });
 ```
 

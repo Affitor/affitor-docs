@@ -100,7 +100,7 @@ For subscription products, every recurring charge can generate a commission with
 
 | Commission type | `default_duration_months` | Behavior |
 |-----------------|--------------------------|---------|
-| `cps_recurring` | e.g. `12` | Commission paid for up to N months of renewals |
+| `cps_recurring` | e.g. `12` | Commission paid on every payment until N months have passed since the customer's first click (not the first payment); later payments are recorded with a $0 commission |
 | `cps_lifetime` | `null` | Commission paid on every renewal indefinitely |
 | `cps_one_time` | `0` | Commission paid once on the first payment only |
 

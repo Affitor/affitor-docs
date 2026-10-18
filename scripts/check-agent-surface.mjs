@@ -468,7 +468,37 @@ function checkNav() {
   return cases.length + pageNav.length;
 }
 
+/**
+ * Public claims the docs once stated and the code no longer does (scripts/retired-claims.json).
+ * Each pattern is a case-insensitive regex matched line by line over the docs pages, skill.md and
+ * openapi.yaml; a hit fails unless its file is in the entry's `allow`. Changelog entries are
+ * history and are not read. A PR that retires a claim adds its old wording here.
+ */
+function checkRetiredClaims() {
+  const claims = json(join(ROOT, 'scripts/retired-claims.json'));
+  const files = [
+    ...walk(join(ROOT, 'content/docs')).filter((file) => /\.mdx?$/.test(file)),
+    join(ROOT, 'public/docs/skill.md'),
+    join(ROOT, 'public/docs/openapi.yaml'),
+  ].map((file) => ({ path: relative(ROOT, file), lines: read(file).split('\n') }));
+  const hits = [];
+  for (const { pattern, why, since, allow = [] } of claims) {
+    assert.ok(typeof why === 'string' && why && ISO_DAY.test(since ?? ''), `scripts/retired-claims.json ${pattern}: needs why and since (YYYY-MM-DD)`);
+    const re = new RegExp(pattern, 'i');
+    for (const { path, lines } of files) {
+      if (allow.includes(path)) continue;
+      lines.forEach((line, i) => {
+        const match = line.match(re);
+        if (match) hits.push(`  ${path}:${i + 1}: "${match[0]}": ${why}`);
+      });
+    }
+  }
+  assert.ok(!hits.length, `retired claims still in the docs (scripts/retired-claims.json):\n${hits.join('\n')}`);
+  return { claims: claims.length, files: files.length };
+}
+
 function main() {
+  const retired = checkRetiredClaims();
   const pages = inventory();
   const ids = pages.map((page) => page.id);
   assert.equal(new Set(ids).size, ids.length, 'Duplicate source page ids');
@@ -581,6 +611,7 @@ function main() {
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
   console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; help and use cases pages hide the left nav (built CSS rule + sidebar hook); use case pages have no rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
+  console.log(`PASS retired claims: ${retired.claims} patterns, 0 hits in ${retired.files} files (docs pages, skill.md, openapi.yaml).`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }

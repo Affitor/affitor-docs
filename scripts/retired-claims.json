@@ -1,0 +1,74 @@
+[
+  {
+    "pattern": "(either|at least one of)\\W+`click_id`\\W+or\\W+`customer_key`|outside test mode, provide at least one of|pass `customer_key` or `click_id` to identify|or the `customer_key` set at signup",
+    "why": "Lead rule: send the click_id on every lead. A first lead with only customer_key answers 400 Customer not found, because the key is saved on the customer only when a lead settles. The sale rule (`customer_key` or `click_id`) is unchanged and not matched.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "at least one of `customerExternalId` or `clickId` is required(?!, and `amount`)|optional but improves binding",
+    "why": "trackLead: the SDK throws only when both are missing; a first lead without clickId returns ok: false, status 400. The trackSale sentence (\"is required, and `amount` ...\") is still true and not matched.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "proportionally",
+    "why": "Refunds: a partial refund reduces a commission already approved and cancels one still pending whole. Say which, not \"reduced proportionally\".",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "proper recurring commission attribution",
+    "why": "subscription_id is only stored with the sale; it plays no part in finding the customer or in the commission.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "need both locations|in \\*\\*(both\\*\\* places|two places\\*\\*)|both `metadata` and `subscription_data\\.metadata`",
+    "why": "Subscriptions need subscription_data.metadata: their payments are read from invoices, which carry the subscription's metadata, not the session's. The session metadata is not also required.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "onboard verify",
+    "why": "affitor onboard has no verify subcommand; `npx affitor onboard` itself fires the synthetic chain.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "required metadata on every checkout",
+    "why": "Not every checkout field is required: program_id is Recommended and affitor_click_id may be empty on repeat purchases.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "reversed by this call",
+    "why": "deductionAmount is the commission share a refund covers. For a pending commission it is informational (the commission is cancelled whole) and nothing leaves the partner's balance.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "arrives with no partner attribution",
+    "why": "Without the click id, a first trackLead answers 400 Customer not found and no lead is recorded.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "will double-count",
+    "why": "A renewal sent with trackSale while Stripe is connected is refused as a duplicate (same invoice id); the real risk is that a Stripe refund does not reverse its commission.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "record (is )?created (at|when the) signup|affitor\\??\\.signup\\(\\s*\\{",
+    "why": "The customer record is created at the partner click; signup saves your customer_key on it when the lead settles. The browser helper is signup(customerKey, email), not an object.",
+    "since": "2026-10-17",
+    "allow": []
+  },
+  {
+    "pattern": "months of (payments|renewals)|months after signup",
+    "why": "Recurring earns until the months in For have passed since the customer's first click on the partner link, not for N payments or N months after signup; later payments get a $0 commission.",
+    "since": "2026-10-17",
+    "allow": []
+  }
+]
