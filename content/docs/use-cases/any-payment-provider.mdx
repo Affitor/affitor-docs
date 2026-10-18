@@ -26,7 +26,7 @@ sequenceDiagram
   Note over A: Approved after the hold period
   opt Refund
     B->>A: Reports the refund
-    A->>A: Reverses or reduces the commission
+    A->>A: Takes back the commission, in full or in part
   end
 ```
 
@@ -51,8 +51,8 @@ If you take payments with Stripe Checkout or Stripe subscriptions, [Sell on Stri
     { title: 'Get your program API key', text: '**Program settings** › **Developers** › **API keys**, where an owner selects **Generate**. Keep the key on your server, never in the browser.', href: '/docs/brand/api-keys#where-to-find-it' },
     { title: 'Report the signup', text: 'When the customer signs up, your server sends `POST /api/v1/track/lead` with the `click_id` from the cookie and your `customer_key`. Affitor saves the key on the customer of that click.', href: '/docs/brand/tracking/lead-tracking-signup' },
     { title: 'Report each sale', text: 'After each payment, your server sends `POST /api/v1/track/sale` with the `customer_key` (or the `click_id`, for a buyer who never signed up), `amount_cents` and a unique `transaction_id`. A `transaction_id` sent again is answered `409` and not counted twice.', href: '/docs/api-reference/track-sale' },
-    { title: 'Report refunds', text: 'When you refund a payment, send its `transaction_id` to `POST /api/v1/track/refund`, and Affitor reverses or reduces the commission.', href: '/docs/api-reference/track-refund' },
-    { title: 'Send a test sale', text: '**Program settings** › **Payments** › **Send a test sale** shows a call to run from your server. With `"livemode": false` it records a test sale and no commission, and the **Server API** card reads **Received**.', href: '/docs/brand/tracking/testing-integration' },
+    { title: 'Report refunds', text: 'When you refund a payment, send its `transaction_id` to `POST /api/v1/track/refund`, and Affitor reverses the commission. A partial refund reduces a commission already approved and cancels one still in its hold period.', href: '/docs/api-reference/track-refund' },
+    { title: 'Send a test sale', text: '**Program settings** › **Payments** › **Send a test sale** shows a call to run from your server. Put your own `transaction_id` in it, or leave it out: an id that was already used gets `409` and records nothing. With `"livemode": false` it records a test sale and no commission, and the **Server API** card reads **Received**.', href: '/docs/brand/tracking/testing-integration' },
   ]}
 />
 
