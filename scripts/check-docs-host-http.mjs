@@ -74,6 +74,11 @@ const ALWAYS = [
   [PROXY, '/docs/advertisers', 308, '/docs/brand/quickstart'],
   [PROXY, '/docs/advertisers.md', 308, '/docs/brand/quickstart.md'],
   [PROXY, '/docs/brand', 308, '/docs/brand/quickstart'],
+  // /docs/api-reference has no page: it opens the API overview (it was a 404 until 17/10/2026).
+  [PROXY, '/docs/api-reference', 308, '/docs/api-reference/overview'],
+  [PROXY, '/docs/api-reference.md', 308, '/docs/api-reference/overview.md'],
+  [PROXY, '/docs/api-reference/overview', 200, null, 'text/html'],
+  [DOCS, '/api-reference.md', 200, null, 'text/markdown'],
   [PROXY, '/docs/errors', 308, '/docs/api-reference/errors'],
   [PROXY, '/docs/getting-started/glossary', 308, '/docs/support/glossary'],
   [PROXY, '/docs/getting-started/what-is-affitor', 308, '/docs'],
@@ -96,6 +101,7 @@ const MODES = {
     [DOCS, '/advertisers/quickstart', 308, '/brand/quickstart'],
     [DOCS, '/advertisers', 308, '/brand/quickstart'],
     [DOCS, '/errors', 308, '/api-reference/errors'],
+    [DOCS, '/api-reference', 308, '/api-reference/overview'],
   ],
   301: [
     ...ALWAYS,
@@ -106,6 +112,7 @@ const MODES = {
     [DOCS, '/docs/advertisers/quickstart', 301, 'https://affitor.com/docs/brand/quickstart'],
     [DOCS, '/advertisers', 301, 'https://affitor.com/docs/brand/quickstart'],
     [DOCS, '/errors', 301, 'https://affitor.com/docs/api-reference/errors'],
+    [DOCS, '/api-reference', 301, 'https://affitor.com/docs/api-reference/overview'],
   ],
   302: [...ALWAYS, [DOCS, '/brand/quickstart', 302, 'https://affitor.com/docs/brand/quickstart']],
 };
