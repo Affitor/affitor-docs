@@ -6,6 +6,7 @@
     "sell-on-stripe",
     "any-payment-provider",
     "subscriptions",
-    "partner-payouts"
+    "partner-payouts",
+    "ai-agent-setup"
   ]
 }

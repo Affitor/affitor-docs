@@ -410,6 +410,7 @@ function checkNav() {
     ['/docs/use-cases/any-payment-provider', 'Use cases', null],
     ['/docs/use-cases/subscriptions', 'Use cases', null],
     ['/docs/use-cases/partner-payouts', 'Use cases', null],
+    ['/docs/use-cases/ai-agent-setup', 'Use cases', null],
   ];
   const html = (route) => read(join(APP, `${route.slice(1)}.html`));
   // The help and use cases pages drop the left nav with one rule in globals.css that hides Fumadocs'
