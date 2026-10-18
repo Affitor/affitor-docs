@@ -18,6 +18,9 @@ description: Simpler username rules, website suggestions for your Business detai
 - The tracking and CLI quickstarts in the docs have an **Agent prompt** tab you can copy into your coding agent.
 - [changelog.json](https://affitor.com/changelog.json) and [context.md](https://affitor.com/changelog/context.md) give AI tools every changelog entry and the facts to reuse.
 
+- Brands see customers and commissions on one Commissions page, with a count for each status. Old Customers links open it.
+- Invoice emails put the amount first, in the subject and at the top of the email. Confirm and reset emails no longer show a long link under the button.
+
 ### Fixed
 
 - A refund or chargeback on a subscription renewal now reaches the commission for that renewal.
@@ -30,5 +33,8 @@ description: Simpler username rules, website suggestions for your Business detai
 
 ### For developers
 
+- `affitor` 0.4.5: `affitor agent setup` configures Claude Code, Cursor or Codex for your project, with a dry run and backups first.
+- `affitor doctor` checks your agent config and key without starting an agent or calling the API.
+- `affitor onboard` leaves your Stripe webhook alone when Stripe is connected in Affitor, so sales are not counted twice.
 - `@affitor/sdk` 2.1.3 marks its React entry `"use client"`, so it imports cleanly in the Next.js App Router.
 - `affitor status` and `affitor test` run with an API key alone, with no project config.
