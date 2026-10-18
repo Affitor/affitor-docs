@@ -48,6 +48,7 @@
     "../api-reference/agent-integration",
     "---CLI---",
     "cli/quickstart",
+    "cli/agent-setup",
     "cli/commands"
   ]
 }

@@ -1,0 +1,92 @@
+---
+title: Set up a coding agent
+description: Preview project-scoped Affitor MCP configuration, apply it for your coding agent, and check local files with doctor.
+kind: guide
+last_updated: 2026-10-18
+---
+
+Configure Claude Code, Cursor, or Codex to use Affitor's local tracking MCP server in your project. CLI 0.4.5 adds a preview, an explicit apply step, and a read-only static check.
+
+This uses a **program API key** for integration work. To read account reports through the hosted server with Affitor sign-in, use [Connect your AI app](/docs/api-reference/mcp) instead.
+
+## 1. Preview the selected client
+
+Run from your app's project root. This example selects Claude Code; replace `claude_code` with `cursor` or `codex` for your client.
+
+```bash
+npx affitor@0.4.5 agent setup --client claude_code --dry-run --json
+```
+
+The output has `status: "planned"`, file paths, operations, backup paths, and any manual instructions. It does not include existing config contents or write files. Repeat `--client` to select multiple clients from your own terminal.
+
+When a coding agent invokes setup, it can configure only itself. Without `--client`, a detected caller selects itself; otherwise an interactive terminal asks you to select clients. Finding a client directory alone never selects it.
+
+## 2. Apply the reviewed plan
+
+After reviewing the preview, run:
+
+```bash
+npx affitor@0.4.5 agent setup --client claude_code --yes --json
+```
+
+Unlike `onboard --json`, **`agent setup --yes --json` writes files**. Without `--yes` or `--auto-confirm`, an interactive run asks before applying; a JSON or non-interactive run returns `needs_confirmation` and exits `1`.
+
+| Client | MCP configuration | Installed skill |
+|---|---|---|
+| `claude_code` | Project `.mcp.json` | `.claude/skills/affitor/SKILL.md` |
+| `cursor` | Project `.cursor/mcp.json` | `.cursor/skills/affitor/SKILL.md` |
+| `codex` | Manual instructions in the output | `.agents/skills/affitor/SKILL.md` |
+
+Setup writes `.affitor/agent-mcp.cjs` and Git ignore rules for local credentials and backups. For Claude Code and Cursor, it preserves other MCP entries and sets the entry named `affitor`. Existing files it changes get a private first snapshot under `.affitor/backups/`; an earlier snapshot is kept on later runs.
+
+The generated MCP entry contains this machine's absolute project path. Keep it local or regenerate it on each teammate's machine. A successful apply reports `needs_human`, not a verified connection.
+
+For Codex, follow the printed manual MCP instructions after applying. On Windows, the output gives a command and exact argument for Codex MCP settings instead of a shell command. Setup does not edit Codex's MCP settings for you.
+
+## 3. Configure the program key privately
+
+Make the program's `AFFITOR_API_KEY` available to the agent process, or keep one `AFFITOR_API_KEY` assignment in this project's `.affitor/.env`. Use a [program API key](/docs/brand/api-keys), not your account login token. Never paste the key into a prompt, MCP JSON, or Git.
+
+The launcher reads the environment first, then `.affitor/.env`. It starts the pinned `@affitor/mcp@0.2.2` server when your client launches it and keeps sale/refund tools disabled. Setup itself does not start an agent session or call the Affitor API.
+
+## 4. Check the local files
+
+```bash
+npx affitor@0.4.5 doctor --client claude_code --json
+```
+
+`doctor` reads local configuration without editing files or calling Affitor. It checks `AFFITOR_API_KEY` in the environment or `.affitor/.env`; the global `--api-key` and `--api-url` flags do not change this check.
+
+| Result | Meaning | Next step |
+|---|---|---|
+| `missing`, `stale`, or `invalid` client status | Local files need attention | Review a fresh setup dry-run |
+| `credential: "missing"` | No credential accepted by the local parser | Configure the program key privately |
+| `credential: "present_unverified"` | A credential has an accepted local format | Check the live session next; the key has not been authenticated |
+| `credential_tracked` warning | `.affitor/.env` is tracked by Git | Rotate the key and remove it from tracking/history through your repository process |
+| Codex client status `manual` | MCP settings need a separate manual step | Follow the setup output; static doctor cannot verify those settings |
+
+The top-level result is `aligned` with exit `0` only when every checked client has aligned files, a `present_unverified` credential, and no warnings. Otherwise it reports `needs_attention` and exits `1`. Codex stays `manual` in this static check, including after you configure it yourself.
+
+## 5. Check the restarted agent
+
+Restart the selected coding agent so it loads the new configuration, then ask it:
+
+```text
+Call affitor_readiness. Confirm the program identity and report the returned checks.
+Do not run synthetic verification or other writes without asking me first.
+```
+
+`doctor` always reports `mode: "static"` and `liveSession: "not_checked"`. File alignment, a working agent connection, and `integration_verified` are separate results. Follow the readiness checks before claiming the integration works.
+
+<CommonMistakes items={[
+  'Using `--json` as a preview: add `--dry-run` to guarantee setup does not write files.',
+  'Treating `needs_human` or doctor exit 0 as proof of integration readiness: restart the agent and call `affitor_readiness`.',
+  'Running `init` to attach an existing program: `init` creates a new program; configure the existing program key privately instead.',
+]} />
+
+## Related
+
+- [CLI command reference](/docs/brand/cli/commands): flags, JSON statuses, and exit codes.
+- [Program API keys](/docs/brand/api-keys): obtain and replace the program credential.
+- [Testing integration](/docs/brand/tracking/testing-integration): verify tracking after deployment.
+- [Hosted MCP server](/docs/api-reference/mcp): account sign-in and read-only reporting.

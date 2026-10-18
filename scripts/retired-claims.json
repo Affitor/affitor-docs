@@ -88,5 +88,11 @@
     "why": "The withdrawal processing fee is one setting for every withdrawal (a percentage or a fixed amount), not per payout method.",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "adds the `trackSale` call whether or not|`npx affitor onboard` adds one to a",
+    "why": "CLI 0.4.5 reads stripe_account_bound for a certain runtime key. A true binding skips injection; unknown/false or uncertain env keeps unattended webhook unchanged. Existing calls are not removed.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
