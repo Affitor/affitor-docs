@@ -48,6 +48,12 @@ const RENAMES: [string, string][] = [
 const FOLDER_HOMES: Record<string, string> = {
   '/docs/brand': '/docs/brand/quickstart',
   '/docs/api-reference': '/docs/api-reference/overview',
+  // Each opens the first page of its sidebar group (all were 404 until 18/10/2026).
+  '/docs/brand/tracking': '/docs/brand/tracking/quickstart-integration',
+  '/docs/brand/billing': '/docs/brand/billing/overdue-policy',
+  '/docs/brand/cli': '/docs/brand/cli/quickstart',
+  '/docs/partners/quickstart': '/docs/partners/quickstart/create-account',
+  '/docs/api-reference/integrations': '/docs/api-reference/integrations/stripe',
 };
 
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and
