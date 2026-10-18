@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DASHBOARD_LABEL, HEADER_NAV, publicHref, LOGIN_LINK, SIGNUP_LINK, isHeaderMenu, type HeaderMenu } from '@/config/site-nav';
-import { useDashboardHref, useSignedIn } from '@/lib/signed-in';
+import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { NavIconSvg } from '@/components/blog/nav-icons';
@@ -171,7 +171,7 @@ export function BlogNav() {
   const drawerClose = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const dashboardHref = useDashboardHref();
-  const signedIn = useSignedIn();
+  const signedIn = dashboardHref !== null;
   const cta = dashboardHref ? { label: DASHBOARD_LABEL, href: dashboardHref } : SIGNUP_LINK;
 
   useEffect(() => {
