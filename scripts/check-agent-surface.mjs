@@ -8,6 +8,7 @@ import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
 import { parse as parseHtml } from 'parse5';
 import { generateLlms } from './gen-llms.js';
+import { compareMarkdown } from '../src/config/affitor-facts.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
@@ -63,6 +64,13 @@ function checkComparison(data, id) {
   for (const [, logo] of registry.matchAll(/logo: '([^']+)'/g)) {
     assert.ok(existsSync(join(ROOT, 'public/blog/logos', logo)), `comparison logo public/blog/logos/${logo} is missing`);
   }
+}
+
+/** The live program count and its day as a compare twin's Affitor column states them. */
+function twinPrograms(twin, id) {
+  const m = twin.match(/^\| Live programs on a marketplace \|.*\| (\d+)<br \/>([A-Z][a-z]{2} \d{1,2}, \d{4}) \|$/m);
+  assert.ok(m, `${id}: compare twin has no Affitor live programs cell`);
+  return { count: Number(m[1]), asOf: new Date(`${m[2]} UTC`).toISOString().slice(0, 10) };
 }
 
 /**
@@ -202,6 +210,8 @@ function inventory() {
       updated: data.updated ?? data.date,
       sourceDate: data.updated ?? data.date,
       body: markdown(data, id),
+      // Compare posts: the twin expands <AtAGlance> and <AlsoWorthALook /> with the program count read at build.
+      ...(data.layout === 'compare' ? { expand: (programs) => markdown({ ...data, raw: compareMarkdown(data.raw, programs) }, id) } : {}),
     };
   });
   return [...docs, ...posts, ...changelogInventory()];
@@ -569,7 +579,8 @@ function main() {
     assert.match(metadata.updated, ISO_DAY, `${page.id}: updated must be YYYY-MM-DD`);
     assert.doesNotMatch(metadata.updated, BUILD_TIME, `${page.id}: updated must not be build/mtime ISO`);
 
-    assert.equal(twin.slice(header[0].length), page.body, `${page.id}: twin differs from original source body`);
+    const body = page.expand ? page.expand(twinPrograms(twin, page.id)) : page.body;
+    assert.equal(twin.slice(header[0].length), body, `${page.id}: twin differs from original source body`);
     const position = corpus.indexOf(twin);
     assert.ok(position >= 0, `${page.id}: complete twin missing from llms-full.txt`);
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);

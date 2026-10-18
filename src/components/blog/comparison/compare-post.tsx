@@ -2,10 +2,9 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { blog } from '@/../.source/server';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { PER_PROGRAM_NOTE, PRICING, livePrograms, usd } from '@/config/affitor-facts';
+import { AFFITOR_HEAD, MARKETPLACE_URL, affitorColumn, alsoWorthALook, fetchLivePrograms, glanceNote } from '@/config/affitor-facts';
 import { resolveAuthor, type Author } from '@/config/authors';
 import { SIGNUP_LINK } from '@/config/site-nav';
-import { SITE_URL } from '@/lib/site';
 import { CompareToc } from './compare-toc';
 import { readTable, type Cell } from './table-data';
 
@@ -13,11 +12,9 @@ import { readTable, type Cell } from './table-data';
  * `layout: compare` posts (mock marketing-site C1, C2, P5, compare r3): the post answers its own title
  * first. Breadcrumb, category, H1, one byline, the answer, "At a glance" with Affitor as a reference
  * column, the A vs B sections, the verdict, "Also worth a look: Affitor", FAQ, Read more; the H2s on
- * the right. Affitor's numbers come from src/config/affitor-facts.ts, never from the post.
+ * the right. Affitor's numbers and words come from src/config/affitor-facts.js (also used by the .md
+ * twin), never from the post.
  */
-
-const longDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
 const PERSON = (
   <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -69,24 +66,6 @@ function Value({ cell }: { cell: Cell }) {
   );
 }
 
-/** Affitor's reference column, one cell per row label of the post's table. */
-function affitorColumn(programs: { count: number; asOf: string }): Record<string, Cell> {
-  const cell = (main: string, sub = ''): Cell => ({ main, sub });
-  return {
-    'Monthly fee': cell('$0', 'no subscription'),
-    'Fee on top': cell(`${PRICING.feePct}% of affiliate-driven sales`, `after the first ${usd(PRICING.freeUsd)}`),
-    'Free before fees': cell(`First ${usd(PRICING.freeUsd)}`, PER_PROGRAM_NOTE ? 'per program' : ''),
-    'Revenue cap': cell('None'),
-    'Partners on the entry plan': cell('Unlimited'),
-    'Live programs on a marketplace': cell(String(programs.count), formatDate(programs.asOf)),
-    'Payouts sent for you': cell('Yes, bank or Wise'),
-    'Tax forms': cell('W-8BEN, W-8BEN-E or W-9'),
-    Stripe: cell('Native, no code'),
-    'MCP server': cell('Yes, read-only'),
-    Importer: cell('None', 'invite partners by CSV'),
-  };
-}
-
 /**
  * "At a glance": the post's markdown table (row label | tool A | tool B, a tool name may link to its
  * pricing page) plus Affitor's column for reference. A row label Affitor has no value for fails the build.
@@ -94,8 +73,8 @@ function affitorColumn(programs: { count: number; asOf: string }): Record<string
  */
 export async function AtAGlance({ children, checked }: { children: ReactNode; checked: string }) {
   const { head, rows } = readTable(children);
-  const ours = affitorColumn(await livePrograms());
-  const tools = [...head.slice(1), { main: 'Affitor', sub: '', href: `${SITE_URL}/pricing` }];
+  const ours = affitorColumn(await fetchLivePrograms());
+  const tools = [...head.slice(1), AFFITOR_HEAD];
   return (
     <div className="compare-frame not-prose my-5">
       <div className="overflow-x-auto rounded-lg border border-fd-border" tabIndex={0} role="region" aria-label="At a glance">
@@ -121,7 +100,7 @@ export async function AtAGlance({ children, checked }: { children: ReactNode; ch
           <tbody className="[&>tr:last-child>td]:border-b-0">
             {rows.map((row) => {
               const ref = ours[row[0].main];
-              if (!ref) throw new Error(`At a glance: no Affitor value for row "${row[0].main}" (src/components/blog/comparison/compare-post.tsx)`);
+              if (!ref) throw new Error(`At a glance: no Affitor value for row "${row[0].main}" (src/config/affitor-facts.js)`);
               return (
                 <tr key={row[0].main}>
                   <td className={`${TD} font-semibold`}>{row[0].main}</td>
@@ -141,7 +120,7 @@ export async function AtAGlance({ children, checked }: { children: ReactNode; ch
       </div>
       <p className="mt-2 text-[13px] leading-[18px] text-fd-muted-foreground md:hidden">Swipe the table to see Affitor.</p>
       <p className="mt-2 text-[13px] leading-[18px] text-fd-muted-foreground">
-        Entry plans as listed on each pricing page on {longDate(checked)}. We make Affitor; its column is there for reference.
+        {glanceNote(checked)}
       </p>
     </div>
   );
@@ -152,14 +131,13 @@ const BUTTON =
 
 /** The paragraph under "Also worth a look: Affitor" and the site's sign-up button. */
 export async function AlsoWorthALook() {
-  const programs = await livePrograms();
+  const [before, link, after] = alsoWorthALook(await fetchLivePrograms());
   return (
     <>
       <p>
-        If neither fits, Affitor, which we make, has no subscription: it costs nothing until a program has made{' '}
-        {usd(PRICING.freeUsd)} through affiliates, then {PRICING.feePct}% of affiliate-driven sales. {programs.count} programs are
-        live on its <a href={`${SITE_URL}/marketplace`}>marketplace</a> (as of {formatDate(programs.asOf)}). It has no importer, so
-        partners get new links.
+        {before}
+        <a href={MARKETPLACE_URL}>{link}</a>
+        {after}
       </p>
       <div className="not-prose mt-4">
         <a href={SIGNUP_LINK.href} className={BUTTON}>
