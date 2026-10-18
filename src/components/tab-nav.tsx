@@ -25,22 +25,26 @@ type Tab = { title: string; href: string; urls: string[] };
 /**
  * The docs tab row. `tabs` come from the sidebar trees (docs-shell.tsx): a page belongs to the first
  * tab whose tree lists it, so a pointer link in a later tree (API Reference's MCP server) never
- * steals the page from Guides. Unknown pages (the docs 404) fall back to Guides. Changelog is its
- * own zone (affitor.com/changelog), so it is a plain link here.
+ * steals the page from Guides. Unknown pages (the docs 404) light no tab. Changelog is its own zone
+ * (affitor.com/changelog), so it is a plain link here.
  */
 export function TabNav({ tabs }: { tabs: Tab[] }) {
   const pathname = (usePathname() || '/').replace(/(.)\/$/, '$1');
   const all = [...tabs, { title: 'Changelog', href: '/changelog', urls: [] }];
-  const activeIdx = Math.max(tabs.findIndex((tab) => tab.urls.includes(pathname)), 0);
-  // Phones: the row scrolls sideways, so a later tab (Use cases) can sit past the edge; bring the
-  // active one into view.
+  const activeIdx = tabs.findIndex((tab) => tab.urls.includes(pathname));
+  // Phones: the row scrolls sideways, so a later tab (Use cases) can sit past the right edge, and
+  // after that an earlier one (Guides, on Back) past the left edge; bring the active one into view.
+  // Only the row scrolls: no focus move, no scrollIntoView.
   const row = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const active = row.current?.querySelector('[aria-current="true"]');
     if (!row.current || !active) return;
-    const overflow = active.getBoundingClientRect().right - row.current.getBoundingClientRect().right;
-    if (overflow > 0) row.current.scrollLeft += overflow + 20;
-  }, [pathname]);
+    const box = row.current.getBoundingClientRect();
+    const tab = active.getBoundingClientRect();
+    if (tab.right > box.right) row.current.scrollLeft += tab.right - box.right + 20;
+    // The first tab goes back to the start of the row, menu button included.
+    else if (tab.left < box.left) row.current.scrollLeft = activeIdx === 0 ? 0 : row.current.scrollLeft - (box.left - tab.left) - 20;
+  }, [pathname, activeIdx]);
 
   return (
     <nav aria-label="Docs sections" className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">

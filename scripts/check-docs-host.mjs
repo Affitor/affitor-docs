@@ -129,6 +129,7 @@ function invariants() {
     ['/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
     ['/advertisers.md', '/docs/brand/quickstart.md'],
     ['/brand.md', '/docs/brand/quickstart.md'],
+    ['/api-reference.md', '/docs/api-reference/overview.md'],
     ['/advertisers/tracking/pageview-tracker-click.md', '/docs/brand/tracking/click-tracking.md'],
     ['/getting-started/what-is-affitor.md', '/docs/index.md'],
     ['/errors.md', '/docs/api-reference/errors.md'],
@@ -157,6 +158,10 @@ function invariants() {
       ['/docs/advertisers.md', '/docs/brand/quickstart.md'],
       ['/docs/brand', '/docs/brand/quickstart'],
       ['/docs/brand.md', '/docs/brand/quickstart.md'],
+      // /docs/api-reference has no page either: it opens the API overview.
+      ['/docs/api-reference', '/docs/api-reference/overview'],
+      ['/docs/api-reference.md', '/docs/api-reference/overview.md'],
+      ['/docs/api-reference?x=1', '/docs/api-reference/overview?x=1'],
       ['/docs/errors?x=1', '/docs/api-reference/errors?x=1'],
       ['/docs/getting-started/what-is-affitor', '/docs'],
       ['/docs/getting-started/glossary', '/docs/support/glossary'],
@@ -166,6 +171,7 @@ function invariants() {
       ['/blog/free-affiliate-software-for-saas.md', '/blog/best-affiliate-software-saas.md'],
     ]) check(`${host}${path} -> 308 ${location} on the same host`, redirects(host, path, `https://${host}${location}`, {}, 308));
     check(`${host}/docs/advertisers-x is not a rename`, passes(host, '/docs/advertisers-x'));
+    check(`${host}/docs/api-reference/errors is not a folder home`, passes(host, '/docs/api-reference/errors'));
     // The old docs changelog moved to the zone: absolute, permanent, on every host.
     check(`${host}/docs/changelog -> 301 affitor.com/changelog`, redirects(host, '/docs/changelog', 'https://affitor.com/changelog'));
     check(`${host}/docs/changelog.md -> 301 affitor.com/changelog.md`, redirects(host, '/docs/changelog.md', 'https://affitor.com/changelog.md'));
@@ -198,6 +204,7 @@ mode(undefined, () => {
   check('off: renamed root page -> 308 to its root-layout path', redirects(DOCS, '/advertisers/quickstart', 'https://docs.affitor.com/brand/quickstart', {}, 308));
   check('off: /advertisers -> 308 /brand/quickstart', redirects(DOCS, '/advertisers', 'https://docs.affitor.com/brand/quickstart', {}, 308));
   check('off: /brand -> 308 /brand/quickstart', redirects(DOCS, '/brand', 'https://docs.affitor.com/brand/quickstart', {}, 308));
+  check('off: /api-reference -> 308 /api-reference/overview', redirects(DOCS, '/api-reference', 'https://docs.affitor.com/api-reference/overview', {}, 308));
   check('off: /errors -> 308 /api-reference/errors', redirects(DOCS, '/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
   check('off: /docs/errors -> 308 /api-reference/errors', redirects(DOCS, '/docs/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
   check('off: /getting-started/what-is-affitor -> 308 /', redirects(DOCS, '/getting-started/what-is-affitor', 'https://docs.affitor.com/', {}, 308));
@@ -224,6 +231,7 @@ for (const status of ['301', '302']) {
     check(`${status}: renamed /docs/advertisers/x in one hop`, to('/docs/advertisers/quickstart', 'https://affitor.com/docs/brand/quickstart'));
     check(`${status}: /advertisers lands on the brand quickstart in one hop`, to('/advertisers', 'https://affitor.com/docs/brand/quickstart'));
     check(`${status}: /brand lands on the brand quickstart`, to('/brand', 'https://affitor.com/docs/brand/quickstart'));
+    check(`${status}: /api-reference lands on the API overview`, to('/api-reference', 'https://affitor.com/docs/api-reference/overview'));
     check(`${status}: /errors in one hop`, to('/errors', 'https://affitor.com/docs/api-reference/errors'));
     check(`${status}: /getting-started/what-is-affitor in one hop`, to('/getting-started/what-is-affitor', 'https://affitor.com/docs'));
     check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
