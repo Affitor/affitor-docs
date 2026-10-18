@@ -2,7 +2,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { blog } from '@/../.source/server';
 import { AskAiRow } from '@/components/blog/ask-ai-row';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { AFFITOR_HEAD, MARKETPLACE_URL, affitorColumn, alsoWorthALook, fetchLivePrograms, glanceNote } from '@/config/affitor-facts';
+import { AFFITOR_HEAD, MARKETPLACE_URL, PROGRAMS, affitorColumn, alsoWorthALook, glanceNote } from '@/config/affitor-facts';
 import { resolveAuthor, type Author } from '@/config/authors';
 import { SIGNUP_LINK } from '@/config/site-nav';
 import { CompareToc } from './compare-toc';
@@ -71,9 +71,9 @@ function Value({ cell }: { cell: Cell }) {
  * pricing page) plus Affitor's column for reference. A row label Affitor has no value for fails the build.
  * Below md the table scrolls inside its box; the page never scrolls sideways.
  */
-export async function AtAGlance({ children, checked }: { children: ReactNode; checked: string }) {
+export function AtAGlance({ children, checked }: { children: ReactNode; checked: string }) {
   const { head, rows } = readTable(children);
-  const ours = affitorColumn(await fetchLivePrograms());
+  const ours = affitorColumn(PROGRAMS);
   const tools = [...head.slice(1), AFFITOR_HEAD];
   return (
     <div className="compare-frame not-prose my-5">
@@ -126,12 +126,9 @@ export async function AtAGlance({ children, checked }: { children: ReactNode; ch
   );
 }
 
-const BUTTON =
-  'inline-flex h-8 items-center whitespace-nowrap rounded-md bg-[#155DFC] px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#1047C9]';
-
 /** The paragraph under "Also worth a look: Affitor" and the site's sign-up button. */
-export async function AlsoWorthALook() {
-  const [before, link, after] = alsoWorthALook(await fetchLivePrograms());
+export function AlsoWorthALook() {
+  const [before, link, after] = alsoWorthALook(PROGRAMS);
   return (
     <>
       <p>
@@ -140,7 +137,7 @@ export async function AlsoWorthALook() {
         {after}
       </p>
       <div className="not-prose mt-4">
-        <a href={SIGNUP_LINK.href} className={BUTTON}>
+        <a href={SIGNUP_LINK.href} className="aff-btn aff-btn-primary">
           {SIGNUP_LINK.label}
         </a>
       </div>

@@ -1,7 +1,7 @@
 import { source } from '@/lib/source';
 import { blog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
-import { compareMarkdown, fetchLivePrograms } from '@/config/affitor-facts';
+import { PROGRAMS, compareMarkdown } from '@/config/affitor-facts';
 import { CHANGELOG_SUB, CHANGELOG_URL, aiContext, entrySlug, entryUrl, openDeprecations, preamble, sortedEntries } from '@/lib/changelog';
 import { DOCS_URL, SITE_URL } from '@/lib/site';
 
@@ -33,7 +33,7 @@ async function renderBody(slug: string[]): Promise<string | null> {
     if (!post) return null;
     const raw = await post.getText('raw');
     // A compare post's twin carries Affitor's column and paragraph, which the page draws from config.
-    const body = post.layout === 'compare' ? compareMarkdown(raw, await fetchLivePrograms()) : raw;
+    const body = post.layout === 'compare' ? compareMarkdown(raw, PROGRAMS) : raw;
     return toMarkdown(post.title, post.description, body);
   }
 

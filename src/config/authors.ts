@@ -12,9 +12,13 @@ export const AUTHORS: Author[] = [
 
 /**
  * An id from AUTHORS, or an older name entry such as "Son Piaz, Founder": the title after the comma
- * is dropped and the name is matched against the registry.
+ * is dropped and the name is matched against the registry. Any other entry fails the build, so a
+ * mistyped id never reaches the byline.
  */
 export function resolveAuthor(entry: string): Author {
   const name = entry.split(',')[0].trim();
-  return AUTHORS.find((a) => a.id === entry || a.name === name) ?? { id: entry, name };
+  const author = AUTHORS.find((a) => a.id === entry || a.name === name);
+  if (author) return author;
+  if (!entry.includes(',')) throw new Error(`Unknown author "${entry}": add it to src/config/authors.ts`);
+  return { id: entry, name };
 }

@@ -8,7 +8,7 @@ import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
 import { parse as parseHtml } from 'parse5';
 import { generateLlms } from './gen-llms.js';
-import { compareMarkdown } from '../src/config/affitor-facts.js';
+import { PROGRAMS, compareMarkdown, day } from '../src/config/affitor-facts.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
@@ -66,11 +66,14 @@ function checkComparison(data, id) {
   }
 }
 
-/** The live program count and its day as a compare twin's Affitor column states them. */
-function twinPrograms(twin, id) {
-  const m = twin.match(/^\| Live programs on a marketplace \|.*\| (\d+)<br \/>([A-Z][a-z]{2} \d{1,2}, \d{4}) \|$/m);
-  assert.ok(m, `${id}: compare twin has no Affitor live programs cell`);
-  return { count: Number(m[1]), asOf: new Date(`${m[2]} UTC`).toISOString().slice(0, 10) };
+/**
+ * A compare twin: no component tag left, and the Affitor column states the count in
+ * src/config/programs.json (written once per build by scripts/fetch-programs.mjs).
+ */
+function checkCompareTwin(twin, id) {
+  assert.doesNotMatch(twin, /<(AtAGlance|AlsoWorthALook)\b/, `${id}: compare twin still has an <AtAGlance> or <AlsoWorthALook> tag`);
+  const cell = `| ${PROGRAMS.count}<br />${day(PROGRAMS.asOf)} |`;
+  assert.ok(twin.split('\n').some((line) => line.startsWith('| Live programs on a marketplace |') && line.endsWith(cell)), `${id}: compare twin count differs from src/config/programs.json`);
 }
 
 /**
@@ -209,9 +212,9 @@ function inventory() {
       id, type: 'blog', url: `${ORIGIN}/${id}`,
       updated: data.updated ?? data.date,
       sourceDate: data.updated ?? data.date,
-      body: markdown(data, id),
-      // Compare posts: the twin expands <AtAGlance> and <AlsoWorthALook /> with the program count read at build.
-      ...(data.layout === 'compare' ? { expand: (programs) => markdown({ ...data, raw: compareMarkdown(data.raw, programs) }, id) } : {}),
+      // Compare posts: the twin expands <AtAGlance> and <AlsoWorthALook /> with the count in programs.json.
+      body: data.layout === 'compare' ? markdown({ ...data, raw: compareMarkdown(data.raw, PROGRAMS) }, id) : markdown(data, id),
+      compare: data.layout === 'compare',
     };
   });
   return [...docs, ...posts, ...changelogInventory()];
@@ -579,8 +582,8 @@ function main() {
     assert.match(metadata.updated, ISO_DAY, `${page.id}: updated must be YYYY-MM-DD`);
     assert.doesNotMatch(metadata.updated, BUILD_TIME, `${page.id}: updated must not be build/mtime ISO`);
 
-    const body = page.expand ? page.expand(twinPrograms(twin, page.id)) : page.body;
-    assert.equal(twin.slice(header[0].length), body, `${page.id}: twin differs from original source body`);
+    if (page.compare) checkCompareTwin(twin, page.id);
+    assert.equal(twin.slice(header[0].length), page.body, `${page.id}: twin differs from original source body`);
     const position = corpus.indexOf(twin);
     assert.ok(position >= 0, `${page.id}: complete twin missing from llms-full.txt`);
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);

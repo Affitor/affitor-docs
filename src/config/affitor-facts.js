@@ -13,27 +13,9 @@ export const PRICING = { freeUsd: 10000, feePct: 3.5 };
 // "per program" under "First $10,000": waits on Sơn's `per program` answer. true shows the note.
 export const PER_PROGRAM_NOTE = true;
 
-// Used when the marketplace cannot be read at build time, so the build never breaks.
-const PROGRAMS_FALLBACK = { count: 59, asOf: '2026-10-17' };
-
-/** @type {Promise<{ count: number, asOf: string }> | undefined} */
-let livePrograms;
-
-/**
- * Live programs on the Affitor marketplace (`total` of the public list endpoint) and the day it was
- * read, fetched once per build process. Never the OpenAffiliate count: that directory lists programs
- * not on Affitor.
- * @returns {Promise<{ count: number, asOf: string }>}
- */
-export function fetchLivePrograms() {
-  livePrograms ??= fetch('https://api.affitor.com/api/marketplace/programs?limit=1', { signal: AbortSignal.timeout(5000) })
-    .then((res) => (res.ok ? res.json() : null))
-    .then((body) =>
-      Number.isInteger(body?.total) && body.total > 0 ? { count: body.total, asOf: new Date().toISOString().slice(0, 10) } : PROGRAMS_FALLBACK,
-    )
-    .catch(() => PROGRAMS_FALLBACK);
-  return livePrograms;
-}
+// Live programs on the Affitor marketplace and the day they were read: written once per build by
+// scripts/fetch-programs.mjs (prebuild); the committed file is the dated fallback.
+export { default as PROGRAMS } from './programs.json' with { type: 'json' };
 
 /** @param {number} n */
 export const usd = (n) => `$${n.toLocaleString('en-US')}`;
