@@ -94,5 +94,11 @@
     "why": "CLI 0.4.5 reads stripe_account_bound for a certain runtime key. A true binding skips injection; unknown/false or uncertain env keeps unattended webhook unchanged. Existing calls are not removed.",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "Give your partners another way to earn from SaaS founders they already know",
+    "why": "The sharing dialog introduces a public opportunity and does not promise a reward. Existing referral program terms remain separate.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
