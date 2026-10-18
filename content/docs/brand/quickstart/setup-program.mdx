@@ -43,6 +43,10 @@ The **Business** step (**Your business**) sets what partners see first.
 | **Logo** | No | PNG, JPG or SVG, square, under 5 MB |
 | **Tagline** | No | In **Program settings** → **Business** only: one line on your marketplace card, up to 160 characters |
 
+An uploaded **Logo** takes precedence over any website icon. For a live program listed in the marketplace without an upload, Affitor may find a supported icon declared by your HTTPS **Website**. Discovery runs in the background and can take several checks; opening the marketplace does not start it. If no suitable icon is found, your program keeps its initials.
+
+Keep **Website** accurate, or upload a **Logo** to choose the image yourself. An icon saved from the previous website stops appearing when you switch to a different website.
+
 **Continue** saves only the fields you changed and moves on once every save succeeds; an error shows under its field. The step is done once the program has a business name and a website.
 
 ## Step 2: Set your commission
@@ -190,7 +194,9 @@ Partners see a **Verified** mark on live programs that Affitor has checked, and 
 - Affitor has recorded at least one real click, signup or sale.
 - No Affitor invoice is overdue.
 
-Once a partner has been paid a commission through Affitor, the mark also lists **Partners have already been paid through Affitor**. If a check stops holding, for example an invoice goes overdue, or (without Stripe connected) your server sends no real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program. The CLI's **Integration verified** message is a different check: it tests your install and does not count toward the mark.
+The **Affitor Refer Program** meets the connection check through Affitor's built-in referral flow. The other Verified requirements still apply.
+
+Once a partner has been paid a commission through Affitor, the mark also lists **Partners have already been paid through Affitor**. If a check stops holding, for example an invoice goes overdue, or a program relying on Server API sends no qualifying real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program. The CLI's **Integration verified** message is a different check: it tests your install and does not count toward the mark.
 
 ## Before you invite partners
 

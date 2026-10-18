@@ -106,5 +106,11 @@
     "why": "An empty Bearer token on POST /api/v1/track/refund answers 401 `Empty Bearer token` (CMS v3.16.140).",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "\\(without Stripe connected\\) your server sends no real sale for 90 days",
+    "why": "Scope the 90-day sale expiry example to programs relying on Server API. The platform referral program can satisfy the connection check with its built-in referral flow; its other Verified checks still apply.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
