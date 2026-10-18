@@ -698,7 +698,9 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
    card grid 3 / 2 / 1 columns.
    ═══════════════════════════════════════════════════════ */
 #nd-docs-layout:has(:is(.aff-help, .aff-usecases, .aff-usecase)) { --fd-sidebar-width: 0px; }
-#nd-docs-layout:has(:is(.aff-help, .aff-usecases, .aff-usecase)) > div[class*="grid-area:sidebar"] { display: none !important; }
+/* The sidebar column is Fumadocs' [data-sidebar-placeholder] (a stable data hook, not its Tailwind
+   classes); check-agent-surface.mjs pins it as a child of #nd-docs-layout on these pages. */
+#nd-docs-layout:has(:is(.aff-help, .aff-usecases, .aff-usecase)) > [data-sidebar-placeholder] { display: none !important; }
 #nd-page:is(.aff-help, .aff-usecases) {
   max-width: none;
   padding: 0 0 64px;
@@ -858,12 +860,21 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
   line-height: 20px;
   color: var(--color-fd-muted-foreground);
 }
+.aff-help-empty button {
+  margin-left: 6px;
+  font-weight: 500;
+  color: var(--color-fd-primary);
+  cursor: pointer;
+}
+.aff-help-empty button:hover { text-decoration: underline; }
 .aff-help-contact {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 12px;
   margin-top: 40px;
+  padding: 0 16px;
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;

@@ -47,6 +47,7 @@ const RENAMES: [string, string][] = [
 // /docs/advertisers/<page> keeps its /docs/brand/<page>. Drop an entry if its folder gets an index page.
 const FOLDER_HOMES: Record<string, string> = {
   '/docs/brand': '/docs/brand/quickstart',
+  '/docs/api-reference': '/docs/api-reference/overview',
 };
 
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and

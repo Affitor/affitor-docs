@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
+import { parse as parseHtml } from 'parse5';
 import { generateLlms } from './gen-llms.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -109,6 +110,11 @@ function useCaseCards(source) {
   const pages = source.getPages().filter((page) => page.data.use_case).map((page) => page.url);
   assert.deepEqual([...urls].sort(), pages.sort(), 'content/docs/use-cases/index.mdx must list every use case page (use_case frontmatter), and only those');
   for (const url of urls) assert.match(url, /^\/docs\/use-cases\/[^/]+$/, `${url}: use case pages live in content/docs/use-cases`);
+  // And the reverse: a page in the folder without use_case would render as an ordinary doc page
+  // inside the Use cases tab, with no card on the home.
+  for (const page of source.getPages().filter((page) => page.url.startsWith('/docs/use-cases/'))) {
+    assert.ok(page.data.use_case, `${page.url}: a page in content/docs/use-cases needs use_case frontmatter (name, strip) and a card in the index`);
+  }
   return listed.map((page) => `- [${page.data.title}](${ORIGIN}${page.url}.md): ${page.data.description}`);
 }
 
@@ -403,6 +409,19 @@ function checkNav() {
     ['/docs/use-cases/sell-on-stripe', 'Use cases', null],
   ];
   const html = (route) => read(join(APP, `${route.slice(1)}.html`));
+  // The help and use cases pages drop the left nav with one rule in globals.css that hides Fumadocs'
+  // sidebar column by its data hook. Pin both halves: the rule ships in the built CSS, and on each
+  // such page the hook is still a child of #nd-docs-layout (a Fumadocs upgrade that renames or moves
+  // it would bring the left nav back silently).
+  const HIDE_NAV = '#nd-docs-layout:has(:is(.aff-help,.aff-usecases,.aff-usecase))>[data-sidebar-placeholder]{display:none!important}';
+  const css = walk(join(ROOT, '.next/static')).filter((file) => file.endsWith('.css')).map(read).join('\n');
+  assert.ok(css.includes(HIDE_NAV), `built CSS lacks ${HIDE_NAV} (globals.css, help and use cases left nav)`);
+  const navHidden = (route) => {
+    const find = (node) => (node.attrs?.some((a) => a.name === 'id' && a.value === 'nd-docs-layout') ? node : node.childNodes?.map(find).find(Boolean));
+    const layout = find(parseHtml(html(route)));
+    assert.ok(layout, `${route}: no #nd-docs-layout`);
+    assert.ok(layout.childNodes.some((node) => node.attrs?.some((a) => a.name === 'data-sidebar-placeholder')), `${route}: #nd-docs-layout has no [data-sidebar-placeholder] child, so globals.css no longer hides the left nav`);
+  };
   const navs = (route, label) => [...html(route).matchAll(new RegExp(`<nav\\b[^>]*\\baria-label="${label}"[^>]*>([\\s\\S]*?)</nav>`, 'g'))].map((m) => m[1]);
   const current = (nav) => [...nav.matchAll(/<a\b[^>]*\baria-current="true"[^>]*>([^<]*)</g)].map((m) => decodeEntities(m[1]));
   for (const [route, tab, audience] of cases) {
@@ -427,6 +446,7 @@ function checkNav() {
   const index = document(join(ROOT, 'content/docs/help/index.mdx')).articles.map((entry) => `/docs/${entry.page}`);
   assert.deepEqual(cards, index, '/docs/help: cards');
   assert.match(help, /<article\b[^>]*\bclass="[^"]*\baff-help\b/, '/docs/help: article must carry .aff-help (no left nav)');
+  navHidden('/docs/help');
   // The use cases home prerenders one card per listed use case, in index order, with no left nav;
   // each use case page drops the left nav and the rail, and its breadcrumb leads back home.
   const home = html('/docs/use-cases');
@@ -434,9 +454,11 @@ function checkNav() {
   const listed = document(join(ROOT, 'content/docs/use-cases/index.mdx')).use_cases.map((path) => `/docs/${path}`);
   assert.deepEqual(useCases, listed, '/docs/use-cases: cards');
   assert.match(home, /<article\b[^>]*\bclass="[^"]*\baff-usecases\b/, '/docs/use-cases: article must carry .aff-usecases (no left nav)');
+  navHidden('/docs/use-cases');
   for (const route of listed) {
     const page = html(route);
     assert.match(page, /<article\b[^>]*\bclass="[^"]*\baff-usecase\b/, `${route}: article must carry .aff-usecase (no left nav)`);
+    navHidden(route);
     assert.doesNotMatch(page, /\bid="nd-toc"/, `${route}: no rail`);
     const crumbs = navs(route, 'Breadcrumb');
     assert.equal(crumbs.length, 1, `${route}: expected one breadcrumb`);
@@ -557,7 +579,7 @@ function main() {
   const navPages = checkNav();
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
-  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; use case pages have no left nav or rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
+  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; help and use cases pages hide the left nav (built CSS rule + sidebar hook); use case pages have no rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }
