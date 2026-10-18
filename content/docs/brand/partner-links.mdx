@@ -76,6 +76,15 @@ https://brand.example/pricing?plan=pro&via=partner-code
 
 A program may use `aff` instead of `via`. The saved link is authoritative; partners should copy it from the list rather than construct a URL from the preview.
 
+The short-format preview puts the page before the referral code, with the code last:
+
+```text
+https://brand.example/r/pricing/partner-code?plan=pro
+https://brand.example/r/guides/getting-started/partner-code
+```
+
+The page can contain multiple path segments. The default homepage link keeps the single-segment `/r/partner-code` form.
+
 The **Short** preference does not install the extended redirect handler needed for page links. An existing `/r/` homepage redirect alone is insufficient. Until the handler is verified, partners receive query links and the short-format preview is marked not ready.
 
 ## Step 5: Check tracking on the destinations
