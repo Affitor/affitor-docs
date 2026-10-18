@@ -5,6 +5,8 @@
     "index",
     "sell-on-stripe",
     "any-payment-provider",
-    "subscriptions"
+    "subscriptions",
+    "partner-payouts",
+    "ai-agent-setup"
   ]
 }

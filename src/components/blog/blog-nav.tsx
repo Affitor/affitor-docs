@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DASHBOARD_LABEL, HEADER_NAV, publicHref, LOGIN_LINK, SIGNUP_LINK, isHeaderMenu, type HeaderMenu } from '@/config/site-nav';
 import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
-import { ThemeSwitch } from '@/components/theme-switch';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { NavIconSvg } from '@/components/blog/nav-icons';
 
 /**
@@ -292,9 +292,9 @@ export function BlogNav() {
               )}
             </nav>
 
-            {/* Desktop: theme switch, Log in, primary CTA */}
+            {/* Desktop: theme toggle, Log in, primary CTA */}
             <div className="hidden lg:flex items-center gap-2">
-              <ThemeSwitch />
+              <ThemeToggle />
               {!dashboardHref && (
                 <a
                   href={LOGIN_LINK.href}
@@ -311,11 +311,11 @@ export function BlogNav() {
               </a>
             </div>
 
-            {/* Below lg: the CTA and the drawer button */}
+            {/* Below lg: the CTA and the drawer button. Under 360 px only the drawer button, which holds the CTA too. */}
             <div className="flex lg:hidden items-center gap-2">
               <a
                 href={cta.href}
-                className="flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
+                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
               >
                 {cta.label}
               </a>
@@ -374,7 +374,7 @@ export function BlogNav() {
               ),
             )}
             <div className="py-3">
-              <ThemeSwitch large />
+              <ThemeToggle label />
             </div>
             <div className="mt-2 flex flex-col gap-2">
               <a

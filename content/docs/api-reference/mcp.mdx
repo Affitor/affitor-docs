@@ -2,7 +2,7 @@
 title: Affitor MCP server
 description: Connect Claude, ChatGPT, Cursor, VS Code, Perplexity, Claude Code, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Sign in with your Affitor account; access is read-only.
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 The Affitor MCP server lets an AI app read your Affitor data: a brand's program, partners, applications, commissions and billing, or a partner's programs, links, earnings, commissions and payouts. It is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server. You sign in with your Affitor account, no API key needed, and the connection is read-only: it cannot change data or move money.
@@ -38,7 +38,7 @@ https://mcp.affitor.com/mcp
 
 ## Connect your AI app
 
-In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, Cursor, Claude Code and Codex. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**, and on the program's **Tracking** step under **Your agent** › **Connect your AI**. Partners find it in the **⋯** menu next to their name, at the bottom of the left menu, under **Integrations**.
+In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, Cursor, Claude Code and Codex. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**, and on the program's **Tracking** step under **Your agent** › **Connect your AI**. Partners click their name at the bottom of the left menu to open the account menu, then **Integrations**.
 
 <CodeGroup items={[
   {
@@ -177,7 +177,7 @@ To give an app a second program, connect again and pick that program. Each conne
   ]}
   dashboard={[
     "Brands: the connection appears on **Developers** › **AI agents** (program menu › **Program settings**), with **Added** and **Last used**",
-    "Partners: the connection appears on **Integrations**, in the **⋯** menu next to your name",
+    "Partners: the connection appears on **Integrations**, in the account menu that opens from your name",
   ]}
   ifNotWorking={[
     "**This request has expired**: start the connection again from your AI app",
@@ -269,7 +269,7 @@ Each server instance keeps its own request counts in memory, so the request limi
 ### Remove access
 
 - **Brands:** program menu › **Program settings**, then **Developers** › **AI agents**, lists the program's connections under **Connections** with **Client**, **Connected by**, **Added**, **Last used** and **Access**. Click **Remove** on your own connection. A program owner can remove any member's connection to that program.
-- **Partners:** the **⋯** menu next to your name › **Integrations**, then **Remove**.
+- **Partners:** your name at the bottom of the left menu › **Integrations**, then **Remove**.
 
 Removal is immediate: the app's tokens are deleted and its next request gets `401`.
 

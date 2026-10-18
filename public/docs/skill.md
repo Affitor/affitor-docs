@@ -229,6 +229,30 @@ await affitor.trackSale({
 
 Many brands have **no browser tag at all** and track entirely server-side. This branch is fully supported: bind the customer at lead time (§5b), then report sales by `customer_key` alone. Authenticated with the Bearer key.
 
+With no tag, nothing sets the `affitor_click_id` cookie, and a first lead without a click id answers 400. So record the click on your server when a visitor lands with `?via=` or `?aff=`, keep the `click_id` in your own first-party cookie or session, and send it as `clickId` in §5b. Send the id you already hold as `existingClickId`, so a visitor who comes back through another partner keeps their first partner (the same rule the browser tracker follows):
+
+```ts
+// landing request handler, only when the URL carries ?via= or ?aff=
+const code = url.searchParams.get('aff') ?? url.searchParams.get('via'); // same order as the server
+const stored = readClickCookie(req); // { clickId, code } saved on an earlier visit, if any
+if (stored?.code !== code) {        // same partner as last time (a reload): record nothing, like the tracker
+  const res = await affitor.trackClick({
+    affiliateUrl: url.href,         // includes ?via=<code> or ?aff=<code>
+    pageUrl: url.href,
+    referrerUrl: req.headers.referer,
+    existingClickId: stored?.clickId, // keeps the customer and its first partner
+  });
+  const data = res.data as { click_id?: string; cookie_window_days?: number } | null;
+  if (data?.click_id) {
+    // save { clickId: data.click_id, code } for data.cookie_window_days days; pass clickId to trackLead
+  }
+}
+```
+
+The SDK call sends no key, so the click gets your server's location and User-Agent. For your visitor's, use raw HTTP: `POST /api/v1/track/click` with `affiliate_url`, `existing_click_id`, `user_agent`, plus the Bearer key and `visitor_ip`. See `/docs/api-reference/track-click`.
+
+Then report each sale:
+
 ```bash
 curl -X POST "$AFFITOR_API_BASE/api/v1/track/sale" \
   -H "Authorization: Bearer $AFFITOR_API_KEY" \
@@ -371,7 +395,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
-| `/api/v1/track/click` | POST | none (public) | Record a click (`?aff=` short code proves attribution). Usually the browser tracker, not you. |
+| `/api/v1/track/click` | POST | none (public; Bearer key optional, for `visitor_ip`) | Record a click (`?via=` or `?aff=` code proves attribution). Usually the browser tracker; your server when there is no browser tag (§6c). |
 | `/api/v1/track/lead` | POST | Bearer (server) or none (browser) | Tie `customer_key` to the click at signup |
 | `/api/v1/track/sale` | POST | Bearer | Report revenue; Affitor creates the commission |
 | `/api/v1/track/refund` | POST | Bearer | Reverse a commission on refund/chargeback |

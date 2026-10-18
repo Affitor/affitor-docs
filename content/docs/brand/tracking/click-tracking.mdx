@@ -20,7 +20,7 @@ https://yoursite.com?aff=PARTNER123
 
 the tracker:
 
-1. detects the `?via=` or `?aff=` parameter (which one your links use is the **Partner link parameter** on **Tracking**; the tracker reads both)
+1. detects the `?via=` or `?aff=` parameter (which one your links use is the **Partner link parameter** on **Tracking**; the tracker reads both, and `aff` wins when a URL has both)
 2. sends click data to Affitor
 3. creates or updates the tracked customer relationship
 4. stores `affitor_click_id` in a first-party cookie

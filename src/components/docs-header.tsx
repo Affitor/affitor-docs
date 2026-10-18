@@ -3,18 +3,11 @@
 import { DASHBOARD_LABEL, LOGIN_LINK, SIGNUP_LINK } from '@/config/site-nav';
 import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
-import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useSearchContext } from 'fumadocs-ui/contexts/search';
 
 export function DocsHeader() {
-  const { setTheme, resolvedTheme } = useTheme();
   const { setOpenSearch } = useSearchContext();
-  // The theme is only known in the browser: render the server's icon until mounted, or
-  // hydration fails for visitors whose OS is dark (React #418).
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const isDark = mounted && resolvedTheme === 'dark';
   const dashboardHref = useDashboardHref();
   const cta = dashboardHref ? { label: DASHBOARD_LABEL, href: dashboardHref } : SIGNUP_LINK;
 
@@ -55,12 +48,13 @@ export function DocsHeader() {
         </button>
       </div>
 
-      {/* Right: Log in + CTA (Go to Dashboard when signed in) + theme toggle (Changelog lives in the tab row, not here) */}
+      {/* Right: Log in + CTA (Go to Dashboard when signed in) + theme toggle (Changelog lives in the tab row, not here).
+          Under 360 px only the CTA stays, so the header fits a 320 px screen; the theme follows the system there. */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {!dashboardHref && (
           <a
             href={LOGIN_LINK.href}
-            className="whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
+            className="max-[359px]:hidden whitespace-nowrap text-[13px] font-medium text-fd-muted-foreground hover:text-fd-foreground transition-colors"
           >
             {LOGIN_LINK.label}
           </a>
@@ -72,39 +66,7 @@ export function DocsHeader() {
           {cta.label}
         </a>
 
-        {/* Theme toggle — Son's existing sun/moon icon, kept verbatim */}
-        <button
-          onClick={() =>
-            setTheme(isDark ? 'light' : 'dark')
-          }
-          className="rounded-md p-1.5 text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted transition-colors"
-          aria-label="Toggle theme"
-        >
-          {isDark ? (
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-            </svg>
-          ) : (
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          )}
-        </button>
+        <ThemeToggle className="max-[359px]:hidden" />
       </div>
       </div>
     </header>

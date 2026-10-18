@@ -78,6 +78,13 @@ const ALWAYS = [
   [PROXY, '/docs/api-reference', 308, '/docs/api-reference/overview'],
   [PROXY, '/docs/api-reference.md', 308, '/docs/api-reference/overview.md'],
   [PROXY, '/docs/api-reference/overview', 200, null, 'text/html'],
+  // Sub-folders with no page open their first sidebar page (all were 404 until 18/10/2026).
+  [PROXY, '/docs/brand/tracking', 308, '/docs/brand/tracking/quickstart-integration'],
+  [PROXY, '/docs/brand/billing', 308, '/docs/brand/billing/overdue-policy'],
+  [PROXY, '/docs/brand/cli', 308, '/docs/brand/cli/quickstart'],
+  [PROXY, '/docs/partners/quickstart', 308, '/docs/partners/quickstart/create-account'],
+  [PROXY, '/docs/api-reference/integrations', 308, '/docs/api-reference/integrations/stripe'],
+  [PROXY, '/docs/brand/tracking/quickstart-integration', 200, null, 'text/html'],
   [DOCS, '/api-reference.md', 200, null, 'text/markdown'],
   [PROXY, '/docs/errors', 308, '/docs/api-reference/errors'],
   [PROXY, '/docs/getting-started/glossary', 308, '/docs/support/glossary'],

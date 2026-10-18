@@ -78,6 +78,12 @@
     "allow": []
   },
   {
+    "pattern": "unless you approve, reject,? or extend the hold",
+    "why": "Extending the hold only moves the approval date; the commission still auto-approves when the extended hold ends. Test and own-team commissions are never auto-approved; $0 commissions after the commission term are not auto-approved while they stay at $0.",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
     "pattern": "Every click and sale through it is credited to you|Affitor tracks every click and conversion on it|All of them track the same way|Every click and sale through your link is tracked to you|Affitor records every click on it",
     "why": "A saved referral link still needs installed landing tracking and the signup/sale integrations; a short redirect is not a tracker or a guarantee that every visit or conversion is attributed. Page-link previews are not saved share URLs.",
     "since": "2026-10-18",
