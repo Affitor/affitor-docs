@@ -7,7 +7,7 @@ last_updated: 2026-10-17
 
 `POST /api/v1/track/refund`
 
-Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount). Once all of the sale is refunded, Affitor reverses the commission (`reversed`). A partial refund reduces a commission already approved and cancels one still in its hold period (`refunded` in both cases). Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook: both use the same underlying reversal logic.
+Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount). Once all of the sale is refunded, Affitor reverses the commission (`reversed`). A partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved) (`refunded` in both cases). Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook: both use the same underlying reversal logic.
 
 ---
 
@@ -105,7 +105,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 |-------|------|-------------|
 | `success` | boolean | Always `true` on a 200 response. |
 | `status` | string | `"reversed"` (sale fully refunded), `"refunded"` (partially refunded), or `"skipped"` (refund already applied, or commission already reversed). |
-| `deductionAmount` | number | Commission amount reversed by this call, in the commission's currency. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). Present when `status` is `reversed` or `refunded`. |
+| `deductionAmount` | number | The commission share this refund covers, in the commission's currency: the refunded fraction of the commission, or all of what is left once the sale is fully refunded. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). A `pending` commission that is partly refunded is cancelled whole, so for it this number is informational. Present when `status` is `reversed` or `refunded`. |
 | `commission_id` | integer | ID of the affected commission record. |
 
 ### Success — sale has no commission

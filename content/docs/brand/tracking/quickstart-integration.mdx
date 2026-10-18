@@ -137,7 +137,7 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 
 ### Lead tracking rules
 
-- Outside test mode, send the `click_id` from the `affitor_click_id` cookie: Affitor finds the customer through it. A first lead with only `customer_key` answers `400` `Customer not found. Provide a valid click_id or customer_key.`
+- Outside test mode, send the `click_id` from the `affitor_click_id` cookie: Affitor finds the customer through it. From your server, a first lead with only `customer_key` answers `400` `Customer not found. Provide a valid click_id or customer_key.`; from the browser, `click_id` is always required.
 - For reliable payment attribution later, always send a stable internal customer ID:
   - `customerKey` in `signup()`
   - `customer_key` in the API

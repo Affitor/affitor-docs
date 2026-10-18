@@ -239,7 +239,7 @@ These handlers are only for self-hosted sale tracking. If your Stripe account is
 
 <CommonMistakes items={[
   "Parsing the Stripe webhook body — Fastify's default JSON parser re-serializes the body and breaks signature verification. Register a raw-body parser scoped to `/webhooks/stripe`.",
-  "Not forwarding `affitorClickId` from the client — your Fastify handler has no access to the browser cookie, so the lead arrives with no partner attribution.",
+  "Not forwarding `affitorClickId` from the client: your Fastify handler has no access to the browser cookie, so `trackLead` answers `400` and no lead is recorded.",
   "Different customer IDs at signup vs sale — `customerExternalId` / `affitor_customer_key` must be the exact same stable user ID everywhere.",
   "Ignoring the 409 on `trackSale` — a duplicate `invoiceId` returns 409 by design; treat it as a no-op, not a failure.",
   "Subscriptions missing `subscription_data.metadata` in Stripe: the renewal handler finds no `affitor_customer_key` on the invoice, and with Stripe connected the click never reaches the invoices, so Affitor can match the subscription only by the buyer's email or Stripe customer ID.",
