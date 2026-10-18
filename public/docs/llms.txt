@@ -115,8 +115,9 @@
 
 - [SDKs](https://affitor.com/docs/api-reference/sdks.md)
 
-## Support
+## Help Center
 
+- [Help center](https://affitor.com/docs/help.md)
 - [Support](https://affitor.com/docs/support.md)
 - [Frequently Asked Questions](https://affitor.com/docs/faq.md)
 - [Contact Us](https://affitor.com/docs/support/contact.md)

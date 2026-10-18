@@ -1,5 +1,7 @@
 import { source } from '@/lib/source';
-import { getDocArticle } from '@/lib/agent-md';
+import { getDocArticle, helpCards } from '@/lib/agent-md';
+import { HELP_CATEGORIES } from '@/lib/help';
+import { HelpCenter } from '@/components/help-center';
 import { DocsPage, DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
 import { findPath, flattenTree, getPageTreeRoots } from 'fumadocs-core/page-tree';
 import Link from 'next/link';
@@ -42,6 +44,32 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
   if (!page) notFound();
 
   const article = getDocArticle(page);
+
+  if (page.data.articles) {
+    // The help home: hero, search, chips and cards, full width (globals.css drops the left nav when
+    // the page carries .aff-help). Same shell, tab row on top; no rail, no page footer.
+    const cards = helpCards(page.data.articles);
+    return (
+      <DocsPage
+        data-page-id={article.id}
+        className="aff-help"
+        full
+        breadcrumb={{ enabled: false }}
+        footer={{ enabled: false }}
+        tableOfContent={{ enabled: false }}
+        tableOfContentPopover={{ enabled: false }}
+      >
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: article.jsonLd }} />
+        <HelpCenter
+          title={page.data.title}
+          description={page.data.description}
+          cards={cards}
+          categories={HELP_CATEGORIES.filter((category) => cards.some((card) => card.category === category))}
+        />
+      </DocsPage>
+    );
+  }
+
   const MDX = page.data.body;
   const md = markdownPath(params.slug);
   const group = groupLabel(page.url);
