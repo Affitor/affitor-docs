@@ -473,14 +473,15 @@ function checkNav() {
 
 /**
  * Public claims the docs once stated and the code no longer does (scripts/retired-claims.json).
- * Each pattern is a case-insensitive regex matched line by line over the docs pages, skill.md and
- * openapi.yaml; a hit fails unless its file is in the entry's `allow`. Changelog entries are
- * history and are not read. A PR that retires a claim adds its old wording here.
+ * Each pattern is a case-insensitive regex matched line by line over the docs pages, blog posts,
+ * skill.md and openapi.yaml; a hit fails unless its file is in the entry's `allow`. Changelog
+ * entries are history and are not read. A PR that retires a claim adds its old wording here.
  */
 function checkRetiredClaims() {
   const claims = json(join(ROOT, 'scripts/retired-claims.json'));
   const files = [
     ...walk(join(ROOT, 'content/docs')).filter((file) => /\.mdx?$/.test(file)),
+    ...walk(join(ROOT, 'content/blog')).filter((file) => /\.mdx?$/.test(file)),
     join(ROOT, 'public/docs/skill.md'),
     join(ROOT, 'public/docs/openapi.yaml'),
   ].map((file) => ({ path: relative(ROOT, file), lines: read(file).split('\n') }));
@@ -614,7 +615,7 @@ function main() {
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
   console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; help and use cases pages hide the left nav (built CSS rule + sidebar hook); use case pages have no rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
-  console.log(`PASS retired claims: ${retired.claims} patterns, 0 hits in ${retired.files} files (docs pages, skill.md, openapi.yaml).`);
+  console.log(`PASS retired claims: ${retired.claims} patterns, 0 hits in ${retired.files} files (docs pages, blog posts, skill.md, openapi.yaml).`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }
