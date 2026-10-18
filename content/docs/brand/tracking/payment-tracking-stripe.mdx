@@ -178,8 +178,8 @@ Every `checkout.session.completed` event with `mode: 'payment'` is processed ind
 
 :::note
 
-**`invoice.payment_succeeded` is not involved here.**
-Affitor uses `invoice.payment_succeeded` only for subscriptions: a subscription's first payment and each renewal. Pay-as-you-go purchases use `checkout.session.completed`, one event per purchase, each attributed and commissioned separately.
+**The invoice events are not involved here.**
+Affitor uses the invoice events (`invoice.payment_succeeded`, `invoice.paid`) only for subscriptions: a subscription's first payment and each renewal. Pay-as-you-go purchases use `checkout.session.completed`, one event per purchase, each attributed and commissioned separately.
 
 :::
 
