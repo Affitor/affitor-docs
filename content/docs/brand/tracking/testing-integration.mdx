@@ -180,7 +180,7 @@ For subscriptions, also confirm the same values exist in `subscription_data.meta
 
 Each test-mode call above answers with `"test_mode": true` and an `eventId` when the event was recorded, so the response is your first check.
 
-The dashboard also looks up recent test events through `POST /api/tracking/check-test-events`, for every step or for one (`pageview`, `referrals` or `payments`). It is a [dashboard endpoint](/docs/api-reference/overview): it needs a signed-in dashboard session from a member of the program and does not accept a program API key, so you cannot call it from your backend.
+The dashboard also looks up recent test events through `POST /api/tracking/check-test-events`, for every step or for one (`pageview`, `referrals` or `payments`). It is a [dashboard endpoint](/docs/api-reference/overview): it needs a signed-in dashboard session from someone on the program's team with the **Member**, **Admin** or **Owner** role (a **Viewer** is refused) and does not accept a program API key, so you cannot call it from your backend.
 
 ---
 
@@ -204,7 +204,7 @@ The dashboard also looks up recent test events through `POST /api/tracking/check
 ### Scenario C — Stripe subscription path
 
 1. create a Stripe Checkout subscription in test mode
-2. ensure both `metadata` and `subscription_data.metadata` are present
+2. ensure `subscription_data.metadata` carries `affitor_click_id` and `affitor_customer_key` (Affitor reads the subscription's invoices, which carry it, not the session's `metadata`)
 3. check that the subscription's first payment appears under **Commissions**, marked **Test**
 4. confirm your renewal setup will preserve those identifiers
 

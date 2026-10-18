@@ -255,9 +255,7 @@ const session = await stripe.checkout.sessions.create({
 
 #### For subscriptions
 
-Include the same fields in **both** places:
-- `metadata`
-- `subscription_data.metadata`
+Put the same fields in `subscription_data.metadata`: a subscription's payments are read from its invoices, which carry the subscription's metadata, not the session's. Setting them in `metadata` too does no harm.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -285,7 +283,7 @@ const session = await stripe.checkout.sessions.create({
 - **One-time payments** are attributed from Stripe checkout metadata and webhook processing
 - **Subscriptions and renewals** rely on `invoice.payment_succeeded`
 - If `subscription_data.metadata` is missing, the click does not reach the subscription's invoices (first payment and renewals), and Affitor attributes the subscription only by the buyer's email or Stripe customer ID
-- Required metadata fields:
+- Metadata fields to set on every checkout (recommended; none is strictly required):
   - `affitor_click_id`
   - `affitor_customer_key`
   - `program_id`
@@ -307,8 +305,8 @@ Use server-side tracking when your backend controls the revenue event. Use Strip
 
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
-  network={["Your signup handler's `trackLead` call returns 2xx; with the Server API, your server's `trackSale` call on a test payment returns 2xx; with Stripe connected, a test-mode payment shows under Commissions as Test"]}
-  dashboard={["Click, lead, and sale all appear under your program's tracking events — or run `npx affitor onboard verify` to fire the whole synthetic chain in one command"]}
+  network={["Your signup handler's `trackLead` call returns 2xx; with the Server API, your server's `trackSale` call on a test payment returns 2xx; with Stripe connected, a one-time test-mode payment shows under Commissions as Test"]}
+  dashboard={["Click, lead, and sale all appear under your program's tracking events, or run `npx affitor onboard` to fire the whole synthetic chain in one command (it also offers to add a `trackSale` call; with Stripe connected, read [the CLI warning](/docs/brand/cli/commands) before accepting it)"]}
   ifNotWorking={["Use `additional_data: { test_mode: true }` so test events never create real commissions"]}
 />
 

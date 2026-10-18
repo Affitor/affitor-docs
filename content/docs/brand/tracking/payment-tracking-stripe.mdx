@@ -106,7 +106,7 @@ With the Stripe integration, you keep charging customers through your own Stripe
 |-------|----------|-------------|
 | `affitor_click_id` | Recommended | tracked click ID from the browser cookie |
 | `affitor_customer_key` | Recommended | your internal customer/user ID |
-| `program_id` | **Yes** | your Affitor program ID |
+| `program_id` | Recommended | your Affitor program ID. Without it, the sale goes to the program of the customer Affitor matches. With it, only a customer of that program can be credited, which matters when one Stripe account serves several programs |
 
 ### One-time payment example
 
@@ -135,7 +135,7 @@ const session = await stripe.checkout.sessions.create({
 
 ### Subscription example
 
-For subscriptions, set the same values in both `metadata` and `subscription_data.metadata`.
+For subscriptions, `subscription_data.metadata` is the one that counts: Affitor records a subscription's payments from its invoices, which carry the subscription's metadata, not the Checkout Session's `metadata`.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -158,12 +158,12 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-### Why subscriptions need both locations
+### Why subscriptions need `subscription_data.metadata`
 
 - One-time payments are handled from Stripe checkout session completion
 - Subscription commissions, for the first payment and each renewal, are created from `invoice.payment_succeeded`
 - An invoice carries the subscription's metadata (`subscription_data.metadata`), not the Checkout Session's `metadata`, so that is where the click reaches the subscription
-- Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal to it
+- Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email or that Stripe customer ID
 - Without it, the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has
 
 ---
@@ -189,7 +189,7 @@ The first purchase is straightforward — if the customer clicked an affiliate l
 
 Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
 
-**Required metadata on every checkout — including repeat purchases:**
+**Metadata to set on every checkout, including repeat purchases:**
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -198,7 +198,7 @@ const session = await stripe.checkout.sessions.create({
   success_url: 'https://yoursite.com/success',
   cancel_url: 'https://yoursite.com/cancel',
   metadata: {
-    affitor_click_id: getCookie('affitor_click_id') || '', // may be empty — that is expected
+    affitor_click_id: getCookie('affitor_click_id') || '', // may be empty, that is expected
     affitor_customer_key: currentUser.id,                  // required and must be stable
     program_id: 'YOUR_PROGRAM_ID',
   },
@@ -310,7 +310,7 @@ Check:
 ### Stripe one-time sale not attributed
 
 Check:
-- `program_id` is present in metadata
+- `program_id` in metadata, if you set it, is this program's ID: with another ID, this program's customers are not credited
 - `affitor_click_id` and `affitor_customer_key` are passed when available
 - signup tracking used the same internal customer ID earlier
 - the program's Stripe card under **Program settings** › **Payments** reads **Connected**. Affitor receives the events through Stripe Connect, so there is no webhook of yours to check ([Connect a Stripe account](/docs/brand/tracking/connect-stripe-account))
@@ -325,7 +325,7 @@ Check:
 ### Stripe renewals not attributed
 
 Check:
-- the subscription's first payment was attributed: renewals follow it through the buyer's Stripe customer ID
+- the subscription's first payment was attributed: renewals follow it through the buyer's email or Stripe customer ID
 - `subscription_data.metadata` contains all three fields
 - the program's Stripe card under **Program settings** › **Payments** reads **Connected**, and the subscription bills on that Stripe account. Affitor receives `invoice.payment_succeeded` through Stripe Connect; you do not add a webhook
 - the same customer key was used at signup and in Stripe metadata

@@ -175,6 +175,17 @@ An API key is required. `onboard` resolves it from `--api-key`, the `AFFITOR_API
 3. **Server sale** — for Stripe, locates your webhook handler and injects the `affitor.trackSale` call after `stripe.webhooks.constructEvent` in the `checkout.session.completed` case. Stripe is the only provider with an automatic edit; for every other provider it prints the snippet for you to paste and reports the step as `manual`. It also persists `AFFITOR_API_KEY` into `.env` / `.env.local` (never overwriting an existing value).
 4. **Verify** — fires the synthetic click → lead → sale chain through the real attribution pipeline, then polls program readiness until `integration_verified` is reached.
 
+:::warning
+
+`onboard` adds the `trackSale` call whether or not the program's Stripe account is connected. If it is connected (the Stripe card under **Program settings** › **Payments** reads **Connected**), Affitor already records your Stripe sales through Stripe Connect, so use that path alone: remove the added call, or decline the diff.
+
+- A one-time payment is not counted twice: both paths record it under the Checkout Session id, and Affitor refuses the second. If your call lands first, though, its sale is not linked to the Stripe payment, so a refund in Stripe does not reverse its commission.
+- A subscription's first payment can be counted twice: your call records it under the Checkout Session id, and Stripe Connect records it again from its invoice, under the invoice id.
+
+Keep the added call only when you track sales from your server instead of connecting Stripe. It reports the `checkout.session.completed` payment only; `onboard` adds nothing for subscription renewals.
+
+:::
+
 ### Safety and idempotency
 
 `onboard` is **idempotent** — re-running it skips any step already applied (an existing `AFFITOR_API_KEY`, a webhook that already reports the sale). It **never force-edits payment code it can't place confidently**: when the webhook shape isn't cleanly recognized, or no webhook is found, or the provider is not Stripe, it degrades to **printing the exact snippet** for you to paste rather than guessing an edit site. Auto-edits to the payment handler always show a diff and ask for confirmation first (unless `--yes` / `--no-interactive`).

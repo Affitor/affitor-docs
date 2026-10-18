@@ -15,12 +15,18 @@ Understand how attribution moves from click → signup → sale in the current p
   participant P as Partner
   participant C as Customer
   participant Y as Your site
+  participant S as Stripe
   participant A as Affitor
   P->>C: Shares referral link (?aff=CODE)
-  C->>Y: Visits — the SDK stores the click
-  C->>Y: Signs up — lead event with the aff code
-  C->>Y: Pays (Stripe checkout)
-  Y->>A: Stripe webhook / S2S sale event
+  C->>Y: Visits, the SDK stores the click
+  C->>Y: Signs up, lead event with the aff code
+  alt Stripe integration (Stripe connected)
+    C->>S: Pays through your Stripe Checkout
+    S->>A: Payment event, through Stripe Connect
+  else Server-side tracking
+    C->>Y: Pays
+    Y->>A: POST /api/v1/track/sale
+  end
   A->>A: Attributes the sale, creates the commission
   A->>P: Commission appears (pending, then approved)
 `} />
@@ -89,7 +95,7 @@ metadata: {
 }
 ```
 
-For subscriptions, also include the same fields in `subscription_data.metadata`.
+For subscriptions, put the same fields in `subscription_data.metadata`: that is the metadata a subscription's invoices carry.
 
 ### 5. Affitor attributes the sale
 
@@ -132,11 +138,9 @@ For one-time Stripe Checkout payments, attribution starts from checkout session 
 
 For subscriptions, the initial and recurring commission flow depends on invoice processing.
 
-Recurring setups must therefore include:
-- `metadata`
-- `subscription_data.metadata`
+Recurring setups must therefore set `subscription_data.metadata`. The Checkout Session's own `metadata` does not reach the invoices.
 
-If only the initial checkout metadata is present, the click does not reach the subscription's invoices, so its first payment and renewals are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.
+If only the Checkout Session's `metadata` is set, the click does not reach the subscription's invoices, so its first payment and renewals are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.
 
 ---
 
@@ -146,7 +150,7 @@ If only the initial checkout metadata is present, the click does not reach the s
 |------|----------------|
 | `customerKey` used at signup | links later payments back to the same internal user |
 | `transaction_id` unique (server-side tracking) | prevents duplicate sale records |
-| `program_id` in Stripe metadata | routes the event to the correct program |
+| `program_id` in Stripe metadata | optional; with it, only a customer of that program can be credited with the sale |
 | `subscription_data.metadata` set | carries the click to the subscription's invoices (first payment and renewals) |
 | click tracked first | gives Affitor the strongest attribution signal |
 
