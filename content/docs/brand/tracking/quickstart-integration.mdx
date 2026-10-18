@@ -255,9 +255,7 @@ const session = await stripe.checkout.sessions.create({
 
 #### For subscriptions
 
-Include the same fields in **both** places:
-- `metadata`
-- `subscription_data.metadata`
+Put the same fields in `subscription_data.metadata`: a subscription's payments are read from its invoices, which carry the subscription's metadata, not the session's. Setting them in `metadata` too does no harm.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -308,7 +306,7 @@ Use server-side tracking when your backend controls the revenue event. Use Strip
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
   network={["Your signup handler's `trackLead` call returns 2xx; with the Server API, your server's `trackSale` call on a test payment returns 2xx; with Stripe connected, a one-time test-mode payment shows under Commissions as Test"]}
-  dashboard={["Click, lead, and sale all appear under your program's tracking events, or run `npx affitor onboard` to fire the whole synthetic chain in one command"]}
+  dashboard={["Click, lead, and sale all appear under your program's tracking events, or run `npx affitor onboard` to fire the whole synthetic chain in one command (it also offers to add a `trackSale` call; with Stripe connected, read [the CLI warning](/docs/brand/cli/commands) before accepting it)"]}
   ifNotWorking={["Use `additional_data: { test_mode: true }` so test events never create real commissions"]}
 />
 

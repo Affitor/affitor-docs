@@ -189,7 +189,7 @@ The first purchase is straightforward — if the customer clicked an affiliate l
 
 Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
 
-**Required metadata on every checkout — including repeat purchases:**
+**Metadata to set on every checkout, including repeat purchases:**
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -198,7 +198,7 @@ const session = await stripe.checkout.sessions.create({
   success_url: 'https://yoursite.com/success',
   cancel_url: 'https://yoursite.com/cancel',
   metadata: {
-    affitor_click_id: getCookie('affitor_click_id') || '', // may be empty — that is expected
+    affitor_click_id: getCookie('affitor_click_id') || '', // may be empty, that is expected
     affitor_customer_key: currentUser.id,                  // required and must be stable
     program_id: 'YOUR_PROGRAM_ID',
   },
