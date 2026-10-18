@@ -187,7 +187,7 @@ Affitor uses `invoice.payment_succeeded` only for subscriptions: a subscription'
 
 The first purchase is straightforward — if the customer clicked an affiliate link recently, `affitor_click_id` is still in the browser cookie.
 
-Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor looks up the customer record created at signup and links all subsequent purchases to the same partner.
+Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor finds the customer by that key (saved on the customer when its signup lead settled) and links all subsequent purchases to the same partner.
 
 **Metadata to set on every checkout, including repeat purchases:**
 
@@ -213,27 +213,27 @@ const session = await stripe.checkout.sessions.create({
 
 ### Pre-requisite: signup tracking
 
-Cross-purchase attribution requires an affiliate-customer record. That record is created when the signup tracker fires at user registration:
+Affitor creates the customer record when the partner click is tracked. Signup tracking saves your `customer_key` on it, so a later checkout that carries only `affitor_customer_key` finds the customer. Send the lead from your server with the `click_id` and your user ID ([Track Lead](/docs/api-reference/track-lead)), or call the browser helper at user registration:
 
 ```js
-affitor.signup({ customer_key: currentUser.id });
+await window.affitor.signup(currentUser.id, currentUser.email);
 ```
 
-If signup tracking was not set up or did not fire for a user, no customer record exists and later purchases cannot be attributed.
+On a program that requires server-verified leads (the default), a browser signup is provisional: the key is saved only when your server sends the lead or a Stripe Checkout payment for that customer arrives ([Lead auth policy](/docs/api-reference/track-lead#lead-auth-policy)). If the key was never saved, a later purchase that carries no click is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.
 
 ### Attribution does not expire
 
 Once an affiliate-customer record is linked to a partner, that link persists indefinitely — there is no time-based cut-off on the customer-to-partner relationship.
 
-Your tier configuration may include a `duration_months` cap (for example, "pay commission for 12 months after signup"). That is a **commission duration limit** — it controls how long a partner earns on a customer, not whether purchases are recognized.
+If your commission **Type** is **Recurring**, the months in **For** (**Program settings** › **Commission**) limit how long a partner earns on a customer. They count from the customer's first click on the partner link, not from signup or the first payment. Later payments are still recorded as sales, with a $0 commission: the limit controls what a partner earns, not whether purchases are recognized.
 
 ### Troubleshooting pay-as-you-go
 
 | Symptom | Likely cause |
 |---------|--------------|
 | First purchase attributed, later purchases are not | `affitor_customer_key` is missing or inconsistent across checkouts |
-| No purchases attributed at all | Signup tracker never fired — no customer record exists |
-| Commissions created but stop after N months | Tier has a `duration_months` cap — this is expected behavior, not a bug |
+| No purchases attributed at all | Checkouts carry no `affitor_click_id` (the tracker is missing on the checkout page, or your Checkout Session does not set it), or Stripe is not connected to the program |
+| Commissions are $0 after N months | The commission is **Recurring** with **For** set to N months, counted from the customer's first click: later payments are still recorded, and earn $0. Expected, not a bug |
 
 ---
 
@@ -320,7 +320,7 @@ Check:
 Check:
 - `affitor_customer_key` is present in the metadata of every checkout session (not just the first)
 - the value is exactly the same stable ID used at signup — any mismatch means the customer record cannot be found
-- the signup tracker fired for this user — without it, no customer record exists and attribution fails silently
+- the customer's first lead or purchase was attributed through a click: Affitor saves `affitor_customer_key` on the customer only then, so a later checkout with only the key finds no customer if the first one carried no click
 
 ### Stripe renewals not attributed
 

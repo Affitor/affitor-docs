@@ -53,9 +53,9 @@ The **Commission** step sets what partners earn and how they join.
 
 | Field | Required | Notes |
 |-------|----------|-------|
-| **Type** | Yes | **One-time** pays on the first payment, **Recurring** monthly for the months in **For**, **Lifetime** on every payment |
+| **Type** | Yes | **One-time** pays on the first payment, **Recurring** on every payment until the months in **For** have passed since the customer's first click on the partner link, **Lifetime** on every payment |
 | **Rate** | Yes | Percent of the payment, 0 to 100 with up to 2 decimals |
-| **For** | Yes, for **Recurring** | How many months the partner keeps earning: a whole number from 1 to 36. Shown only for **Recurring** |
+| **For** | Yes, for **Recurring** | How many months the partner keeps earning, counted from the customer's first click on the partner link (not the first payment): a whole number from 1 to 36. Later payments are still recorded, with a $0 commission. Shown only for **Recurring** |
 | **Attribution window** | Yes | How long after a click a signup still counts: 1 to 365 days |
 | **Hold period** | Yes | Days until a commission is payable, to cover refunds: 0 to 31 |
 | **New partners** | Yes | **Approve all** approves every application; **Review each** lets you review each one |

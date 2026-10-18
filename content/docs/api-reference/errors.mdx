@@ -215,9 +215,9 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `400` | `click_id or customer_key is required` | Neither identifier was sent in the body | Pass the `click_id` from the `affitor_click_id` cookie, or the `customer_key` set at signup |
-| `400` | `click_id is required when no API key is sent` | A browser-mode lead (no Bearer key) sent `customer_key` without `click_id` | Pass the `click_id` from the `affitor_click_id` cookie, or send the lead from your server with your program API key |
-| `400` | `Customer not found. Provide a valid click_id or customer_key.` | No customer record matched either identifier, or (browser mode) the customer does not belong to the `program_id` sent | The click was not tracked, the cookie was cleared, or the customer_key was never recorded: ensure `init()` and `signup()` ran successfully |
+| `400` | `click_id or customer_key is required` | Neither identifier was sent in the body | Send the `click_id` from the `affitor_click_id` cookie with your `customer_key` |
+| `400` | `click_id is required when no API key is sent` | A browser-mode lead (no Bearer key) sent `customer_key` without `click_id` | Pass the `click_id` from the `affitor_click_id` cookie with the `customer_key` (a server lead with only `customer_key` finds no customer on a first lead either) |
+| `400` | `Customer not found. Provide a valid click_id or customer_key.` | No customer matched the `click_id`, the `customer_key` is not saved on a customer yet (a first lead sent with only `customer_key`: Affitor saves the key only when a lead settles), or (browser mode) the customer does not belong to the `program_id` sent | Send the `click_id` from the `affitor_click_id` cookie on every lead. If you did, the click was not tracked or the cookie was cleared: check that the tracker loads on every page |
 | `400` | `Customer does not belong to this program` | Customer was found but is attributed to a different program (server mode only) | Use the API key for the program that originated the click |
 | `400` | `Customer status cannot be updated to lead. Current status: <status>` | Lead service rejected the status transition | A lead was already recorded for this customer, or the customer is at a later funnel stage — this is usually safe to ignore |
 
@@ -519,7 +519,7 @@ The Affitor browser SDK stores the click ID in a first-party cookie named `affit
 init({ programId: 123, cookieDomain: '.example.com' });
 ```
 
-There is no server-side fallback for blocked cookies — if the cookie is missing when `signup()` fires, pass `customer_key` alone and accept that the lead will be unattributed.
+There is no server-side fallback for blocked cookies: if the cookie is missing when `signup()` fires, Affitor cannot find the customer, so no lead is recorded and that signup stays unattributed.
 
 ---
 
@@ -549,9 +549,9 @@ The SDK applies this value as the cookie expiry. Edge cases:
 
 | Scenario | Behavior |
 |----------|----------|
-| User clears cookies before signup | Attribution is lost; lead and sale will be unattributed unless you pass `customer_key` server-side |
+| User clears cookies before signup | Attribution is lost: with no `click_id`, the lead answers `400` and nothing is recorded. A `customer_key` alone cannot recover it, because the key is saved on the customer only when a lead settles |
 | User visits with a different partner's link after the first click | First-click attribution: the SDK detects a new `aff` value and sends a new click with the existing `click_id`. The click is logged for the new partner, but the customer stays with the first partner and the cookie keeps the same `click_id` |
-| Signup fires after cookie expiry | `click_id` from cookie is null; lead is still recorded (unattributed) if `customer_key` is provided |
+| Signup fires after cookie expiry | `click_id` from the cookie is null, so the lead answers `400` and no lead is recorded, even with a `customer_key` |
 | Sale fires with a `customer_key` for a customer whose window expired | The attribution window (`attribution_window_days`, default 60) is checked on each payment until one is recorded as a conversion: the click must be at most that many days older than the customer's signup (or than the payment, when no signup was recorded). If it is older, that sale is not attributed and nothing is recorded, so the customer's next payment is checked again. Once a conversion has been recorded for the customer, later payments are not re-checked |
 
 ---
