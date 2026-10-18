@@ -2,7 +2,7 @@
 title: Track Refund
 description: Reverse a commission when a sale is refunded
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 `POST /api/v1/track/refund`
@@ -151,7 +151,7 @@ Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envel
 | 400 | `invalid_request` | `transaction_id` is missing, or `reason` is not `refund` or `chargeback`. |
 | 401 | `unauthorized` | `Authorization` header is missing, malformed, or the API token is invalid. |
 | 404 | `not_found` | No sale record found for the given `transaction_id` in the authenticated program. |
-| 500 | `internal_error` | Internal error during commission reversal. |
+| 500 | `internal_error` | Internal error during commission reversal. Nothing was applied: retry the same request with the same `refund_id`. |
 
 ---
 

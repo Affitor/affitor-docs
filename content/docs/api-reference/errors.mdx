@@ -114,7 +114,7 @@ When you contact support about a failed request, include the `X-Request-ID`. It 
 | Status | Error message | Condition | Fix |
 |--------|---------------|-----------|-----|
 | `401` | `Missing or malformed Authorization header. Expected: Bearer <token>` | `Authorization` header missing or does not start with `Bearer ` | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
-| `401` | `Missing API token` | Header present but the token is empty after trimming (sale only; refund answers `Invalid API token`) | Check for trailing spaces or an empty env variable |
+| `401` | `Missing API token` (sale), `Empty Bearer token` (refund) | Header present but the token is empty after trimming | Check for trailing spaces or an empty env variable |
 | `401` | `Invalid API token` | The token matches no program: a wrong key, a replaced key, or a key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/docs/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
 
 The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.

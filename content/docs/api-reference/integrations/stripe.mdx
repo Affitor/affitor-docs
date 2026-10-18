@@ -2,7 +2,7 @@
 title: "Stripe"
 description: "Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
@@ -95,7 +95,7 @@ Affitor processes two Stripe webhook events:
 | Event | When it fires | What Affitor does |
 |---|---|---|
 | `checkout.session.completed` | A one-time payment | Records the sale. A subscription checkout records no sale here: its first invoice does |
-| `invoice.payment_succeeded` | A subscription's first payment and every renewal | Records the subscription sale |
+| `invoice.payment_succeeded`, `invoice.paid` | A subscription's first payment and every renewal | Records the subscription sale once, from whichever of the two arrives first |
 
 **Attribution fallback chain.** Affitor resolves the partner in this order:
 

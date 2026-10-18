@@ -94,5 +94,17 @@
     "why": "CLI 0.4.5 reads stripe_account_bound for a certain runtime key. A true binding skips injection; unknown/false or uncertain env keeps unattended webhook unchanged. Existing calls are not removed.",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "not taken back automatically",
+    "why": "Since CMS v3.16.139 an invoice paid by several charges, or by a payment shared with other invoices, is not recorded as a sale at all, and an invoice already refunded when processed earns nothing.",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
+    "pattern": "refund answers `Invalid API token`",
+    "why": "An empty Bearer token on POST /api/v1/track/refund answers 401 `Empty Bearer token` (CMS v3.16.140).",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
