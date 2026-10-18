@@ -2,7 +2,7 @@
 title: Lead Tracking (Signup)
 description: Track referred signups with the browser helper or the server-side lead API
 kind: guide
-last_updated: 2026-10-14
+last_updated: 2026-10-17
 ---
 
 Lead tracking connects a signup to the affiliate click that drove it — turning anonymous referral traffic into an identified customer record.
@@ -65,7 +65,7 @@ Content-Type: application/json
 
 ### Rules
 
-Outside test mode, provide at least one of `click_id` or `customer_key`. Send **both** whenever possible for reliable downstream payment attribution.
+Outside test mode, send the `click_id` from the `affitor_click_id` cookie: Affitor finds the customer through the click. Send your `customer_key` with it, so later sales can find the customer by your own id. A first lead with only `customer_key` answers `400` `Customer not found. Provide a valid click_id or customer_key.`, because Affitor saves your key on the customer only when a lead is recorded.
 
 ### Response
 

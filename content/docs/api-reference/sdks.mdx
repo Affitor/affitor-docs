@@ -241,7 +241,7 @@ This endpoint does not require authentication.
 Reverses the commission for a previously tracked sale. Call it once per refund, from your payment provider's refund webhook.
 
 - Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
-- Pass **this refund's own amount** → it is added to what was already refunded on the sale, and the commission is reduced proportionally (`refunded`, or `reversed` once the total reaches the sale amount).
+- Pass **this refund's own amount** → it is added to what was already refunded on the sale. Once the total reaches the sale amount, the commission is `reversed`. Before that, a partial refund reduces a commission already approved and cancels one still in its hold period (`refunded`).
 - Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
 - A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
 

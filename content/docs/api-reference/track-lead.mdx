@@ -49,10 +49,10 @@ A browser lead settles directly only on a program set to `browser_allowed`. The 
 
 <ParamList>
   <ParamField name="click_id" type="string" requirement="conditional">
-    The `affitor_click_id` value from the affiliate click cookie. Required outside test mode unless `customer_key` is provided and the request carries a Bearer key.
+    The `affitor_click_id` value from the affiliate click cookie. Send it on every lead outside test mode: Affitor finds the customer through the click.
   </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
-    Your internal customer or user ID. Required outside test mode unless `click_id` is provided.
+    Your internal customer or user ID. Send it with the `click_id`: Affitor saves it on that customer, so later sales can find the customer by your own id. On its own it finds no customer on a first lead, because the key is saved only when a lead is recorded.
   </ParamField>
   <ParamField name="email" type="string">
     Customer email address. Used for hashed/masked attribution support.
@@ -65,7 +65,7 @@ A browser lead settles directly only on a program set to `browser_allowed`. The 
   </ParamField>
 </ParamList>
 
-Outside test mode, **at least one of** `click_id` or `customer_key` must be provided, and without a Bearer key `click_id` is required. Providing both is recommended for reliable downstream payment attribution.
+Outside test mode, send the `click_id` with your `customer_key`. A request with neither answers `400` `click_id or customer_key is required`. A first lead with only `customer_key` answers `400` `Customer not found. Provide a valid click_id or customer_key.`, because Affitor saves your key on the customer only when a lead is recorded. Without a Bearer key, `click_id` is always required.
 
 ### Request body example
 
@@ -140,9 +140,9 @@ When `additional_data.test_mode` is `true`, the response includes the created ev
 
 | Status | Condition |
 |--------|-----------|
-| `400 Bad Request` | `click_id` and `customer_key` are both missing (outside test mode) |
+| `400 Bad Request` | `click_id` and `customer_key` are both missing (outside test mode): `click_id or customer_key is required` |
 | `400 Bad Request` | Browser mode: `customer_key` was sent without `click_id` (`click_id is required when no API key is sent`) |
-| `400 Bad Request` | No customer record found for the provided `click_id` or `customer_key`, or (browser mode) the customer does not belong to the `program_id` sent |
+| `400 Bad Request` | No customer record found for the provided `click_id` or `customer_key` (for example a first lead sent with only `customer_key`), or (browser mode) the customer does not belong to the `program_id` sent |
 | `400 Bad Request` | Customer does not belong to the authenticated program (server mode cross-program mismatch) |
 | `400 Bad Request` | Customer status cannot transition to lead (e.g. already converted) |
 | `401 Unauthorized` | `Authorization` header is present but the token is invalid or not found |

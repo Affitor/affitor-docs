@@ -7,7 +7,7 @@ last_updated: 2026-10-17
 
 `POST /api/v1/track/refund`
 
-Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount), and the commission is reduced proportionally: `refunded` while part of the sale remains, `reversed` once all of it is refunded. Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook — both use the same underlying reversal logic.
+Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount). Once all of the sale is refunded, Affitor reverses the commission (`reversed`). A partial refund reduces a commission already approved and cancels one still in its hold period (`refunded` in both cases). Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook: both use the same underlying reversal logic.
 
 ---
 
@@ -83,7 +83,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 
 ### Multiple refunds and retries
 
-- Two partial refunds of $30 and $20 on a $100 sale: send `3000` then `2000` (each with its own `refund_id`). The commission is reduced by 50% in total.
+- Two partial refunds of $30 and $20 on a $100 sale: send `3000` then `2000` (each with its own `refund_id`). A commission already approved is reduced by 50% in total; one still in its hold period is cancelled by the first refund.
 - Retries: resending a call with the same `refund_id` returns `status: "skipped"` and changes nothing. Without `refund_id`, the amount is used to detect the retry.
 
 ---

@@ -137,9 +137,7 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 
 ### Lead tracking rules
 
-- Outside test mode, provide at least one of:
-  - `click_id`
-  - `customer_key`
+- Outside test mode, send the `click_id` from the `affitor_click_id` cookie: Affitor finds the customer through it. A first lead with only `customer_key` answers `400` `Customer not found. Provide a valid click_id or customer_key.`
 - For reliable payment attribution later, always send a stable internal customer ID:
   - `customerKey` in `signup()`
   - `customer_key` in the API
@@ -306,7 +304,7 @@ Use server-side tracking when your backend controls the revenue event. Use Strip
 <VerifySuccess
   browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
   network={["Your signup handler's `trackLead` call returns 2xx; with the Server API, your server's `trackSale` call on a test payment returns 2xx; with Stripe connected, a one-time test-mode payment shows under Commissions as Test"]}
-  dashboard={["Click, lead, and sale all appear under your program's tracking events, or run `npx affitor onboard` to fire the whole synthetic chain in one command (it also offers to add a `trackSale` call; with Stripe connected, read [the CLI warning](/docs/brand/cli/commands) before accepting it)"]}
+  dashboard={["Click, lead, and sale all appear under your program's tracking events, or run `npx affitor onboard` to fire the whole synthetic chain in one command (it also offers to add a `trackSale` call; with Stripe connected, read [the CLI warning](/docs/brand/cli/commands#affitor-onboard) before accepting it)"]}
   ifNotWorking={["Use `additional_data: { test_mode: true }` so test events never create real commissions"]}
 />
 

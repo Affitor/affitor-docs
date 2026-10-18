@@ -2,7 +2,7 @@
 title: Track Sale
 description: Record an attributed sale and create the partner commission from your backend
 kind: reference
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ---
 
 Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
@@ -58,7 +58,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     `true` if this is a recurring billing charge. Defaults to `false`.
   </ParamField>
   <ParamField name="subscription_id" type="string">
-    Your subscription identifier. Required for proper recurring commission attribution.
+    Your subscription identifier, stored with the sale. Affitor does not use it to find the customer or to calculate the commission: send each renewal as its own sale, with its own `transaction_id`.
   </ParamField>
   <ParamField name="subscription_interval" type="string" enum={["monthly", "quarterly", "annual"]}>
     `"monthly"`, `"quarterly"`, or `"annual"`.
