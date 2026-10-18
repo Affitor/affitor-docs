@@ -18,14 +18,15 @@ description: Simpler username rules, website suggestions for your Business detai
 - The tracking and CLI quickstarts in the docs have an **Agent prompt** tab you can copy into your coding agent.
 - [changelog.json](https://affitor.com/changelog.json) and [context.md](https://affitor.com/changelog/context.md) give AI tools every changelog entry and the facts to reuse.
 
-- Brands see customers and commissions on one Commissions page, with a count for each status. Old Customers links open it.
-- Invoice emails put the amount first, in the subject and at the top of the email. Confirm and reset emails no longer show a long link under the button.
+- The Customers page is retired. Commissions names the customer on each row, shows a count for each status in use, and old Customers links open it.
+- Invoice emails drop the invoice number from the subject and show the amount due large at the top of the invoice details.
+- Confirm and reset emails no longer show a long link under the button.
 
 - Invite a brand by email from Refer a brand: add up to five addresses, preview the message, and Affitor sends your link.
 - Program settings › Business shows your Program ID with a Copy button. It is the ID the tracking script, the API and AI agents use.
-- Program settings › Payments shows two cards, Stripe and Server API, each with its own status. Either one is enough to go live.
-- A partner invite page shows the commission, how long it pays and the attribution window before the partner signs in.
-- Team members with the Member role no longer see Invite member, Resend invite or Regenerate on the API key tab. Owners keep them.
+- Program settings › Payments shows two cards, Stripe and Server API, each with its own status. Either one counts for Payments when you go live.
+- A partner invite to a program listed on the marketplace shows the commission, how long it pays and the attribution window before the partner signs in.
+- Team members with the Member role no longer see Invite member, Resend invite or Regenerate on the API keys page. Owners keep them.
 
 ### Fixed
 
@@ -40,8 +41,8 @@ description: Simpler username rules, website suggestions for your Business detai
 ### For developers
 
 - New programs use `?via=` in partner links instead of `?aff=`. Older programs keep `?aff=`, and tracking reads both.
-- `affitor` 0.4.5: `affitor agent setup` configures Claude Code, Cursor or Codex for your project, with a dry run and backups first.
-- `affitor doctor` checks your agent config and key without starting an agent or calling the API.
+- `affitor` 0.4.5: `affitor agent setup` configures Claude Code or Cursor for your project, with a dry run and backups first, and prints the command for Codex.
+- `affitor doctor` checks that your agent config and key are set, without starting an agent or calling the API.
 - `affitor onboard` leaves your Stripe webhook alone when Stripe is connected in Affitor, so sales are not counted twice.
 - `@affitor/sdk` 2.1.3 marks its React entry `"use client"`, so it imports cleanly in the Next.js App Router.
 - `affitor status` and `affitor test` run with an API key alone, with no project config.
