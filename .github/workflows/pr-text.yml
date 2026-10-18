@@ -1,0 +1,40 @@
+name: PR text
+
+# This repo is public. A PR title or body must not carry internal paths, agent or message ids,
+# or Vietnamese notes from the private workspace. Write what changed, why, and how it was checked.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Title and body carry no internal detail
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: python3 {0}
+        run: |
+          import os, re, sys
+          rules = {
+              'private path (.internal/)': r'\.internal/',
+              'home path (~/)': r'~/',
+              'local path (/Users/)': r'/Users/',
+              'message id (m_...)': r'\bm_[0-9a-f]{8}\b',
+              'pane id (pNNN)': r'\bp[0-9]{3}\b',
+              'agent name (b-affitor-)': r'b-affitor-',
+              'agent name (cos-)': r'\bcos-',
+              'Vietnamese text': r'[ăâđêôơưĂÂĐÊÔƠƯạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]',
+          }
+          bad = 0
+          for field in ('PR_TITLE', 'PR_BODY'):
+              for n, line in enumerate((os.environ.get(field) or '').splitlines(), 1):
+                  for name, pat in rules.items():
+                      if re.search(pat, line):
+                          print(f'::error::{field} line {n}: {name}')
+                          bad += 1
+          sys.exit(1 if bad else 0)
