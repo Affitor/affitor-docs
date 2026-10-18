@@ -120,7 +120,7 @@ await affitor?.signup(userId, email);
 
 React apps can also use `AffitorProvider` and `useAffitor()` from `@affitor/sdk/react`.
 
-`@affitor/sdk/pure` exports the same `loadAffitor` and types as `@affitor/sdk`. Both inject the tracker script only when `loadAffitor()` runs; importing from `/pure` makes that explicit.
+`@affitor/sdk/pure` exports `loadAffitor` and the types `AffitorInstance`, `AffitorInitOptions`, `TrackSignupData`, `TrackLeadData` and `TrackTestData`. `@affitor/sdk` exports the same, plus the option types `AffitorEnv` and `LoadAffitorOptions`. Both inject the tracker script only when `loadAffitor()` runs; importing from `/pure` makes that explicit.
 
 ---
 

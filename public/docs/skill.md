@@ -181,7 +181,9 @@ Pick the **first** mode that fits the brand's stack. Do not double-report the sa
 
 ### 6a. Stripe (recommended) — metadata + webhook autocapture
 
-If the brand uses Stripe Checkout, you do **not** call a sale API. Inject two metadata fields when creating the Checkout Session; Affitor's Stripe webhook reads them and creates the sale + commission automatically.
+**Connect Stripe first.** This mode records nothing until the brand's Stripe account is connected to the program in the Affitor dashboard: program menu → **Program settings** → **Payments** → **Connect Stripe**. Only the program owner can do this, in the browser; the API key cannot. Ask the founder to do it, and rely on this mode only once the Stripe card there reads **Connected**. If Stripe will not be connected, use §6b or §6c instead.
+
+If the brand uses Stripe Checkout, you do **not** call a sale API. Inject two metadata fields when creating the Checkout Session; Affitor's Stripe Connect webhook reads them and creates the sale + commission automatically. Once Stripe is connected, do not also call `trackSale` for the same Stripe payments (`npx affitor onboard` adds one to a `checkout.session.completed` handler; remove it): a subscription's first payment can be recorded twice.
 
 ```ts
 import { loadAffitor } from '@affitor/sdk';
