@@ -233,16 +233,19 @@ With no tag, nothing sets the `affitor_click_id` cookie, and a first lead withou
 
 ```ts
 // landing request handler, only when the URL carries ?via= or ?aff=
-const stored = readClickIdCookie(req); // the id you saved on an earlier visit, if any
-const res = await affitor.trackClick({
-  affiliateUrl: fullRequestUrl,     // includes ?via=<code> or ?aff=<code>
-  pageUrl: fullRequestUrl,
-  referrerUrl: req.headers.referer,
-  existingClickId: stored,          // keeps the customer and its first partner
-});
-const data = res.data as { click_id?: string; cookie_window_days?: number } | null;
-if (!stored && data?.click_id) {
-  // save data.click_id for data.cookie_window_days days, then pass it to trackLead({ clickId, ... })
+const code = url.searchParams.get('via') ?? url.searchParams.get('aff');
+const stored = readClickCookie(req); // { clickId, code } saved on an earlier visit, if any
+if (stored?.code !== code) {        // same partner as last time (a reload): record nothing, like the tracker
+  const res = await affitor.trackClick({
+    affiliateUrl: url.href,         // includes ?via=<code> or ?aff=<code>
+    pageUrl: url.href,
+    referrerUrl: req.headers.referer,
+    existingClickId: stored?.clickId, // keeps the customer and its first partner
+  });
+  const data = res.data as { click_id?: string; cookie_window_days?: number } | null;
+  if (data?.click_id) {
+    // save { clickId: data.click_id, code } for data.cookie_window_days days; pass clickId to trackLead
+  }
 }
 ```
 
