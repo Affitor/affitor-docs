@@ -23,8 +23,8 @@ sequenceDiagram
   P->>A: Sets up payouts: legal name, payout method, tax form
   P->>A: Withdraws $20 or more
   A->>W: Sends the payout in USD
+  A->>P: Marks the payout completed (sent)
   W->>P: Pays the partner's Wise or bank account
-  A->>P: Marks the payout completed
 ```
 
 ## What you need
@@ -45,7 +45,7 @@ Approval and payment are separate steps. An approved commission is added to the 
 
 <UseCaseSteps
   items={[
-    { title: 'Approve commissions', text: "A new commission is **Pending** for the program's hold period, set under **Commission** in program settings. When the hold ends, Affitor approves it, unless you approved, rejected or extended the hold on it first from **Commissions**. A test commission, a $0 commission and one earned by someone on your own team (the brand owner or a workspace member) are not approved on their own.", href: '/docs/brand/quickstart/commission-approval-cash-flow#approval-and-hold-workflow' },
+    { title: 'Approve commissions', text: "A new commission is **Pending** for the program's hold period, set under **Commission** in program settings. When the hold ends (later, if you extended it), Affitor approves it, unless you approved or rejected it first from **Commissions**. A test commission, a $0 commission on a payment after the commission term has ended, and one earned by someone on your own team (the brand owner or a workspace member) are not approved on their own.", href: '/docs/brand/quickstart/commission-approval-cash-flow#approval-and-hold-workflow' },
     { title: 'Pay your invoice', text: 'Affitor invoices you weekly for the approved commissions. When the invoice is paid, its commissions move to **Collected** and the partner can withdraw them.', href: '/docs/brand/billing/overdue-policy' },
     { title: 'The partner sets up payouts', text: "In **Your account** › **Payouts**, **Get ready to be paid** lists what is missing: a verified email, a **Legal name**, a payout method (a Wise account email, or a bank account in that legal name) and a tax form signed in the same name. The tax form is a W-8BEN or W-8BEN-E, valid for 3 calendar years, or a W-9, which counts once Affitor's accountant has received it.", href: '/docs/partners/payouts#1-get-ready-to-be-paid' },
     { title: 'The partner withdraws', text: 'On the **Payout** page, **Withdraw** turns on once $20 is ready to withdraw. The partner withdraws any amount from $20 up to what is ready, to one of their saved payout methods, and sees any processing fee before they confirm.', href: '/docs/partners/payouts#2-withdraw' },
