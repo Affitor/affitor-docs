@@ -1,4 +1,5 @@
 import { SITE_URL } from '@/lib/site';
+import { PublicLink } from '@/components/public-link';
 
 const LINKS = [
   { label: 'Documentation', href: '/docs' },
@@ -19,7 +20,7 @@ export function NotFoundBody() {
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         {LINKS.map((link, i) => (
-          <a
+          <PublicLink
             key={link.label}
             href={link.href}
             className={
@@ -29,7 +30,7 @@ export function NotFoundBody() {
             }
           >
             {link.label}
-          </a>
+          </PublicLink>
         ))}
       </div>
     </div>

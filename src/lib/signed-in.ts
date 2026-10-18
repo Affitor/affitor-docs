@@ -32,10 +32,14 @@ function dashboardPath(): string {
   return best.path;
 }
 
-export function useDashboardHref(): string | null {
-  const [href, setHref] = useState<string | null>(null);
+export function useSignedIn(): boolean {
+  const [signedIn, setSignedIn] = useState(false);
   useEffect(() => {
-    if (/(?:^|;\s*)csrf_token=/.test(document.cookie)) setHref(`${SITE_URL}${dashboardPath()}`);
+    if (/(?:^|;\s*)csrf_token=/.test(document.cookie)) setSignedIn(true);
   }, []);
-  return href;
+  return signedIn;
+}
+
+export function useDashboardHref(): string | null {
+  return useSignedIn() ? `${SITE_URL}${dashboardPath()}` : null;
 }

@@ -2,6 +2,7 @@ import { ASK_AI_PROMPT, FOOTER_COLUMNS, FOOTER_TAGLINE, SOCIAL_LINKS } from '@/c
 import { ENGINES } from '@/components/blog/ask-ai-row';
 import { Logo } from '@/components/logo';
 import { AskAiLink } from '@/components/ask-ai-link';
+import { PublicLink } from '@/components/public-link';
 
 /**
  * The affitor.com footer (affiliate-dashboard LandingRedesign/Footer) for the docs, the blog
@@ -46,9 +47,9 @@ export function SiteFooter() {
               <ul className="space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className={`text-sm ${MUTED}`}>
+                    <PublicLink href={link.href} className={`text-sm ${MUTED}`}>
                       {link.label}
-                    </a>
+                    </PublicLink>
                   </li>
                 ))}
               </ul>
