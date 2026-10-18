@@ -9,7 +9,9 @@ on:
 permissions: {}
 
 jobs:
-  check:
+  pr-text:
+    # A distinct job name, so branch protection can require it apart from the agent surface "check".
+    name: PR text
     runs-on: ubuntu-latest
     steps:
       - name: Title and body carry no internal detail
