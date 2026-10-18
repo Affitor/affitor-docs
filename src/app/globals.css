@@ -903,6 +903,7 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
    ═══════════════════════════════════════════════════════ */
 .aff-uc-grid {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
   justify-content: center;
   gap: 16px;
