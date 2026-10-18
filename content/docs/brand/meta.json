@@ -32,6 +32,7 @@
     "../api-reference/integrations/fastify",
     "---Partners---",
     "quickstart/inviting-partners",
+    "share-affitor",
     "quickstart/partner-approval-quality-control",
     "groups",
     "quickstart/view-performance",
