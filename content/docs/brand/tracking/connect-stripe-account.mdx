@@ -35,11 +35,20 @@ Complete Stripe's activation for the new account: your business details and the 
 1. In Affitor, open the program menu, choose **Program settings**, then **Payments**.
 2. On the **Stripe** card, select **Connect Stripe**. Stripe opens in a new tab.
 3. At Stripe, sign in, choose the new account from your accounts, and allow the connection.
-4. Come back to the Affitor tab. The page reads the status again on its own; there is no confirmation message, the card itself changes.
+4. Come back to the Affitor tab. The page reads the status again on its own. When it worked there is no confirmation message, the card itself changes; when it did not, the Stripe card says why.
 
 ![Program settings, Payments, before anything is set up: the Stripe card says Not connected, with a Connect Stripe button that opens Stripe in a new tab. The Server API card beside it has no sale yet.](/docs/brand/stripe/payments-not-connected.png)
 
 Only the program owner can connect Stripe. Other members see "Only the program owner can connect Stripe." Finish the Stripe steps within 10 minutes; if the card still shows **Not connected** after that, select **Connect Stripe** again. If the program is already connected to another Stripe account, there is no **Connect Stripe** button: [switch the program to the new account](#switch-a-program-to-the-new-account) first.
+
+If Stripe sends you back without connecting, the Stripe card shows one of these lines:
+
+| Message | What to do |
+|---|---|
+| "The Stripe connection was cancelled." | You did not allow the connection on Stripe. Select **Connect Stripe** again |
+| "Only the program owner can connect Stripe. Ask the owner to connect it." | Ask the program owner to connect |
+| "The Stripe connection changed while you were on Stripe. Refresh to see it." | Refresh the page |
+| "Stripe did not finish connecting. Try again, or contact support@affitor.com." | Select **Connect Stripe** again; if it keeps failing, write to support |
 
 One Stripe account can be connected to several programs, and each program connects to one Stripe account.
 
@@ -93,7 +102,7 @@ If Stripe is connected and your server also sends sales through the Server API, 
   ]}
   ifNotWorking={[
     "Not finished: Stripe still needs details for that account. Finish its activation in that account's Stripe Dashboard; the card changes once Stripe reports the account ready",
-    "Not connected after you came back: the connection was canceled or took longer than 10 minutes. Select Connect Stripe again",
+    "Not connected after you came back: read the line in the Stripe card (table above). If there is none, the steps took longer than 10 minutes: select Connect Stripe again",
     "No test commission: check that you opened a partner link first, in the same browser; that the tracker is on the page with the checkout, or that your server passed affitor_click_id in the Checkout Session metadata; and that the purchase was a one-time price made in the test mode of the connected account",
     "Run check under Check Affitor's tracking sends a test click, signup and sale through your program. It tests Affitor's side only and does not touch Stripe",
   ]}
