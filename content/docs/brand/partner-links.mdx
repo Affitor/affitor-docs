@@ -13,6 +13,17 @@ Select your program, open **Program settings**, and choose **Partner links** aft
 
 If the page says the program uses legacy link rules, the displayed controls are a draft until you save. That program has no new additional-link limit until it opts into these settings. Saving applies the policy without changing existing link keys or saved URLs.
 
+<div className="not-prose">
+  <picture className="block dark:hidden">
+    <source media="(max-width: 640px)" srcSet="/docs/brand/partner-links/settings-phone-light.png" />
+    <img src="/docs/brand/partner-links/settings-light.png" alt="Partner links settings with allowed destinations and a per-partner link limit" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+  <picture className="hidden dark:block">
+    <source media="(max-width: 640px)" srcSet="/docs/brand/partner-links/settings-phone-dark.png" />
+    <img src="/docs/brand/partner-links/settings-dark.png" alt="Partner links settings with allowed destinations and a per-partner link limit" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+</div>
+
 ## Step 2: Add an allowed domain
 
 Under **Allowed destinations**, select **Add domain**. Enter an **HTTPS domain** that you manage, without a path, credentials, query string, or fragment:
@@ -37,6 +48,15 @@ For one specific page, use a path beginning with one slash. You can include a qu
 ```
 
 Check **I manage this domain and will ensure tracking is installed**, then select **Add domain**. This adds the rule to your form; it does not apply the program settings until you save the page. The acknowledgement does not install the tracker or verify conversions.
+
+<div className="not-prose">
+  <picture className="block dark:hidden">
+    <img src="/docs/brand/partner-links/add-domain-light.png" alt="Add link domain dialog with One specific page and the tracking acknowledgement" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+  <picture className="hidden dark:block">
+    <img src="/docs/brand/partner-links/add-domain-dark.png" alt="Add link domain dialog with One specific page and the tracking acknowledgement" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+</div>
 
 ## Step 3: Set the additional-link limit
 
