@@ -27,7 +27,7 @@ export function ThemeToggle({ label = false, className = '' }: { label?: boolean
       onClick={() => setTheme(dark ? 'light' : 'dark')}
       aria-label={action}
       title={action}
-      className={`inline-flex ${size} items-center justify-center gap-2 rounded-md text-fd-muted-foreground transition-colors hover:bg-fd-muted hover:text-fd-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#155dfc] focus-visible:ring-offset-1 ${label ? 'px-3 text-sm font-medium' : ''} ${className}`}
+      className={`inline-flex ${size} items-center justify-center gap-2 rounded-md text-fd-muted-foreground transition-colors hover:bg-fd-muted hover:text-fd-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#155dfc] focus-visible:ring-offset-1 focus-visible:ring-offset-fd-background ${label ? 'px-3 text-sm font-medium' : ''} ${className}`}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
         {dark ? (
