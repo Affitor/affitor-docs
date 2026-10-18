@@ -72,7 +72,7 @@ If Stripe is connected and your server also sends sales through the Server API, 
 | Stripe event | What Affitor does |
 |---|---|
 | `checkout.session.completed` | Records a one-time purchase |
-| `invoice.payment_succeeded`, `invoice.paid` | Records a subscription's first payment and each renewal, once per invoice |
+| `invoice.payment_succeeded`, `invoice.paid` | Records a subscription's first payment and each renewal, at most once per invoice |
 | `charge.refunded` | Reverses the commission ([refund handling](/docs/brand/quickstart/commission-approval-cash-flow#refund-handling)) |
 | `charge.dispute.funds_withdrawn` | Reverses the commission when a chargeback takes the money |
 | `charge.dispute.funds_reinstated`, `charge.dispute.closed` (won) | Sends you a notification to review the commission. It stays reversed: Affitor does not re-credit the partner on its own |

@@ -151,7 +151,7 @@ Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envel
 | 400 | `invalid_request` | `transaction_id` is missing, or `reason` is not `refund` or `chargeback`. |
 | 401 | `unauthorized` | `Authorization` header is missing, malformed, or the API token is invalid. |
 | 404 | `not_found` | No sale record found for the given `transaction_id` in the authenticated program. |
-| 500 | `internal_error` | Internal error during commission reversal. Nothing was applied: retry the same request with the same `refund_id`. |
+| 500 | `internal_error` | Internal error during commission reversal. Retry the same request with the same `refund_id`: a refund that was already applied is skipped. |
 
 ---
 

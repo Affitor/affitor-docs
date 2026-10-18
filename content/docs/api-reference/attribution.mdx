@@ -2,7 +2,7 @@
 title: Attribution Mechanics
 description: How Affitor assigns credit to partners — the cookie, the click ID, the attribution windows, and what happens on re-click.
 kind: concept
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -104,7 +104,7 @@ For subscription products, every recurring charge can generate a commission with
 | `cps_lifetime` | `null` | Commission paid on every renewal indefinitely |
 | `cps_one_time` | `0` | Commission paid once on the first payment only |
 
-With Stripe connected, renewals need no call from you: Affitor records each renewal from `invoice.payment_succeeded` and matches it to the partner through the click in the subscription's metadata, or else by the buyer's email or Stripe customer ID (saved when the first payment was attributed). If you report sales yourself with `/api/v1/track/sale`, a renewal is attributed like any sale, by `customer_key` and then `click_id`; `is_recurring: true` and `subscription_id` mark it as a subscription charge.
+With Stripe connected, renewals need no call from you: Affitor records each renewal from the invoice events (`invoice.payment_succeeded`, `invoice.paid`) and matches it to the partner through the click in the subscription's metadata, or else by the buyer's email or Stripe customer ID (saved when the first payment was attributed). If you report sales yourself with `/api/v1/track/sale`, a renewal is attributed like any sale, by `customer_key` and then `click_id`; `is_recurring: true` and `subscription_id` mark it as a subscription charge.
 
 ---
 

@@ -58,7 +58,7 @@ Affitor listens to the `checkout.session.completed` webhook event and attributes
 
 ### Subscription (`mode: 'subscription'`)
 
-For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from `invoice.payment_succeeded`, and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email or that Stripe customer ID.
+For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from the invoice events (`invoice.payment_succeeded`, `invoice.paid`), and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email or that Stripe customer ID.
 
 ```ts
 const session = await stripe.checkout.sessions.create({
@@ -90,12 +90,12 @@ const session = await stripe.checkout.sessions.create({
 
 ## 3. How Affitor attributes payments
 
-Affitor processes two Stripe webhook events:
+Affitor processes these Stripe webhook events for sales:
 
 | Event | When it fires | What Affitor does |
 |---|---|---|
 | `checkout.session.completed` | A one-time payment | Records the sale. A subscription checkout records no sale here: its first invoice does |
-| `invoice.payment_succeeded`, `invoice.paid` | A subscription's first payment and every renewal | Records the subscription sale once, from whichever of the two arrives first |
+| `invoice.payment_succeeded`, `invoice.paid` | A subscription's first payment and every renewal | Records the subscription sale. Both events go to the same handler, which records each invoice at most once |
 
 **Attribution fallback chain.** Affitor resolves the partner in this order:
 

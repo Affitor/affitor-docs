@@ -2,7 +2,7 @@
 title: "Node / Express"
 description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Express backend."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
 This guide wires Affitor into a Node.js / Express app. Because Express is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`.
@@ -111,7 +111,7 @@ Sales must always be tracked server-side — never from the browser.
 
 ### Option A — Stripe integration (recommended for Stripe Checkout)
 
-Connect your Stripe account under **Program settings** › **Payments**, then attach Affitor metadata when you create the Checkout Session. Affitor receives the account's `checkout.session.completed` and `invoice.payment_succeeded` events through Stripe Connect (you add no webhook) and attributes the sale automatically, with no extra `trackSale` call needed.
+Connect your Stripe account under **Program settings** › **Payments**, then attach Affitor metadata when you create the Checkout Session. Affitor receives the account's `checkout.session.completed` and invoice events (`invoice.payment_succeeded`, `invoice.paid`) through Stripe Connect (you add no webhook) and attributes the sale automatically, with no extra `trackSale` call needed.
 
 ```js
 // server — creating the Checkout Session

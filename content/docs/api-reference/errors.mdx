@@ -140,7 +140,7 @@ The CLI's program-key routes word these differently; see [CLI endpoint errors](#
 
 The success body is identical in both modes, so a `2xx` on its own does not prove your key was read. The one exception is a program configured with `lead_auth: server_required`, where a browser-mode lead comes back with `"provisional": true`.
 
-Such a lead settles when your backend sends the server-side lead. A qualifying Stripe payment webhook can also settle it, through the same path the lead endpoint uses, but only when Affitor can resolve the customer from that event — one-off payments through `checkout.session.completed`, and subscriptions through `invoice.payment_succeeded`, because subscription checkouts are deliberately left to the invoice event. Send the server-side lead rather than relying on a payment to settle it.
+Such a lead settles when your backend sends the server-side lead. A qualifying Stripe payment webhook can also settle it, through the same path the lead endpoint uses, but only when Affitor can resolve the customer from that event — one-off payments through `checkout.session.completed`, and subscriptions through the invoice events (`invoice.payment_succeeded`, `invoice.paid`), because subscription checkouts are deliberately left to the invoice event. Send the server-side lead rather than relying on a payment to settle it.
 
 ---
 

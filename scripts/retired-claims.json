@@ -97,7 +97,7 @@
   },
   {
     "pattern": "not taken back automatically",
-    "why": "Since CMS v3.16.139 an invoice paid by several charges, or by a payment shared with other invoices, is not recorded as a sale at all, and an invoice already refunded when processed earns nothing.",
+    "why": "Since CMS v3.16.139 a new invoice paid by several charges, or by a payment shared with other invoices, is not recorded as a sale, and a new invoice refunded before processing is not recorded; older such sales are held for manual reconciliation.",
     "since": "2026-10-18",
     "allow": []
   },
