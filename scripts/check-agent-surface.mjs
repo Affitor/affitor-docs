@@ -401,6 +401,7 @@ function checkNav() {
     ['/docs/help', 'Help Center', null],
     ['/docs/use-cases', 'Use cases', null],
     ['/docs/use-cases/sell-on-stripe', 'Use cases', null],
+    ['/docs/use-cases/any-payment-provider', 'Use cases', null],
   ];
   const html = (route) => read(join(APP, `${route.slice(1)}.html`));
   const navs = (route, label) => [...html(route).matchAll(new RegExp(`<nav\\b[^>]*\\baria-label="${label}"[^>]*>([\\s\\S]*?)</nav>`, 'g'))].map((m) => m[1]);

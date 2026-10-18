@@ -3,6 +3,7 @@
   "root": true,
   "pages": [
     "index",
-    "sell-on-stripe"
+    "sell-on-stripe",
+    "any-payment-provider"
   ]
 }
