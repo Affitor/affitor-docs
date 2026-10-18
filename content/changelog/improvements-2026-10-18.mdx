@@ -1,0 +1,48 @@
+---
+title: Improvements and fixes, Oct 12–18
+date: 2026-10-18
+type: digest
+audience: [brands, partners, developers]
+surfaces: [dashboard, cli, sdk]
+description: Simpler username rules, website suggestions for your Business details, faster partner pages, and fixes to renewals, phones and sign-up.
+---
+
+### Improved
+
+- Usernames are 3 to 30 lowercase letters, numbers and hyphens. Change yours once every 14 days; a name you give up is held for you for 14 days.
+- In Program settings › Business, saving your website suggests a logo, tagline and About for you to review. Nothing is saved until you save each card.
+- Partner pages you opened before show at once and refresh in the background, and moving between them keeps the sidebar in place.
+- Every page that shows your attribution window shows the one tracking applies.
+- The Payments page says why connecting Stripe failed, inside the Stripe card.
+- Old directory links (`/list/<slug>`) open the program on the Affitor marketplace, or the marketplace when it is not listed.
+- The tracking and CLI quickstarts in the docs have an **Agent prompt** tab you can copy into your coding agent.
+- [changelog.json](https://affitor.com/changelog.json) and [context.md](https://affitor.com/changelog/context.md) give AI tools every changelog entry and the facts to reuse.
+
+- The Customers page is retired. Commissions names the customer on each row, shows a count for each status in use, and old Customers links open it.
+- Invoice emails drop the invoice number from the subject and show the amount due large at the top of the invoice details.
+- Confirm and reset emails no longer show a long link under the button.
+
+- Invite a brand by email from Refer a brand: add up to five addresses, preview the message, and Affitor sends your link.
+- Program settings › Business shows your Program ID with a Copy button. It is the ID the tracking script, the API and AI agents use.
+- Program settings › Payments shows two cards, Stripe and Server API, each with its own status. Either one counts for Payments when you go live.
+- A partner invite to a program listed on the marketplace shows the commission, how long it pays and the attribution window before the partner signs in.
+- Team members with the Member role no longer see Invite member, Resend invite or Regenerate on the API keys page. Owners keep them.
+
+### Fixed
+
+- A refund or chargeback on a subscription renewal now reaches the commission for that renewal.
+- Withdraw and the invoice details form fit a phone screen.
+- On an iPhone, the profile row at the bottom of the rail stays on screen, and tapping a field no longer zooms the page.
+- A team invite still works when the person signs up with email, and they are not asked to pick brand or partner.
+- Signing up with email keeps the name you typed.
+- A renamed Refer a brand link still credits the brands who sign up through it.
+- Program pages show their whole About, with no Read more.
+
+### For developers
+
+- New programs use `?via=` in partner links instead of `?aff=`. Older programs keep `?aff=`, and tracking reads both.
+- `affitor` 0.4.5: `affitor agent setup` configures Claude Code or Cursor for your project, with a dry run and backups first, and prints the command for Codex.
+- `affitor doctor` checks that your agent config and key are set, without starting an agent or calling the API.
+- `affitor onboard` leaves your Stripe webhook alone when Stripe is connected in Affitor, so sales are not counted twice.
+- `@affitor/sdk` 2.1.3 marks its React entry `"use client"`, so it imports cleanly in the Next.js App Router.
+- `affitor status` and `affitor test` run with an API key alone, with no project config.
