@@ -1,7 +1,8 @@
 {
-  "title": "Support",
+  "title": "Help Center",
   "root": true,
   "pages": [
+    "../help/index",
     "index",
     "../faq/index",
     "contact",

@@ -51,14 +51,27 @@ async function renderBody(slug: string[]): Promise<string | null> {
     slug.length === 1 && slug[0] === 'index' ? [] : slug,
   );
   if (!page) return null;
-  return toMarkdown(
-    page.data.title ?? slug.join('/'),
-    page.data.description,
-    await page.data.getText('raw'),
-  );
+  const raw = await page.data.getText('raw');
+  // The help home renders its cards from frontmatter; its twin lists them, one line each.
+  const body = page.data.articles
+    ? `${raw.trimEnd()}\n\n${helpCards(page.data.articles).map((card) => `- [${card.title}](${SITE_URL}${card.href}.md) (${card.category}): ${card.description}`).join('\n')}`
+    : raw;
+  return toMarkdown(page.data.title ?? slug.join('/'), page.data.description, body);
 }
 
 type DocPage = ReturnType<typeof source.getPages>[number];
+
+/**
+ * The help home's cards (`articles` frontmatter of content/docs/help/index.mdx), with each target
+ * page's own title and description, so a card never drifts from its page.
+ */
+export function helpCards(articles: NonNullable<DocPage['data']['articles']>) {
+  return articles.map(({ page: path, category, tags }) => {
+    const page = source.getPage(path.split('/'));
+    if (!page) throw new Error(`help: ${path} is not a docs page`);
+    return { href: page.url, title: page.data.title, description: page.data.description ?? '', category, tags };
+  });
+}
 
 export type AgentPage = {
   id: string;

@@ -36,6 +36,7 @@
   --aff-code-bg: #0e0f11;                  /* dark code block, both modes */
   --aff-code-text: #c7d2e6;
   --aff-brand-hover: #1249d6;
+  --aff-brand-line: #cfe0ff;               /* selected chip border (docs-skeleton mock) */
 
   /* Semantic (verbatim from dashboard dsFeedbackTones) */
   --aff-info-solid: #155dfc;   --aff-info-bg: #eff6ff;
@@ -71,6 +72,7 @@
   --aff-code-bg: #0e0f11;
   --aff-code-text: #c7d2e6;
   --aff-brand-hover: #6f92ff;
+  --aff-brand-line: rgba(107, 155, 255, 0.45);
 
   --aff-info-bg: rgba(88,129,255,0.08);
   --aff-warn-bg: rgba(214,138,24,0.09);
@@ -687,6 +689,211 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 .aff-dialog-done > h2,
 .aff-dialog-done > p { padding-inline: 20px; }
 .aff-dialog-done > p { margin-bottom: 20px; }
+
+/* ═══════════════════════════════════════════════════════
+   Help center home (/docs/help, spec §5 + §7.2, mock H1 / H1-dark / P3)
+   Same shell and tab row, no left nav: the page's article carries .aff-help, so the
+   layout drops the sidebar column for this route only (the phone drawer still opens
+   from the tab row). Centered hero, search, chips (wrap; one scrolling row on phones),
+   card grid 3 / 2 / 1 columns.
+   ═══════════════════════════════════════════════════════ */
+#nd-docs-layout:has(.aff-help) { --fd-sidebar-width: 0px; }
+#nd-docs-layout:has(.aff-help) > div[class*="grid-area:sidebar"] { display: none !important; }
+#nd-page.aff-help {
+  max-width: none;
+  padding: 0 0 64px;
+  gap: 0;
+}
+.aff-help-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 32px 32px;
+  text-align: center;
+}
+.aff-help-hero h1 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--color-fd-foreground);
+}
+.aff-help-hero p {
+  max-width: 560px;
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-help-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(560px, 100%);
+  height: 40px;
+  margin-top: 24px;
+  padding: 0 12px;
+  border: 1px solid var(--aff-border-strong);
+  border-radius: 6px;
+  background: var(--color-fd-background);
+  color: var(--color-fd-muted-foreground);
+  cursor: text;
+}
+.aff-help-search:focus-within {
+  border-color: var(--color-fd-primary);
+  box-shadow: 0 0 0 3px var(--color-fd-accent);
+}
+.aff-help-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-fd-foreground);
+}
+.aff-help-search input::placeholder { color: var(--color-fd-muted-foreground); }
+.aff-help-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 32px 0;
+}
+.aff-help-chips button {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--aff-border-strong);
+  border-radius: 999px;
+  background: var(--color-fd-background);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--aff-body);
+  cursor: pointer;
+  transition: color 180ms cubic-bezier(0.37, 0.06, 0.32, 1), background-color 180ms cubic-bezier(0.37, 0.06, 0.32, 1), border-color 180ms cubic-bezier(0.37, 0.06, 0.32, 1);
+}
+.aff-help-chips button:hover { color: var(--color-fd-foreground); background: var(--color-fd-muted); }
+.aff-help-chips button[aria-pressed='true'] {
+  border-color: var(--aff-brand-line);
+  background: var(--color-fd-accent);
+  color: var(--color-fd-primary);
+}
+.aff-help-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 1056px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+}
+.aff-help-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 8px;
+  background: var(--color-fd-muted);
+  transition: transform 180ms cubic-bezier(0.37, 0.06, 0.32, 1), box-shadow 180ms cubic-bezier(0.37, 0.06, 0.32, 1), border-color 180ms cubic-bezier(0.37, 0.06, 0.32, 1);
+}
+.aff-help-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--aff-border-strong);
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.08);
+}
+.dark .aff-help-card:hover { box-shadow: none; }
+.aff-help-card:focus-visible { outline: 2px solid var(--color-fd-ring); outline-offset: 2px; }
+.aff-help-cat {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-fd-primary);
+}
+.aff-help-card h2 {
+  margin: 6px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--color-fd-foreground);
+}
+.aff-help-card p {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-fd-muted-foreground);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.aff-help-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.aff-help-tags span {
+  padding: 2px 8px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 999px;
+  background: var(--color-fd-background);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-help-empty {
+  margin: 32px 0 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-fd-muted-foreground);
+}
+.aff-help-contact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-fd-foreground);
+}
+@media (max-width: 1023px) {
+  .aff-help-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .aff-help-hero { padding: 32px 16px 16px; }
+  .aff-help-hero h1 { font-size: 28px; line-height: 36px; }
+  /* 16 px so phones do not zoom into the field on focus */
+  .aff-help-search input { font-size: 16px; }
+  .aff-help-chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 4px 16px 2px;
+    scrollbar-width: none;
+  }
+  .aff-help-chips::-webkit-scrollbar { display: none; }
+  .aff-help-grid { margin-top: 16px; padding: 0 16px; }
+}
+@media (max-width: 639px) {
+  .aff-help-grid { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aff-help-card, .aff-help-chips button { transition: none; }
+  .aff-help-card:hover { transform: none; }
+}
 
 /* ── Section dividers (---) — unnecessary; sections separate by heading rhythm ── */
 article hr { display: none; }

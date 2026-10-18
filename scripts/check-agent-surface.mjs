@@ -64,6 +64,28 @@ function checkComparison(data, id) {
   }
 }
 
+/**
+ * The help home (the one docs page with `articles` frontmatter): every card points at an existing
+ * docs page, once, and shows that page's own title and description, with no em dash. Returns the
+ * lines its .md twin ends with.
+ */
+function helpCards(source) {
+  const homes = source.getPages().filter((page) => page.data.articles);
+  assert.deepEqual(homes.map((page) => page.url), ['/docs/help'], 'exactly one page (/docs/help) has articles frontmatter');
+  const seen = new Set();
+  return homes[0].data.articles.map(({ page: path, category }) => {
+    const where = `content/docs/help/index.mdx: ${path}`;
+    const page = source.getPage(path.split('/'));
+    assert.ok(page, `${where} is not a docs page`);
+    assert.notEqual(page.url, '/docs/help', `${where} is the help home itself`);
+    assert.ok(!seen.has(page.url), `${where} is listed twice`);
+    seen.add(page.url);
+    assert.equal(typeof page.data.description, 'string', `${where} has no description for its card`);
+    assert.ok(![page.data.title, page.data.description].some((text) => text.includes('\u2014')), `${where}: em dash in the card title or description`);
+    return `- [${page.data.title}](${ORIGIN}${page.url}.md) (${category}): ${page.data.description}`;
+  });
+}
+
 function inventory() {
   const docsDir = join(ROOT, 'content/docs');
   // Use the installed loader's URL rules without importing the production renderer.
@@ -107,6 +129,7 @@ function inventory() {
   for (const page of source.getPages()) {
     assert.equal(listed.filter((url) => url === page.url).length, 1, `${page.url}: list it once in a content/docs meta.json`);
   }
+  const helpLines = helpCards(source);
   const docs = source.getPages().map((page) => {
     const id = page.url.replace(/^\/docs\/?/, '') || 'index';
     // The content date is last_updated (set by whoever edits the page), never date/updated.
@@ -124,7 +147,9 @@ function inventory() {
     return {
       id, type: 'doc', url: `${ORIGIN}${page.url}`, kind: page.data.kind,
       updated: page.data.last_updated, sourceDate: page.data.last_updated,
-      body: markdown(page.data, id), title: page.data.title, description: page.data.description,
+      // The help home's twin ends with its cards (mirror of renderBody() in src/lib/agent-md.ts).
+      body: markdown(page.data.articles ? { ...page.data, raw: `${page.data.raw.trimEnd()}\n\n${helpLines.join('\n')}` } : page.data, id),
+      title: page.data.title, description: page.data.description,
     };
   });
   const blogDir = join(ROOT, 'content/blog');
@@ -344,7 +369,8 @@ function checkNav() {
     ['/docs/brand/quickstart', 'Guides', 'Brands'],
     ['/docs/partners/dashboard', 'Guides', 'Partners'],
     ['/docs/api-reference/overview', 'API Reference', null],
-    ['/docs/faq', 'Support', null],
+    ['/docs/faq', 'Help Center', null],
+    ['/docs/help', 'Help Center', null],
   ];
   const html = (route) => read(join(APP, `${route.slice(1)}.html`));
   const navs = (route, label) => [...html(route).matchAll(new RegExp(`<nav\\b[^>]*\\baria-label="${label}"[^>]*>([\\s\\S]*?)</nav>`, 'g'))].map((m) => m[1]);
@@ -365,6 +391,12 @@ function checkNav() {
     const links = navs(route, 'Previous and next pages').flatMap((nav) => [...nav.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map((m) => m[1]));
     assert.deepEqual(links, hrefs, `${route}: previous / next`);
   }
+  // The help home prerenders every card, in index order, and drops the left nav (.aff-help).
+  const help = html('/docs/help');
+  const cards = [...help.matchAll(/<a\b[^>]*\bclass="aff-help-card"[^>]*>/g)].map((m) => m[0].match(/\bhref="([^"]*)"/)[1]);
+  const index = document(join(ROOT, 'content/docs/help/index.mdx')).articles.map((entry) => `/docs/${entry.page}`);
+  assert.deepEqual(cards, index, '/docs/help: cards');
+  assert.match(help, /<article\b[^>]*\bclass="[^"]*\baff-help\b/, '/docs/help: article must carry .aff-help (no left nav)');
   return cases.length + pageNav.length;
 }
 
@@ -480,7 +512,7 @@ function main() {
   const navPages = checkNav();
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
-  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; root folder ids pinned; every page listed by one meta.json entry.`);
+  console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help home cards match its index; root folder ids pinned; every page listed by one meta.json entry.`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
 }

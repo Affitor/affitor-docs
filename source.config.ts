@@ -2,6 +2,7 @@ import { defineDocs, defineCollections, defineConfig, frontmatterSchema } from '
 import { z } from 'zod';
 import { remarkAdmonition } from 'fumadocs-core/mdx-plugins';
 import { remarkMermaid } from './src/lib/remark-mermaid';
+import { HELP_CATEGORIES } from './src/lib/help';
 
 // `:::note / :::tip / :::warning / :::caution` colon-fence callouts -> <Callout>.
 // Without this, Fumadocs 16 leaves the `:::` markers as literal text on every
@@ -38,6 +39,12 @@ export const docs = defineDocs({
     schema: frontmatterSchema.extend({
       kind: z.enum(DOC_KINDS),
       last_updated: day,
+      // The help home's cards (content/docs/help/index.mdx): a docs page by its path under /docs, a
+      // category and search tags. The card text is that page's own title and description.
+      articles: z
+        .array(z.object({ page: z.string(), category: z.enum(HELP_CATEGORIES), tags: z.array(z.string()).min(1) }).strict())
+        .min(1)
+        .optional(),
     }),
   },
 });
