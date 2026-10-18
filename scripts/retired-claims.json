@@ -76,5 +76,11 @@
     "why": "The customer is created at the click; a lead without a click answers 400 and records nothing, and customer_key alone cannot recover attribution (it is saved only when a lead settles).",
     "since": "2026-10-17",
     "allow": []
+  },
+  {
+    "pattern": "unless you approve, reject, or extend the hold",
+    "why": "Extending the hold only moves the approval date; the commission still auto-approves when the extended hold ends. Test commissions, own-team commissions and $0 commissions after the commission term are never auto-approved.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
