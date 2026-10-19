@@ -273,7 +273,7 @@ curl -X POST "$AFFITOR_API_BASE/api/v1/track/sale" \
   }'
 ```
 
-- Required: `transaction_id` (unique — a duplicate returns **HTTP 409**, treat as already-recorded, not a retry) and `amount_cents` (positive integer cents), plus **one of** `customer_key` or `click_id`.
+- Required: `transaction_id` (unique: a duplicate returns **HTTP 409**. With an id in `error.details.sale_id`, your program already recorded it, so treat it as already-recorded, not a retry. With `sale_id: null`, another program used that `transaction_id` and nothing was recorded for yours) and `amount_cents` (positive integer cents), plus **one of** `customer_key` or `click_id`.
 - Do **not** send a partner code or a pre-computed commission — Affitor resolves the partner and computes commission from the customer's attribution.
 - If the customer's attribution window expired, you get `200` with `attributed: false` and nothing is created (the sale is organic). That is expected, not an error.
 
@@ -395,7 +395,7 @@ Poll every `poll.retry_after_seconds` (default 5s) until `integration_verified: 
 - **Firing the verify chain (§8) before the tracker is deployed** — readiness will report `tracking`/`live` failing and you'll chase a non-bug. Deploy first, verify last.
 - **Hardcoding `https://api.affitor.com`** when the founder gave a uat/staging `API_BASE` — events land in the wrong environment.
 - **Shipping the API key to the client** — `@affitor/sdk/server` and the Bearer key are server-only; the browser uses `@affitor/sdk` (no key).
-- **Treating `409` (duplicate `transaction_id`) or `attributed: false` (window expired) as failures** — both are normal, expected outcomes.
+- **Treating `409` with a `sale_id` (duplicate `transaction_id`) or `attributed: false` (window expired) as failures** — both are normal, expected outcomes.
 
 ---
 
