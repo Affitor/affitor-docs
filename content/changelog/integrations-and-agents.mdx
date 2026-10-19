@@ -1,0 +1,53 @@
+---
+title: Integrations and AI agents pages
+date: 2026-10-18
+type: feature
+audience: [brands, partners, developers]
+surfaces: [mcp]
+description: Two new public pages show what Affitor connects to, Integrations with a guide for each and AI agents for connecting your AI app over MCP.
+banner: { pill: New, subject: none }
+context:
+  facts:
+    - https://affitor.com/integrations lists what Affitor connects to, by category (Payments, Frameworks and auth, AI agents, Payouts).
+    - Eight integrations have their own page (Stripe, Polar, Next.js and its Clerk, Supabase and NextAuth variants, Node.js and Express, Fastify); the other tiles open their guide in the docs.
+    - https://affitor.com/agents shows the read-only MCP server at https://mcp.affitor.com/mcp, what an agent can read for brands and for partners, and how to add it to an AI app after signing in with an Affitor account.
+    - Both pages are linked from Product in the site header and from the footer.
+  ui: ["Integrations", "Connect Affitor to the tools you use", "Read the guide", "Connect Stripe", "AI agents", "Ask your AI app about your program", "Copy", "Connect an AI tool", "What your agent can do", "Choose your app"]
+  avoid:
+    - "Every integration having its own page (8 of 18 do; Wise has no page)"
+    - "An agent that can change data, record sales or move money (the server is read-only)"
+    - "An agent connection that is set up or verified by these pages on its own"
+  cta: { label: "See integrations", url: "https://affitor.com/integrations" }
+---
+
+See what Affitor connects to on two new pages: [Integrations](https://affitor.com/integrations) and [AI agents](https://affitor.com/agents).
+
+Until this week, this lived only in the docs. Now each has a page you can share, linked from Product in the site header and from the footer.
+
+## How it works
+
+- **One list**: payments, frameworks and auth, AI agents and payouts, filtered by category.
+- **A page per guide**: eight integrations have a page that says what they do and sets them up in three steps.
+- **AI agents**: the server address, what your agent can read, and the app you use.
+
+## Browse integrations
+
+Open **Integrations** from Product in the site header. Filter by Payments, Frameworks and auth, AI agents or Payouts; each tile opens its page or its guide in the docs.
+
+<Media src="/docs/changelog/integrations-and-agents/integrations.png" alt="The Integrations page with its heading, the featured tiles, the category filter and the first row of payment integrations" />
+
+## Open an integration
+
+A page such as [Stripe](https://affitor.com/integrations/stripe) says what the integration does, sets it up in three steps, and links the full guide with **Read the guide**. Stripe also has **Connect Stripe**, which opens your program's Payments settings after you sign in.
+
+<Media src="/docs/changelog/integrations-and-agents/stripe.png" alt="The Stripe integration page with Connect Stripe and Read the guide, what it does, and the three steps to connect" />
+
+## Connect your AI app
+
+[AI agents](https://affitor.com/agents) shows the server address to copy, what your agent can read for brands and for partners, and how to add it to Claude, ChatGPT, Cursor or your coding agent. You sign in with your Affitor account, and the connection is read-only.
+
+<Media src="/docs/changelog/integrations-and-agents/agents.png" alt="The AI agents page with the server address and a Copy button, and what an agent can do for brands and for partners" />
+
+## Conclusion
+
+Everything Affitor connects to now has one place to start. [Learn more about the Affitor MCP server](https://affitor.com/docs/api-reference/mcp), and write to support@affitor.com with any question.

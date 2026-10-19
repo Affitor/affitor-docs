@@ -72,6 +72,7 @@
 ## Brands: CLI
 
 - [CLI Quickstart](https://affitor.com/docs/brand/cli/quickstart.md)
+- [Set up a coding agent](https://affitor.com/docs/brand/cli/agent-setup.md)
 - [CLI Command Reference](https://affitor.com/docs/brand/cli/commands.md)
 
 ## Partners: Get started

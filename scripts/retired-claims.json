@@ -84,6 +84,30 @@
     "allow": []
   },
   {
+    "pattern": "fee may apply depending on the (payout )?method",
+    "why": "The withdrawal processing fee is one setting for every withdrawal (a percentage or a fixed amount), not per payout method.",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
+    "pattern": "adds the `trackSale` call whether or not|`npx affitor onboard` adds one to a",
+    "why": "CLI 0.4.5 reads stripe_account_bound for a certain runtime key. A true binding skips injection; unknown/false or uncertain env keeps unattended webhook unchanged. Existing calls are not removed.",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
+    "pattern": "not taken back automatically",
+    "why": "Since CMS v3.16.139 a new invoice paid by several charges, or by a payment shared with other invoices, is not recorded as a sale, and a new invoice refunded before processing is not recorded; older such sales are held for manual reconciliation.",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
+    "pattern": "refund answers `Invalid API token`",
+    "why": "An empty Bearer token on POST /api/v1/track/refund answers 401 `Empty Bearer token` (CMS v3.16.140).",
+    "since": "2026-10-18",
+    "allow": []
+  },
+  {
     "pattern": "Every click and sale through it is credited to you|Affitor tracks every click and conversion on it|All of them track the same way|Every click and sale through your link is tracked to you|Affitor records every click on it",
     "why": "A saved referral link still needs installed landing tracking and the signup/sale integrations; a short redirect is not a tracker or a guarantee that every visit or conversion is attributed. Page-link previews are not saved share URLs.",
     "since": "2026-10-18",
