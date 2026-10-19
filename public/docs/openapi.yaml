@@ -351,7 +351,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Duplicate `transaction_id`: a sale with this id was already recorded. `details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program.
+          description: "Duplicate `transaction_id`. A sale with this id was already recorded. `details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program."
           content:
             application/json:
               schema:
