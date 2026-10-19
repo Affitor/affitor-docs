@@ -3,7 +3,7 @@ title: Improvements and fixes, Oct 12–18
 date: 2026-10-18
 type: digest
 audience: [brands, partners, developers]
-surfaces: [dashboard, cli, sdk]
+surfaces: [dashboard, marketplace, api, cli, sdk, mcp]
 description: Simpler username rules, website suggestions for your Business details, faster partner pages, and fixes to renewals, phones and sign-up.
 ---
 
@@ -27,10 +27,10 @@ description: Simpler username rules, website suggestions for your Business detai
 - Program settings › Payments shows two cards, Stripe and Server API, each with its own status. Either one counts for Payments when you go live.
 - A partner invite to a program listed on the marketplace shows the commission, how long it pays and the attribution window before the partner signs in.
 - Team members with the Member role no longer see Invite member, Resend invite or Regenerate on the API keys page. Owners keep them.
-- On the API keys page, a new key shows once with a **Copy key** button, regenerating asks you to confirm, and an expired key tells you to update `AFFITOR_API_KEY` on your server.
+- On the API keys page, a new key comes with a **Copy key** button, Regenerate confirms in a dialog that names the key it stops, and an expired key tells Owners to update `AFFITOR_API_KEY`.
 - [affitor.com/switch](https://affitor.com/switch) shows how to move from another affiliate tool: connect payments, test tracking, then invite your partners by CSV. Partners get new links.
-- Finished steps on Get started and success tags use Affitor blue instead of green.
-- On Account › Payouts, the Get ready to be paid list no longer repeats the Add payout method button. Each row jumps to its card on the page.
+- Finished steps on Get started and most success tags use Affitor blue instead of green.
+- On Account › Payouts, the Get ready to be paid list no longer repeats the Add payout method button. The Legal name and Payout method rows jump to their cards on the page.
 - Marketplace programs without an uploaded logo can show their website's icon instead of initials. An uploaded logo always wins.
 
 ### Fixed
@@ -44,6 +44,7 @@ description: Simpler username rules, website suggestions for your Business detai
 - Program pages show their whole About, with no Read more.
 - The invoice number in the How to pay part of invoice emails stays on one line on a phone.
 - Paying an Affitor invoice by card stays in the invoice currency, with no conversion to a local currency at checkout.
+- A program's page shows its uploaded logo, as your Programs list does, instead of an initial, and Copy buttons line up for short and long links.
 
 ### For developers
 
