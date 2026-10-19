@@ -67,6 +67,7 @@ const ALWAYS = [
   [PROXY, '/docs/brand/quickstart', 200, null, 'text/html'],
   [PROXY, '/docs/brand/quickstart.md', 200, null, 'text/markdown'],
   [PROXY, '/docs/skill.md', 200, null, 'text/markdown'],
+  [PROXY, '/docs/openapi.json', 200, null, 'application/json'],
   [PROXY, '/docs/api/search?query=payout', 200, null, 'application/json'],
   [PROXY, '/docs/advertisers/quickstart', 308, '/docs/brand/quickstart'],
   [PROXY, '/docs/advertisers/quickstart.md', 308, '/docs/brand/quickstart.md'],

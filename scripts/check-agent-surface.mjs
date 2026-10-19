@@ -505,6 +505,9 @@ function checkRetiredClaims() {
 function checkOpenApi() {
   const spec = load(read(join(ROOT, 'public/docs/openapi.yaml')), { schema: JSON_SCHEMA });
   assert.ok(spec?.openapi && spec.paths && Object.keys(spec.paths).length, 'public/docs/openapi.yaml: no openapi version or paths');
+  // /docs/openapi.json is built from it (src/app/docs/openapi.json/route.ts): same document.
+  const built = join(ROOT, '.next/server/app/docs/openapi.json.body');
+  assert.deepEqual(JSON.parse(read(built)), spec, `${relative(ROOT, built)} differs from openapi.yaml`);
   return Object.keys(spec.paths).length;
 }
 
@@ -623,7 +626,7 @@ function main() {
 
   console.log(`PASS content assets: ${assets} file references reachable (present in public/ and not swallowed by a redirect).`);
   console.log(`PASS docs nav: active tab, Brands | Partners switch and previous / next right on ${navPages} sample pages; help and use cases home cards match their index; help and use cases pages hide the left nav (built CSS rule + sidebar hook); use case pages have no rail and a breadcrumb home; root folder ids pinned; every page listed by one meta.json entry.`);
-  console.log(`PASS openapi.yaml: parses, ${openApiPaths} paths.`);
+  console.log(`PASS openapi.yaml: parses, ${openApiPaths} paths; /docs/openapi.json is the same document.`);
   console.log(`PASS retired claims: ${retired.claims} patterns, 0 hits in ${retired.files} files (docs pages, blog posts, skill.md, openapi.yaml).`);
   console.log(`PASS changelog data: /changelog.json has ${feedEntries} entries newest first matching the source; /changelog/context.md is _context.md.`);
   console.log(`PASS agent surface: ${pages.length} pages, ${entries.length} sitemap URLs, ${datedPages.length} dated pages, ${Buffer.byteLength(llms)} llms.txt bytes; source parity, metadata, HTML, full corpus, freshness, and robots verified.`);
