@@ -650,7 +650,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Program API key from your advertiser dashboard (Program Settings).
+      description: Program API key from your advertiser dashboard (Program Settings). A program API key belongs to one program and authorizes every call in this spec that requires it, for that program only.
 
   responses:
     Unauthorized:
