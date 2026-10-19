@@ -2,7 +2,7 @@
 title: Track Sale
 description: Record an attributed sale and create the partner commission from your backend
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-19
 ---
 
 Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
@@ -209,11 +209,11 @@ data = response.json()`
 | `message` | string | Human-readable confirmation. |
 
 <Callout type="info" title="Idempotency">
-  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and the first sale's id in `error.details.sale_id`. Affitor does not create a duplicate sale, so you can safely retry on network failure.
+  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program. Affitor does not create a duplicate sale, so you can safely retry on network failure.
 </Callout>
 
 <Callout type="warning" title="409 is not an error">
-  A `409` response means the sale was already recorded successfully. Do not retry a 409 — treat it as a successful prior call and continue your payment flow normally.
+  A `409` response with a `sale_id` means your program already recorded this sale. Do not retry a 409; treat it as a successful prior call and continue your payment flow normally. A `409` with `sale_id: null` means another program already used this `transaction_id`, so nothing was recorded for your program.
 </Callout>
 
 ---
@@ -228,7 +228,7 @@ Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-
 | `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
 | `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
 | `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
-| `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is the recorded sale |
+| `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is your program's earlier sale id, or `null` when it belongs to another program |
 | `422` | `unsupported_currency` | `currency` is not `USD`, `EUR` or `VND`; no sale, commission or fee is created |
 | `429` | `rate_limited` | Too many requests; wait `retry_after_seconds` |
 | `500` | `internal_error` | Sale or commission creation failed internally |

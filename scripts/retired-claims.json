@@ -112,5 +112,11 @@
     "why": "A saved referral link still needs installed landing tracking and the signup/sale integrations; a short redirect is not a tracker or a guarantee that every visit or conversion is attributed. Page-link previews are not saved share URLs.",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "first sale's id in `error\\.details\\.sale_id`|with the recorded sale in `error\\.details\\.sale_id`|`error\\.details\\.sale_id` is the recorded sale",
+    "why": "A track/sale 409 returns the earlier sale id only when that sale belongs to the calling program; otherwise error.details.sale_id is null.",
+    "since": "2026-10-19",
+    "allow": []
   }
 ]

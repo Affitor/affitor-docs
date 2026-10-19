@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-10-19
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -54,7 +54,7 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 
 `data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), `GoneError` (410), `UnprocessableEntityError` (422), `InternalServerError` (500). `error.details` is an empty object unless noted below.
 
-`POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with the recorded sale in `error.details.sale_id`), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
+`POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
 
 Most other errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are three exceptions, all in `error.details`:
 
@@ -270,7 +270,7 @@ This applies to `POST /api/v1/track/click` and `POST /api/v1/track/lead` in test
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists; `error.details.sale_id` is its id | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
+| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists; `error.details.sale_id` is its id when it belongs to your program, otherwise `null` | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
 
 Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_id`). The check is scoped globally, not per-program.
 
@@ -562,6 +562,7 @@ The sale endpoint uses `transaction_id` as a globally unique idempotency key sto
 
 - Sending the same `transaction_id` twice returns `409 Conflict` — the second request is a no-op.
 - The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
+- `error.details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program. A `null` means nothing was recorded for your program under this `transaction_id`.
 - Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
 - If a sale was recorded but commission creation failed (500), the `transaction_id` is still consumed. Contact Affitor support to investigate the commission state before re-submitting under a new ID.
 
