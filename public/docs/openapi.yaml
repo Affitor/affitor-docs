@@ -351,7 +351,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Duplicate `transaction_id` — this sale was already recorded.
+          description: Duplicate `transaction_id`: a sale with this id was already recorded. `details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program.
           content:
             application/json:
               schema:
@@ -756,7 +756,7 @@ components:
               description: Human-readable error message.
             details:
               type: object
-              description: Empty object, except `sale_id` on a track/sale 409.
+              description: Empty object, except `sale_id` (integer or null) on a track/sale 409.
             code:
               type: string
               enum: [invalid_request, no_attribution, unauthorized, not_found, duplicate_transaction, unsupported_currency, internal_error]
