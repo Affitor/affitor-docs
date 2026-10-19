@@ -2,16 +2,16 @@
 title: "Get Your Referral Link"
 description: "Find, copy, and share your tracked referral link, generated automatically when you join."
 kind: quickstart
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ---
 
-Your referral link is the URL you share. Every click and sale through it is credited to you. You don't have to create it: Affitor generates it for you.
+Your referral link is the URL you share for a program. Affitor creates a default link for you; when the brand allows additional links, you can also send people to a specific page. Tracking must run on the destination for visits to be recorded.
 
 ## Where to find it
 
 Your referral link is created automatically the moment you're approved: no button to press, no setup. Open the program from **Programs** to find it.
 
-If you don't see a link, the brand hadn't set a website for the program when you were approved, so no link was created. Once the brand saves a valid website, open the program again from **Programs**: the page creates your link on that visit.
+If you don't see a link, the brand hadn't set a website for the program when you were approved, so no link was created. Once the brand saves a valid website, open the program's **Overview** from **Programs** so Affitor can try again. If the link is still missing, ask the brand to check the program website and link settings.
 
 **Copy link** at the top of the program's page copies it. Your links are also under **Top links** on **Overview** and on the **Links** tab, where **Create link** adds another.
 
@@ -25,17 +25,56 @@ https://brand.com?via=YOURCODE
 https://brand.com?aff=YOURCODE
 ```
 
-The `/r/` form is used when the brand has set up a short-link redirect on their site; otherwise the link uses the program's parameter, `?via=` or `?aff=`. All of them track the same way. The code is unique to you. When someone visits through it, Affitor records the click in a first-party cookie and ties any later signup or sale back to you. If the visitor was already referred by another partner, they stay credited to that first partner.
+The `/r/` form is used when the brand has set up a short-link redirect on their site; otherwise the link uses the program's parameter, `?via=` or `?aff=`. A short redirect must take the visitor to a page where the tracker runs. Query links carry the code directly to that page. The code identifies your link; the tracker records the visit and stores a browser identifier for later attribution when the brand's signup and sale integrations are connected. If the visitor was already referred by another partner, they stay credited to that first partner.
 
 ## Share it
 
-Drop your link anywhere you reach an audience: content, social posts, communities, newsletters, or direct outreach. There's nothing else to install.
+Drop your saved link anywhere you reach an audience: content, social posts, communities, newsletters, or direct outreach. The brand manages tracking on its site; you do not install a tracker to share a link.
 
 :::tip
 
-Share the same link everywhere. Affitor tracks every click and conversion on it, so you can watch performance build in your dashboard.
+Share the URL copied from your saved link. Do not remove its tracking code or use an unsaved preview as the link you distribute.
 
 :::
+
+## Link to a specific page
+
+Open the program's **Links** tab and select **Create link**, or use **Link to a page** at the top of the program page. Additional page links depend on the brand's [allowed destinations and link limit](/docs/brand/partner-links).
+
+1. Enter a **Private label** to recognize the link later, such as `Pricing newsletter`.
+2. Keep the generated **Link key** or choose an available one before saving. The key cannot be changed after creation.
+3. Choose a **Domain** from the brand's list. For a domain that allows any page, enter a **Page path** or paste a full URL on that same domain. A path such as `pricing` is accepted; query parameters and fragments are preserved.
+4. Check the **Query link preview**, then select **Create link**. After the form closes, copy the saved URL from the **Links** list or open its QR code and choose **Download PNG**.
+
+For example, a path and a saved query link can look like this:
+
+```text
+/pricing?plan=pro#details
+https://brand.example/pricing?plan=pro&via=pricing-newsletter#details
+```
+
+Your program may use `aff` instead of `via`. Use the URL Affitor saves rather than adding the parameter yourself.
+
+The short-format preview uses `/r/<page>/<code>`, such as `https://brand.example/r/pricing/pricing-newsletter`. A nested page keeps all its segments before the code, for example `/r/guides/getting-started/pricing-newsletter`. The default homepage short link remains `/r/YOURCODE`. Copy the saved URL; the preview does not install a short-link handler on the brand's website.
+
+If the brand allows **One specific page**, the **Page path** is filled in and locked. You cannot edit that rule's page path; you can choose another domain only if the brand also allows it. **Short format preview · not ready** is an example, not a shareable short link: page links use the query format because Affitor does not yet verify a short-link handler for pages.
+
+The example form below uses page `/p` and key `spring`: its query preview is `https://brand.example/p?via=spring` and its short preview is `https://brand.example/r/p/spring`. The short preview is marked **not ready**; copy the saved query link instead.
+
+<div className="not-prose mx-auto max-w-xl">
+  <picture className="block dark:hidden">
+    <source media="(max-width: 640px)" srcSet="/docs/brand/partner-links/page-first/create-link-phone-light.png" />
+    <img src="/docs/brand/partner-links/page-first/create-link-light.png" alt="Partner page-link form with a locked allowed page and a query link preview" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+  <picture className="hidden dark:block">
+    <source media="(max-width: 640px)" srcSet="/docs/brand/partner-links/page-first/create-link-phone-dark.png" />
+    <img src="/docs/brand/partner-links/page-first/create-link-dark.png" alt="Partner page-link form with a locked allowed page and a query link preview" loading="lazy" className="h-auto w-full rounded-xl" />
+  </picture>
+</div>
+
+The default link's destination belongs to the program; you can edit its private label. An additional link also keeps its key when you change its label. If **Create link** is unavailable because additional links are off or you have reached the limit, ask the brand about its settings. The default link is separate from that limit, and inactive additional links still count.
+
+A recent-click message is an observation, not a tracker installation check. A click seen on a site does not prove tracking runs on every allowed page, and no recent click does not prove tracking is broken. Ask the brand to check a destination before sharing if its tracking has not been verified.
 
 ## Refer a brand to Affitor
 

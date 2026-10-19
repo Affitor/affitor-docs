@@ -106,5 +106,11 @@
     "why": "An empty Bearer token on POST /api/v1/track/refund answers 401 `Empty Bearer token` (CMS v3.16.140).",
     "since": "2026-10-18",
     "allow": []
+  },
+  {
+    "pattern": "Every click and sale through it is credited to you|Affitor tracks every click and conversion on it|All of them track the same way|Every click and sale through your link is tracked to you|Affitor records every click on it",
+    "why": "A saved referral link still needs installed landing tracking and the signup/sale integrations; a short redirect is not a tracker or a guarantee that every visit or conversion is attributed. Page-link previews are not saved share URLs.",
+    "since": "2026-10-18",
+    "allow": []
   }
 ]
