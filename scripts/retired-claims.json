@@ -114,7 +114,7 @@
     "allow": []
   },
   {
-    "pattern": "first sale's id in `error\\.details\\.sale_id`|with the recorded sale in `error\\.details\\.sale_id`|`error\\.details\\.sale_id` is the recorded sale",
+    "pattern": "first sale's id in `error\\.details\\.sale_id`|with the recorded sale in `error\\.details\\.sale_id`|`error\\.details\\.sale_id` is the recorded sale|A `409` confirms the sale exists|treat as already-recorded, not a retry\\)",
     "why": "A track/sale 409 returns the earlier sale id only when that sale belongs to the calling program; otherwise error.details.sale_id is null.",
     "since": "2026-10-19",
     "allow": []
