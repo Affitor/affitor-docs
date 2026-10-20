@@ -118,5 +118,11 @@
     "why": "A track/sale 409 returns the earlier sale id only when that sale belongs to the calling program; otherwise error.details.sale_id is null.",
     "since": "2026-10-19",
     "allow": []
+  },
+  {
+    "pattern": "not promised a `409`|handled before the duplicate check|in any tracking request body",
+    "why": "A test-mode sale with a repeated transaction_id answers 409 duplicate_transaction like a live sale; test_mode applies to click, lead and sale only (refund ignores it).",
+    "since": "2026-10-20",
+    "allow": []
   }
 ]

@@ -2,7 +2,7 @@
 title: API Reference
 description: Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-10-20
 ---
 
 The Affitor Tracking API lets your backend record affiliate events — clicks, signups, sales, and refunds — and retrieve program performance data.
@@ -127,7 +127,7 @@ To reach readiness from your own backend, call `GET /api/v1/programs/me/readines
 
 ## Test mode
 
-Pass `"additional_data": { "test_mode": true }` in any tracking request body to create a flagged test record without affecting real attribution, commission, or metric state. Test records are marked `is_test: true` in the database.
+Pass `"additional_data": { "test_mode": true }` in a click, lead or sale request body to create a flagged test record without affecting real attribution or commission. Test records are marked `is_test: true` in the database. Refunds have no test mode. Details: [Test mode](/docs/api-reference/test-mode).
 
 ---
 
