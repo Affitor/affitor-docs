@@ -6,6 +6,7 @@
     "overview",
     "errors",
     "attribution",
+    "test-mode",
     "---Tracking API---",
     "track-click",
     "track-lead",

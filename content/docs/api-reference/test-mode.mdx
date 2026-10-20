@@ -1,0 +1,72 @@
+---
+title: Test mode
+description: How to send test clicks, leads and sales to the Tracking API with your real program API key, what a test event records, and what it never touches.
+kind: concept
+last_updated: 2026-10-20
+---
+
+Test mode lets you, or an AI agent, call the Tracking API against production with your real program API key and get real responses, without creating a real sale, commission or platform fee. There is no separate test server or test account: you send the same requests to `https://api.affitor.com` and mark them as test.
+
+---
+
+## Turn it on
+
+Add `"test_mode": true` inside `additional_data` on a click, lead or sale request.
+
+```bash
+# Replace $AFFITOR_API_KEY with your program API key (Program settings > API keys).
+curl -X POST https://api.affitor.com/api/v1/track/sale \
+  -H "Authorization: Bearer $AFFITOR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "additional_data": { "test_mode": true } }'
+```
+
+```json
+{
+  "success": true,
+  "message": "Test sale event tracked successfully",
+  "data": { "eventId": 1234, "programId": 42, "test_mode": true }
+}
+```
+
+On a sale, `"livemode": false` does the same thing as `test_mode`. `"livemode": true` does not turn test mode off.
+
+| Endpoint | Test mode | Key |
+|---|---|---|
+| [`POST /api/v1/track/click`](/docs/api-reference/track-click) | `additional_data.test_mode` | Optional. Without a key, send `additional_data.program_id` so the event is linked to your program. |
+| [`POST /api/v1/track/lead`](/docs/api-reference/track-lead) | `additional_data.test_mode` | Optional, as for clicks. A key that is sent must be valid, or the call returns `401`. |
+| [`POST /api/v1/track/sale`](/docs/api-reference/track-sale) | `additional_data.test_mode` or `livemode: false` | Required. An invalid key returns `401`, in test mode too. |
+| [`POST /api/v1/track/refund`](/docs/api-reference/track-refund) | None | Required. With your program API key a refund is always real and reverses the real commission. |
+
+## What a test event records
+
+Each test call stores one event flagged `is_test: true` and answers with `test_mode: true` and the new `eventId`.
+
+- **Click:** a test click event. `affiliate_url` is not required.
+- **Lead:** a test lead event. `click_id` and `customer_key` are optional (placeholders are stored when they are missing).
+- **Sale:** a test sale event. `transaction_id` and `amount_cents` are optional (`amount_cents` defaults to `9999`). A test sale accepts `USD`, `EUR` or `VND` only (`422 unsupported_currency` otherwise). Sending the same `transaction_id` twice returns `409 duplicate_transaction`, as for a real sale.
+
+A test event is inserted directly. It does not resolve a partner, so it creates no commission and no platform fee, and it never takes over a real customer's attribution. Test sales are also left out of your revenue analytics.
+
+Test clicks and leads count toward your setup checklist: they are how the script and signup checks pass. When the request carries your program API key, Affitor recalculates your program's integration status right away; a test event sent without a key does not trigger that recalculation. A test sale never counts as your first real sale.
+
+## Test the whole chain
+
+A single test event proves the key authenticates and the program accepts events. It does not prove attribution. To run a synthetic click, signup and sale through the real attribution and commission pipeline, use one of:
+
+- `npx affitor onboard`, which runs the chain and then polls readiness ([CLI commands](/docs/brand/cli/commands))
+- the MCP tools `affitor_run_verification`, then `affitor_readiness`
+- **Run check** on the **Payments** step of program setup
+
+The steps and limits are in [Testing your integration](/docs/brand/tracking/testing-integration). To send one test event from the terminal: `npx affitor test click`, `lead` or `sale`.
+
+## Going live
+
+Remove `test_mode` (and `livemode: false`). Live calls use the same key and the same endpoints. A live sale needs a `transaction_id`, a positive `amount_cents` and a customer that already carries attribution: see [Track a sale](/docs/api-reference/track-sale).
+
+<NextStep
+  title="Get your program API key"
+  description="Where the key lives, how to generate it, and how to replace it."
+  href="/docs/brand/api-keys"
+  ctaLabel="Open API key reference"
+/>
