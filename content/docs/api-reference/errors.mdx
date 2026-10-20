@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-19
+last_updated: 2026-10-20
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -307,10 +307,14 @@ Every response on these routes carries the current budget, not just the ones tha
 
 | Header | Value |
 |--------|-------|
-| `X-RateLimit-Limit` | The limit for this bucket |
-| `X-RateLimit-Remaining` | Requests left in the current window |
+| `RateLimit-Policy` | The bucket's quota as an IETF structured field: `"default";q=120;w=60` is 120 requests per 60-second window |
+| `RateLimit` | What is left: `"default";r=119;t=42` is 119 requests left, window resets in 42 seconds |
+| `X-RateLimit-Limit` | The limit for this bucket (same as `q`) |
+| `X-RateLimit-Remaining` | Requests left in the current window (same as `r`) |
 | `X-RateLimit-Reset` | Unix timestamp in seconds when the window resets |
 | `Retry-After` | Seconds to wait. Sent only on a `429` |
+
+`RateLimit-Policy` and `RateLimit` follow the IETF draft for RateLimit header fields; the `X-RateLimit-*` headers stay for existing clients.
 
 Over the limit, the request is refused with the [typed envelope](#the-typed-envelope) — no `data` key:
 
