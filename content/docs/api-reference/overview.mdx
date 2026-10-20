@@ -131,6 +131,12 @@ Pass `"additional_data": { "test_mode": true }` in a click, lead or sale request
 
 ---
 
+## Rate limits
+
+The tracking, readiness and CLI endpoints have a per-minute limit, counted per IP for the click and lead calls and per API key for sales, refunds and readiness. Every response states the budget in `RateLimit-Policy` and `RateLimit` (plus the older `X-RateLimit-*` headers); a refused call answers `429` with `Retry-After` and `retry_after_seconds`. Limits per endpoint: [Rate limits (429)](/docs/api-reference/errors#rate-limits-429).
+
+---
+
 ## Endpoint pages
 
 <FeatureCards>
