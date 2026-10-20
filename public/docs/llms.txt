@@ -98,6 +98,7 @@
 
 - [API Reference](https://affitor.com/docs/api-reference/overview.md)
 - [Errors & Troubleshooting](https://affitor.com/docs/api-reference/errors.md)
+- [API versioning and deprecation](https://affitor.com/docs/api-reference/versioning.md)
 - [Attribution Mechanics](https://affitor.com/docs/api-reference/attribution.md)
 
 ## API Reference: Tracking API
