@@ -36,11 +36,11 @@ On a sale, `"livemode": false` does the same thing as `test_mode`. `"livemode": 
 | [`POST /api/v1/track/click`](/docs/api-reference/track-click) | `additional_data.test_mode` | Optional. Without a key, send `additional_data.program_id` so the event is linked to your program. |
 | [`POST /api/v1/track/lead`](/docs/api-reference/track-lead) | `additional_data.test_mode` | Optional, as for clicks. A key that is sent must be valid, or the call returns `401`. |
 | [`POST /api/v1/track/sale`](/docs/api-reference/track-sale) | `additional_data.test_mode` or `livemode: false` | Required. An invalid key returns `401`, in test mode too. |
-| [`POST /api/v1/track/refund`](/docs/api-reference/track-refund) | None | Required. With your program API key a refund is always real and reverses the real commission. |
+| [`POST /api/v1/track/refund`](/docs/api-reference/track-refund) | None: `test_mode` in the body is ignored | Required. A refund sent with your program API key is real: when the sale has a commission, it is reversed. |
 
 ## What a test event records
 
-Each test call stores one event flagged `is_test: true` and answers with `test_mode: true` and the new `eventId`.
+Each successful test call stores one event flagged `is_test: true` and answers with `test_mode: true` and the new `eventId`.
 
 - **Click:** a test click event. `affiliate_url` is not required.
 - **Lead:** a test lead event. `click_id` and `customer_key` are optional (placeholders are stored when they are missing).
@@ -48,11 +48,11 @@ Each test call stores one event flagged `is_test: true` and answers with `test_m
 
 A test event is inserted directly. It does not resolve a partner, so it creates no commission and no platform fee, and it never takes over a real customer's attribution. Test sales are also left out of your revenue analytics.
 
-Test clicks and leads count toward your setup checklist: they are how the script and signup checks pass. When the request carries your program API key, Affitor recalculates your program's integration status right away; a test event sent without a key does not trigger that recalculation. A test sale never counts as your first real sale.
+Test clicks and leads count toward your setup checklist: they are how the script and signup checks pass. When the request carries your program API key, it also triggers a recalculation of your program's integration status. The recalculation runs after the response, so the checklist can update a moment later. A test event sent without a key does not trigger it. A test sale never counts as your first real sale.
 
 ## Test the whole chain
 
-A single test event proves the key authenticates and the program accepts events. It does not prove attribution. To run a synthetic click, signup and sale through the real attribution and commission pipeline, use one of:
+A successful test sale proves your key authenticates, because the sale endpoint refuses a missing or unknown key. A test click or lead can succeed without a valid key, so it proves only that the event was recorded. No single test event proves attribution. To run a synthetic click, signup and sale through the real attribution and commission pipeline, use one of:
 
 - `npx affitor onboard`, which runs the chain and then polls readiness ([CLI commands](/docs/brand/cli/commands))
 - the MCP tools `affitor_run_verification`, then `affitor_readiness`

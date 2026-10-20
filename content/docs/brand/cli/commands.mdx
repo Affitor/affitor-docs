@@ -2,7 +2,7 @@
 title: CLI Command Reference
 description: Complete reference for all npx affitor commands, flags, and options.
 kind: reference
-last_updated: 2026-10-19
+last_updated: 2026-10-20
 ---
 
 Every `npx affitor` command, flag, and option in one place. The agent setup, doctor, and Stripe-aware onboarding behavior below require CLI 0.4.5.
@@ -443,4 +443,4 @@ So treat the server state as **unknown, not untouched**, and verify the specific
 
 - **`init`** — run `affitor programs` and look for the program by name before running `init` again, or it will create a second one. There is no idempotency key on this call.
 - **`test`** — open your dashboard and look for the test event. The command sends no `transaction_id`, and the API generates a new event id on every call, so a repeat always writes another record.
-- **Ordinary sales you report yourself** through `POST /api/v1/track/sale` — resend the same `transaction_id`. The duplicate guard answers `409` for one already recorded, which is the one case here where a safe repeat is built in. A `409` with an id in `error.details.sale_id` confirms your program's sale exists; it does not confirm the commission was created, so check the sale in your dashboard if the first attempt may have failed partway. This does not extend to test-mode sales: a call carrying `additional_data.test_mode` is handled before the duplicate check and is not promised a `409`. A `409` with `sale_id: null` means another program already used this `transaction_id`, so nothing was recorded for yours.
+- **Ordinary sales you report yourself** through `POST /api/v1/track/sale` — resend the same `transaction_id`. The duplicate guard answers `409` for one already recorded, which is the one case here where a safe repeat is built in. A `409` with an id in `error.details.sale_id` confirms your program's sale exists; it does not confirm the commission was created, so check the sale in your dashboard if the first attempt may have failed partway. Test-mode sales follow the same guard when they carry a `transaction_id`: a repeat answers `409`. Without one, every test call gets a new id and writes another test record. A `409` with `sale_id: null` means another program already used this `transaction_id`, so nothing was recorded for yours.
