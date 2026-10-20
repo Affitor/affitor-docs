@@ -22,8 +22,9 @@ info:
     ## Test mode
     The click, lead and sale endpoints accept `additional_data: { "test_mode": true }`
     to create isolated test events (`is_test: true`) that never touch production
-    attribution, commissions, or metrics. `POST /api/v1/track/refund` has no
-    test mode: with a live key it reverses the real commission.
+    attribution or commissions and are left out of revenue analytics; they can
+    move your setup checklist. `POST /api/v1/track/refund` has no test mode:
+    with your program API key it is processed as a real refund.
     Full guide: https://affitor.com/docs/api-reference/test-mode
 
     ## Attribution rules
