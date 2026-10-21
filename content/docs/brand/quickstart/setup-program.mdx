@@ -175,11 +175,11 @@ Payments counts as connected when either card on the **Payments** step is done:
 - **Stripe**: your Stripe account is connected to the program.
 - **Server API**: your server has sent at least one sale for this program to `POST /api/v1/track/sale`. A test sale counts (send it with `"livemode": false`), so you can go live before your first real customer. **Run check** does not count; the sale has to come from your server.
 
-Click and signup tracking are not required to go live. Install them before you invite partners so their traffic is attributed.
+Click and signup tracking are not required to go live. Install them before partners start sending traffic so it is attributed.
 
 If the program is paused for an overdue invoice, Go live stays blocked: selecting **Go live** shows the overdue notice with **Open billing**. Pay the invoice first.
 
-Once live, the page says your program is live and shows its link with **Copy link**, plus **Open dashboard** and **Invite partners**.
+Once live, the page says your program is live and shows its link with **Copy link**, plus **Open dashboard**.
 
 ## Get the Verified badge
 
@@ -192,7 +192,7 @@ Partners see a **Verified** mark on live programs that Affitor has checked, and 
 
 Once a partner has been paid a commission through Affitor, the mark also lists **Partners have already been paid through Affitor**. If a check stops holding, for example an invoice goes overdue, or (without Stripe connected) your server sends no real sale for 90 days, the mark goes away until it holds again. Affitor can also remove the mark from a program. The CLI's **Integration verified** message is a different check: it tests your install and does not count toward the mark.
 
-## Before you invite partners
+## Before partners join
 
 <Checklist
   items={[

@@ -31,7 +31,6 @@
     "../api-reference/integrations/node-express",
     "../api-reference/integrations/fastify",
     "---Partners---",
-    "quickstart/inviting-partners",
     "quickstart/partner-approval-quality-control",
     "groups",
     "quickstart/view-performance",

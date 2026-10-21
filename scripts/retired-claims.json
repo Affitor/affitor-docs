@@ -124,5 +124,11 @@
     "why": "A test-mode sale with a repeated transaction_id answers 409 duplicate_transaction like a live sale; test_mode applies to click, lead and sale only (refund ignores it).",
     "since": "2026-10-20",
     "allow": []
+  },
+  {
+    "pattern": "quickstart/inviting-partners|invite (your )?partners by (email|CSV)|Invited by a brand\\?",
+    "why": "Partner invites were archived on 21/10/2026: brands no longer invite partners by email or CSV; partners join through the marketplace or the program page. The old guide redirects to reviewing applications.",
+    "since": "2026-10-21",
+    "allow": []
   }
 ]
