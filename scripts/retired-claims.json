@@ -126,7 +126,7 @@
     "allow": []
   },
   {
-    "pattern": "quickstart/inviting-partners|invite (your )?partners by (email|CSV)|Invited by a brand\\?",
+    "pattern": "quickstart/inviting-partners|invite (your )?partners by (email|CSV)|Invited by a brand\\?|CSV invites|pending invites|invites (are|come) pre-written|invitations arrive pre-written|send your first invites",
     "why": "Partner invites were archived on 21/10/2026: brands no longer invite partners by email or CSV; partners join through the marketplace or the program page. The old guide redirects to reviewing applications.",
     "since": "2026-10-21",
     "allow": []
