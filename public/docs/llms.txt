@@ -46,7 +46,6 @@
 
 ## Brands: Partners
 
-- [Inviting Partners](https://affitor.com/docs/brand/quickstart/inviting-partners.md)
 - [Partner Approval & Quality Control](https://affitor.com/docs/brand/quickstart/partner-approval-quality-control.md)
 - [Organize partners into groups](https://affitor.com/docs/brand/groups.md)
 - [View Performance](https://affitor.com/docs/brand/quickstart/view-performance.md)

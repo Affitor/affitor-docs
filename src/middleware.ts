@@ -40,6 +40,8 @@ const RENAMES: [string, string][] = [
   // Merged into the pricing comparison (13/10/2026); the .md twins follow.
   ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
   ['/blog/free-affiliate-software-for-saas', '/blog/best-affiliate-software-saas'],
+  // Partner invites were archived (21/10/2026); the guide goes to reviewing applications.
+  ['/docs/brand/quickstart/inviting-partners', '/docs/brand/quickstart/partner-approval-quality-control'],
 ];
 
 // Folder URLs with no page of their own -> the page that opens the folder. Exact path only, also

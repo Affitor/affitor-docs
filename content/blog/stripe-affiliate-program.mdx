@@ -27,7 +27,7 @@ faq:
   - q: "Which Stripe affiliate tools can you start without paying?"
     a: "As of October 12, 2026, three of the eight tools compared here have a no-cost start: Affitor charges nothing until a program earns $10,000 through affiliates (all-time, per program), Endorsely charges nothing while affiliate revenue stays under $1,000 a month, and PromoteKit covers your first 3 referrals. Rewardful, FirstPromoter, Tolt and Trackdesk offer 14-day trials, and Partnero offers 30 days."
   - q: "How do I test Stripe affiliate tracking before launch?"
-    a: "On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before you invite partners at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour."
+    a: "On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before partners promote at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour."
   - q: "Can affiliate tracking work without cookies?"
     a: "Partly. Coupon and promo-code tracking needs no cookie, and PromoteKit, Endorsely, Rewardful, FirstPromoter, Tolt, Partnero and Trackdesk offer it; Affitor does not, as of October 12, 2026. Affitor shortens the time the cookie matters instead: it ties the click to the person at signup, so a cookie cleared after signup does not lose the sale."
 ---
@@ -193,7 +193,7 @@ The synthetic chain runs inside Affitor. It does not go through your site's sign
 
 <img src="/blog/shots/dashboard-live.png" alt="The Affitor program dashboard once tracking is live, with revenue, partners and an action queue" />
 
-When the test sale reads attributed, click **Go live** on your program's Share Program page. The program becomes active and gets its marketplace listing. Before you invite partners at scale, have one partner send a real click and make one real purchase through their link, then check that the sale and its commission show up in your dashboard. The [CLI quickstart](https://affitor.com/docs/brand/cli/quickstart) covers the same commands.
+When the test sale reads attributed, click **Go live** on your program's Share Program page. The program becomes active and gets its marketplace listing. Before partners promote at scale, have one partner send a real click and make one real purchase through their link, then check that the sale and its commission show up in your dashboard. The [CLI quickstart](https://affitor.com/docs/brand/cli/quickstart) covers the same commands.
 
 ## FAQ
 
@@ -215,7 +215,7 @@ As of October 12, 2026, three of the eight tools compared here have a no-cost st
 
 ### How do I test Stripe affiliate tracking before launch?
 
-On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before you invite partners at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour.
+On Affitor, run npx affitor onboard --json from your project root. It fires a synthetic click, signup and sale through Affitor's attribution pipeline without editing your files. Then read the program's readiness and check that gates.live.test_chain.sale says attributed, because integration_verified: true can also come from real traffic. The test does not go through your own signup call or Stripe's webhook delivery, so make one real purchase through a partner link before partners promote at scale. Test rows are flagged as tests, and you can run the test 10 times per program per hour.
 
 ### Can affiliate tracking work without cookies?
 
