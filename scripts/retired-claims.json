@@ -130,5 +130,11 @@
     "why": "Partner invites were archived on 21/10/2026: brands no longer invite partners by email or CSV; partners join through the marketplace or the program page. The old guide redirects to reviewing applications.",
     "since": "2026-10-21",
     "allow": []
+  },
+  {
+    "pattern": "first Affitor invoice with a positive platform fee",
+    "why": "The current M1 bonus follows the first paid invoice with positive partner commissions, including a zero Affitor fee. Its condition is separate from the unchanged platform-fee-based recurring revenue-share clock.",
+    "since": "2026-10-21",
+    "allow": []
   }
 ]
