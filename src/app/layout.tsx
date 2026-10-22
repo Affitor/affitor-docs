@@ -1,6 +1,7 @@
 import './globals.css';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
+import { preload } from 'react-dom';
 import { PostHog } from '@/components/posthog';
 import { ThemeRoot } from '@/components/theme-root';
 import { BLOG_DOCS_ORIGIN } from '@/lib/site';
@@ -39,10 +40,11 @@ const FONT_FACES = [
 ].join('');
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  // One <link rel=preload> in the head (a JSX <link> here was emitted twice).
+  preload(INTER, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preload" href={INTER} as="font" type="font/woff2" crossOrigin="anonymous" />
         <style dangerouslySetInnerHTML={{ __html: FONT_FACES }} />
       </head>
       <body>
