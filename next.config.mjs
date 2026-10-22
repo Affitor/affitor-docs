@@ -13,6 +13,9 @@ const isProdDeploy = process.env.VERCEL_ENV
 
 /** @type {import('next').NextConfig} */
 const config = {
+  // The stylesheet (30 KB compressed, no url() inside) goes into the HTML instead of a
+  // render-blocking request; on a phone that request held the first paint back ~300 ms.
+  experimental: { inlineCss: true },
   ...(isProdDeploy && {
     assetPrefix: 'https://docs.affitor.com',
     // assetPrefix covers /_next/static but NOT the /_next/image optimizer that
