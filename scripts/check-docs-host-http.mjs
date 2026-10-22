@@ -188,7 +188,7 @@ for (const [mode, cases] of Object.entries(MODES)) {
         // /_next/image fetches its `url` from the production docs host, which does not have
         // this build's media yet; probe the source file it would fetch instead.
         const parsed = new URL(url);
-        const target = parsed.pathname === '/_next/image' ? new URL(parsed.searchParams.get('url')) : parsed;
+        const target = parsed.pathname === '/_next/image' ? new URL(parsed.searchParams.get('url'), `https://${DOCS}`) : parsed;
         if (target.host !== DOCS) continue;
         const res = await get(DOCS, target.pathname + target.search);
         const fine = res.statusCode === 200 ||

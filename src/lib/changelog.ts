@@ -22,6 +22,8 @@ export const entryUrl = (entry: Entry) => `${CHANGELOG_URL}/${entrySlug(entry)}`
 /** Media for an entry sits in public/docs/changelog/<slug>/ and is served at /docs/changelog/<slug>/. */
 export const mediaDir = (slug: string) => `/docs/changelog/${slug}`;
 export const bannerSrc = (slug: string, theme: 'light' | 'dark') => `${mediaDir(slug)}/banner-${theme}.png`;
+/** Every banner is captured at 2400x1260 (1200x630 at 2x). */
+export const BANNER_SIZE = { width: 2400, height: 1260 };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** "2026-10-14" -> "Oct 14, 2026" (calendar day, no timezone shift). */
