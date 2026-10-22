@@ -22,8 +22,10 @@ info:
     ## Test mode
     The click, lead and sale endpoints accept `additional_data: { "test_mode": true }`
     to create isolated test events (`is_test: true`) that never touch production
-    attribution, commissions, or metrics. `POST /api/v1/track/refund` has no
-    test mode: with a live key it reverses the real commission.
+    attribution or commissions and are left out of revenue analytics; they can
+    move your setup checklist. `POST /api/v1/track/refund` has no test mode:
+    with your program API key it is processed as a real refund.
+    Full guide: https://affitor.com/docs/api-reference/test-mode
 
     ## Attribution rules
     - Model: first click wins inside a program. When a later click from
@@ -84,6 +86,12 @@ paths:
                     program_id: "YOUR_PROGRAM_ID"
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: Click recorded.
           content:
             application/json:
@@ -204,6 +212,12 @@ paths:
                     program_id: "YOUR_PROGRAM_ID"
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: Lead recorded (or recorded as provisional).
           content:
             application/json:
@@ -312,6 +326,12 @@ paths:
                   sale_type: "payment"
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: |
             Sale processed. Either attributed (sale + commission created) or
             explicitly not attributed (`attributed: false`, window expired).
@@ -351,7 +371,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Duplicate `transaction_id` — this sale was already recorded.
+          description: "Duplicate `transaction_id`. A sale with this id was already recorded. `details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program."
           content:
             application/json:
               schema:
@@ -417,6 +437,12 @@ paths:
               refund_reason: "customer_request"
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: |
             Refund processed (`status: reversed` or `refunded`), nothing
             changed (`status: skipped`, with a `reason`), or sale found but
@@ -517,6 +543,12 @@ paths:
                   event_type: click
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: Chain executed (or legacy single event recorded).
           content:
             application/json:
@@ -598,6 +630,12 @@ paths:
           description: Bypass the tracking-gate cache TTL (itself limited to 1 forced fetch / program / min).
       responses:
         '200':
+          headers:
+            RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+            RateLimit: { $ref: '#/components/headers/RateLimit' }
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: Readiness verdict.
           content:
             application/json:
@@ -650,8 +688,28 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Program API key from your advertiser dashboard (Program Settings).
+      description: Program API key from your advertiser dashboard (Program Settings). A program API key belongs to one program and authorizes every call in this spec that requires it, for that program only.
 
+  headers:
+    RateLimitPolicy:
+      description: >-
+        The quota of this route's bucket, as an IETF RateLimit-Policy structured field:
+        `"default";q=<requests>;w=60` (requests per 60-second window).
+      schema: { type: string, example: '"default";q=120;w=60' }
+    RateLimit:
+      description: >-
+        What is left of that quota, as an IETF RateLimit structured field:
+        `"default";r=<remaining>;t=<seconds until the window resets>`.
+      schema: { type: string, example: '"default";r=119;t=60' }
+    XRateLimitLimit:
+      description: Requests allowed per minute in this bucket (legacy header, same value as `q`).
+      schema: { type: integer }
+    XRateLimitRemaining:
+      description: Requests left in the current window (legacy header, same value as `r`).
+      schema: { type: integer }
+    XRateLimitReset:
+      description: Unix timestamp in seconds when the window resets (legacy header).
+      schema: { type: integer }
   responses:
     Unauthorized:
       description: |
@@ -693,15 +751,11 @@ components:
         Retry-After:
           schema: { type: integer }
           description: Seconds to wait before retrying.
-        X-RateLimit-Limit:
-          schema: { type: integer }
-          description: Requests allowed per minute in this bucket.
-        X-RateLimit-Remaining:
-          schema: { type: integer }
-          description: Requests left in the current window.
-        X-RateLimit-Reset:
-          schema: { type: integer }
-          description: Unix timestamp in seconds when the window resets.
+        RateLimit-Policy: { $ref: '#/components/headers/RateLimitPolicy' }
+        RateLimit: { $ref: '#/components/headers/RateLimit' }
+        X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+        X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+        X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
       content:
         application/json:
           schema:
@@ -756,7 +810,7 @@ components:
               description: Human-readable error message.
             details:
               type: object
-              description: Empty object, except `sale_id` on a track/sale 409.
+              description: Empty object, except `sale_id` (integer or null) on a track/sale 409.
             code:
               type: string
               enum: [invalid_request, no_attribution, unauthorized, not_found, duplicate_transaction, unsupported_currency, internal_error]

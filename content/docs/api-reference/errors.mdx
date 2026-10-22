@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-10-20
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -21,7 +21,7 @@ Start from the status code. It tells you whose problem the request is and whethe
 | `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
 | `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) or [`PROVIDER_EMAIL_NOT_VERIFIED`](#provider_email_not_verified) | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
-| `409` | The sale was already recorded under this `transaction_id` | Treat it as success: the sale exists | No |
+| `409` | A sale was already recorded under this `transaction_id` | Check `error.details.sale_id`: an id means your program's sale exists, so treat it as success; `null` means another program used this `transaction_id` and nothing was recorded for yours | No |
 | `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
 | `422` | `POST /api/v1/track/sale` only: the `currency` is not `USD`, `EUR` or `VND` (`error.code` `unsupported_currency`). No sale, commission or fee was created | Send `USD`, `EUR` or `VND` | Not unchanged |
 | `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
@@ -54,7 +54,7 @@ Validation, auth, and conflict errors raised by the tracking and CLI endpoints t
 
 `data` is `null` on every error in this envelope. `error.status` repeats the HTTP status, and `error.name` is the error class for that status — `BadRequestError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), `GoneError` (410), `UnprocessableEntityError` (422), `InternalServerError` (500). `error.details` is an empty object unless noted below.
 
-`POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with the recorded sale in `error.details.sale_id`), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
+`POST /api/v1/track/sale` and `POST /api/v1/track/refund` add a stable `error.code` to every error in this envelope: `invalid_request` (400), `no_attribution` (400), `unauthorized` (401), `not_found` (404), `duplicate_transaction` (409, with your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program), `unsupported_currency` (422) and `internal_error` (500). Branch on it rather than on the message text.
 
 Most other errors in this envelope carry no stable machine code, so match on the HTTP status and, where you need the specific cause, on the `error.message` strings listed below. There are three exceptions, all in `error.details`:
 
@@ -270,7 +270,7 @@ This applies to `POST /api/v1/track/click` and `POST /api/v1/track/lead` in test
 
 | Status | Error message | Meaning | Fix |
 |--------|---------------|---------|-----|
-| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists; `error.details.sale_id` is its id | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
+| `409` | `Duplicate transaction_id. This sale has already been recorded.` | A sale event with this `processor_event_id` already exists; `error.details.sale_id` is its id when it belongs to your program, otherwise `null` | This is the intended duplicate-guard behavior — do not retry with the same `transaction_id`. If the original was a test, check if you need to clear test data. |
 
 Duplicate detection is keyed on `processor_event_id` (mapped from `transaction_id`). The check is scoped globally, not per-program.
 
@@ -307,10 +307,14 @@ Every response on these routes carries the current budget, not just the ones tha
 
 | Header | Value |
 |--------|-------|
-| `X-RateLimit-Limit` | The limit for this bucket |
-| `X-RateLimit-Remaining` | Requests left in the current window |
+| `RateLimit-Policy` | The bucket's quota as an IETF structured field: `"default";q=120;w=60` is 120 requests per 60-second window |
+| `RateLimit` | What is left: `"default";r=119;t=42` is 119 requests left, window resets in 42 seconds |
+| `X-RateLimit-Limit` | The limit for this bucket (same as `q`) |
+| `X-RateLimit-Remaining` | Requests left in the current window (same as `r`) |
 | `X-RateLimit-Reset` | Unix timestamp in seconds when the window resets |
 | `Retry-After` | Seconds to wait. Sent only on a `429` |
+
+`RateLimit-Policy` and `RateLimit` follow the IETF draft for RateLimit header fields; the `X-RateLimit-*` headers stay for existing clients.
 
 Over the limit, the request is refused with the [typed envelope](#the-typed-envelope) — no `data` key:
 
@@ -562,6 +566,7 @@ The sale endpoint uses `transaction_id` as a globally unique idempotency key sto
 
 - Sending the same `transaction_id` twice returns `409 Conflict` — the second request is a no-op.
 - The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
+- `error.details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program. A `null` means nothing was recorded for your program under this `transaction_id`.
 - Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
 - If a sale was recorded but commission creation failed (500), the `transaction_id` is still consumed. Contact Affitor support to investigate the commission state before re-submitting under a new ID.
 
