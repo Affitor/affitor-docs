@@ -1,5 +1,6 @@
-import { existsSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readSync } from 'node:fs';
 import { join } from 'node:path';
+import { getImageProps } from 'next/image';
 
 /** "/a/shot.png" + "dark" -> "/a/shot-dark.png" */
 function variant(src: string, suffix: string) {
@@ -8,6 +9,36 @@ function variant(src: string, suffix: string) {
 }
 
 const inPublic = (path: string) => existsSync(join(process.cwd(), 'public', path));
+
+/** Width and height from the PNG header, so the page reserves the space before the image loads. */
+function pngSize(path: string) {
+  const head = Buffer.alloc(24);
+  const fd = openSync(join(process.cwd(), 'public', path), 'r');
+  try {
+    readSync(fd, head, 0, 24, 0);
+  } finally {
+    closeSync(fd);
+  }
+  if (head.toString('ascii', 12, 16) !== 'IHDR') throw new Error(`<Media> images must be PNG: ${path}`);
+  return { width: head.readUInt32BE(16), height: head.readUInt32BE(20) };
+}
+
+/**
+ * Resized WebP through the image optimizer, sized to the 806 px column (.cl-media), so a phone
+ * downloads a few hundred pixels, not the 2x capture.
+ */
+function optimized(src: string, alt: string, sizes: string) {
+  return getImageProps({ src, alt, sizes, ...pngSize(src) }).props;
+}
+const COLUMN = '(max-width: 838px) calc(100vw - 32px), 806px';
+
+/** The optional phone capture, used at 640 px and below. */
+function PhoneSource({ src, alt }: { src: string; alt: string }) {
+  if (!inPublic(src)) return null;
+  const { srcSet, sizes, width, height } = optimized(src, alt, 'calc(100vw - 32px)');
+  return <source media="(max-width: 640px)" srcSet={srcSet} sizes={sizes} width={width} height={height} />;
+}
+
 const THEMES = ['light', 'dark'] as const;
 
 /**
@@ -41,11 +72,9 @@ export function Media({ src, alt, caption, todo }: { src?: string; alt?: string;
           </video>
         ) : (
           <picture key={theme} className={`cl-${theme}`}>
-            {inPublic(variant(src, `phone-${theme}`)) ? (
-              <source media="(max-width: 640px)" srcSet={variant(src, `phone-${theme}`)} />
-            ) : null}
-            {/* eslint-disable-next-line @next/next/no-img-element -- themed pair; next/image cannot swap by class */}
-            <img src={variant(src, theme)} alt={alt} loading="lazy" decoding="async" />
+            <PhoneSource src={variant(src, `phone-${theme}`)} alt={alt} />
+            {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- themed pair; next/image cannot swap by class (alt is in the props) */}
+            <img {...optimized(variant(src, theme), alt, COLUMN)} />
           </picture>
         ),
       )}

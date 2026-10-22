@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { getImageProps } from 'next/image';
 import type { ReactNode } from 'react';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
-import { bannerSrc, bullets, capitalize, entrySlug, formatDay, surfaceLabel, type Entry, type MdNode } from '@/lib/changelog';
+import { BANNER_SIZE, bannerSrc, bullets, capitalize, entrySlug, formatDay, surfaceLabel, type Entry, type MdNode } from '@/lib/changelog';
 
 /** Inline MDAST (text, code, bold, italic, links) to React, for the digest preview. */
 function inline(nodes: MdNode[]): ReactNode[] {
@@ -69,8 +70,13 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
         {entry.banner ? (
           <Link href={href} aria-hidden tabIndex={-1}>
             {(['light', 'dark'] as const).map((theme) => (
-              // eslint-disable-next-line @next/next/no-img-element -- themed pair swapped by class
-              <img key={theme} className={`cl-banner cl-${theme}`} src={bannerSrc(slug, theme)} alt="" loading="lazy" decoding="async" />
+              // Resized WebP for the 806 px card; the 2400 px capture is only for share cards.
+              // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- themed pair swapped by class
+              <img
+                key={theme}
+                className={`cl-banner cl-${theme}`}
+                {...getImageProps({ src: bannerSrc(slug, theme), alt: '', sizes: '(max-width: 838px) calc(100vw - 32px), 806px', ...BANNER_SIZE }).props}
+              />
             ))}
           </Link>
         ) : null}

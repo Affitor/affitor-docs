@@ -6,7 +6,7 @@ import { CopyLink } from '@/components/changelog/copy-link';
 import { Chips, actionText } from '@/components/changelog/parts';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
 import { CHANGELOG_URL, bannerSrc, capitalize, entrySlug, entryUrl, formatDay, sortedEntries } from '@/lib/changelog';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, ogCard } from '@/lib/site';
 
 // Fully static: an entry only changes with a deploy.
 export const dynamicParams = false;
@@ -35,13 +35,19 @@ async function getEntry(params: Promise<{ slug: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { entry, slug } = await getEntry(params);
   const url = entryUrl(entry);
-  const image = entry.banner ? [{ url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 }] : undefined;
+  const image = [
+    {
+      url: entry.banner ? `${SITE_URL}${bannerSrc(slug, 'light')}` : ogCard(entry.title, entry.description, `/changelog/${slug}`),
+      width: 1200,
+      height: 630,
+    },
+  ];
   return {
     title: { absolute: `${entry.title} · Affitor Changelog` },
     description: entry.description,
     alternates: { canonical: url, types: { 'text/markdown': `/changelog/${slug}.md` } },
     openGraph: { title: entry.title, description: entry.description, type: 'article', url, publishedTime: entry.date, images: image },
-    twitter: { card: 'summary_large_image', title: entry.title, description: entry.description, images: image?.map((i) => i.url) },
+    twitter: { card: 'summary_large_image', title: entry.title, description: entry.description, images: image.map((i) => i.url) },
   };
 }
 

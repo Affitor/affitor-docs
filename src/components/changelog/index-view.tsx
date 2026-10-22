@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Card } from '@/components/changelog/parts';
 import { ChangelogList } from '@/components/changelog/list';
+import { ogCard } from '@/lib/site';
 import { CHANGELOG_SUB, CHANGELOG_TITLE, CHANGELOG_URL, PAGE_SIZE, indexOrder, isPinned, surfaceLabel, todayPT } from '@/lib/changelog';
 
 const SURFACES = Object.fromEntries(
@@ -15,7 +16,13 @@ export const indexMetadata: Metadata = {
     canonical: CHANGELOG_URL,
     types: { 'text/markdown': '/changelog.md', 'application/rss+xml': '/changelog/rss.xml' },
   },
-  openGraph: { title: 'Affitor Changelog', description: CHANGELOG_SUB, type: 'website', url: CHANGELOG_URL },
+  openGraph: {
+    title: 'Affitor Changelog',
+    description: CHANGELOG_SUB,
+    type: 'website',
+    url: CHANGELOG_URL,
+    images: [{ url: ogCard('Affitor Changelog', CHANGELOG_SUB, '/changelog'), width: 1200, height: 630 }],
+  },
   twitter: { card: 'summary_large_image', title: 'Affitor Changelog', description: CHANGELOG_SUB },
 };
 
