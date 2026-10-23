@@ -1,0 +1,52 @@
+---
+title: API versioning and deprecation
+description: How the Affitor Tracking API is versioned, which changes ship without a new version, and how much notice you get before anything you use is removed.
+kind: concept
+last_updated: 2026-10-20
+---
+
+The Tracking API is versioned in the URL: every endpoint lives under `/api/v1/`. An integration built against `v1` keeps working until we announce a deprecation and the notice period below has passed.
+
+---
+
+## What changes without a new version
+
+These are additive. They can ship at any time, and a client written against `v1` must tolerate them:
+
+- a new endpoint
+- a new optional request field
+- a new field in a response body
+- a new error `code` value
+- a new response header
+
+Treat unknown response fields and headers as ignorable, and branch on `error.code`, not on message text.
+
+## What needs a new version
+
+A change that can break a working `v1` integration ships under a new version path (`/api/v2/...`), never in place:
+
+- removing an endpoint, a request field or a response field
+- making an optional request field required
+- changing a field's type or meaning
+- changing a status code the docs promise for a given case
+
+## Deprecation notice
+
+When we deprecate an endpoint or a field, we keep it working for at least **6 months** after the announcement. During that period:
+
+- the deprecation is announced on the [changelog](/changelog)
+- responses from a deprecated endpoint carry a `Deprecation` header (RFC 9745) and a `Sunset` header (RFC 8594) with the removal date
+- the docs page for it says what replaces it
+
+Nothing in `v1` is deprecated today.
+
+## Credentials are different
+
+A program API key flagged for mandatory rotation also sends `Deprecation` and `Sunset` headers, with a shorter deadline set for that key. That is about the key, not the API version: see [When Affitor asks you to replace a key](/docs/brand/api-keys#when-affitor-asks-you-to-replace-a-key).
+
+<NextStep
+  title="See every error code"
+  description="The codes you can branch on, including api_key_rotation_required."
+  href="/docs/api-reference/errors"
+  ctaLabel="Open error reference"
+/>
