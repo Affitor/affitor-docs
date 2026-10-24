@@ -2,7 +2,7 @@
 title: "Stripe"
 description: "Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring."
 kind: guide
-last_updated: 2026-10-18
+last_updated: 2026-10-24
 ---
 
 This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
@@ -58,7 +58,7 @@ Affitor listens to the `checkout.session.completed` webhook event and attributes
 
 ### Subscription (`mode: 'subscription'`)
 
-For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from the invoice events (`invoice.payment_succeeded`, `invoice.paid`), and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email or that Stripe customer ID.
+For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from the invoice events (`invoice.payment_succeeded`, `invoice.paid`), and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email, when Affitor has recorded it, or else by that Stripe customer ID.
 
 ```ts
 const session = await stripe.checkout.sessions.create({
