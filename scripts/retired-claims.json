@@ -136,5 +136,11 @@
     "why": "The current M1 bonus follows the first paid invoice with positive partner commissions, including a zero Affitor fee. Its condition is separate from the unchanged platform-fee-based recurring revenue-share clock.",
     "since": "2026-10-21",
     "allow": []
+  },
+  {
+    "pattern": "refunds? (do|does) not lower|does not lower the revenue",
+    "why": "Refunds lower program.total_revenue, the $10,000 fee-free counter, by the refunded amount (capped by what the sale added): affiliate-cms commission-refund.ts uncountRevenue, utils/revenue-counter.ts.",
+    "since": "2026-10-24",
+    "allow": []
   }
 ]
