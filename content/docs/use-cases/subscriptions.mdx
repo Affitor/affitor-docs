@@ -42,7 +42,7 @@ sequenceDiagram
   ]}
 />
 
-Each paid invoice of the subscription is a sale: the first one, then every renewal. Renewals go to the partner of the first payment, through the click passed at checkout or the Stripe customer ID saved with that first payment. The attribution window applies only to that first payment: once the customer has paid, renewals are credited however old the click is. The rate is the same for every plan, price and billing interval.
+Each paid invoice of the subscription is a sale: the first one, then every renewal. Renewals go to the partner of the first payment, through the click passed at checkout, the buyer's recorded email, or the Stripe customer ID saved with that first payment. The attribution window applies only to that first payment: once the customer has paid, renewals are credited however old the click is. The rate is the same for every plan, price and billing interval.
 
 Canceling, pausing or changing the plan writes nothing in Affitor: a canceled subscription stops earning because it stops paying, and after a plan change each paid invoice earns at the same rate. A refund or dispute is matched to its invoice and reverses the commission; some older sales, such as one payment shared by several invoices, are held for manual reconciliation instead. A new invoice whose payment was already refunded, even in part, before Affitor processed it is not recorded as a sale. A new invoice paid by several charges, or by one payment that also paid other invoices, is not recorded automatically. If you bill subscriptions outside Stripe, your server reports each payment and each refund ([Any payment provider](/docs/use-cases/any-payment-provider)).
 

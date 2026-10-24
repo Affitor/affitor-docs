@@ -163,8 +163,8 @@ const session = await stripe.checkout.sessions.create({
 - One-time payments are handled from Stripe checkout session completion
 - Subscription commissions, for the first payment and each renewal, are created from the invoice events (`invoice.payment_succeeded`, `invoice.paid`)
 - An invoice carries the subscription's metadata (`subscription_data.metadata`), not the Checkout Session's `metadata`, so that is where the click reaches the subscription
-- Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by that Stripe customer ID
-- Without it, the subscription is attributed only if its Stripe customer ID or the buyer's email matches a customer Affitor already has. The email matches only a customer whose email Affitor has recorded, for example from a lead your server sent with `trackLead`
+- Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email, when Affitor has recorded it, or else by that Stripe customer ID
+- Without it, the subscription is attributed only if the buyer's email or its Stripe customer ID matches a customer Affitor already has. The email matches only a customer whose email Affitor has recorded, from a lead your server sent with `trackLead` or an earlier attributed payment.
 
 ---
 
@@ -325,7 +325,7 @@ Check:
 ### Stripe renewals not attributed
 
 Check:
-- the subscription's first payment was attributed: renewals follow it through the saved Stripe customer ID
+- the subscription's first payment was attributed: renewals follow it through the buyer's recorded email or the saved Stripe customer ID
 - `subscription_data.metadata` contains all three fields
 - the program's Stripe card under **Program settings** › **Payments** reads **Connected**, and the subscription bills on that Stripe account. Affitor receives the invoice events (`invoice.payment_succeeded`, `invoice.paid`) through Stripe Connect; you do not add a webhook
 - the same customer key was used at signup and in Stripe metadata
