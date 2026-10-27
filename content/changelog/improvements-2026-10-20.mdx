@@ -1,0 +1,32 @@
+---
+title: Improvements and fixes, Oct 20
+date: 2026-10-20
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- marketplace
+- api
+- mcp
+description: Only Owners and Admins change commission terms, marketplace pages state the combined $20 minimum, and affitor.com answers AI agents.
+---
+
+### Improved
+
+- Only Owners and Admins can change a program's commission type, rate and duration. Members see the current terms instead of the controls.
+- Marketplace program pages say the $20 minimum payout is combined across all your programs, and no longer label the attribution window as first click.
+
+### Fixed
+
+- On a phone, the Partners page title and its buttons no longer overlap.
+
+### For developers
+
+- Rate-limited Tracking API routes also send the standard `RateLimit-Policy` and `RateLimit` headers, next to `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`.
+- [Test mode](https://affitor.com/docs/api-reference/test-mode) in the API reference shows how to send test clicks, leads and sales with `"test_mode": true` in `additional_data`.
+- affitor.com answers `Accept: text/markdown` on the homepage, pricing, about and integrations pages, and serves `/pricing.md`, `/about.md`, `/auth.md` and `/integrations.md` to AI agents.
+- affitor.com publishes `/.well-known/` discovery files for AI agents, including an MCP server card at `/.well-known/mcp/server-card.json`, and registers read-only WebMCP tools in browsers that support them.
+- The MCP Registry entry `com.affitor/mcp` shows the Affitor icon.

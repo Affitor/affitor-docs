@@ -1,69 +1,40 @@
 ---
-title: Improvements and fixes, Oct 19–25
+title: Improvements and fixes, Oct 25
 date: 2026-10-25
 type: digest
-audience: [brands, partners, developers]
-surfaces: [dashboard, marketplace, tracking, api, mcp]
-description: Automatic approval for new programs, an API keys table, product rates on the marketplace, a daily check for missed Stripe sales, and fixes for archived programs and phones.
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- marketplace
+- api
+- mcp
+description: An API keys table, product rates on the marketplace, Billing for one program at a time, and MCP connections that last up to 30 days.
 context:
   avoid:
-    - "Saying the Tracking prompt differs per AI tool, or that it runs a setup command for each tool."
-    - "Calling the Approval card's page anything but Program settings › Status (its menu item reads Go live until the program is live)."
-    - "API key permissions, Full access or Tracking only, test keys, or renaming, disabling or deleting a key."
-    - "Saying every marketplace program shows per-product rates, or that brands create product rules or rename Stripe products there."
-    - "Describing what the brand Dashboard contains when Your program opens it."
-    - "Claims about paused programs, or saying brands can archive or unarchive a program."
-    - "Saying sales the daily Stripe check records include refunded or disputed ones, or sales no partner referred."
-    - "Chat, partner page links, email code sign-in and the new brand Dashboard: they are not in this digest."
+  - API key permissions, Full access or Tracking only, test keys, or renaming, disabling or deleting a key.
+  - Saying every marketplace program shows per-product rates, or that brands create product rules or rename Stripe products there.
+  - 'The new brand Dashboard: it has its own entry for Oct 25.'
 ---
 
 ### Improved
 
-- New programs start with automatic partner approval. Existing programs keep their current setting.
-- Program settings › Status has an Approval card: choose Auto-approve or Manual review and save it on its own.
-- Tracking setup opens on With AI: pick Claude Code, Cursor, Codex, ChatGPT or Other, then copy a ready prompt with your Program ID.
-- Only Owners and Admins can change a program's commission type, rate and duration. Members see the current terms instead of the controls.
 - Owners and Admins manage API keys in one table in Program settings › API keys: create named live keys shown once, see last use, and rotate or expire each key.
 - A program's marketplace FAQ can now list each product rule's commission rate. Owners and Admins give custom products a public name in Program settings › Commission › Product rules.
-- Members shows Name, Permission level and Status, with a Permission level dropdown per member you can change. Make owner lets an Owner add a co-owner and stay an owner.
-- Commissions shows Revenue, Commission and To pay for the selected date range. Status and search filter only the table below.
-- A notification for an application waiting on you has a Review application button that opens Partners › Applied, where you approve or decline. Partners has one Share program button.
 - Billing lists only the selected program. To see another program's invoices, switch programs from the program menu.
 - When a partner has no public name, Partners shows their contact email instead of their account username.
-- On your own program's marketplace page, Your program opens that program's Dashboard.
-- A daily check now records partner-referred sales from your connected Stripe account that never reached Affitor in the last 7 days, unless refunded or disputed.
 - On a phone, Program settings has one top bar with the menu and search, instead of a second menu bar and a back row on each page.
-
-- On a program's marketplace page, the line under Apply to promote says Join right away when the program approves partners automatically.
-- Partners can hide the Finish setup card on Programs.
-- When a program is archived, its partners can't create links or change destinations, its page offers a way back to Programs, and its links stop recording clicks.
-- The $50 Refer a brand reward comes after the referred brand pays its first invoice with partner commissions over $0, even when Affitor's fee is $0.
-- Marketplace program pages say the $20 minimum payout is combined across all your programs, and no longer label the attribution window as first click.
-
-- Green success toasts now use Affitor blue.
-- Affitor emails show X and LinkedIn links in the footer.
-- You can translate Affitor pages with your browser's built-in translation, which the site used to turn off, and pages keep working while translated.
 
 ### Fixed
 
-- Percentage commissions on programs without product rules are priced from the sale's exact cents, so a half-cent result always rounds up. Commissions already recorded are unchanged.
-- Partner program totals and charts no longer count test events, and older leads that were left out are now counted.
 - An overdue invoice pauses only a live program. Draft and archived programs keep their status, so paying the invoice no longer makes them live.
-- The Applied tab count on Partners updates right after you approve or decline an application.
-- On a phone, the Partners page title and its buttons no longer overlap.
 - On a phone, partner Integrations shows connected AI apps as a stacked list instead of a wide table, with a larger Remove button.
 
 ### For developers
 
-- A `409` from `POST /api/v1/track/sale` returns your program's earlier sale id in `error.details.sale_id`, or `null` when another program used that `transaction_id`.
-- Rate-limited Tracking API routes also send the standard `RateLimit-Policy` and `RateLimit` headers, next to `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`.
-- The Tracking API spec is at `affitor.com/openapi.json` and `affitor.com/docs/openapi.json`.
-- [Test mode](https://affitor.com/docs/api-reference/test-mode) in the API reference shows how to send test clicks, leads and sales with `"test_mode": true` in `additional_data`.
-- affitor.com answers `Accept: text/markdown` on the homepage, pricing, about and integrations pages, and serves `/pricing.md`, `/about.md`, `/auth.md` and `/integrations.md` to AI agents.
-- affitor.com publishes `/.well-known/` discovery files for AI agents, including an MCP server card at `/.well-known/mcp/server-card.json`, and registers read-only WebMCP tools in browsers that support them.
 - AI apps connected over MCP stay connected for up to 30 days instead of asking you to approve them again about every hour.
 - MCP tools no longer send a partner's email address as their name, and every field in a tool's output has a description.
 - MCP list tools accept any positive `limit` and return up to 50 items, with `next_cursor` for the rest, instead of an input error.
-- Tracking a click on an archived program's link with `POST /api/v1/track/click` returns `410` with error code `link_disabled`.
 - The `hint` on `api_key_rotation_required` warnings and errors now says to rotate the key you use in Program settings › Developers › API keys.
-- The MCP Registry entry `com.affitor/mcp` shows the Affitor icon.
