@@ -24,10 +24,10 @@ context:
 - Tracking setup opens on With AI: pick Claude Code, Cursor, Codex, ChatGPT or Other, then copy a ready prompt with your Program ID.
 - Only Owners and Admins can change a program's commission type, rate and duration. Members see the current terms instead of the controls.
 - Owners and Admins manage API keys in one table in Program settings › API keys: create named live keys shown once, see last use, and rotate or expire each key.
-- A program's marketplace FAQ lists each product rule's commission rate. Owners and Admins give custom products the public name partners see, in Program settings › Commission › Product rules.
-- Members shows Name, Permission level and Status, with one Permission level dropdown. Owners can use Make owner to add a co-owner and stay an owner themselves.
+- A program's marketplace FAQ can now list each product rule's commission rate. Owners and Admins give custom products a public name in Program settings › Commission › Product rules.
+- Members shows Name, Permission level and Status, with a Permission level dropdown per member you can change. Make owner lets an Owner add a co-owner and stay an owner.
 - Commissions shows Revenue, Commission and To pay for the selected date range. Status and search filter only the table below.
-- An application notification has a Review application button that opens Partners › Applied, where you approve or decline. Partners has one Share program button.
+- A notification for an application waiting on you has a Review application button that opens Partners › Applied, where you approve or decline. Partners has one Share program button.
 - Billing lists only the selected program. To see another program's invoices, switch programs from the program menu.
 - When a partner has no public name, Partners shows their contact email instead of their account username.
 - On your own program's marketplace page, Your program opens that program's Dashboard.
@@ -38,7 +38,7 @@ context:
 - Partners can hide the Finish setup card on Programs.
 - When a program is archived, its partners can't create links or change destinations, its page offers a way back to Programs, and its links stop recording clicks.
 - The $50 Refer a brand reward comes after the referred brand pays its first invoice with partner commissions over $0, even when Affitor's fee is $0.
-- Marketplace program pages show the minimum payout, $20 combined across all your programs, and no longer label the attribution window as first click.
+- Marketplace program pages say the $20 minimum payout is combined across all your programs, and no longer label the attribution window as first click.
 
 - Green success toasts now use Affitor blue.
 - Affitor emails show X and LinkedIn links in the footer.
@@ -51,7 +51,7 @@ context:
 - An overdue invoice pauses only a live program. Draft and archived programs keep their status, so paying the invoice no longer makes them live.
 - The Applied tab count on Partners updates right after you approve or decline an application.
 - On a phone, the Partners page title and its buttons no longer overlap.
-- On a phone, partner Integrations lists each connected AI app in its own row, with a larger Remove button.
+- On a phone, partner Integrations shows connected AI apps as a stacked list instead of a wide table, with a larger Remove button.
 
 ### For developers
 
@@ -64,6 +64,6 @@ context:
 - AI apps connected over MCP stay connected for up to 30 days instead of asking you to approve them again about every hour.
 - MCP tools no longer send a partner's email address as their name, and every field in a tool's output has a description.
 - MCP list tools accept any positive `limit` and return up to 50 items, with `next_cursor` for the rest, instead of an input error.
-- Clicks on an archived program's links return `410` with error code `link_disabled`. Going live with an archived program returns `409` with `"error": "program_archived"`.
+- Tracking a click on an archived program's link with `POST /api/v1/track/click` returns `410` with error code `link_disabled`.
 - The `hint` on `api_key_rotation_required` warnings and errors now says to rotate the key you use in Program settings › Developers › API keys.
 - The MCP Registry entry `com.affitor/mcp` shows the Affitor icon.

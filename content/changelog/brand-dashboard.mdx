@@ -8,14 +8,14 @@ description: The brand Dashboard shows clicks, leads, sales and revenue against 
 context:
   facts:
     - "Brands open the Dashboard at https://affitor.com/brand, from Dashboard in the left rail. It shows the program you have open."
-    - "From top to bottom: the date range, four totals (Clicks, Leads, Sales, Revenue) above one chart, then Latest sales and Top partners side by side, then Needs you."
+    - "From top to bottom: the date range, four totals (Clicks, Leads, Sales, Revenue) above one chart, then Latest sales and Top partners (side by side on wider screens, stacked on phones), then Needs you."
     - "Each total shows its change against the previous period, or New when the previous period had none. Clicking a total puts it on the chart."
     - "The chart draws the selected range as a solid blue line and the period just before it as a lighter dashed line. Hovering a point shows its value and the matching value from the period before."
     - "The date range offers Today, Yesterday, Last 7 days and Last 30 days, plus Start and End days on a calendar. With nothing saved, it opens on Last 30 days. Days are UTC days."
     - "The Dashboard remembers the selected total and date range in the same browser."
     - "Latest sales lists up to four of the most recent sales with their amounts and opens Commissions. Top partners lists up to four partners with the most revenue in the selected range and opens Partners. Each list has View all."
     - "Needs you lists what waits on the brand: the number of applications to review, and each open invoice as Pay partners by a date, with its amount. Rows open Partners or Commissions. With nothing waiting, Needs you is hidden."
-    - "The totals, the chart and both lists keep the same size while they load, when they are empty and when they have data. Empty lists read No sales yet or No revenue in this period; a card that cannot load offers Try again."
+    - "The totals, the chart and both lists keep the same size while they load, when they are empty and when they have data. Empty lists read No sales yet or No revenue in this period; a list, the chart or Needs you that cannot load offers Try again, and a total that cannot load reads Not available."
   ui: ["Dashboard", "Clicks", "Leads", "Sales", "Revenue", "New", "Today", "Yesterday", "Last 7 days", "Last 30 days", "Start", "End", "Date range", "Latest sales", "Top partners", "View all", "Needs you", "Pay partners by", "No sales yet", "No revenue in this period", "Try again"]
   avoid:
     - "A Next row, next step or Next card on the Dashboard (there is none)"
@@ -53,7 +53,7 @@ The chart draws your range as a solid line and the period before it as a lighter
 
 ## Cards keep their size
 
-The totals, the chart and both lists keep the same size while they load, when they are empty and when they have data. Empty lists say so, such as **No sales yet**, and a card that cannot load offers **Try again**.
+The totals, the chart and both lists keep the same size while they load, when they are empty and when they have data. Empty lists say so, such as **No sales yet**, and a list or the chart that cannot load offers **Try again**.
 
 ## Where to find it
 
