@@ -1,0 +1,69 @@
+---
+title: Choose which pages partners can link to
+date: 2026-10-19
+type: feature
+audience: [brands, partners]
+surfaces: [dashboard, tracking]
+description: Brands set allowed destinations and a per-partner link limit in Program settings › Partner links; partners link to an allowed page, then copy the link or download its QR code.
+context:
+  facts:
+    - "Brands set where partner links can go in Program settings › Partner links, at https://affitor.com/brand/settings/partner-links. The item sits right after Tracking."
+    - "Allowed destinations holds up to 20 rules. Each rule is an HTTPS domain set to Any page on this domain or One specific page, which takes an Allowed page path such as /pricing."
+    - "Each domain needs the box I manage this domain and will ensure tracking is installed. It is an acknowledgement only; it does not install or check tracking."
+    - "Additional links per partner is a whole number from 1 to 100. The partner's default program link does not count toward it."
+    - "A program that has never saved Partner links keeps the earlier rule: partners can link to any page on its website, with no limit. The page shows its controls as a draft until the brand saves."
+    - "Turning off Allow partners to create links to your pages, or lowering the limit, stops new links and keeps the links partners already have."
+    - "Owners, Admins and Members can save Partner links. Viewers can open it but not save."
+    - "Partners open a program, go to the Links tab and click Create link. The form asks for a Private label, a Link key, a Domain and a Page path. With One specific page, the path is filled in and locked."
+    - "A page link is the page URL with the partner's link key as a query parameter, for example https://example.com/pricing?via=k7Qm2xa. Programs created before October 16, 2026, and programs set to aff, use ?aff= instead."
+    - "Each saved link has a Copy button and a QR button. The QR opens Link QR code with Download PNG."
+    - "Above the list, partners see how many additional links they have, for example 2 / 10 additional links. At the limit, Create link is turned off."
+    - "Each link shows Earnings: the commission earned on that link, with any pending amount below it."
+    - "Docs: https://affitor.com/docs/brand/partner-links"
+  ui: ["Program settings", "Partner links", "Additional links", "Allow partners to create links to your pages", "Additional links per partner", "Allowed destinations", "Add domain", "Add link domain", "HTTPS domain", "Pages", "Any page on this domain", "One specific page", "Allowed page", "Save changes", "Partner link settings saved.", "Links", "Create link", "Private label", "Link key", "Domain", "Page path", "Query link preview", "Earnings", "Link QR code", "Download PNG"]
+  avoid:
+    - "Saying partners get short /r/<page>/<key> links. Page links are query links; the short form is only a preview marked not ready, whatever Preferred format says"
+    - "Saying the domain checkbox installs, verifies or tests tracking"
+    - "Saying an allowed domain also covers its subdomains or another port"
+    - "Saying the limit counts the default program link, or that lowering it deletes links"
+    - "Saying partners can change a link key after creating it"
+    - "Saying Viewers can save Partner links"
+    - "Presenting the October 23 fixes as part of this release: a full URL pasted after the prefilled slash in Page path, the link settings loading message, archived programs"
+  cta: { label: "Open Partner links", url: "https://affitor.com/brand/settings/partner-links" }
+---
+
+Choose which pages partners can link to, and how many links each can create, in **Program settings › Partner links** at [affitor.com/brand/settings/partner-links](https://affitor.com/brand/settings/partner-links).
+
+Until today, a partner could point a link at any page on your program's website, with no limit, and Program settings had no page for it. Now you set the allowed destinations and a limit per partner, and partners choose from your list when they create a link.
+
+## How it works
+
+- **Allowed destinations**: up to 20, each an HTTPS domain open to **Any page on this domain** or **One specific page**.
+- **A limit per partner**: 1 to 100 additional links. The default program link doesn't count.
+- **Page links**: partners link to an allowed page, then copy it or download its QR code.
+
+## Set your allowed destinations
+
+In **Partner links**, under **Allowed destinations**, click **Add domain**, enter an **HTTPS domain** such as `https://example.com`, and pick **Pages**. For **One specific page**, enter the **Allowed page**, for example `/pricing`. Check **I manage this domain and will ensure tracking is installed**, click **Add domain**, then **Save changes**.
+
+<Media src="/docs/changelog/partner-page-links/destinations.png" alt="Allowed destinations with https://blog.example.com on Any page on this domain and https://example.com on One specific page, Allowed page /pricing" />
+
+## Set how many links each partner can create
+
+Under **Additional links**, keep **Allow partners to create links to your pages** on and set **Additional links per partner**. Until you save this page, your program keeps the earlier rule: any page on your website, no limit. Owners, Admins and Members can save; Viewers can only view.
+
+## Create a link to a page
+
+Partners open a program, go to **Links** and click **Create link**. Add a **Private label**, keep or change the **Link key**, pick a **Domain** and enter a **Page path**. When the brand allows one specific page, the path is already filled in.
+
+<Media src="/docs/changelog/partner-page-links/create-link.png" alt="The partner's Create link form with Domain https://example.com · /pricing and Page path /pricing filled in and locked, above the query link preview https://example.com/pricing?via=k7Qm2xa" />
+
+The saved link is the page with your key added, for example `https://example.com/pricing?via=k7Qm2xa` (some programs use `?aff=`). Copy it from the list, or open its QR code and click **Download PNG**. Each link now also shows **Earnings**: what it has earned, with any pending amount below it.
+
+## Where to change it later
+
+Change destinations or the limit on **Partner links** any time. Turning additional links off, or lowering the limit, stops new links and keeps the ones partners already share.
+
+## Conclusion
+
+Partners now send people to the right page, within the rules you set. [Learn more about partner links](https://affitor.com/docs/brand/partner-links), and write to support@affitor.com with any question.

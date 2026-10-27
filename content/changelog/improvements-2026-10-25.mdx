@@ -1,0 +1,42 @@
+---
+title: Improvements and fixes, Oct 25
+date: 2026-10-25
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- marketplace
+- api
+- mcp
+description: An API keys table, product rates on the marketplace, Billing for one program at a time, and MCP connections that last up to 30 days.
+context:
+  avoid:
+  - API key permissions, Full access or Tracking only, test keys, or renaming, disabling or deleting a key.
+  - Saying every marketplace program shows per-product rates, or that brands create product rules or rename Stripe products there.
+  - 'The new brand Dashboard: it has its own entry for Oct 25.'
+---
+
+### Improved
+
+- Owners and Admins manage API keys in one table in Program settings › API keys: create named live keys shown once, see last use, and rotate or expire each key.
+- A program's marketplace FAQ can now list each product rule's commission rate. Owners and Admins give custom products a public name in Program settings › Commission › Product rules.
+- Billing lists only the selected program. To see another program's invoices, switch programs from the program menu.
+- When a partner has no public name, Partners shows their contact email instead of their account username.
+- On a phone, Program settings has one top bar with the menu and search, instead of a second menu bar and a back row on each page.
+
+<Media src="/docs/changelog/improvements-2026-10-25/api-keys.png" alt="API keys with three named live keys, each with its masked key and Last used, and a menu open with Rotate and Expire" />
+
+### Fixed
+
+- An overdue invoice pauses only a live program. Draft and archived programs keep their status, so paying the invoice no longer makes them live.
+- On a phone, partner Integrations shows connected AI apps as a stacked list instead of a wide table, with a larger Remove button.
+
+### For developers
+
+- AI apps connected over MCP stay connected for up to 30 days instead of asking you to approve them again about every hour.
+- MCP tools no longer send a partner's email address as their name, and every field in a tool's output has a description.
+- MCP list tools accept any positive `limit` and return up to 50 items, with `next_cursor` for the rest, instead of an input error.
+- The `hint` on `api_key_rotation_required` warnings and errors now says to rotate the key you use in Program settings › Developers › API keys.

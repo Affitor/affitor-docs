@@ -1,0 +1,37 @@
+---
+title: Improvements and fixes, Oct 23
+date: 2026-10-23
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- marketplace
+- tracking
+- api
+description: A new Members table, a money summary on Commissions, Review application from notifications, and archived programs closed to new links.
+context:
+  avoid:
+  - Describing what the brand Dashboard contains when Your program opens it.
+  - Claims about paused programs, or saying brands can archive or unarchive a program.
+---
+
+### Improved
+
+- Members shows Name, Permission level and Status, with a Permission level dropdown per member you can change. Make owner lets an Owner add a co-owner and stay an owner.
+- Commissions shows Revenue, Commission and To pay for the selected date range. Status and search filter only the table below.
+- A notification for an application waiting on you has a Review application button that opens Partners › Applied, where you approve or decline. Partners has one Share program button.
+- On your own program's marketplace page, Your program opens that program's Dashboard.
+- When a program is archived, its partners can't create links or change destinations, its page offers a way back to Programs, and its links stop recording clicks.
+
+<Media src="/docs/changelog/improvements-2026-10-23/members.png" alt="Members with each person's name, email and Permission level: Owner for you, and a Permission level dropdown on the Admin and Member rows" />
+
+### Fixed
+
+- The Applied tab count on Partners updates right after you approve or decline an application.
+
+### For developers
+
+- Tracking a click on an archived program's link with `POST /api/v1/track/click` returns `410` with error code `link_disabled`.
