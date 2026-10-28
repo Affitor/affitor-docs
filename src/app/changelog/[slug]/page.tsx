@@ -108,13 +108,13 @@ export default async function ChangelogEntryPage({ params }: { params: Promise<{
       </time>
       <h1>{entry.title}</h1>
       <p className="cl-lede">{entry.description}</p>
-      {lead ? <Media {...lead} /> : null}
-      <Chips entry={entry} />
       {entry.action ? (
         <div className="cl-action" role="note">
           <b>{actionText(entry)}.</b> {capitalize(entry.action.who)}: {renderInlineMarkdown(entry.action.what)}
         </div>
       ) : null}
+      {lead ? <Media {...lead} /> : null}
+      <Chips entry={entry} />
       {entry.deprecations?.length ? (
         <div className="cl-prose">
           <table>
