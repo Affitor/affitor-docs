@@ -3,9 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
 import { CopyLink } from '@/components/changelog/copy-link';
+import { Media } from '@/components/changelog/media';
 import { Chips, actionText } from '@/components/changelog/parts';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
-import { CHANGELOG_URL, bannerSrc, capitalize, entrySlug, entryUrl, formatDay, sortedEntries } from '@/lib/changelog';
+import { CHANGELOG_URL, bannerSrc, capitalize, entrySlug, entryUrl, formatDay, leadMedia, sortedEntries } from '@/lib/changelog';
 import { SITE_URL } from '@/lib/site';
 
 // Fully static: an entry only changes with a deploy.
@@ -77,7 +78,23 @@ function jsonLd(entry: ReturnType<typeof sortedEntries>[number], slug: string) {
 export default async function ChangelogEntryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { entry, slug, older, newer } = await getEntry(params);
   const Body = entry.body;
-  const components = useMDXComponents({ Callout: NoCallout });
+  const lead = leadMedia(await entry.getText('raw'));
+  // The lead visual moves above the tags, so the body skips its first occurrence.
+  let skipped = false;
+  const components = useMDXComponents({
+    Callout: NoCallout,
+    ...(lead
+      ? {
+          Media: (props: Parameters<typeof Media>[0]) => {
+            if (!skipped && props.src === lead.src) {
+              skipped = true;
+              return null;
+            }
+            return <Media {...props} />;
+          },
+        }
+      : {}),
+  });
 
   return (
     <main className="cl-entry">
@@ -91,6 +108,7 @@ export default async function ChangelogEntryPage({ params }: { params: Promise<{
       </time>
       <h1>{entry.title}</h1>
       <p className="cl-lede">{entry.description}</p>
+      {lead ? <Media {...lead} /> : null}
       <Chips entry={entry} />
       {entry.action ? (
         <div className="cl-action" role="note">

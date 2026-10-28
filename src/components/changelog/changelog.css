@@ -66,7 +66,7 @@
 .cl-row::after { content: ''; position: absolute; left: 165px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--cl-muted); }
 .cl-rail time { position: sticky; top: 88px; display: block; font-size: 14px; color: var(--cl-muted); }
 .cl-card { max-width: 806px; min-width: 0; }
-.cl-banner { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--cl-line); margin-bottom: 24px; }
+.cl-banner { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--cl-line); margin-top: 24px; }
 .cl-card h2 { margin: 0; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.01em; color: var(--cl-ink); }
 .cl-card h2 a { text-decoration: none; }
 .cl-card h2 a:hover { text-decoration: underline; }
