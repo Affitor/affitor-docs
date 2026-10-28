@@ -145,6 +145,17 @@ export function entryMedia(entry: Entry, raw: string) {
   return { banner, images, videos };
 }
 
+/**
+ * The entry body's first <Media>: the entry page shows it right under the description, before the
+ * tags, and skips it in the body (order title, description, image, tags; Sơn 27/10 "ok changelog order").
+ */
+export function leadMedia(raw: string): { src: string; alt: string; caption?: string } | null {
+  const m = raw.match(/<Media\s+([^>]*?)\/>/);
+  if (!m) return null;
+  const a = Object.fromEntries([...m[1].matchAll(/(\w+)="([^"]*)"/g)].map((x) => [x[1], x[2]]));
+  return a.src && a.alt ? { src: a.src, alt: a.alt, ...(a.caption ? { caption: a.caption } : {}) } : null;
+}
+
 /** "- Video (alt): light <url>, dark <url>, poster light <url>, ..." */
 function mediaLine(kind: string, { alt, ...files }: MediaItem) {
   const urls = Object.entries(files).flatMap(([k, v]) =>

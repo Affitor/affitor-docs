@@ -66,14 +66,6 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
       </div>
       <article className="cl-card">
         {pinned ? <div className="cl-pin">Pinned until the deadline</div> : null}
-        {entry.banner ? (
-          <Link href={href} aria-hidden tabIndex={-1}>
-            {(['light', 'dark'] as const).map((theme) => (
-              // eslint-disable-next-line @next/next/no-img-element -- themed pair swapped by class
-              <img key={theme} className={`cl-banner cl-${theme}`} src={bannerSrc(slug, theme)} alt="" loading="lazy" decoding="async" />
-            ))}
-          </Link>
-        ) : null}
         <h2>
           <Link href={href}>{entry.title}</Link>
         </h2>
@@ -82,6 +74,14 @@ export async function Card({ entry, pinned, anchor }: { entry: Entry; pinned: bo
           <div className="cl-action-line">
             {actionText(entry)}: {renderInlineMarkdown(entry.action.what)}
           </div>
+        ) : null}
+        {entry.banner ? (
+          <Link href={href} aria-hidden tabIndex={-1}>
+            {(['light', 'dark'] as const).map((theme) => (
+              // eslint-disable-next-line @next/next/no-img-element -- themed pair swapped by class
+              <img key={theme} className={`cl-banner cl-${theme}`} src={bannerSrc(slug, theme)} alt="" loading="lazy" decoding="async" />
+            ))}
+          </Link>
         ) : null}
         <Chips entry={entry} compact={digest} onIndex />
         {list.length ? (
