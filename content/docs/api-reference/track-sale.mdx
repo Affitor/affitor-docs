@@ -100,7 +100,9 @@ Despite its name, `amount_cents` uses the currency's minor unit, not always hund
 
 For a supported non-USD currency, Affitor converts the pre-tax basis to USD using a stored daily rate dated on the UTC day it receives the sale or within the preceding seven days. USD uses a rate of 1. `occurred_at` does not change that rate-selection day. The sale record keeps the original currency, total, tax and pre-tax amount alongside its pricing result.
 
-A missing, held or invalid rate can leave an otherwise accepted sale unpriced. That sale is kept with `money_status: "fx_pending"` and no commission or platform fee. It is not automatically priced later. Do not resend it: its `transaction_id` is already recorded, so another call returns `409 duplicate_transaction`.
+Within that window, Affitor chooses the newest day with a quote or hold for that currency. On that day, it uses the primary source; the secondary source is considered only when the primary source has no entry for the currency. A held or invalid entry from the selected source blocks fallback to the other source and to an older day.
+
+If no usable rate is selected, an otherwise accepted sale is kept unpriced. That sale is kept with `money_status: "fx_pending"` and no commission or platform fee. It is not automatically priced later. Do not resend it: its `transaction_id` is already recorded, so another call returns `409 duplicate_transaction`.
 
 ## Request Body Example
 
