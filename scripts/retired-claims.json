@@ -148,5 +148,11 @@
     "why": "Renewal lookup (affiliate-cms webhook-distributor.ts resolveCustomerPartner): click, then email_hash, then stripe_customer_id. The email step only finds a customer whose email Affitor recorded (a settled lead or an earlier attributed payment); say so instead of an unconditional 'email or Stripe customer ID'.",
     "since": "2026-10-24",
     "allow": []
+  },
+  {
+    "pattern": "Accepted but not used yet: commissions are calculated on `amount_cents` as sent",
+    "why": "For API sales recorded from November 5, 2026 (16:00 UTC), tax_cents is subtracted before pricing the commission basis.",
+    "since": "2026-11-04",
+    "allow": []
   }
 ]
