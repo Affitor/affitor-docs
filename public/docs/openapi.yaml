@@ -333,13 +333,16 @@ paths:
             X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
             X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
           description: |
-            Sale processed. Either attributed (sale + commission created) or
-            explicitly not attributed (`attributed: false`, window expired).
+            Sale processed: attributed (sale and commission created), kept
+            unpriced (`money_status: fx_pending`, `commission_id: null`, no
+            commission or fee), explicitly not attributed (`attributed: false`,
+            window expired), or recorded in test mode.
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/SaleResponse'
+                  - $ref: '#/components/schemas/SaleUnpricedResponse'
                   - $ref: '#/components/schemas/SaleNotAttributedResponse'
                   - $ref: '#/components/schemas/TestModeResponse'
               examples:
@@ -349,6 +352,20 @@ paths:
                     sale_id: 123
                     commission_id: 456
                     message: "Sale tracked successfully"
+                unpriced:
+                  value:
+                    success: true
+                    sale_id: 42
+                    commission_id: null
+                    money_status: fx_pending
+                test_mode:
+                  value:
+                    success: true
+                    message: "Test sale event tracked successfully"
+                    data:
+                      eventId: 12
+                      programId: 3
+                      test_mode: true
                 window_expired:
                   value:
                     success: true
@@ -361,9 +378,12 @@ paths:
         '400':
           description: |
             Validation error. Causes: missing/invalid `transaction_id`;
-            `amount_cents` not a positive number; customer not found; customer
-            has no attribution in this program; no partner-program
-            relationship.
+            `amount_cents` not a positive integer; a supplied non-null
+            `tax_cents` not an integer from 0 to amount_cents, inclusive;
+            customer not found; customer has no attribution in this program;
+            no partner-program relationship. Invalid tax values return
+            `invalid_request` with message
+            `tax_cents must be an integer between 0 and amount_cents`.
           content:
             application/json:
               schema:
@@ -476,7 +496,13 @@ paths:
                     success: true
                     test: true
         '400':
-          description: '`transaction_id` is required, or `reason` is not `refund` or `chargeback` (`reason must be refund or chargeback`).'
+          description: >-
+            transaction_id is required, or reason is not refund or chargeback
+            (`reason must be refund or chargeback`). For sales recorded from
+            November 5, 2026 (16:00 UTC) with a commission to reverse, a supplied
+            refund_amount_cents that is not a positive integer (including 0)
+            returns invalid_request with message
+            `refund_amount_cents must be a positive integer`.
           content:
             application/json:
               schema:
@@ -820,6 +846,7 @@ components:
 
     TestModeResponse:
       type: object
+      required: [success, data]
       description: Returned when `additional_data.test_mode` is true.
       properties:
         success: { type: boolean }
@@ -1024,14 +1051,25 @@ components:
 
     SaleResponse:
       type: object
+      required: [success, sale_id, commission_id]
       properties:
         success: { type: boolean }
         sale_id: { type: integer }
         commission_id: { type: integer }
         message: { type: string, example: "Sale tracked successfully" }
 
+    SaleUnpricedResponse:
+      type: object
+      required: [success, sale_id, commission_id, money_status]
+      properties:
+        success: { type: boolean }
+        sale_id: { type: integer }
+        commission_id: { type: 'null' }
+        money_status: { type: string, const: fx_pending }
+
     SaleNotAttributedResponse:
       type: object
+      required: [success, attributed, reason, sale_id, commission_id]
       description: The customer's first-click anchor is outside the attribution window — the sale is organic. Nothing is created.
       properties:
         success: { type: boolean }
@@ -1059,7 +1097,8 @@ components:
             and non-integers return 400 invalid_request with message
             `refund_amount_cents must be a positive integer`. Omit the field to
             refund everything that remains. Older sales keep the legacy reading:
-            positive amounts are in hundredths of the recorded sale amount;
+            positive amounts are in hundredths of the currency unit the sale was
+            recorded in (cents for a USD sale);
             omission, 0 or a negative value refunds the rest. The value constraint
             depends on the stored sale, so it is described here rather than as
             an unconditional schema minimum.

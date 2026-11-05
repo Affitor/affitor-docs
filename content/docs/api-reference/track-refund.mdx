@@ -39,7 +39,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
   <ParamField name="refund_amount_cents" type="integer">
     For sales recorded from November 5, 2026 (16:00 UTC), this refund's amount is in the sale's original currency and minor unit, tax included. For a sale with a commission to reverse, it must be a positive integer when provided: `0`, `null`, negative values and non-integers return `400 invalid_request` with `refund_amount_cents must be a positive integer`. Omit the field to refund the rest. Send this refund's amount, not the running total refunded so far.
 
-    For older sales, the legacy interpretation is unchanged: the amount is read in hundredths of the recorded sale amount; omission, `0` or a negative value refunds the rest.
+    For older sales, the legacy interpretation is unchanged: the amount is read in hundredths of the currency unit the sale was recorded in (cents for a USD sale); omission, `0` or a negative value refunds the rest.
   </ParamField>
   <ParamField name="refund_id" type="string">
     Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored for a whole-sale refund: omit the amount for new sales. For older sales, `0` or a negative amount also requests a whole-sale refund. Refunding the rest is already safe to retry.
