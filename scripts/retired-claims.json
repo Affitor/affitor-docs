@@ -150,7 +150,7 @@
     "allow": []
   },
   {
-    "pattern": "Accepted but not used yet: commissions are calculated on `amount_cents` as sent",
+    "pattern": "Accepted but not used yet[;:] commissions are calculated on `amount_cents`",
     "why": "For API sales recorded from November 5, 2026 (16:00 UTC), tax_cents is subtracted before pricing the commission basis.",
     "since": "2026-11-04",
     "allow": []
