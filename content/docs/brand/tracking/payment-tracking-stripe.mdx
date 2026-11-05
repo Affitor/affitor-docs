@@ -2,7 +2,7 @@
 title: Payment Tracking
 description: Track completed sales with server-side tracking or Stripe integration
 kind: guide
-last_updated: 2026-10-24
+last_updated: 2026-11-04
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
@@ -23,7 +23,7 @@ Use server-side tracking when you control the exact moment revenue is finalized 
 
 ---
 
-## Option A — Server-side tracking
+## Option A: Server-side tracking
 
 ### Endpoint
 
@@ -96,9 +96,11 @@ Use server-side tracking if you want one server-controlled source of truth for r
 
 ---
 
-## Option B — Stripe integration
+## Option B: Stripe integration
 
 With the Stripe integration, you keep charging customers through your own Stripe account; Affitor does **not** become merchant of record. Connect the account under **Program settings** › **Payments** ([Connect a Stripe account](/docs/brand/tracking/connect-stripe-account)). Stripe then sends the account's payment events to Affitor's own Connect endpoint, so you do not add a webhook. Affitor attributes the conversion from those events and the metadata on each payment, then invoices you through its invoice billing workflow.
+
+Stripe refunds and active or lost chargebacks automatically reverse or adjust the related commission through Affitor's connected Stripe events; dispute inquiries and prevented disputes do not trigger a reversal.
 
 ### Recommended metadata fields
 
@@ -170,7 +172,7 @@ const session = await stripe.checkout.sessions.create({
 
 ## Pay-as-you-go / Repeated One-Time Purchases
 
-Some products charge per usage event rather than via a subscription — independent checkout sessions for things like API credit top-ups, usage-based batches, or metered add-ons.
+Some products charge per usage event rather than via a subscription: independent checkout sessions for things like API credit top-ups, usage-based batches, or metered add-ons.
 
 ### How it works
 
@@ -185,7 +187,7 @@ Affitor uses the invoice events (`invoice.payment_succeeded`, `invoice.paid`) on
 
 ### Attribution across multiple purchases
 
-The first purchase is straightforward — if the customer clicked an affiliate link recently, `affitor_click_id` is still in the browser cookie.
+The first purchase is straightforward: if the customer clicked an affiliate link recently, `affitor_click_id` is still in the browser cookie.
 
 Later purchases may arrive weeks or months after that click, and the cookie may be gone. Attribution still works if you pass a stable `affitor_customer_key` in every checkout's metadata. Affitor finds the customer by that key (saved on the customer when its signup lead settled) and links all subsequent purchases to the same partner.
 
@@ -207,7 +209,7 @@ const session = await stripe.checkout.sessions.create({
 
 :::tip
 
-`affitor_click_id` may be absent for repeat purchases — that is expected and not an error. Affitor will fall back to `affitor_customer_key` for attribution. Still send it when it is available.
+`affitor_click_id` may be absent for repeat purchases: that is expected and not an error. Affitor will fall back to `affitor_customer_key` for attribution. Still send it when it is available.
 
 :::
 
@@ -221,9 +223,9 @@ await window.affitor.signup(currentUser.id, currentUser.email);
 
 On a program that requires server-verified leads (the default), a browser signup is provisional: the key is saved only when your server sends the lead or a Stripe Checkout payment for that customer arrives ([Lead auth policy](/docs/api-reference/track-lead#lead-auth-policy)). If the key was never saved, a later purchase that carries no click is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.
 
-### Attribution does not expire
+### Attribution window and repeat purchases
 
-Once an affiliate-customer record is linked to a partner, that link persists indefinitely — there is no time-based cut-off on the customer-to-partner relationship.
+The customer's signup must fall within the program's attribution window after the partner click, 60 days by default. If no signup was recorded, the window is checked at the first payment instead. Once the customer's first attributed payment settles, later purchases and renewals are not checked against that window again. Legacy customers without a click timestamp pass the window check.
 
 If your commission **Type** is **Recurring**, the months in **For** (**Program settings** › **Commission**) limit how long a partner earns on a customer. They count from the customer's first click on the partner link, not from signup or the first payment. Later payments are still recorded as sales, with a $0 commission: the limit controls what a partner earns, not whether purchases are recognized.
 
@@ -319,7 +321,7 @@ Check:
 
 Check:
 - `affitor_customer_key` is present in the metadata of every checkout session (not just the first)
-- the value is exactly the same stable ID used at signup — any mismatch means the customer record cannot be found
+- the value is exactly the same stable ID used at signup: any mismatch means the customer record cannot be found
 - the customer's first lead or purchase was attributed through a click: Affitor saves `affitor_customer_key` on the customer only then, so a later checkout with only the key finds no customer if the first one carried no click
 
 ### Stripe renewals not attributed
