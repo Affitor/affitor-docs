@@ -2,10 +2,14 @@
 title: Track Sale
 description: Record an attributed sale and create the partner commission from your backend
 kind: reference
-last_updated: 2026-10-19
+last_updated: 2026-11-04
 ---
 
 Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
+
+<Callout type="info" title="Sales recorded from November 5, 2026 (16:00 UTC)">
+  The tax, currency and conversion rules below apply to API sales recorded from this time. Sales recorded earlier keep their existing pricing.
+</Callout>
 
 ## Endpoint
 
@@ -31,13 +35,13 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
 
 <ParamList>
   <ParamField name="transaction_id" type="string" required>
-    Your unique payment identifier. Used for duplicate detection — re-sending the same value returns 409.
+    Your unique payment identifier. Used for duplicate detection; re-sending the same value returns 409.
   </ParamField>
   <ParamField name="amount_cents" type="integer" required>
     Sale amount in the smallest currency unit (e.g. cents for USD). Must be a positive integer.
   </ParamField>
   <ParamField name="tax_cents" type="integer">
-    The tax included in `amount_cents`, in the same unit. Accepted but not used yet: commissions are calculated on `amount_cents` as sent.
+    The tax included in `amount_cents`, in the same unit. Used to calculate the pre-tax commission basis: `amount_cents - tax_cents`. If provided and not `null`, it must be an integer from `0` to `amount_cents`, inclusive. Otherwise, the API returns `400 invalid_request` with the message `tax_cents must be an integer between 0 and amount_cents`. If omitted or `null`, the whole amount is the basis.
   </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
     Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. At least one of `customer_key` or `click_id` must match an existing customer record.
@@ -46,7 +50,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.
   </ParamField>
   <ParamField name="currency" type="string">
-    `USD`, `EUR`, or `VND`. Defaults to `USD`. Another code returns `422 unsupported_currency` and creates no sale, commission or fee. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD.
+    A supported ISO 4217 currency code. Defaults to `USD`. Codes without a numeric minor unit are unsupported, as are `BOV`, `CHE`, `CHW`, `COU`, `MXV`, `USN`, `UYI`, `UYW`, `VED` and `XAD`. An unsupported code returns `422 unsupported_currency` before creating a sale, commission or fee.
   </ParamField>
   <ParamField name="sale_type" type="string" enum={["payment", "subscription"]}>
     `"payment"` (default) or `"subscription"`.
@@ -82,6 +86,24 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
 
 ---
 
+## Minor units and conversion
+
+Despite its name, `amount_cents` uses the currency's minor unit, not always hundredths. Use the same unit for `tax_cents`.
+
+| Currency | Decimal places | Sale amount | `amount_cents` |
+|----------|----------------|-------------|----------------|
+| USD | 2 | USD 49.00 | `4900` |
+| VND | 0 | VND 490,000 | `490000` |
+| JPY | 0 | JPY 490,000 | `490000` |
+| BHD | 3 | BHD 1.234 | `1234` |
+| KWD | 3 | KWD 1.234 | `1234` |
+
+For a supported non-USD currency, Affitor converts the pre-tax basis to USD using a stored daily rate dated on the UTC day it receives the sale or within the preceding seven days. USD uses a rate of 1. `occurred_at` does not change that rate-selection day. The sale record keeps the original currency, total, tax and pre-tax amount alongside its pricing result.
+
+Within that window, Affitor chooses the newest day with a quote or hold for that currency. On that day, it uses the primary source; the secondary source is considered only when the primary source has no entry for the currency. A held or invalid entry from the selected source blocks fallback to the other source and to an older day.
+
+If no usable rate is selected, an otherwise accepted sale is kept unpriced. That sale is kept with `money_status: "fx_pending"` and no commission or platform fee. It is not automatically priced later. Do not resend it: its `transaction_id` is already recorded, so another call returns `409 duplicate_transaction`.
+
 ## Request Body Example
 
 <CodeGroup items={[
@@ -95,6 +117,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     "transaction_id": "txn_abc123",
     "customer_key": "usr_9876",
     "amount_cents": 4900,
+    "tax_cents": 400,
     "currency": "USD",
     "sale_type": "payment"
   }'`
@@ -112,6 +135,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     transaction_id: 'txn_abc123',
     customer_key: 'usr_9876',
     amount_cents: 4900,
+    tax_cents: 400,
     currency: 'USD',
     sale_type: 'payment',
   }),
@@ -133,6 +157,7 @@ response = requests.post(
         'transaction_id': 'txn_abc123',
         'customer_key': 'usr_9876',
         'amount_cents': 4900,
+        'tax_cents': 400,
         'currency': 'USD',
         'sale_type': 'payment',
     },
@@ -140,6 +165,8 @@ response = requests.post(
 data = response.json()`
   },
 ]} />
+
+The USD example sends a total of 4900 minor units, including 400 of tax. The commission basis is 4500 minor units (USD 45.00).
 
 ### Subscription example
 
@@ -170,6 +197,16 @@ data = response.json()`
   "sale_id": 42,
   "commission_id": 17,
   "message": "Sale tracked successfully"
+}`
+  },
+  {
+    status: 200,
+    label: "200 Unpriced",
+    code: `{
+  "success": true,
+  "sale_id": 42,
+  "commission_id": null,
+  "money_status": "fx_pending"
 }`
   },
   {
@@ -205,8 +242,9 @@ data = response.json()`
 |-------|------|-------------|
 | `success` | boolean | `true` on success. |
 | `sale_id` | integer or null | ID of the created sale event record; `null` when the attribution window expired. |
-| `commission_id` | integer or null | ID of the created commission record; `null` when the attribution window expired. |
-| `message` | string | Human-readable confirmation. |
+| `commission_id` | integer or null | ID of the created commission record; `null` when the attribution window expired or the sale was kept unpriced. |
+| `message` | string | Human-readable confirmation, when present. |
+| `money_status` | string | `fx_pending` in the unpriced response above. |
 
 <Callout type="info" title="Idempotency">
   Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program. Affitor does not create a duplicate sale, so you can safely retry on network failure.
@@ -224,12 +262,12 @@ Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-
 
 | Status | `error.code` | When |
 |--------|--------------|------|
-| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
+| `400` | `invalid_request` | `transaction_id` missing or not a string; `amount_cents` not a positive integer; a supplied non-null `tax_cents` not an integer from zero to the amount; an invalid `occurred_at`, `provider`, `provider_payment_id` or `livemode` |
 | `400` | `no_attribution` | Neither `customer_key` nor `click_id` resolved a customer, the customer belongs to another program, or no partner relationship was found |
 | `401` | `unauthorized` | Missing or malformed `Authorization` header, or the API key does not match any active program |
 | `401` | `api_key_rotation_required` | A retired API key (the body also carries `hint` and `docs_url`) |
 | `409` | `duplicate_transaction` | `transaction_id` already recorded; `error.details.sale_id` is your program's earlier sale id, or `null` when it belongs to another program |
-| `422` | `unsupported_currency` | `currency` is not `USD`, `EUR` or `VND`; no sale, commission or fee is created |
+| `422` | `unsupported_currency` | `currency` is not supported; no sale, commission or fee is created |
 | `429` | `rate_limited` | Too many requests; wait `retry_after_seconds` |
 | `500` | `internal_error` | Sale or commission creation failed internally |
 
@@ -237,7 +275,7 @@ Most errors use the [platform envelope](/docs/api-reference/errors#the-platform-
 
 ## Test Mode
 
-Send `additional_data.test_mode: true` (or `livemode: false`) to create a test sale event without affecting production data. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode.
+Send `additional_data.test_mode: true` (or `livemode: false`) to create a test sale event without creating a live commission. The API key is still required but `transaction_id` and `amount_cents` are optional in test mode. From the time above, a supplied currency and amount must follow the same supported-code, minor-unit and tax rules.
 
 ```json
 {

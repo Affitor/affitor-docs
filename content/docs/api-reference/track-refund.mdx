@@ -2,7 +2,7 @@
 title: Track Refund
 description: Reverse a commission when a sale is refunded
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-11-04
 ---
 
 `POST /api/v1/track/refund`
@@ -10,6 +10,10 @@ last_updated: 2026-10-18
 Reverses the affiliate commission tied to a previously tracked sale. Send one call per refund. Each call's `refund_amount_cents` is added to what was already refunded on the sale (capped at the sale amount). Once all of the sale is refunded, Affitor reverses the commission (`reversed`). A partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved); both end `refunded`. Omitting `refund_amount_cents` refunds everything that is left. This is the non-Stripe counterpart to the Stripe refund webhook: both use the same underlying reversal logic.
 
 ---
+
+<Callout type="info" title="Refunds for sales recorded from November 5, 2026 (16:00 UTC)">
+  Send refund amounts in the sale's original currency and minor unit, including tax. For a sale with a commission to reverse, a supplied amount must be a positive integer; `0` is rejected with `400 invalid_request`. Leave the field out to refund everything that remains. Older sales keep the legacy interpretation described below.
+</Callout>
 
 ## Authentication
 
@@ -33,10 +37,12 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
     The `transaction_id` originally passed to `POST /api/v1/track/sale`. Used to locate the sale record.
   </ParamField>
   <ParamField name="refund_amount_cents" type="integer">
-    This refund's amount in the same unit as the sale's `amount_cents` — not the running total refunded so far. Omit or set to `0` to refund the rest of the sale. Must be a positive integer when provided.
+    For sales recorded from November 5, 2026 (16:00 UTC), this refund's amount is in the sale's original currency and minor unit, tax included. For a sale with a commission to reverse, it must be a positive integer when provided: `0`, `null`, negative values and non-integers return `400 invalid_request` with `refund_amount_cents must be a positive integer`. Omit the field to refund the rest. Send this refund's amount, not the running total refunded so far.
+
+    For older sales, the legacy interpretation is unchanged: the amount is read in hundredths of the currency unit the sale was recorded in (cents for a USD sale); omission, `0` or a negative value refunds the rest.
   </ParamField>
   <ParamField name="refund_id" type="string">
-    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored when the amount is omitted or `0` (refunding the rest is already safe to retry).
+    Your own id for this refund (for example the Stripe refund id). Recommended. A refund whose `refund_id` was already applied is ignored, so retries are safe. Without it, a second call with the same amount for the same sale is treated as a retry and ignored. Ignored for a whole-sale refund: omit the amount for new sales. For older sales, `0` or a negative amount also requests a whole-sale refund. Refunding the rest is already safe to retry.
   </ParamField>
   <ParamField name="refund_reason" type="string">
     Human-readable reason for the refund. Recorded on the commission and included in partner/advertiser notifications.
@@ -81,6 +87,8 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
   },
 ]} />
 
+For sales recorded from November 5, 2026 (16:00 UTC), a VND 10,000 refund uses `refund_amount_cents: 10000`; a JPY 1,000 refund uses `1000`; a BHD 1.234 or KWD 1.234 refund uses `1234`. Do not convert these amounts to USD or subtract tax before sending them.
+
 ### Multiple refunds and retries
 
 - Two partial refunds of $30 and $20 on a $100 sale: send `3000` then `2000` (each with its own `refund_id`). A commission already approved is reduced by 50% in total; one still `pending` (in its hold period, not yet approved) is cancelled by the first refund.
@@ -90,7 +98,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 
 ## Response
 
-### Success — commission reversed or refunded
+### Success: commission reversed or refunded
 
 ```json
 {
@@ -108,7 +116,7 @@ The key is scoped to a single program. The refund lookup is restricted to sales 
 | `deductionAmount` | number | The commission share this refund covers, in the commission's currency: the refunded fraction of the commission, or all of what is left once the sale is fully refunded. Taken from the partner's balance only when the commission was already credited (past `pending`, not a test). A `pending` commission that is partly refunded is cancelled whole, so for it this number is informational. Present when `status` is `reversed` or `refunded`. |
 | `commission_id` | integer | ID of the affected commission record. |
 
-### Success — sale has no commission
+### Success: sale has no commission
 
 ```json
 {
@@ -148,7 +156,7 @@ Errors use the [platform envelope](/docs/api-reference/errors#the-platform-envel
 
 | Status | `error.code` | When |
 |--------|--------------|------|
-| 400 | `invalid_request` | `transaction_id` is missing, or `reason` is not `refund` or `chargeback`. |
+| 400 | `invalid_request` | `transaction_id` is missing, `reason` is not `refund` or `chargeback`, or a supplied refund amount for a new sale is not a positive integer (including `0`). The amount check applies when the sale has a commission to reverse. |
 | 401 | `unauthorized` | `Authorization` header is missing, malformed, or the API token is invalid. |
 | 404 | `not_found` | No sale record found for the given `transaction_id` in the authenticated program. |
 | 500 | `internal_error` | Internal error during commission reversal. Retry the same request with the same `refund_id`: a refund that was already applied is skipped. |
@@ -170,5 +178,5 @@ The status change and the deduction are applied before the response. The notific
 
 ## Related
 
-- [Track Sale](/docs/api-reference/track-sale) — record the original sale
-- [Payment Tracking](/docs/brand/tracking/payment-tracking-stripe/) — Stripe webhook alternative
+- [Track Sale](/docs/api-reference/track-sale): record the original sale
+- [Payment Tracking](/docs/brand/tracking/payment-tracking-stripe/): Stripe webhook alternative
