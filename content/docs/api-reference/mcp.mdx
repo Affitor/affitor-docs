@@ -287,7 +287,7 @@ Removal is immediate: the app's tokens are deleted and its next request gets `40
 
 ## Legacy local server
 
-`@affitor/mcp` on npm is a separate **stdio** server that runs on your computer and uses your **program API key** (`AFFITOR_API_KEY`) instead of sign-in. It does tracking, not reporting: `affitor_readiness`, `affitor_track_click`, `affitor_track_lead`, `affitor_get_integration_plan` and `affitor_run_verification`, plus `affitor_track_sale` and `affitor_track_refund` only when you set `AFFITOR_MCP_WRITE=1`. The [Affitor plugin](https://github.com/Affitor/claude-plugins) for Claude Code and Gemini CLI bundles this server.
+`@affitor/mcp` on npm is a separate **stdio** server that runs on your computer and uses your **program API key** (`AFFITOR_API_KEY`) instead of sign-in. It does tracking, not reporting: `affitor_readiness`, `affitor_track_click`, `affitor_track_lead`, `affitor_get_integration_plan` and `affitor_run_verification`, plus `affitor_track_sale` and `affitor_track_refund` only when you set `AFFITOR_MCP_WRITE=1`. The [Affitor plugin](https://github.com/Affitor/claude-plugins) for Claude Code and Gemini CLI (0.1.1 and later) connects to the hosted OAuth server with read access; this legacy local server is separate.
 
 For a coding project, use [Set up a coding agent](/docs/brand/cli/agent-setup) with CLI 0.4.5:
 
