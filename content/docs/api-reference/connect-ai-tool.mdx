@@ -1,8 +1,8 @@
 ---
 title: Connect your AI tool
-description: Add the Affitor MCP server to Claude, ChatGPT, Cursor, Claude Code, Codex, VS Code, Gemini CLI and other AI tools, then sign in with your Affitor account. No API key needed.
+description: Add the Affitor MCP server to Claude, ChatGPT, Cursor, VS Code, Claude Code, Codex or another MCP client, then sign in with your Affitor account. No API key needed.
 kind: guide
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 Add the Affitor MCP server to your AI tool, then sign in with your Affitor account. No API key needed. You will add the server, sign in on affitor.com, choose your programs and what the AI may do, and click **Allow**.
@@ -32,6 +32,7 @@ Or add it by hand:
 3. Click **+ Add**, then **Add custom connector**. Name it Affitor, paste the URL and click **Continue**.
 4. Keep the detected sign-in settings. If Claude asks, pick **Register automatically** under **OAuth client**.
 5. Click **Add** and sign in to Affitor.
+6. As a brand, pick your programs; then click **Allow**.
 
 On Team and Enterprise plans, an owner adds the connector in **Organization settings** › **Connectors**, and members click **Connect**.
 
@@ -43,6 +44,7 @@ On Team and Enterprise plans, an owner adds the connector in **Organization sett
 2. Enter a name, and under **Connection** paste the URL.
 3. Set authentication to OAuth, review the warning and click **I understand and want to continue**.
 4. Click **Create as a plugin** and sign in to Affitor.
+5. As a brand, pick your programs; then click **Allow**.
 
 Your workspace's policy may limit who can add custom MCP servers.
 
@@ -101,7 +103,7 @@ Add `--scope user` to use Affitor in every project.
    codex mcp add affitor --url https://mcp.affitor.com/mcp
    ```
 
-2. If no sign-in page opens, sign in with:
+2. Sign in:
 
    ```bash
    codex mcp login affitor
@@ -131,90 +133,7 @@ Or add it by hand:
 
 **Check it works:** in Copilot Chat in Agent mode, ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## Gemini CLI
-
-1. Run this in your terminal:
-
-   ```bash
-   gemini mcp add --transport http affitor https://mcp.affitor.com/mcp
-   ```
-
-2. In Gemini CLI, run `/mcp auth affitor` and sign in.
-
-**Check it works:** run `/mcp list`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
-
-## Muse Code
-
-1. Add this to `~/.config/muse/settings.json`, inside the existing object (keep your other settings):
-
-   ```json title="settings.json"
-   {
-     "mcp_servers": {
-       "affitor": {
-         "transport": "streamable_http",
-         "url": "https://mcp.affitor.com/mcp",
-         "enabled": true,
-         "mode": "optional"
-       }
-     }
-   }
-   ```
-
-2. Sign in from your terminal:
-
-   ```bash
-   muse mcp login affitor
-   ```
-
-3. Pick your permissions and programs, then click **Allow**.
-
-**Check it works:** in a Muse session, run `/mcp`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
-
-## Perplexity
-
-1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
-2. Select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**.
-3. Enter a name, and under **MCP Server URL** paste the URL.
-4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. No Client ID or Client Secret is needed.
-5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
-
-In an organization, members can add custom connectors only if an admin allows it. Perplexity on its Enterprise address, `enterprise.perplexity.ai`, cannot connect yet.
-
-**Check it works:** in a new thread, ask your AI tool "List my Affitor programs". It answers with your programs.
-
 ## Other MCP clients
-
-### Grok
-
-1. Go to [grok.com/connectors](https://grok.com/connectors), click **New Connector**, then **Custom**.
-2. Paste the URL and sign in.
-3. Pick your permissions and programs, then click **Allow**.
-
-On Grok Business, an admin adds the connector first.
-
-### Kiro
-
-1. Open the command palette, run **Kiro: Open user MCP config (JSON)**, add this and save:
-
-   ```json title="mcp.json"
-   {
-     "mcpServers": {
-       "affitor": { "url": "https://mcp.affitor.com/mcp" }
-     }
-   }
-   ```
-
-2. Kiro opens the Affitor sign-in page. Pick your permissions and programs, then click **Allow**.
-
-### Goose
-
-1. In goose Desktop, open the sidebar, click **Extensions**, then **Add custom extension**.
-2. Choose Streamable HTTP, name it Affitor, paste the URL and click **Add**.
-3. Sign in when goose asks. Pick your permissions and programs, then click **Allow**.
-
-In the goose CLI, run `goose configure`, choose **Add Extension**, then **Remote Extension (Streamable HTTP)**.
-
-### Any other MCP client
 
 1. Add this to your client's MCP config:
 
