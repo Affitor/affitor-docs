@@ -137,7 +137,7 @@ Expected response:
     "The test event appears under your program's tracking events, flagged as a test — no commission is created",
   ]}
   ifNotWorking={[
-    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline: rotate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program: check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner or admin to rotate the key (Step 3), copy it from **Copy your key**, then update and redeploy",
+    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline: rotate it and deploy the new value, because copying the same key again will not bring it back. Other `401` responses can also mean the key is disabled: ask an owner or admin to check its status and select **Enable key** if it should be active. Otherwise, check the `Authorization: Bearer` header, your environment variable, and the full value stored in your secret manager. If you no longer hold that value, ask an owner or admin to rotate the key (Step 3), copy it from **Copy your key**, then update and redeploy",
     "See the [error reference](/docs/api-reference/errors) for every `401` cause and fix",
   ]}
 />
