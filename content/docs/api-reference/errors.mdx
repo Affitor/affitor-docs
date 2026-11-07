@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-10-20
+last_updated: 2026-11-06
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -115,7 +115,7 @@ When you contact support about a failed request, include the `X-Request-ID`. It 
 |--------|---------------|-----------|-----|
 | `401` | `Missing or malformed Authorization header. Expected: Bearer <token>` | `Authorization` header missing or does not start with `Bearer ` | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
 | `401` | `Missing API token` (sale), `Empty Bearer token` (refund) | Header present but the token is empty after trimming | Check for trailing spaces or an empty env variable |
-| `401` | `Invalid API token` | The token matches no program: a wrong key, a replaced key, or a key from a different program | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask a workspace owner to [regenerate the key](/docs/brand/settings#step-3-regenerate-the-key) and deploy the new one — the dashboard only ever shows it masked afterwards |
+| `401` | `Invalid API token` | The key is unknown, has been replaced, or is disabled | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask an owner or admin to [rotate the key](/docs/brand/settings#step-3-regenerate-the-key), copy it from **Copy your key** and deploy it: the dashboard never shows the full value again. If the key is disabled, an owner or admin can select **Enable key** |
 
 The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
 
@@ -167,7 +167,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
     {
       "code": "api_key_rotation_required",
       "message": "This API key must be replaced by 2026-10-03.",
-      "hint": "Create a new key in Affitor → Settings → API Key, then update AFFITOR_API_KEY on your server.",
+      "hint": "In Affitor → Program settings → Developers → API keys, rotate the key you use, then update AFFITOR_API_KEY on your server.",
       "rotate_by": "2026-10-03T00:00:00.000Z",
       "docs_url": "https://affitor.com/docs/api-reference/errors#api_key_rotation_required"
     }
@@ -186,7 +186,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
   "error": {
     "code": "api_key_rotation_required",
     "message": "This API key was retired on 2026-10-03.",
-    "hint": "Create a new key in Affitor → Settings → API Key.",
+    "hint": "In Affitor → Program settings → Developers → API keys, rotate the key you use.",
     "docs_url": "https://affitor.com/docs/api-reference/errors#api_key_rotation_required"
   }
 }
@@ -194,7 +194,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 
 This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
-**Fix:** In your Affitor dashboard, open the program menu and choose **Program settings**. Under **Developers** → **API keys**, regenerate the key, then update `AFFITOR_API_KEY` on your server with the new value. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
+**Fix:** In your Affitor dashboard, open the program menu and choose **Program settings**. Under **Developers** → **API keys**, open the **⋯** menu on the key's row and select **Rotate key**, copy the new value from **Copy your key**, then update `AFFITOR_API_KEY` on your server with it. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
 
 ---
 
@@ -385,7 +385,7 @@ The [Affitor CLI](/docs/brand/cli/commands) talks to the `/api/v1/cli/*` endpoin
 
 The routes authenticate in two different ways, and the fix for a `401` depends on which:
 
-- **Account session** — `init` and `programs` take the login token from `affitor login`. Fix a `401` by logging in again. Regenerating a program key does not help.
+- **Account session** — `init` and `programs` take the login token from `affitor login`. Fix a `401` by logging in again. Rotating a program key does not help.
 - **Program API key** — `status` and `test-event` take the program's API key. Fix a `401` as in [authentication errors](#authentication-errors-401).
 
 #### Login (`/api/v1/cli/auth/*`)
@@ -475,7 +475,7 @@ An expired session is not an error on `/auth/poll`: it answers `200` with `"data
 |----------|--------|---------------|---------|-----|
 | both | `401` | `Missing or malformed Authorization header. Expected: Bearer <api_token>` | The `Authorization` header is missing or does not start with `Bearer ` | Send `Authorization: Bearer YOUR_PROGRAM_API_KEY` |
 | both | `401` | `Missing API token` | The token is empty after `Bearer ` | Check for an empty env variable |
-| both | `401` | `Invalid API key. To get a working key for the program you already have, ask a workspace owner of that program to open Affitor → Settings → API Key and click Regenerate, then replace the key you are sending with the new one.` | The key matches no program | Do as the message says: the key is under program menu → **Program settings**, then **Developers** → **API keys**. Running `affitor init` does not help: it creates a second program |
+| both | `401` | `Invalid API key. To get a working key for the program you already have, ask a workspace owner of that program to open Affitor → Program settings → Developers → API keys and create a key, then replace the key you are sending with the new one.` | The key matches no program, or it is disabled | Do as the message says. An owner or admin of the program can select **Create key** there and copy the new value from **Copy your key**; if the key is only disabled, they can select **Enable key** instead. Running `affitor init` does not help: it creates a second program |
 | both | `401` | [`api_key_rotation_required`](#api_key_rotation_required) | The key is retired | Create a new key |
 | `GET /status` | `500` | `Failed to get status (request_id: <id>)` | Status lookup failed on our side | Retry with backoff |
 | `POST /test-event` | `400` | `Invalid event_type: <value>. Valid: click, lead, sale` | Single-event mode got a missing or unknown `event_type` | Send `click`, `lead` or `sale`, or `{"type": "chain"}` for the full chain |

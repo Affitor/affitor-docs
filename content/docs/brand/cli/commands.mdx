@@ -2,7 +2,7 @@
 title: CLI Command Reference
 description: Complete reference for all npx affitor commands, flags, and options.
 kind: reference
-last_updated: 2026-10-20
+last_updated: 2026-11-06
 ---
 
 Every `npx affitor` command, flag, and option in one place. The agent setup, doctor, and Stripe-aware onboarding behavior below require CLI 0.4.5.
@@ -96,7 +96,7 @@ Create a **new** affiliate program and generate config files. Requires a login s
 npx affitor init
 ```
 
-`init` always creates a new program. It does not adopt a program you already have and it does not issue a replacement key for one: if a program's key stopped working, a workspace owner regenerates it in the Affitor dashboard (program menu → **Program settings**, then **Developers** → **API keys**). Running `init` in a directory that already has `.affitor/config.json` stops without changing anything.
+`init` always creates a new program. It does not adopt a program you already have and it does not issue a replacement key for one: if a program's key stopped working, an owner or admin of that program rotates it, or creates a new key, in the Affitor dashboard (program menu → **Program settings**, then **Developers** → **API keys**). Running `init` in a directory that already has `.affitor/config.json` stops without changing anything.
 
 | Flag | Description | Default |
 |---|---|---|
@@ -427,8 +427,8 @@ Two gaps are worth knowing before you build on this output:
 | Missing required options | `missing_options` | `init` with `--no-interactive` | Pass `--name`, `--domain`, `--commission-type` and `--commission-rate` |
 | Invalid event type | `invalid_event_type` | `test` | `affitor test` takes `click`, `lead`, or `sale` |
 | No API key | `no_api_key` | `onboard` | Pass `--api-key`, set `AFFITOR_API_KEY`, or run from a directory with `.affitor/.env` |
-| API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session is invalid or expired — run `affitor login` again. Do **not** regenerate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
-| API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program or was replaced. Compare it against the value you stored when it was issued; if you no longer hold that value, ask a workspace owner to regenerate the key (program menu → **Program settings**, then **Developers** → **API keys**) and deploy the new one |
+| API rejected the call, account session | `error` is the API message, `status` the HTTP status | `init` | `init` authenticates with your account session, not a program key. A `401` here means the session is invalid or expired — run `affitor login` again. Do **not** rotate a program key for this: it will not fix the session, and it breaks whatever is still using the old key |
+| API rejected the call, program key | `error` is the API message, `status` the HTTP status | `status`, `test` | On a `401`, the key matches no program, was replaced, or is disabled. Compare it against the value you stored when it was issued; if you no longer hold that value, ask an owner or admin to rotate the key (program menu → **Program settings**, then **Developers** → **API keys**), copy it from **Copy your key** and deploy it. If the key is disabled, they can select **Enable key** |
 | Stripe is connected elsewhere | `stripe_setup_moved` | `setup stripe` | Connect Stripe in the dashboard: program menu → **Program settings** → **Payments**, **Connect Stripe** |
 | No usable response | `network_error` | `init`, `status`, `test` | See below |
 | Anything else | `unexpected_error` | `init`, `status`, `test` | Re-run with `--verbose` and keep the output |

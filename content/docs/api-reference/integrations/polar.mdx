@@ -2,7 +2,7 @@
 title: "Polar"
 description: "Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-06
 ---
 
 This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor.
@@ -123,7 +123,7 @@ Report each refund once, with **that refund's own amount**, after it has succeed
 ## Verify
 
 <VerifySuccess
-  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default for new programs; programs created before October 16, 2026 keep `?aff=`), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set"]}
   network={["Complete a sandbox checkout — confirm Polar delivers `order.paid` to `/api/polar/webhook` (HTTP 200) and the order's metadata carries your `user_id` / `reference_id`"]}
   dashboard={["The sale appears under your program's tracking events with the partner correctly attributed; re-delivering the same webhook is a no-op (Affitor answers 409)"]}
   ifNotWorking={["Run `npx affitor test sale` (isolated `is_test` events, no real commissions), then `npx affitor status` — or poll readiness until `integration_verified`"]}
