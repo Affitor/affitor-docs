@@ -18,10 +18,17 @@ const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.m
 const BLOG_PAGES = ['/blog', ...slugs('content/blog').map((s) => `/blog/${s}`), '/changelog', ...slugs('content/changelog').map((s) => `/changelog/${s}`)];
 
 // Markdown negotiation (P12, CORE-690): request headers and what the response must show.
-// md: Accept: text/markdown, twin body (frontmatter) and Vary: Accept. html: a browser's Accept, Vary: Accept.
+// md: Accept: text/markdown, twin body (frontmatter) and Vary: Accept.
+// html: a browser's Accept gets the real HTML page (text/html, `<html` body), not the twin.
+//   Vary is NOT asserted on HTML: Next 16 app-router pages replace any Vary the middleware set
+//   (next/dist/build/templates/app-page.js `res.setHeader('Vary', routeModule.getVaryHeader(...))`),
+//   so no middleware or next.config header can reach it under `next start`. The two answers are
+//   still never mixed: middleware runs before Vercel's cache and the twin is a rewrite, so the cache
+//   key differs; downstream the HTML is `public, max-age=0, must-revalidate` (see CHANGE.md, CORE-690).
+//   check-docs-host.mjs still pins that the middleware sets Vary: Accept on both answers.
 // none: Accept: text/markdown on a page without a twin, Accept not in Vary.
 const MD = { accept: 'text/markdown', vary: true, md: true };
-const HTML = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', vary: true };
+const HTML = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' };
 const NO_TWIN = { accept: 'text/markdown', vary: false };
 const NO_TWIN_HTML = { accept: HTML.accept, vary: false };
 const REDIRECT_MD = { accept: 'text/markdown' };
