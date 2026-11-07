@@ -1,5 +1,5 @@
 ---
-title: Grok steps in Connect an AI tool, and two fixes
+title: Grok steps in Connect an AI tool, and API key deletion fixed
 date: 2026-11-07
 type: digest
 audience:
@@ -8,13 +8,13 @@ audience:
 - developers
 surfaces:
 - dashboard
-- api
 - mcp
-description: Connect an AI tool has steps for Grok, deleting an API key works again, and Cancel works on the AI app consent screen for accounts that are not yet a brand or partner.
+description: Connect an AI tool has steps for Grok, and deleting an API key no longer fails after you type its name to confirm.
 context:
   avoid:
   - "Saying Grok has a one-click install: it is a custom connector added at grok.com/connectors."
-  - "Saying anything about old directory pages or OpenAffiliate redirects: that change does not ship."
+  - "Saying anything about old directory pages or OpenAffiliate redirects."
+  - "Saying Cancel on the AI app consent screen changed: the backend part shipped, the screen still links home for accounts without a program."
 ---
 
 ### Improved
@@ -23,5 +23,4 @@ context:
 
 ### Fixed
 
-- Deleting an API key works again. After you type the key's name to confirm, the key is deleted instead of returning an error.
-- On the AI app consent screen, **Cancel** now works for accounts that are not yet a brand or a partner, and takes you back to your AI tool.
+- Deleting an API key no longer fails. After you type the key's name to confirm, the key is deleted.
