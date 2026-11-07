@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Card } from '@/components/changelog/parts';
 import { ChangelogList } from '@/components/changelog/list';
-import { CHANGELOG_SUB, CHANGELOG_TITLE, CHANGELOG_URL, PAGE_SIZE, indexOrder, isPinned, surfaceLabel, todayPT } from '@/lib/changelog';
+import { CHANGELOG_SUB, CHANGELOG_TITLE, CHANGELOG_URL, PAGE_SIZE, entryUrl, indexOrder, isPinned, sortedEntries, surfaceLabel, todayPT } from '@/lib/changelog';
+import { SITE_URL } from '@/lib/site';
 
 const SURFACES = Object.fromEntries(
   ['dashboard', 'marketplace', 'tracking', 'api', 'sdk', 'cli', 'mcp'].map((s) => [s, surfaceLabel(s)]),
@@ -19,6 +20,26 @@ export const indexMetadata: Metadata = {
   twitter: { card: 'summary_large_image', title: 'Affitor Changelog', description: CHANGELOG_SUB },
 };
 
+/** CollectionPage of every entry, newest first (same order as /changelog.md); each entry page has its own TechArticle. */
+function jsonLd() {
+  const entries = sortedEntries();
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': CHANGELOG_URL,
+    url: CHANGELOG_URL,
+    name: 'Affitor Changelog',
+    description: CHANGELOG_SUB,
+    publisher: { '@type': 'Organization', name: 'Affitor', url: SITE_URL },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      numberOfItems: entries.length,
+      itemListElement: entries.map((entry, i) => ({ '@type': 'ListItem', position: i + 1, url: entryUrl(entry), name: entry.title })),
+    },
+  }).replace(/</g, '\\u003c');
+}
+
 /**
  * /changelog. Every entry is in the HTML (pinned ones first); ChangelogList filters and
  * shows them in batches of PAGE_SIZE. The first card of each day carries id=<date>, so
@@ -35,6 +56,8 @@ export function IndexView() {
 
   return (
     <main className="cl-wrap">
+      {/* eslint-disable-next-line react/no-danger -- server-rendered schema; `<` escaped */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd() }} />
       <div className="cl-hero">
         <h1>{CHANGELOG_TITLE}</h1>
         <p className="cl-sub">{CHANGELOG_SUB}</p>

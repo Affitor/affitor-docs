@@ -1,5 +1,6 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
+import TWIN_PAGES from '@/generated/markdown-twins.json';
 
 // AI-crawler tracking (AI-RANK-redesign.md, Part D2 lane 1).
 // AI crawlers don't execute JS, so client-side PostHog never sees them —
@@ -18,7 +19,7 @@ const AI_BOTS =
 //    affitor.com/docs<path> in one hop; unset, they are served in place from /docs<path>,
 //    so the docs deploy can go out before the dashboard proxies /docs (no broken window);
 //  - files that moved under /docs (.md twins, skill.md, llms*.txt, openapi.yaml, logo,
-//    favicons, images/, changelog/ screenshots) are always served in place with a
+//    favicons, default og/twitter images, images/, changelog/ screenshots) are always served in place with a
 //    canonical Link header: agents are told to fetch docs.affitor.com/skill.md and
 //    some fetchers refuse a cross-host redirect. Other files pass through.
 // Renamed pages and the old /docs/blog prefix resolve on every host (currentPath).
@@ -27,7 +28,7 @@ const DOCS_HOST = 'docs.affitor.com';
 const BLOG_PAGE = /^\/blog(?:\/[^.]*)?$/;
 const FILE = /\.[^/]+$/;
 const MOVED_FILE =
-  /^\/(?:.+\.md|llms\.txt|llms-full\.txt|openapi\.yaml|affitor-logo\.svg|favicon\.svg|favicon-(?:32|64)\.png|icon-512\.png|apple-touch-icon\.png|images\/.+|changelog\/.+\.[^/]+)$/;
+  /^\/(?:.+\.md|llms\.txt|llms-full\.txt|openapi\.yaml|affitor-logo\.svg|favicon\.svg|favicon-(?:32|64)\.png|icon-512\.png|apple-touch-icon\.png|(?:opengraph|twitter)-image\.png|images\/.+|changelog\/.+\.[^/]+)$/;
 
 // Old page paths -> current path, first match wins; a prefix also covers its subpages.
 const RENAMES: [string, string][] = [
@@ -96,6 +97,57 @@ export function currentPath(path: string): string | null {
   return md ? `${page === '/docs' ? '/docs/index' : page}.md` : page;
 }
 
+/** RFC 9110 qvalue: 0 to 1, at most three decimals. */
+const QVALUE = /^(?:0(?:\.\d{0,3})?|1(?:\.0{0,3})?)$/;
+
+/**
+ * Markdown content negotiation, same rule as apps/web/src/lib/agent-surface/accept.ts: true when
+ * Accept names `text/markdown` (q > 0) at least as much as HTML, whose weight comes from the most
+ * specific of `text/html`, `text/*` and `*\/*`. An agent sends it, a browser never does.
+ */
+export function wantsMarkdown(accept: string | null | undefined): boolean {
+  let markdown = 0;
+  const html: Record<string, number> = {};
+  for (const range of (accept ?? '').split(',')) {
+    const [type, ...params] = range.split(';').map((part) => part.trim().toLowerCase());
+    const q = params.find((param) => param.startsWith('q='))?.slice(2);
+    if (q !== undefined && !QVALUE.test(q)) continue;
+    const weight = q === undefined ? 1 : Number(q);
+    if (type === 'text/markdown') markdown = Math.max(markdown, weight);
+    else if (type === 'text/html' || type === 'text/*' || type === '*/*') html[type] = Math.max(html[type] ?? 0, weight);
+  }
+  const htmlWeight = html['text/html'] ?? html['text/*'] ?? html['*/*'] ?? 0;
+  return markdown > 0 && markdown >= htmlWeight;
+}
+
+// Every page with a real `.md` twin: docs pages, blog posts, the changelog index and entries
+// (scripts/gen-llms.js writes the list from the content tree; check-agent-surface.mjs pins it).
+// Anything else, including unknown pages and /changelog/context, is left alone.
+const TWINS = new Set<string>(TWIN_PAGES);
+
+/** The `.md` twin of a page path in the /docs layout, or null when it has none. */
+export function markdownTwin(path: string): string | null {
+  if (!TWINS.has(path)) return null;
+  return path === '/docs' ? '/docs/index.md' : `${path}.md`;
+}
+
+/**
+ * `Accept: text/markdown` on a page with a twin gets the twin (rewrite), anyone else gets `html`
+ * (P12, CORE-690). Both get Vary: Accept here, but it does not survive on Vercel: Next 16 app-router
+ * pages replace Vary (build/templates/app-page.js) and the deployed twin answer carries Next's Vary
+ * too (`next start` keeps it on the twin only). The answers stay apart anyway: the twin is a rewrite
+ * with its own cache key, and both are max-age=0, must-revalidate with different ETags.
+ */
+function negotiate(req: NextRequest, path: string, html: NextResponse) {
+  const twin = markdownTwin(path);
+  if (!twin) return html;
+  const res = wantsMarkdown(req.headers.get('accept'))
+    ? NextResponse.rewrite(new URL(`${twin}${req.nextUrl.search}`, req.url))
+    : html;
+  res.headers.set('Vary', 'Accept');
+  return res;
+}
+
 function redirectStatus(): 301 | 302 | null {
   const value = process.env.DOCS_HOST_REDIRECT;
   return value === '301' || value === '302' ? Number(value) as 301 | 302 : null;
@@ -140,7 +192,8 @@ function docsHost(req: NextRequest) {
     // Redirects off: keep the docs host on its root layout for renamed pages.
     return movedTo(req, `${target.replace(/^\/docs/, '') || '/'}${search}`);
   }
-  return target === pathname ? NextResponse.next() : NextResponse.rewrite(new URL(`${target}${search}`, req.url));
+  const html = target === pathname ? NextResponse.next() : NextResponse.rewrite(new URL(`${target}${search}`, req.url));
+  return negotiate(req, target, html);
 }
 
 export function middleware(req: NextRequest, event: NextFetchEvent) {
@@ -175,7 +228,7 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
 
   const renamed = currentPath(req.nextUrl.pathname);
   if (renamed) return movedTo(req, `${renamed}${req.nextUrl.search}`);
-  return NextResponse.next();
+  return negotiate(req, req.nextUrl.pathname, NextResponse.next());
 }
 
 export const config = {

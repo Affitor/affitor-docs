@@ -7,7 +7,7 @@ import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
 import { parse as parseHtml } from 'parse5';
-import { generateLlms } from './gen-llms.js';
+import { generateLlms, generateTwins } from './gen-llms.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
@@ -543,7 +543,8 @@ function main() {
     };
   });
   const expectedUrls = pages.flatMap((page) => [page.url, markdownUrl(page)]);
-  expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
+  // The blog index has no twin; it is listed once, dated by the newest post (CORE-690).
+  expectedUrls.push(`${ORIGIN}/blog`, `${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
   assert.deepEqual(entries.map((entry) => entry.url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
   const dates = new Map(entries.map((entry) => [entry.url, entry.lastmod]));
   const datedPages = pages.filter((page) => page.updated);
@@ -551,6 +552,9 @@ function main() {
   for (const name of ['llms.txt', 'llms-full.txt']) {
     assert.equal(dates.get(`${SITE}/${name}`), latest, `${name}: sitemap date`);
   }
+  const latestPost = pages.filter((page) => page.type === 'blog').map((page) => page.updated).sort().at(-1);
+  assert.ok(latestPost, 'no blog post dates');
+  assert.equal(dates.get(`${ORIGIN}/blog`), latestPost, '/blog: sitemap date must be the newest post date');
 
   // Reject file-mtime / build-time ISO timestamps anywhere a content date appears.
   const BUILD_TIME = /^\d{4}-\d{2}-\d{2}T/;
@@ -595,6 +599,10 @@ function main() {
 
   const llms = read(join(ROOT, 'public/docs/llms.txt'));
   assert.equal(llms, generateLlms(), 'public/docs/llms.txt is stale; run npm run gen:llms');
+  // The pages the middleware negotiates `Accept: text/markdown` for: exactly the pages with a twin.
+  const twins = read(join(ROOT, 'src/generated/markdown-twins.json'));
+  assert.equal(twins, generateTwins(), 'src/generated/markdown-twins.json is stale; run npm run gen:llms');
+  assert.deepEqual(JSON.parse(twins), pages.map((page) => new URL(page.url).pathname).sort(), 'markdown-twins.json differs from the twin inventory');
   assert.ok(Buffer.byteLength(llms) < 10000, 'public/docs/llms.txt must be under 10000 bytes');
   assert.equal(llms.includes('docs.affitor.com'), false, 'llms.txt must link affitor.com/docs, not docs.affitor.com');
   for (const match of llms.matchAll(/\]\(https:\/\/affitor\.com\/docs\/([^\s)]+)\.md\)/g)) {
