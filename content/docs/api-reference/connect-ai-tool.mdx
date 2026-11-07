@@ -192,6 +192,28 @@ In an organization, members can add custom connectors only if an admin allows it
 
 On Grok Business, an admin adds the connector first.
 
+### Kiro
+
+1. Open the command palette, run **Kiro: Open user MCP config (JSON)**, add this and save:
+
+   ```json title="mcp.json"
+   {
+     "mcpServers": {
+       "affitor": { "url": "https://mcp.affitor.com/mcp" }
+     }
+   }
+   ```
+
+2. Kiro opens the Affitor sign-in page. Pick your permissions and programs, then click **Allow**.
+
+### Goose
+
+1. In goose Desktop, open the sidebar, click **Extensions**, then **Add custom extension**.
+2. Choose Streamable HTTP, name it Affitor, paste the URL and click **Add**.
+3. Sign in when goose asks. Pick your permissions and programs, then click **Allow**.
+
+In the goose CLI, run `goose configure`, choose **Add Extension**, then **Remote Extension (Streamable HTTP)**.
+
 ### Any other MCP client
 
 1. Add this to your client's MCP config:
