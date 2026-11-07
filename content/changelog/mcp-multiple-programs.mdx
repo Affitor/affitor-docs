@@ -11,11 +11,11 @@ context:
     - "Under Programs, a person ticks up to 50 programs or chooses All current and future programs. All also covers programs they join later, without reconnecting."
     - "Each program in the list shows the person's role, such as Owner. With more than six programs, Search programs narrows the list."
     - "Someone who is on a brand team and is also a partner switches between As a brand and As a partner on the consent page."
-    - "Access reads Read-only. A brand connection reads programs and settings, partners and applications, clicks, leads and sales, and commissions and billing. A partner connection reads programs joined, links and clicks, commissions and earnings, and payouts."
+    - "Access shows Read account data, always on (label since 06/11; it read Read-only on 03/11). A brand connection reads programs and settings, partners and applications, clicks, leads and sales, and commissions and billing. A partner connection reads programs joined, links and clicks, commissions and earnings, and payouts."
     - "Brands manage connections at https://affitor.com/brand/settings/ai-agents (program menu, Program settings, Developers, AI agents). Connections lists Client, Connected by, Added, Last used and Access, with the programs each connection reaches under the client name."
     - "Partners manage their connections from the account menu, under Integrations."
     - "Disconnect ends a connection's access to every program in it. Removing a teammate's connection from a program ends its access to that program only."
-  ui: ["Access", "Read-only", "Programs", "All current and future programs", "Search programs", "Select up to 50, or choose All", "As a brand", "As a partner", "Switch", "Remove access any time in Settings.", "Cancel", "Allow", "AI agents", "Affitor MCP", "Server URL", "Connections", "Client", "Connected by", "Added", "Last used", "Disconnect", "Remove", "Integrations"]
+  ui: ["Access", "Read account data", "Always on", "Programs", "All current and future programs", "Search programs", "Select up to 50, or choose All", "As a brand", "As a partner", "Switch", "Remove access any time in Settings.", "Cancel", "Allow", "AI agents", "Affitor MCP", "Server URL", "Connections", "Client", "Connected by", "Added", "Last used", "Disconnect", "Remove", "Integrations"]
   avoid:
     - "Write actions or changes made through an AI tool (connections are read-only)"
     - "Going live, creating programs or changing settings from an AI tool"
@@ -40,9 +40,11 @@ Until this week, a brand connection reached one program: the consent screen aske
 
 ## Choose programs when you connect
 
-When your AI tool asks to connect, Affitor shows the account you are signed in with, then **Access** and **Programs**. Open **Read-only** to see the four kinds of data the tool can read.
+When your AI tool asks to connect, Affitor shows the account you are signed in with, then **Access** and **Programs**. Open **Read account data**, always on, to see the four kinds of data the tool can read.
 
 Under **Programs**, tick the programs you want, each shown with your role, or choose **All current and future programs** so programs you join later are included without reconnecting. With a long list, **Search programs** narrows it. If you are on a brand team and also a partner, switch between **As a brand** and **As a partner**. Then click **Allow**.
+
+<Media src="/docs/changelog/mcp-multiple-programs/consent.png" alt="Consent screen: Claude wants to access Affitor, with read-only access and All current and future programs selected" />
 
 ## See and remove access in Settings
 
