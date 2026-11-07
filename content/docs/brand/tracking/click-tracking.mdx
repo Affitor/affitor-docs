@@ -2,7 +2,7 @@
 title: Click Tracking
 description: Track affiliate visits with the Affitor tracker SDK or script tag
 kind: guide
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 Click tracking is the first step in every Affitor integration. It detects affiliate visits, creates the click/customer relationship, and stores the browser identifier used by later signup and sale attribution.
@@ -114,7 +114,7 @@ Track referred signups the same way — call `signup()` from a client `<script>`
 | Option | Type | Description |
 |--------|------|-------------|
 | `programId` | `string \| number` | required program ID |
-| `debug` | `boolean` | Enable verbose console logs for testing |
+| `debug` | `boolean` | For testing only: console logs, and `signup()` sends a test event instead of a lead (no real lead is recorded). Turn it off before production |
 | `env` | `'production' \| 'uat' \| 'local'` | environment preset |
 | `scriptUrl` | `string` | custom script URL override |
 
@@ -136,7 +136,7 @@ Track referred signups the same way — call `signup()` from a client `<script>`
 |-----------|----------|-------------|
 | `src` | Yes | tracker script URL |
 | `data-affitor-program-id` | Yes | your Affitor program ID |
-| `data-affitor-debug` | No | set to `true` while testing |
+| `data-affitor-debug` | No | `true` only while testing: `signup()` then sends a test event instead of a lead. Remove it before production |
 
 ---
 

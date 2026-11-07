@@ -2,7 +2,7 @@
 title: Track Sale
 description: Record an attributed sale and create the partner commission from your backend
 kind: reference
-last_updated: 2026-11-04
+last_updated: 2026-11-07
 ---
 
 Call this endpoint from your server after a payment succeeds to record the conversion and trigger commission creation.
@@ -44,7 +44,7 @@ Authorization: Bearer YOUR_PROGRAM_API_KEY
     The tax included in `amount_cents`, in the same unit. Used to calculate the pre-tax commission basis: `amount_cents - tax_cents`. If provided and not `null`, it must be an integer from `0` to `amount_cents`, inclusive. Otherwise, the API returns `400 invalid_request` with the message `tax_cents must be an integer between 0 and amount_cents`. If omitted or `null`, the whole amount is the basis.
   </ParamField>
   <ParamField name="customer_key" type="string" requirement="conditional">
-    Your internal customer/user ID, set during the signup tracking step. Used to resolve attribution. At least one of `customer_key` or `click_id` must match an existing customer record.
+    Your internal customer/user ID, as your server sent it in the lead (`POST /api/v1/track/lead` with your API key). By default a browser `signup()` alone does not store it (it records a provisional lead), so send `click_id` as well when your server did not send the lead. At least one of `customer_key` or `click_id` must match an existing customer record.
   </ParamField>
   <ParamField name="click_id" type="string" requirement="conditional">
     The Affitor click ID (`affitor_click_id` cookie value). Used as fallback attribution when `customer_key` is not provided.

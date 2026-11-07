@@ -2,7 +2,7 @@
 title: Payment Flow
 description: End-to-end flow from affiliate click to attributed revenue and payout operations, covering server-side tracking and Stripe integration paths
 kind: concept
-last_updated: 2026-10-17
+last_updated: 2026-11-07
 ---
 
 Understand how attribution moves from click → signup → sale in the current public Affitor model.
@@ -61,7 +61,7 @@ if (window.affitor) {
 ```
 
 **What matters here:**
-- Your internal identifier is stored for future matching
+- By default a browser `signup()` records a provisional lead and does not store your identifier yet (the Lead tracking section shows "Browser leads: server/payment confirmation required"). Send the same lead from your server with your API key (`POST /api/v1/track/lead` with `click_id` and `customer_key`) so the identifier is stored for later matching.
 - Reuse that same identifier as:
   - `customer_key` in Server-side tracking — your backend calls POST /api/v1/track/sale
   - `affitor_customer_key` in Stripe metadata
@@ -82,6 +82,8 @@ Your backend calls POST /api/v1/track/sale when payment succeeds.
   "currency": "USD"
 }
 ```
+
+By default, a sale with only `customer_key` is matched only after your server sent the lead with that key. If the lead came only from the browser, send the `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
 
 #### Path B — Stripe integration
 

@@ -2,7 +2,7 @@
 title: 3-Step Integration Guide
 description: Get Affitor tracking live with the supported click, signup, and server-side tracking flows
 kind: quickstart
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 Three steps get Affitor tracking live: clicks → signups → sales. Steps 1 and 2 establish attribution; step 3 records revenue.
@@ -61,7 +61,7 @@ Replace `YOUR_PROGRAM_ID` with your program ID (program menu → **Program setti
 
 ### Verify
 
-Visit your site through a real affiliate link or enable debug mode while testing. Then review:
+Visit your site through a real affiliate link, or enable debug mode while testing. Debug mode also makes `signup()` send a test event instead of a lead, so turn it off before production. Then review:
 - browser console / network requests
 - Affitor dashboard → tracking/integration pages
 
@@ -186,11 +186,11 @@ Send a server-to-server request once payment succeeds.
 | Parameter | Required | Type | Description |
 |-----------|----------|------|-------------|
 | `transaction_id` | **Yes** | string | Unique transaction identifier used for deduplication |
-| `amount_cents` | **Yes** | number | Positive integer amount in cents |
-| `tax_cents` | No | number | The tax included in `amount_cents`; accepted but not used yet |
+| `amount_cents` | **Yes** | number | Positive integer amount in the currency's [minor unit](/docs/api-reference/track-sale#minor-units-and-conversion) (cents for USD) |
+| `tax_cents` | No | number | The tax included in `amount_cents`. Commissions are calculated on `amount_cents - tax_cents` |
 | `customer_key` | Conditional | string | Your internal customer ID |
 | `click_id` | Conditional | string | Tracked click identifier |
-| `currency` | No | string | `USD`, `EUR`, or `VND`. Default: `USD` |
+| `currency` | No | string | A [supported ISO 4217 code](/docs/api-reference/track-sale#request-fields). Default: `USD` |
 | `sale_type` | No | string | `payment` or `subscription`. Default: `payment` |
 | `is_recurring` | No | boolean | Use `true` for recurring charges |
 | `subscription_id` | No | string | External subscription ID |

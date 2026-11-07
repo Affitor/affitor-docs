@@ -2,7 +2,7 @@
 title: SDKs
 description: Typed client libraries for browser tracking (@affitor/sdk) and server-side conversion reporting (@affitor/sdk/server).
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 > **Beta** — The @affitor/sdk package and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -60,7 +60,7 @@ The tracker sends events to `https://api.affitor.com`. To send them to a non-pro
 |--------|------|---------|-------------|
 | `env` | `'production' \| 'local'` | `'production'` | Selects the tracker script URL. |
 | `scriptUrl` | `string` | none | Custom tracker script URL; overrides `env`. It only chooses where the script loads from. |
-| `debug` | `boolean` | `false` | Verbose `console.log` output. Errors always log. |
+| `debug` | `boolean` | `false` | For testing only: logs `info` and `warn` messages, and makes `signup()` send a [test event](/docs/api-reference/test-mode) instead of a lead, so no real lead is recorded. Turn it off before production. Errors always log. |
 
 ---
 
@@ -77,7 +77,7 @@ The tracker sends events to `https://api.affitor.com`. To send them to a non-pro
 | `init` | `(options: { programId?: string \| number; debug?: boolean }) => void` | Starts the tracker. It runs on its own when the script loads (through `loadAffitor` or the script tag), so you do not need to call it. |
 | `trackLead` | `(data: TrackLeadData) => Promise<void>` | Deprecated: use `signup`. Older alias that calls `signup` with the object's `customer_key` (or `user_id`) and `email`. |
 
-> `signup()` requires `customerKey`, your own user id. Affitor uses it to bind the customer to a click so later backend sale calls can resolve attribution by id alone.
+> `signup()` requires `customerKey`, your own user id. By default a browser `signup()` records a provisional lead that links no customer yet (the Lead tracking section shows "Browser leads: server/payment confirmation required"). A later backend sale that sends only `customerExternalId` then finds no customer and is refused with `400` `Customer not found`. Send the lead from your server as well (`trackLead` with `customerExternalId` and `clickId`), or pass `clickId` with the sale.
 
 ### `AffitorData`
 
@@ -209,10 +209,10 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 |-------|------|----------|-------------|
 | `customerExternalId` | `string` | Conditional | Your own user id — resolves attribution from the earlier `trackLead` call. |
 | `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
-| `amount` | `number` | **Yes** | Sale amount in **integer cents** (e.g. `4999` = $49.99). |
-| `taxCents` | `number` | No | The tax included in `amount`, same unit. Accepted but not used yet: commissions are calculated on `amount`. Requires `@affitor/sdk` 2.1.2 or later. |
+| `amount` | `number` | **Yes** | Sale amount as an integer in the currency's [minor unit](/docs/api-reference/track-sale#minor-units-and-conversion): cents for USD (`4999` = $49.99), whole units for JPY or VND. |
+| `taxCents` | `number` | No | The tax included in `amount`, same unit. Commissions are calculated on `amount - taxCents`. Requires `@affitor/sdk` 2.1.2 or later. |
 | `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
-| `currency` | `string` | No | `USD`, `EUR`, or `VND`; another code returns `422`. Defaults to `USD`. Amounts are not converted between currencies: commissions and platform fees are calculated on the amount as sent, and invoices are issued in USD. |
+| `currency` | `string` | No | A [supported ISO 4217 code](/docs/api-reference/track-sale#request-fields); another code returns `422`. Defaults to `USD`. Commissions and platform fees are calculated on the pre-tax amount [converted to USD](/docs/api-reference/track-sale#minor-units-and-conversion), and invoices are issued in USD. |
 | `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
 | `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
 | `subscriptionId` | `string` | No | External subscription id from your payment provider. |
@@ -240,7 +240,7 @@ This endpoint does not require authentication.
 
 Reverses the commission for a previously tracked sale. Call it once per refund, from your payment provider's refund webhook.
 
-- Omit `refundAmountCents` (or pass `0`) to refund everything not yet refunded → commission status set to `reversed`.
+- Omit `refundAmountCents` to refund everything not yet refunded → commission status set to `reversed`. Do not pass `0`: for a sale recorded from November 5, 2026 (16:00 UTC) with a commission to reverse, it answers `400` and nothing is refunded.
 - Pass **this refund's own amount** → it is added to what was already refunded on the sale. Once the total reaches the sale amount, the commission is `reversed`. Before that, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved); both end `refunded`.
 - Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
 - A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
@@ -250,7 +250,7 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
-| `refundAmountCents` | `number` | No | This refund's amount in integer cents (not the running total). Omit or pass `0` to refund the rest of the sale. |
+| `refundAmountCents` | `number` | No | This refund's amount in the sale currency's minor unit (not the running total). Omit it to refund the rest of the sale; do not pass `0`. |
 | `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
 
 ---

@@ -2,7 +2,7 @@
 title: "Fastify"
 description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Fastify backend, including a raw-body Stripe webhook."
 kind: guide
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 This guide wires Affitor into a Fastify app. Because Fastify is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`. The sale is tracked from your Stripe webhook handler, which needs the **raw request body** for signature verification.
@@ -196,11 +196,13 @@ export default async function stripeWebhookRoutes(fastify) {
         // a non-positive amount, and there's no revenue to attribute yet.
         if (session.amount_total && session.amount_total > 0) {
           const result = await affitor.trackSale({
-            // Reads the SAME key the metadata step writes (session.metadata.affitor_customer_key);
-            // client_reference_id is only a fallback for brands that set it explicitly.
-            customerExternalId: session.metadata?.affitor_customer_key ?? session.client_reference_id,
-            amount: session.amount_total, // integer cents
-            invoiceId: session.id,        // idempotency key — duplicate returns 409
+            // The click id the metadata step writes attributes the sale even when only the
+            // browser sent the lead; the customer key matches once your server sent the lead.
+            clickId: session.metadata?.affitor_click_id,
+            customerExternalId: session.metadata?.affitor_customer_key,
+            amount: session.amount_total, // minor units of session.currency (cents for USD)
+            currency: session.currency,   // Stripe sends lowercase; Affitor reads it case-insensitively
+            invoiceId: session.id,        // idempotency key; a duplicate returns 409
           });
 
           if (!result.ok && result.status !== 409) {

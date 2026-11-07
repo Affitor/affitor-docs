@@ -2,7 +2,7 @@
 title: CLI Quickstart
 description: Set up your affiliate program in 3 commands with npx affitor.
 kind: quickstart
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 Get your affiliate program running in under 5 minutes -- program creation and live tracking from your terminal. Stripe is connected in the dashboard, not the CLI.
@@ -41,7 +41,7 @@ You'll be asked for:
 - **Commission type** -- percentage, fixed, or recurring
 - **Commission rate** -- default is 40% for recurring
 - **Duration** -- how long recurring commissions last (default: 12 months)
-- **Cookie window** -- attribution window in days (default: 90)
+- **Cookie window** -- attribution window in days (default: 60)
 
 After confirming, the CLI creates your program and generates:
 
@@ -80,7 +80,7 @@ Paste the script tag from the CLI output into your site's `<head>`:
 
 Replace `YOUR_PROGRAM_ID` with the program ID from step 1.
 
-The script auto-detects `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (90-day window by default, set in your program).
+The script auto-detects `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (60-day window by default, set in your program).
 
 ---
 
@@ -117,7 +117,7 @@ Connect Stripe in the Affitor dashboard: open the program menu, choose **Program
 curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"customer_key": "user_123", "amount_cents": 4900, "currency": "USD"}'
+  -d '{"transaction_id": "inv_123", "customer_key": "user_123", "amount_cents": 4900, "currency": "USD"}'
 ```
 
 ---
@@ -179,7 +179,7 @@ Output is valid JSON, ready for AI agents to parse:
 
 - Running `npx affitor init` in a directory that already has `.affitor/config.json` -- delete it first or use a different directory.
 - Skipping the tracking script -- the CLI creates the program but does not modify your code.
-- Using an expired API key -- re-run `npx affitor init` to get a new one.
+- Using an expired API key -- ask an owner or admin of the program to create or rotate a key in **Program settings › Developers › API keys**. `npx affitor init` creates a new program; it never replaces a key.
 
 :::
 

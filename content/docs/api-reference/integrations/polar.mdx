@@ -2,7 +2,7 @@
 title: "Polar"
 description: "Canonical recipe for attributing Polar payments to Affitor partners — one-time, subscriptions, renewals, and refunds. No Stripe account needed."
 kind: guide
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 This guide is the **canonical reference for the Polar sale path**. Polar is a merchant of record, so there is no Stripe account to connect — instead, your app hosts a small webhook route that reports every paid order to Affitor.
@@ -73,8 +73,8 @@ export const POST = Webhooks({
       customerExternalId: (order.metadata?.user_id as string | undefined)
         ?? order.customer?.externalId ?? order.customerId,
       clickId: (order.metadata?.affitor_click_id ?? order.metadata?.reference_id) as string | undefined,
-      amount: order.totalAmount,         // integer cents, after discounts, tax included
-      taxCents: order.taxAmount,         // the tax inside totalAmount (accepted, not used yet)
+      amount: order.totalAmount,         // minor units (cents for USD), after discounts, tax included
+      taxCents: order.taxAmount,         // the tax inside totalAmount; commissions use totalAmount - taxAmount
       currency: order.currency,
       invoiceId: order.id,               // idempotency key — 409 = already recorded
       saleType: order.subscriptionId ? 'subscription' : 'payment',
