@@ -12,7 +12,7 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ## Launch path (agent + human)
 
-Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). It takes a program from nothing to live, then to the marketplace. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order.
+Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). If you were given a program id and an API base to add tracking, skip to section 0. It takes a program from nothing to Live, then to Launch. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order.
 
 ### Step 0. No program yet
 
@@ -31,7 +31,7 @@ You never run `init` yourself. A brand connection approved for "All current and 
 
 ### Step 1. Read the state
 
-Call `get_program`. Read these fields:
+Call `get_program`. Read these fields in each `details`:
 
 | Field | What it tells you |
 |---|---|
@@ -43,11 +43,11 @@ Call `get_program`. Read these fields:
 | `install` | The tracker script tag, the npm files, where they go and how to verify |
 | `url` | Opens the program settings in the dashboard |
 
-On a connection that can read several programs, `get_program` returns `by_program[]`. Each item's `details` holds the fields above. Pass `program_id` to read one program.
+`get_program` answers with `by_program[]`. Each item has `program` (`id`, `name`) and `details`, which holds the fields above; one program gives one item. Pass `program_id` to read one program. If the answer has no `by_program`, the fields are at the top level.
 
 ### Step 2. Work the checklist
 
-**A** = you do it. **H** = the person does it; you explain and give the link. Add `?programId=<id>` so the right program opens, for example `https://affitor.com/brand/settings/commission?programId=42`.
+**A** = you do it. **H** = the person does it; you explain and give the link. **A and H** = both. This program is on production, so `API_BASE` is `https://api.affitor.com` (§0). Add `?programId=<id>` so the right program opens, for example `https://affitor.com/brand/settings/commission?programId=42`.
 
 | `checklist` id | Who | What you do | Link for the person |
 |---|---|---|---|
@@ -57,12 +57,12 @@ On a connection that can read several programs, `get_program` returns `by_progra
 | `commission` | H | Suggest a rate with your reason. The person sets it. | `https://affitor.com/brand/settings/commission` |
 | `click-tracking` | A | Install the tracker: §3 and §4, or the `install` field. | `https://affitor.com/brand/settings/tracking` |
 | `lead-tracking` | A | Add lead tracking: §2 and §5. This id is done whenever `click-tracking` is done, so it does not prove leads arrive. | `https://affitor.com/brand/settings/tracking` |
-| `payment-tracking` | A and H | Done when Stripe is connected or your server has sent a sale. Only the program owner connects Stripe. You write the sale code: §6 and §7. | `https://affitor.com/brand/settings/payments` |
+| `payment-tracking` | A and H | Done when Stripe is connected or your server has sent a sale. A test sale is enough for Go live, not for Launch. Only the program owner connects Stripe. You write the sale code: §6 and §7. | `https://affitor.com/brand/settings/payments` |
 | `share-program` | H | Done when the program is live. See Step 4. | `https://affitor.com/brand/settings/share` |
 
 `click-tracking` is also done when real server-side events arrive, so a server-only integration passes without the tag.
 
-Server-side code (§5b, §6, §7) and §8 need a program API key. The person creates it at `https://affitor.com/brand/settings/api-keys` and puts it in `AFFITOR_API_KEY` in their environment (§0, §1). The browser tracker (§4) needs no key.
+Server-side code (§5b, §6b, §6c, §7) and §8 need a program API key. The person (an Owner or Admin) creates it at `https://affitor.com/brand/settings/api-keys` and puts it in `AFFITOR_API_KEY` in their environment (§0, §1). The browser tracker (§4) needs no key.
 
 ### Step 3. Verify
 
@@ -70,13 +70,13 @@ Server-side code (§5b, §6, §7) and §8 need a program API key. The person cre
 - If your connection lists `check_tracking`, you can call it with `program_id`. It checks the static tracker on the website, also for draft programs. It does not run the tracker, and it allows up to 10 attempts per hour per program.
 - **API key.** Run §8. Ask the person before you fire the synthetic chain.
 
-### Step 4. Go live
+### Step 4. Live (go live)
 
-Going live is the person's step. Give them `https://affitor.com/brand/settings/share?programId=<id>`. In the settings menu this page reads **Go live** until the program is live, then **Status**. Go live opens when Business, Commission and Payments are done. Click tracking is optional. Only a team member with the go-live permission sees the button. After that, `status` reads `live` and `share-program` is done.
+Going live is the person's step. Give them `https://affitor.com/brand/settings/share?programId=<id>`. In the settings menu this page reads **Go live** until the program is live, then **Status**. Go live opens when Business, Commission and Payments are done. Click tracking is optional. Only a team member with the go-live permission sees the button. Then read `get_program` again to confirm `status` is `live` and `share-program` is done. If it is not, ask the person what the Status page says.
 
-### Step 5. Marketplace
+### Step 5. Launch (the marketplace default list)
 
-Going live and showing on the marketplace are two steps. From Friday, November 27, 2026, a live program shows on the marketplace once it has a real payment path. Do not work out whether the program qualifies. Send the person to `https://affitor.com/brand/settings/share?programId=<id>`, which shows the program's marketplace state.
+The default list is what partners see when they open the Affitor marketplace. From Friday, November 27, 2026, 5:00 PM PST, it only includes programs that record partner sales and have a complete program page. A program that is not complete stays live, and partners find it under "Show all". The brand gets an email with the conditions before the change. Do not work out whether the program qualifies; point the person to that email and to `https://affitor.com/docs/brand/settings`.
 
 ### Never
 
@@ -84,8 +84,8 @@ You never:
 
 - create a program, or run `npx affitor init`;
 - set or change the commission;
-- connect Stripe, or touch payouts or invoices;
-- create an API key, or ask for one in the chat;
+- connect Stripe or any other payment method, or touch payouts or invoices;
+- create an API key, or ask for, accept or repeat one in the chat;
 - click Go live.
 
 ---
