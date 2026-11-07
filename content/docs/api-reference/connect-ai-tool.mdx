@@ -143,6 +143,33 @@ Or add it by hand:
 
 **Check it works:** run `/mcp list`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
 
+## Muse Code
+
+1. Add this to `~/.config/muse/settings.json`, inside the existing object (keep your other settings):
+
+   ```json title="settings.json"
+   {
+     "mcp_servers": {
+       "affitor": {
+         "transport": "streamable_http",
+         "url": "https://mcp.affitor.com/mcp",
+         "enabled": true,
+         "mode": "optional"
+       }
+     }
+   }
+   ```
+
+2. Sign in from your terminal:
+
+   ```bash
+   muse mcp login affitor
+   ```
+
+3. Pick your permissions and programs, then click **Allow**.
+
+**Check it works:** in a Muse session, run `/mcp`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
+
 ## Perplexity
 
 1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
