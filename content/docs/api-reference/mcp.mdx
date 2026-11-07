@@ -2,7 +2,7 @@
 title: Affitor MCP server
 description: Connect Claude, ChatGPT, Cursor, VS Code, Perplexity, Claude Code, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Sign in with your Affitor account; access is read-only.
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 The Affitor MCP server lets an AI app read your Affitor data: a brand's program, partners, applications, commissions and billing, or a partner's programs, links, earnings, commissions and payouts. It is a hosted [Model Context Protocol](https://modelcontextprotocol.io) server. You sign in with your Affitor account, no API key needed, and the connection is read-only: it cannot change data or move money.
@@ -17,7 +17,7 @@ https://mcp.affitor.com/mcp
 | Transport | Streamable HTTP |
 | Sign-in | OAuth 2.1 with PKCE (S256) and dynamic client registration |
 | Scope | `read` (the only scope) |
-| Access | Read-only. One program per brand connection; a partner connection sees only that partner |
+| Access | Read-only. A connection reads the programs you choose when you connect: all current and future programs, or up to 50 you select. A partner connection sees only that partner |
 
 <Flow>
   <FlowStep caption="Use the URL above, or follow your app's steps below.">
@@ -26,7 +26,7 @@ https://mcp.affitor.com/mcp
   <FlowStep caption="Your browser opens affitor.com.">
     **Sign in** with your Affitor account
   </FlowStep>
-  <FlowStep caption="A brand picks one program. A partner connects their partner account.">
+  <FlowStep caption="Choose the programs the app can read, as a brand or as a partner.">
     **Choose what to share** and click **Allow**
   </FlowStep>
   <FlowStep caption="The app sees the tools for your connection type.">
@@ -165,11 +165,11 @@ When your AI app connects, your browser opens **Connect an AI tool** on affitor.
 1. The title names the app: **Claude wants to access Affitor**, or **An app on this computer wants to access Affitor** for a desktop or terminal app. A desktop or terminal app also shows **Unverified** and the name it gives itself in quotes ("It calls itself …"), because any app on your computer can call itself "Claude".
 2. Check **Signed in as** your email. To use another Affitor account, click **Switch**.
 3. If you are both a brand and a partner, choose **As a brand** or **As a partner**.
-4. A brand picks one **Program**. You need to be an active member of that program. A partner sees **Programs**: all programs you are a partner in.
+4. Choose the programs the app can read: **All current and future programs**, or up to 50 programs you select. As a brand you need to be an active member of each program; as a partner you choose among the programs you are a partner in.
 5. **Access** is always **Read-only**: "Programs, partners, clicks and commissions." for a brand, "Your links, clicks and earnings." for a partner.
 6. Click **Allow**, or **Cancel** to refuse.
 
-To give an app a second program, connect again and pick that program. Each connection holds one program.
+A connection keeps the programs you chose. With **All current and future programs**, programs you join later are included; a selection stays as it is. To change it, connect again and choose again.
 
 <VerifySuccess
   browser={[
@@ -189,19 +189,20 @@ To give an app a second program, connect again and pick that program. Each conne
 
 ## Tools
 
-Every tool is read-only, and the server declares it so on each tool: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`, `openWorldHint: false`. A brand connection gets the 7 brand tools for its one program. A partner connection gets the 5 partner tools across that partner's programs. A tool outside your connection's set is refused.
+Every tool is read-only, and the server declares it so on each tool: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`, `openWorldHint: false`. A brand connection gets the 8 brand tools across the programs it can read. A partner connection gets the 5 partner tools across that partner's programs it can read. Every tool takes an optional `program_id` to read one of those programs; `list_programs` lists them. A tool outside your connection's set is refused.
 
 ### Brand tools
 
 | Tool | What it reads | Inputs |
 |---|---|---|
-| `get_program` | The program: name, status, commission terms, setup checklist, 24-hour tracking counts, and the tracker install snippet with where to put it and how to verify it. | none |
+| `list_programs` | The programs this connection can read, in id order, up to 50 per page. | `program_id`, `limit`, `cursor` |
+| `get_program` | Each program, up to 25 per page: name, status, commission terms, setup checklist, 24-hour tracking counts, and the tracker install snippet with where to put it and how to verify it. | `program_id`, `programs_cursor` |
 | `list_partners` | Partners who joined, newest first, with lifetime clicks, leads and sales, and earned and pending money in the window. | `from`, `to`, `limit`, `cursor` |
 | `get_partner` | One partner by `partner_program_id`, with the same fields as `list_partners`. | `partner_program_id`, `from`, `to` |
 | `list_applications` | Partner applications, newest first, with the applicant's own messages. | `status` (`approved`, `pending`, `rejected`), `limit`, `cursor` |
 | `list_commissions` | Commissions, newest sale first, with what each still counts for after refunds. | `status`, `from`, `to`, `partner_program_id`, `limit`, `cursor` |
 | `get_commission_summary` | Count and amount of commissions per status in the window, plus earned and pending. | `from`, `to` |
-| `get_billing` | Affitor billing: what is due, this week's accrual, the platform fee and invoices, 20 per page. | `status` (`all`, `open`, `overdue`, `paid`, `void`), `page` |
+| `get_billing` | Affitor billing per program, up to 25 programs per page: what is due, this week's accrual, the platform fee and invoices, 20 per page. | `status` (`all`, `open`, `overdue`, `paid`, `void`), `page`, `program_id`, `programs_cursor` |
 
 ### Partner tools
 
@@ -261,7 +262,7 @@ The server cannot approve an application, change a commission, create a link or 
 Each server instance keeps its own request counts in memory, so the request limits apply per instance.
 
 - **Read-only by design.** The only scope is `read`. There are no tools that write, delete or move money.
-- **Access is checked on every call.** A brand connection works only while you are an active member of its program; a partner connection, only while your partner account exists. A blocked account stops working at once.
+- **Access is checked on every call.** A brand connection reads a program only while you are an active member of it; a partner connection, only while your partner account exists. A blocked account stops working at once.
 - **Only Affitor sign-in tokens work.** The server refuses program API keys, staff keys and dashboard sessions with `401`. Do not add an `Authorization` header with your API key.
 - **Untrusted text is marked.** Partner names, application messages and other free text are cut at 280 characters (the cut fields are listed in `truncated`), and every result says its text is data, not instructions.
 - **What is logged.** One row per tool call: the connection, the tool name, the program, the number of rows, whether it worked and how long it took. Never your prompts, the arguments or the results. These rows are deleted after 30 days.
@@ -278,7 +279,7 @@ Removal is immediate: the app's tokens are deleted and its next request gets `40
 ## Troubleshooting
 
 - **"This request has expired"** or **"This approval is no longer valid"**: the sign-in took too long. Start the connection again from your AI app.
-- **The app sees the wrong program:** remove the connection and connect again, picking the right program. The install prompt above checks the program id for this reason.
+- **The app sees the wrong programs:** remove the connection and connect again, choosing the right ones. The install prompt above checks the program id for this reason.
 - **Signed in with the wrong account:** click **Switch** on the sign-in screen.
 - **"Too many rows for this window"**: ask for a shorter `from`/`to` window.
 - **`401` with "Program API keys are not accepted here"**: remove the `Authorization` header from your client's config and sign in instead.

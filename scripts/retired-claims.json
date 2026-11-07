@@ -172,5 +172,11 @@
     "why": "API keys v2: owners and admins use Create key or Rotate key under Program settings › Developers › API keys, and the key is shown once in Copy your key. There is no Generate/Regenerate button and no Settings → API Key page. The heading 'Step 3: Regenerate the key' in brand/settings stays for its anchor and is not matched.",
     "since": "2026-11-06",
     "allow": []
+  },
+  {
+    "pattern": "one program per brand connection|brand (picks|connection covers) one program|each connection holds one program|7 brand tools|for its one program",
+    "why": "MCP connections read the programs chosen at consent: all current and future programs, or up to 50 selected; a brand connection has 8 brand tools (list_programs added), each with an optional program_id. affiliate-cms src/mcp/program-scope.ts, src/mcp/tools/defs.ts MULTI_BRAND_TOOLS.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]
