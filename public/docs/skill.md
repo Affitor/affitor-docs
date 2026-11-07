@@ -12,7 +12,7 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ## Launch path (agent + human)
 
-Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). It takes a program from nothing to live on the marketplace. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order.
+Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). It takes a program from nothing to live, then to the marketplace. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order.
 
 ### Step 0. No program yet
 
@@ -36,7 +36,7 @@ Call `get_program`. Read these fields:
 | Field | What it tells you |
 |---|---|
 | `id` | The program id. Use it as `PROGRAM_ID` in §3 to §8. |
-| `status` | `draft`, `active` (not listed yet), `live` (listed on the marketplace), `paused` or `archived` |
+| `status` | `draft`, `active`, `live` (after Go live), `paused` or `archived` |
 | `checklist[]` | Each setup step as `{ id, done }`. The program is ready when all are done. |
 | `tracking.tag` | Whether the tracker was found on the website: `found`, `not_found`, `fetch_failed`, `invalid_url`, `blocked_private_address` or `unknown` (not checked yet) |
 | `tracking.counts_24h` | Clicks, leads and sales recorded in the last 24 hours |
@@ -73,6 +73,10 @@ Server-side code (§5b, §6, §7) and §8 need a program API key. The person cre
 ### Step 4. Go live
 
 Going live is the person's step. Give them `https://affitor.com/brand/settings/share?programId=<id>`. In the settings menu this page reads **Go live** until the program is live, then **Status**. Go live opens when Business, Commission and Payments are done. Click tracking is optional. Only a team member with the go-live permission sees the button. After that, `status` reads `live` and `share-program` is done.
+
+### Step 5. Marketplace
+
+Going live and showing on the marketplace are two steps. From Friday, November 27, 2026, a live program shows on the marketplace once it has a real payment path. Do not work out whether the program qualifies. Send the person to `https://affitor.com/brand/settings/share?programId=<id>`, which shows the program's marketplace state.
 
 ### Never
 
