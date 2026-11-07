@@ -1,0 +1,29 @@
+---
+title: Program logos in one frame, and numeric IDs on tracking
+date: 2026-11-01
+type: digest
+audience:
+- partners
+- brands
+- developers
+surfaces:
+- dashboard
+- tracking
+- api
+description: Referral and invite pages show program logos whole in one framed tile, and lead and refund tracking accept whole-number IDs.
+context:
+  avoid:
+  - "Saying every program now shows a logo: without an uploaded or validated website logo, Referrals shows an initial tile and invite pages show none."
+  - "Saying whole-number IDs work on every tracking endpoint: only customer_key on lead, and transaction_id and refund_id on refund."
+  - "Any Stripe Connect attribution or security change from this release."
+---
+
+### Improved
+
+- On Referrals, referred brands and invite pages, program logos use the uploaded logo, or else the website logo, shown whole in a white framed tile.
+
+<Media src="/docs/changelog/improvements-2026-11-01/logos.png" alt="Referrals with program logos framed in white tiles next to a program without a logo shown by its initial" />
+
+### For developers
+
+- `POST /api/v1/track/lead` accepts a positive whole number as `customer_key`, and `POST /api/v1/track/refund` accepts one as `transaction_id` or `refund_id`, treated like the same value sent as a string.

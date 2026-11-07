@@ -1,0 +1,32 @@
+---
+title: Chat at its own address, your name in menus, and customer keys
+date: 2026-10-26
+type: digest
+audience:
+- brands
+- partners
+surfaces:
+- dashboard
+description: Chat moves to its own address, menus show your name, and sales and commissions fall back to your customer key when no email is recorded.
+context:
+  avoid:
+  - 'Totals across all programs on the partner Programs page: it has its own entry for Oct 26.'
+  - Saying Chat or commission screens used to show numeric program or customer ids as names.
+  - Saying partners see a customer's full email (partners see a masked email).
+  - Saying an AI app can choose only one program, or can change data.
+---
+
+### Improved
+
+- Chat now lives at `/brand/chat` and `/partner/chat`. Old Messages links, notification links and sign-in return links open Chat.
+- Latest sales and brand commission screens fall back to your own customer key when a sale has no email, instead of Unknown customer or a numbered placeholder.
+- Your name now shows in the sidebar, the account menu and Profile, instead of Brand, Partner or user@example.com. Without a name, a readable form of your email shows.
+- Brand commission screens show the partner's public name, or their contact email, instead of N/A when no name is set.
+- Chat shows each program by its name. Payout rows show the program instead of Unknown program, and payments without a program show their type, such as Commissions.
+
+<Media src="/docs/changelog/improvements-2026-10-26/chat.png" alt="Brand Chat with the signed-in name, Robin Hale, in the sidebar footer" />
+
+### Fixed
+
+- The new message list in partner Chat only offers programs you can message. A link to one you can't message says so.
+- On phones, Profile opened from the site menu no longer closes when the menu drawer closes. Commission lists say 1 result instead of 1 results.

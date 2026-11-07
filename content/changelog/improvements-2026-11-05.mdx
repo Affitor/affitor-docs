@@ -1,0 +1,30 @@
+---
+title: Chat for two-sided accounts, kept rows, and bulk Reject fixes
+date: 2026-11-05
+type: digest
+audience:
+- brands
+- partners
+surfaces:
+- dashboard
+description: Chat keeps brand and partner sides apart, Partners, Groups and Commissions keep their rows on revisit, and bulk Reject acts only on pending selections.
+context:
+  avoid:
+  - "Sales in other currencies, tax or refunds: they have their own entry for Nov 5."
+  - "Onboarding or signup changes: they are not part of this entry."
+  - "A page speed or download size figure."
+---
+
+### Improved
+
+- If you are on a brand team and also a partner, Chat keeps each side's conversations, people, replies and uploads apart when you switch sides.
+- Partners and Groups show the rows you last saw right away when you come back, then refresh them in place.
+- Commissions refreshes its list and totals when you come back and after every action. Totals turn gray while they update.
+
+<Media src="/docs/changelog/improvements-2026-11-05/commissions.png" alt="Commissions refreshing: Revenue, Commission and To pay shown in gray while the new totals load" />
+
+### Fixed
+
+- Bulk Reject on Commissions sends only the rows selected in the current list, and cancels if any of them stopped being pending.
+- When the list fails to load, Commissions shows the error alert alone, without an empty "No commissions found" table.
+- Switching programs on Groups clears the open group, so its details never show the previous program's partners.

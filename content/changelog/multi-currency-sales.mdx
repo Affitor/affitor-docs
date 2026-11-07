@@ -1,0 +1,71 @@
+---
+title: Send sales in other currencies, with commissions before tax
+date: 2026-11-05
+type: feature
+audience: [brands, developers]
+surfaces: [tracking, api]
+description: Sales in other currencies are converted to USD when recorded, and commissions and platform fees use the price after discounts and before tax.
+action: { who: developers, what: "If you report refunds through the API, send `refund_amount_cents` in the sale's own currency and minor unit, or leave it out to refund the whole sale. A value of 0 is no longer accepted for sales from November 5." }
+context:
+  facts:
+    - "Starting Thursday, November 5, 2026 (16:00 UTC), Affitor handles tax and currency differently in commissions and platform fees on new sales."
+    - "Commissions and platform fees are calculated on the price the customer paid after discounts and before tax, whenever the payment provider or the API call gives Affitor the tax amount."
+    - "Sales in other currencies are converted to USD at the latest daily exchange rate when the sale is recorded, and Affitor keeps the original amount next to it."
+    - "Commissions already recorded do not change."
+    - "API sales go to POST https://api.affitor.com/api/v1/track/sale. If the amount includes tax, send the tax in tax_cents, in the same unit as amount_cents. Reference: https://affitor.com/docs/api-reference/track-sale"
+    - "amount_cents and tax_cents use the currency's minor unit, not always hundredths: USD 49.00 is 4900, VND 490,000 is 490000, BHD 1.234 is 1234."
+    - "For sales recorded from November 5, 2026 (16:00 UTC), refund_amount_cents on POST /api/v1/track/refund is in the sale's own currency and minor unit, tax included. Leaving it out refunds the whole sale. 0, a negative number or a non-integer returns 400 invalid_request. Reference: https://affitor.com/docs/api-reference/track-refund"
+    - "Refunds of sales recorded before November 5, 2026 (16:00 UTC) work as before."
+    - "A currency code Affitor does not support returns 422 unsupported_currency and creates no sale, commission or fee."
+  avoid:
+    - "A change to the platform fee rate or to pricing plans (only the amount the fee is calculated on changed)"
+    - "Saying every currency in the world is accepted (codes without a numeric minor unit and ten listed codes are not)"
+    - "Saying commissions or fees already recorded were recalculated"
+    - "Saying the dashboard shows the original currency or amount (it is kept on the sale record, not shown)"
+    - "Promising every non-USD sale is priced at once (a sale with no usable daily rate is kept with no commission, see Track Sale)"
+    - "Naming the exchange rate providers"
+    - "Converting amount_cents or refund_amount_cents to USD or subtracting tax before sending them"
+    - "Saying a refund amount of 0 now refunds the whole sale on new sales (it returns 400; leave the field out instead)"
+  cta: { label: "Read Track Sale", url: "https://affitor.com/docs/api-reference/track-sale" }
+---
+
+Send sales in other currencies, and send the tax inside each sale. Starting Thursday, November 5, 2026 (16:00 UTC), we handle tax and currency differently in commissions and platform fees on new sales.
+
+Until now, a sale sent through the API was commissioned on the amount as sent: amounts were not converted between currencies, and `tax_cents` was accepted but not used. Now the currency and the tax both count.
+
+## How it works
+
+- Commissions and platform fees are calculated on the price your customer paid after discounts and before tax, whenever your payment provider or your API call gives us the tax amount.
+- Sales in other currencies are converted to USD at the latest daily exchange rate when the sale is recorded, and we keep the original amount next to it.
+- Commissions already recorded do not change.
+
+## Send the tax with each sale
+
+If your amount includes tax, add the tax in the `tax_cents` field of `POST /api/v1/track/sale`, in the same unit as `amount_cents`. Set `currency` to the sale's own currency:
+
+```json tab="Request body"
+{
+  "transaction_id": "txn_abc123",
+  "customer_key": "usr_9876",
+  "amount_cents": 490000,
+  "tax_cents": 40000,
+  "currency": "VND"
+}
+```
+
+Despite its name, `amount_cents` uses the currency's minor unit, not always hundredths: USD 49.00 is `4900`, VND 490,000 is `490000`, and BHD 1.234 is `1234`. A currency we do not support returns `422 unsupported_currency` and creates no sale.
+
+## What to do
+
+If you report refunds, send `refund_amount_cents` in the sale's own currency and minor unit, or leave it out to refund the whole sale. A value of 0 is no longer accepted for sales from November 5: `0`, a negative number or a non-integer returns `400 invalid_request`. Refunds of earlier sales work as before.
+
+```bash tab="cURL"
+curl -X POST https://api.affitor.com/api/v1/track/refund \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"transaction_id":"txn_abc123","refund_amount_cents":10000,"refund_id":"re_123"}'
+```
+
+## Conclusion
+
+From November 5, tax and currency count in commissions and platform fees on new sales. [Learn more in Track Sale](https://affitor.com/docs/api-reference/track-sale) and [Track Refund](https://affitor.com/docs/api-reference/track-refund), and write to support@affitor.com with any question.
