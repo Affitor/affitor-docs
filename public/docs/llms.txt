@@ -116,6 +116,7 @@
 ## API Reference: SDKs and MCP
 
 - [SDKs](https://affitor.com/docs/api-reference/sdks.md)
+- [Connect your AI tool](https://affitor.com/docs/api-reference/connect-ai-tool.md)
 
 ## Help Center
 

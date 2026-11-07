@@ -109,6 +109,7 @@
   "/docs",
   "/docs/api-reference/agent-integration",
   "/docs/api-reference/attribution",
+  "/docs/api-reference/connect-ai-tool",
   "/docs/api-reference/errors",
   "/docs/api-reference/events",
   "/docs/api-reference/integrations/fastify",

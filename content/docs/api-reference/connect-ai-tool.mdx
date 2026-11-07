@@ -1,0 +1,186 @@
+---
+title: Connect your AI tool
+description: Add the Affitor MCP server to Claude, Codex, ChatGPT, Cursor, VS Code, Claude Code or another MCP client, then sign in with your Affitor account. No API key needed.
+kind: guide
+last_updated: 2026-11-07
+---
+
+Add the Affitor MCP server to your AI tool, then sign in with your Affitor account. No API key needed. You will add the server, sign in on affitor.com, choose your programs and what the AI may do, and click **Allow**.
+
+## Before you start
+
+- An Affitor account with a program, or a program you joined as a partner.
+- When you sign in, reading is always on, and you tick each write permission you allow.
+
+## Server URL
+
+```text
+https://mcp.affitor.com/mcp
+```
+
+Every tool below uses this URL. For transport, sign-in and the full tool list, see the [MCP server reference](/docs/api-reference/mcp).
+
+## Claude
+
+Claude on the web and Claude Desktop.
+
+1. Add the server in one click: [Add to Claude](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Affitor&connectorUrl=https%3A%2F%2Fmcp.affitor.com%2Fmcp).
+
+Or add it by hand:
+
+2. In Claude, open **Customize** › **Connectors**.
+3. Click **+ Add**, then **Add custom connector**. Name it Affitor, paste the URL and click **Continue**.
+4. Keep the detected sign-in settings. If Claude asks, pick **Register automatically** under **OAuth client**.
+5. Click **Add** and sign in to Affitor.
+6. As a brand, pick your programs; then click **Allow**.
+
+On Team and Enterprise plans, an owner adds the connector in **Organization settings** › **Connectors**, and members click **Connect**.
+
+**Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
+
+## Codex
+
+1. Run this in your terminal:
+
+   ```bash
+   codex mcp add affitor --url https://mcp.affitor.com/mcp
+   ```
+
+2. Sign in:
+
+   ```bash
+   codex mcp login affitor
+   ```
+
+**Check it works:** run `codex mcp list`: affitor is listed. Then ask your AI tool "List my Affitor programs". It answers with your programs.
+
+## Other MCP clients
+
+These apps are offered in the dashboard; their steps are below.
+
+### ChatGPT
+
+1. Go to [chatgpt.com/plugins](https://chatgpt.com/plugins), click the plus button, then **Add custom MCP server**.
+2. Enter a name, and under **Connection** paste the URL.
+3. Set authentication to OAuth, review the warning and click **I understand and want to continue**.
+4. Click **Create as a plugin** and sign in to Affitor.
+5. As a brand, pick your programs; then click **Allow**.
+
+Your workspace's policy may limit who can add custom MCP servers.
+
+**Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
+
+### Cursor
+
+1. Add the server in one click: [Add to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=affitor&config=eyJ1cmwiOiJodHRwczovL21jcC5hZmZpdG9yLmNvbS9tY3AifQ%3D%3D).
+
+Or add it by hand:
+
+2. Add this to `~/.cursor/mcp.json`:
+
+   ```json title="mcp.json"
+   {
+     "mcpServers": {
+       "affitor": { "url": "https://mcp.affitor.com/mcp" }
+     }
+   }
+   ```
+
+3. In **Cursor Settings** › **MCP**, click **Connect** and sign in.
+
+**Check it works:** in **Cursor Settings**, open **MCP**: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
+
+### Claude Code
+
+1. Install the Affitor plugin (recommended):
+
+   ```text
+   /plugin marketplace add Affitor/claude-plugins
+   /plugin install affitor@affitor
+   ```
+
+2. Open `/mcp`, pick affitor and sign in.
+
+Or add the server by hand:
+
+1. Run this in your terminal:
+
+   ```bash
+   claude mcp add --transport http affitor https://mcp.affitor.com/mcp
+   ```
+
+2. In Claude Code, type `/mcp`, pick affitor and sign in.
+
+Add `--scope user` to use Affitor in every project.
+
+**Check it works:** run `claude mcp list`: affitor shows `Connected`. Then ask your AI tool "List my Affitor programs". It answers with your programs.
+
+### VS Code
+
+GitHub Copilot in VS Code.
+
+1. Add the server in one click: [Add to VS Code](https://vscode.dev/redirect/mcp/install?name=affitor&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.affitor.com%2Fmcp%22%7D).
+
+Or add it by hand:
+
+2. Add this to `.vscode/mcp.json` in your workspace, or to the `mcp.json` of your user profile:
+
+   ```json title="mcp.json"
+   {
+     "servers": {
+       "affitor": { "type": "http", "url": "https://mcp.affitor.com/mcp" }
+     }
+   }
+   ```
+
+3. Start the server and sign in when VS Code asks.
+
+**Check it works:** in Copilot Chat in Agent mode, ask your AI tool "List my Affitor programs". It answers with your programs.
+
+### Any other MCP client
+
+1. Add this to your client's MCP config:
+
+   ```json
+   {
+     "mcpServers": {
+       "affitor": { "url": "https://mcp.affitor.com/mcp" }
+     }
+   }
+   ```
+
+2. Restart the client and sign in when it asks.
+
+Apps on your own computer connect through `http://127.0.0.1` or `http://localhost`. A web app connects only if Affitor accepts its return address; the [MCP server reference](/docs/api-reference/mcp) lists them.
+
+**Check it works:** ask your AI tool "List my Affitor programs". It answers with your programs.
+
+## What the AI can do
+
+When you sign in, you choose the programs and what the AI may do. Reading is always on. Editing a program page (brands) or managing links (partners) is a box you tick. Money actions always happen in Affitor.
+
+To see or remove a connection, brands open **Program settings** › **Developers** › **AI agents**; partners open **Integrations** from the account menu.
+
+## Next: set up tracking
+
+For brands: paste this prompt into the AI tool you connected. It adds the script, counts sign-ups and sales, and checks that the first click arrives. In the dashboard, **Program settings** › **Tracking** shows it with your website and program ID filled in.
+
+<AgentPrompt prompt={`Help me set up Affitor affiliate tracking. Here's my context:
+
+Website: <your website>
+
+Follow these steps in order. Connecting the Affitor MCP server is the preferred method; only use the fallback if it fails.
+
+1. Connect Affitor: add https://mcp.affitor.com/mcp as an MCP server and sign in when prompted. Pick this program on the consent screen.
+2. Call get_program and follow its launch path: add the script, count sign-ups (optional), then count sales with the first method that fits how the site takes payments.
+3. Check it works: confirm the first click shows up, and tell me when it's deployed.
+
+Fallback without MCP: follow https://affitor.com/docs/skill.md sections 4 to 6 with program ID <your program ID> and the API key in the AFFITOR_API_KEY environment variable. Never print the key or put it in browser code.
+If you can't change the code, tell me exactly what to add, file by file.`} />
+
+Connecting over MCP needs no API key. Only the fallback uses a program API key from **Program settings** › **Developers** › **API keys**, kept in an environment variable, never in the prompt. See the [tracking guide](/docs/brand/tracking/quickstart-integration).
+
+## Related
+
+- [MCP server reference](/docs/api-reference/mcp): transport, sign-in, tools and limits
+- [AI agent setup](/docs/use-cases/ai-agent-setup): what an agent can do with your program

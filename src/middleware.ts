@@ -37,6 +37,8 @@ const RENAMES: [string, string][] = [
   ['/docs/getting-started/what-is-affitor', '/docs'],
   ['/docs/getting-started/glossary', '/docs/support/glossary'],
   ['/docs/errors', '/docs/api-reference/errors'],
+  // The product links the MCP setup guide as /docs/mcp (06/11/2026).
+  ['/docs/mcp', '/docs/api-reference/connect-ai-tool'],
   ['/docs/blog', '/blog'],
   // Merged into the pricing comparison (13/10/2026); the .md twins follow.
   ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
