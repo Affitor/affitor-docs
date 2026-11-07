@@ -23,6 +23,7 @@ const BLOG_PAGES = ['/blog', ...slugs('content/blog').map((s) => `/blog/${s}`), 
 const MD = { accept: 'text/markdown', vary: true, md: true };
 const HTML = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', vary: true };
 const NO_TWIN = { accept: 'text/markdown', vary: false };
+const NO_TWIN_HTML = { accept: HTML.accept, vary: false };
 const REDIRECT_MD = { accept: 'text/markdown' };
 
 // [host, path, status, location (null = none), content-type prefix (optional), negotiation (optional)]
@@ -121,7 +122,13 @@ const ALWAYS = [
   [PROXY, '/docs/api/search?query=payout', 200, null, 'application/json', NO_TWIN],
   [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml', NO_TWIN],
   [PROXY, '/docs/brand/quickstart.md', 200, null, 'text/markdown', NO_TWIN],
-  [PROXY, '/docs/no-such-page', 404, null, undefined, REDIRECT_MD],
+  // Not pages: the 404 stays a 404 for both Accept values (/changelog/context.md is the AI context
+  // pack, never the answer for /changelog/context).
+  [PROXY, '/docs/no-such-page', 404, null, undefined, NO_TWIN],
+  [PROXY, '/docs/no-such-page', 404, null, undefined, NO_TWIN_HTML],
+  [PROXY, '/changelog/context', 404, null, undefined, NO_TWIN],
+  [PROXY, '/changelog/context', 404, null, undefined, NO_TWIN_HTML],
+  [PROXY, '/blog/no-such-post', 404, null, undefined, NO_TWIN],
   // Redirects come first; the client negotiates again at the new URL.
   [PROXY, '/docs/advertisers/quickstart', 308, '/docs/brand/quickstart', undefined, REDIRECT_MD],
   [DOCS, '/blog/rewardful-alternatives', 301, 'https://affitor.com/blog/rewardful-alternatives', undefined, REDIRECT_MD],

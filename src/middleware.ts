@@ -1,5 +1,6 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { POSTHOG_PUBLIC_KEY } from '@/lib/posthog';
+import TWIN_PAGES from '@/generated/markdown-twins.json';
 
 // AI-crawler tracking (AI-RANK-redesign.md, Part D2 lane 1).
 // AI crawlers don't execute JS, so client-side PostHog never sees them —
@@ -119,13 +120,14 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
   return markdown > 0 && markdown >= htmlWeight;
 }
 
-// Pages with a `.md` twin (next.config.mjs rewrites): docs pages (/docs/api/* is a route, not a
-// page), blog posts and the changelog index and entries. The blog index has no twin.
-const TWIN_PAGE = /^\/(?:docs(?:\/(?!api(?:\/|$))[^.]*[^./])?|blog\/[^/.]+|changelog(?:\/[^/.]+)?)$/;
+// Every page with a real `.md` twin: docs pages, blog posts, the changelog index and entries
+// (scripts/gen-llms.js writes the list from the content tree; check-agent-surface.mjs pins it).
+// Anything else, including unknown pages and /changelog/context, is left alone.
+const TWINS = new Set<string>(TWIN_PAGES);
 
 /** The `.md` twin of a page path in the /docs layout, or null when it has none. */
 export function markdownTwin(path: string): string | null {
-  if (!TWIN_PAGE.test(path)) return null;
+  if (!TWINS.has(path)) return null;
   return path === '/docs' ? '/docs/index.md' : `${path}.md`;
 }
 

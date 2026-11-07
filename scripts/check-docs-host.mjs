@@ -5,7 +5,7 @@
 // NextRequest objects.
 // Run: node scripts/check-docs-host.mjs  (CI: .github/workflows/agent-surface.yml)
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,10 +17,16 @@ const { NextRequest } = require('next/server');
 
 const file = join(ROOT, 'src/middleware.ts');
 const { outputText } = ts.transpileModule(readFileSync(file, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
 });
 const mod = { exports: {} };
-const localRequire = (id) => (id === '@/lib/posthog' ? { POSTHOG_PUBLIC_KEY: 'phc_test' } : require(id));
+// The committed twin list the middleware imports (scripts/gen-llms.js writes it).
+const TWIN_PAGES = JSON.parse(readFileSync(join(ROOT, 'src/generated/markdown-twins.json'), 'utf8'));
+const localRequire = (id) => {
+  if (id === '@/lib/posthog') return { POSTHOG_PUBLIC_KEY: 'phc_test' };
+  if (id === '@/generated/markdown-twins.json') return TWIN_PAGES;
+  return require(id);
+};
 new Function('module', 'exports', 'require', outputText)(mod, mod.exports, localRequire);
 const { middleware, wantsMarkdown } = mod.exports;
 
@@ -230,6 +236,8 @@ function invariants() {
       ['/changelog/invite-partners', '/changelog/invite-partners.md'],
     ]) check(`${host}${path}: markdown twin ${twin} for Accept: text/markdown, HTML otherwise, Vary: Accept`, negotiates(host, path, twin));
     for (const path of [
+      // Not pages: no twin, even where a .md answers (/changelog/context.md is the AI context pack).
+      '/docs/no-such-page', '/docs/brand/no-such-page', '/blog/no-such-post', '/changelog/no-such-entry', '/changelog/context',
       '/blog', '/docs/api/search', '/docs/openapi.json', '/docs/llms-full.txt', '/docs/brand/quickstart.md', '/docs/skill.md',
       '/docs/brand/dashboard.png', '/blog/rewardful-alternatives.md', '/blog/covers/x.png', '/changelog.md', '/changelog/invite-partners.md',
       '/changelog/rss.xml', '/changelog.json', '/changelog/context.md', '/docsy', '/brand/quickstart',
@@ -276,6 +284,14 @@ mode(undefined, () => {
   check('off: docs host / negotiates to the index twin', negotiates(DOCS, '/', '/docs/index.md', '/docs'));
   check('off: docs host /docs/<page> negotiates', negotiates(DOCS, '/docs/brand/quickstart', '/docs/brand/quickstart.md'));
   check('off: docs host query kept on the twin', negotiates(DOCS, '/api-reference/errors?x=1', '/docs/api-reference/errors.md?x=1', '/docs/api-reference/errors?x=1'));
+  check('off: docs host unknown page is served from /docs as before, no twin, no Vary', () => {
+    for (const [path, internalPath] of [['/no-such-page', '/docs/no-such-page'], ['/docs/no-such-page', null]]) {
+      const r = run(DOCS, path, MD);
+      assert.equal(r.location, null, `${path} location`);
+      assert.equal(internal(r), internalPath, `${path} rewrite`);
+      assert.equal(r.vary, null, `${path} Vary`);
+    }
+  });
   check('off: docs host /api/search has no twin', () => {
     const r = run(DOCS, '/api/search?query=x', MD);
     assert.equal(internal(r), '/docs/api/search?query=x');
@@ -331,6 +347,27 @@ mode('yes', () => {
   check('an unknown DOCS_HOST_REDIRECT value keeps redirects off', serves('/brand/quickstart', '/docs/brand/quickstart', false));
 });
 delete process.env.DOCS_HOST_REDIRECT;
+
+check('twin list: docs index, changelog index, every blog post and changelog entry, no twin paths', () => {
+  const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.mdx')).map((f) => f.slice(0, -4));
+  for (const path of ['/docs', '/docs/brand/quickstart', '/changelog', ...slugs('content/blog').map((s) => `/blog/${s}`), ...slugs('content/changelog').map((s) => `/changelog/${s}`)]) {
+    assert.ok(TWIN_PAGES.includes(path), `${path} missing from src/generated/markdown-twins.json`);
+  }
+  for (const path of TWIN_PAGES) assert.match(path, /^\/(?:docs|blog|changelog)(?:\/[^.]+)?$/, `${path}: a page path, not a file`);
+  assert.equal(TWIN_PAGES.includes('/changelog/context'), false);
+  assert.equal(TWIN_PAGES.includes('/blog'), false);
+});
+check(`every listed page (${TWIN_PAGES.length}) negotiates on affitor.com`, () => {
+  for (const path of TWIN_PAGES) {
+    const twin = path === '/docs' ? '/docs/index.md' : `${path}.md`;
+    const md = run('affitor.com', path, MD);
+    assert.equal(internal(md), twin, `${path} twin`);
+    assert.equal(md.vary, 'Accept', `${path} Vary (markdown)`);
+    const html = run('affitor.com', path, BROWSER);
+    assert.equal(html.rewrite, null, `${path} HTML must not rewrite`);
+    assert.equal(html.vary, 'Accept', `${path} Vary (HTML)`);
+  }
+});
 
 for (const [accept, want] of [
   ['text/markdown', true],

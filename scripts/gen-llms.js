@@ -1,6 +1,11 @@
 #!/usr/bin/env node
-/** Regenerate the compact agent entry point: every docs page, grouped as the sidebar groups them. */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+/**
+ * Regenerate the compact agent entry point (public/docs/llms.txt: every docs page, grouped as the
+ * sidebar groups them) and src/generated/markdown-twins.json (every page with a .md twin, which the
+ * middleware negotiates `Accept: text/markdown` for). Both are committed; prebuild rewrites them and
+ * check-agent-surface.mjs fails when either differs from the content tree.
+ */
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loader } from 'fumadocs-core/source';
@@ -36,8 +41,8 @@ function walk(dir) {
   });
 }
 
-/** One `## Tree: Group` section per sidebar group, in sidebar order (the meta.json files under content/docs). */
-function sections() {
+/** The docs pages as Fumadocs sees them (URLs, sidebar tree), from content/docs. */
+function docsSource() {
   const dir = join(ROOT, 'content/docs');
   const files = walk(dir).sort().map((file) => ({
     type: file.endsWith('.json') ? 'meta' : 'page',
@@ -45,8 +50,13 @@ function sections() {
     absolutePath: file,
     data: file.endsWith('.json') ? JSON.parse(readFileSync(file, 'utf8')) : frontmatter(file),
   }));
+  return loader({ baseUrl: '/docs', source: { files } });
+}
+
+/** One `## Tree: Group` section per sidebar group, in sidebar order (the meta.json files under content/docs). */
+function sections() {
   const out = [];
-  for (const tree of loader({ baseUrl: '/docs', source: { files } }).pageTree.children) {
+  for (const tree of docsSource().pageTree.children) {
     if (tree.type !== 'folder') continue;
     let lines = [`## ${tree.name}`, ''];
     for (const node of tree.children) {
@@ -85,6 +95,22 @@ ${sections()}
 `;
 }
 
+const mdxSlugs = (dir) => readdirSync(join(ROOT, dir)).filter((file) => file.endsWith('.mdx')).map((file) => file.slice(0, -4));
+
+/**
+ * Page paths with a real .md twin (src/app/llms.md): docs pages, blog posts (content/blog), the
+ * changelog index and its entries (content/changelog/*.mdx). Sorted, so the file is deterministic.
+ */
+export function generateTwins() {
+  const paths = [
+    ...docsSource().getPages().map((page) => page.url),
+    ...mdxSlugs('content/blog').map((slug) => `/blog/${slug}`),
+    '/changelog',
+    ...mdxSlugs('content/changelog').map((slug) => `/changelog/${slug}`),
+  ].sort();
+  return `${JSON.stringify(paths, null, 2)}\n`;
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const output = generateLlms();
   if (process.argv.includes('--stdout')) {
@@ -92,5 +118,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   } else {
     writeFileSync(join(ROOT, 'public/docs/llms.txt'), output);
     console.log(`public/docs/llms.txt regenerated: ${Buffer.byteLength(output)} bytes.`);
+    const twins = generateTwins();
+    mkdirSync(join(ROOT, 'src/generated'), { recursive: true });
+    writeFileSync(join(ROOT, 'src/generated/markdown-twins.json'), twins);
+    console.log(`src/generated/markdown-twins.json regenerated: ${JSON.parse(twins).length} pages.`);
   }
 }
