@@ -1,8 +1,8 @@
 ---
 title: Manage program settings and your API key
-description: Edit your program's terms after launch and find, copy, or regenerate the per-program API key that authenticates your tracking integration.
+description: Edit your program's terms after launch, and create or rotate the per-program API keys that authenticate your tracking integration.
 kind: guide
-last_updated: 2026-10-18
+last_updated: 2026-11-06
 ---
 
 Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-program) stays editable after launch, and Settings also hold the API key that every server-side [tracking call](/docs/api-reference/overview) authenticates with. This guide shows where each setting lives, how to change terms safely, and how to rotate the key with the shortest possible gap in tracking.
@@ -11,7 +11,7 @@ Everything you configured in the [setup wizard](/docs/brand/quickstart/setup-pro
   items={[
     { label: 'Who this is for', value: 'Advertisers and agent developers' },
     { label: 'Time required', value: '5 minutes' },
-    { label: 'Prerequisites', value: 'An affiliate program created in the setup wizard. Generating or regenerating the API key also needs workspace owner access to that program.' },
+    { label: 'Prerequisites', value: 'An affiliate program created in the setup wizard. Creating or rotating an API key also needs owner or admin access to that program.' },
     { label: 'Outcome', value: 'You can change program terms after launch, and rotate your API key knowing exactly when the old one stops working' },
   ]}
 />
@@ -39,7 +39,8 @@ The rest of the Settings menu:
 |---------|------|------------|
 | **Team** | **Members** | Who can work on the program |
 | **Billing** | **Billing** | Platform-fee invoices |
-| **Developers** | **API keys** | The per-program secret key for server-side tracking calls, and the line for an AI coding agent |
+| **Developers** | **API keys** | The program's secret keys for server-side tracking calls |
+| **Developers** | **AI agents** | Connect Claude, Cursor and other AI tools to Affitor over [MCP](/docs/api-reference/mcp) with **Connect an AI tool**. Access is read-only, and the **Connections** list shows each connected tool |
 
 Your own settings are not part of a program. To change your profile, sign-in or payout details, click your name at the bottom of the left menu to open the account menu, then the gear for **Your account**: it has **Profile**, **Login and security** and **Payouts**. **Refer a brand**, your link for referring brands to Affitor ([how it works](/docs/partners/quickstart/get-your-referral-link#refer-a-brand-to-affitor)), is a row in the same menu.
 
@@ -59,12 +60,12 @@ The **Commission** page sets your program-wide default. To pay different rates t
 
 ## Step 2: Find your API key
 
-Every server-side call to the tracking API — sales, refunds, and server-mode leads — authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI's tracking setup, and AI agents all use this same key. CLI commands that create or list programs act as your account instead, and authenticate with your CLI login.
+Every server-side call to the tracking API (sales, refunds, and server-mode leads) authenticates with a Bearer token that is unique to your program. Integrations, SDKs, the CLI's tracking setup, and AI coding agents all authenticate with a program API key. CLI commands that create or list programs act as your account instead, and authenticate with your CLI login.
 
 1. In the program menu, choose **Program settings**.
 2. Under **Developers**, select **API keys**.
 
-The dashboard displays the key masked, and no read returns the full value. It is revealed exactly once — in the response to an owner's **Generate** or **Regenerate** action on the **API keys** page. If you no longer have the current key stored anywhere, you can't recover it from the dashboard; regenerate it instead (Step 3).
+The dashboard shows each key only as a short hint in the **Key** column, and no read returns the full value. A key is shown once, in **Copy your key**, right after an owner or admin selects **Create key** or **Rotate key**. If you no longer have a key stored anywhere, you can't recover it from the dashboard; rotate it instead (Step 3).
 
 Store the key as a server-side environment variable:
 
@@ -75,7 +76,7 @@ AFFITOR_API_KEY=YOUR_PROGRAM_API_KEY
 
 :::note
 
-The **API keys** page also gives you a one-line instruction for an AI coding agent, under **Set up with your AI agent**. It points the agent at [skill.md](https://affitor.com/docs/skill.md) with your program ID and key variable, so the agent can install tracking for you — see [Agent Integration](/docs/api-reference/agent-integration).
+To have an AI coding agent install tracking for you, point it at [skill.md](https://affitor.com/docs/skill.md) with your program ID (on the **Business** page) and keep the key in `AFFITOR_API_KEY`. See [Agent Integration](/docs/api-reference/agent-integration).
 
 :::
 
@@ -83,17 +84,17 @@ The **API keys** page also gives you a one-line instruction for an AI coding age
 
 Rotate the key if it may have leaked, if it was committed to a repository, or as routine hygiene when a team member with key access leaves.
 
-Only a **workspace owner** can regenerate a program key. A member who tries is refused, so ask an owner to run it and to hand you the new value through your secret manager.
+Only an owner or admin of the program can rotate a key. Other members do not see the keys table, so ask an owner or admin to rotate it and to hand you the new value through your secret manager.
 
 :::caution
 
-The two keys never overlap. Regenerating replaces the key in place, and you receive the new value only in the regenerate response, so you cannot deploy it in advance. Between the regenerate and the redeploy, every integration still sending the old key gets `401` responses. Copy the new value before you close the reveal — it is shown one time only.
+Rotating never overlaps the two keys. **Rotate key** stops the old key at once, and you receive the new value only in **Copy your key**, so you cannot deploy it in advance. Between the rotation and the redeploy, every integration still sending the old key gets `401` responses. Copy the new value before you close **Copy your key**: it is shown one time only.
 
 :::
 
 1. Line up every place `AFFITOR_API_KEY` is stored — deployment environment, secret manager, CI — so you can update them straight away.
-2. In **Settings** → **API keys**, regenerate the key. The old key stops working at that moment.
-3. Copy the new key from the one-time reveal, update those places, and redeploy.
+2. In **Program settings** › **Developers** › **API keys**, open the **⋯** menu on the key's row, select **Rotate key**, then confirm with **Rotate key**. The old key stops working at that moment.
+3. Select **Copy** in **Copy your key**, update those places, and redeploy.
 
 ## Verify it worked
 
@@ -130,13 +131,13 @@ Expected response:
 <VerifySuccess
   network={[
     "`POST /api/v1/track/sale` with the new key returns `200` and `\"success\": true` — the key authenticates",
-    "If you regenerated, the same request with the old key now returns `401` — rotation is complete",
+    "If you rotated, the same request with the old key now returns `401`: rotation is complete",
   ]}
   dashboard={[
     "The test event appears under your program's tracking events, flagged as a test — no commission is created",
   ]}
   ifNotWorking={[
-    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline — regenerate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program — check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner to regenerate the key (Step 3), copy it from the reveal, then update and redeploy",
+    "On a `401`, read `error.code` first. `api_key_rotation_required` means the key passed its rotation deadline: rotate it and deploy the new value, because copying the same key again will not bring it back. Any other `401` means the header is malformed or the key matches no program: check the `Authorization: Bearer` header, check your env variable for trailing whitespace, and compare it against the full value you stored in your secret manager. If you no longer hold that value, ask an owner or admin to rotate the key (Step 3), copy it from **Copy your key**, then update and redeploy",
     "See the [error reference](/docs/api-reference/errors) for every `401` cause and fix",
   ]}
 />

@@ -2,7 +2,7 @@
 title: How to Use Affitor
 description: The end-to-end golden path — launch a program, install tracking, and run commissions through to payout.
 kind: quickstart
-last_updated: 2026-09-24
+last_updated: 2026-11-06
 ---
 
 This is the shortest path from zero to your first attributed commission. Each step links to the detailed guide, so use this page as your map and follow the links when you need depth.
@@ -44,10 +44,10 @@ Affitor attributes revenue from three signals across the customer journey. You i
 <Flow>
   <FlowStep caption="The tracker records first touch and sets the click cookie.">Click</FlowStep>
   <FlowStep caption="Your signup flow ties a customer to the referring click.">Signup / lead</FlowStep>
-  <FlowStep caption="Your backend reports revenue so a commission can be created.">Sale</FlowStep>
+  <FlowStep caption="Your connected Stripe account or your backend reports revenue so a commission can be created.">Sale</FlowStep>
 </Flow>
 
-Follow the [3-Step Integration Guide](/docs/brand/tracking/quickstart-integration) to wire these up. Sales are always reported **server-side** with your program API key — here is the canonical call:
+Follow the [3-Step Integration Guide](/docs/brand/tracking/quickstart-integration) to wire these up. If you connect Stripe on the **Payments** settings page, sales in your Stripe account reach Affitor from Stripe, with no server call. Otherwise your backend reports each sale **server-side** with your program API key. Here is that call:
 
 <CodeGroup items={[
   {
@@ -71,8 +71,8 @@ The `customer_key` you send at signup must equal the one you send at sale. That 
 </Callout>
 
 <VerifySuccess
-  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
-  network={["Your signup fires `POST /api/v1/track/lead` and your backend fires `POST /api/v1/track/sale`, both returning 2xx"]}
+  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set"]}
+  network={["Your signup fires `POST /api/v1/track/lead` and, without Stripe connected, your backend fires `POST /api/v1/track/sale`, both returning 2xx"]}
   dashboard={["The click, lead, and sale appear under your program's tracking events"]}
   ifNotWorking={["Send `additional_data: { test_mode: true }` to create test events without generating commissions"]}
 />
