@@ -17,7 +17,15 @@ const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.m
 // Zone pages proxied by affitor.com: their root-relative URLs must stay inside the zones.
 const BLOG_PAGES = ['/blog', ...slugs('content/blog').map((s) => `/blog/${s}`), '/changelog', ...slugs('content/changelog').map((s) => `/changelog/${s}`)];
 
-// [host, path, status, location (null = none), content-type prefix (optional)]
+// Markdown negotiation (P12, CORE-690): request headers and what the response must show.
+// md: Accept: text/markdown, twin body (frontmatter) and Vary: Accept. html: a browser's Accept, Vary: Accept.
+// none: Accept: text/markdown on a page without a twin, Accept not in Vary.
+const MD = { accept: 'text/markdown', vary: true, md: true };
+const HTML = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', vary: true };
+const NO_TWIN = { accept: 'text/markdown', vary: false };
+const REDIRECT_MD = { accept: 'text/markdown' };
+
+// [host, path, status, location (null = none), content-type prefix (optional), negotiation (optional)]
 const ALWAYS = [
   [DOCS, '/blog/rewardful-alternatives', 301, 'https://affitor.com/blog/rewardful-alternatives'],
   [DOCS, '/docs/blog/rewardful-alternatives', 301, 'https://affitor.com/blog/rewardful-alternatives'],
@@ -98,6 +106,30 @@ const ALWAYS = [
   [PROXY, '/blog/affiliate-software-pricing-comparison.md', 308, '/blog/best-affiliate-software-saas.md'],
   [PROXY, '/blog/free-affiliate-software-for-saas.md', 308, '/blog/best-affiliate-software-saas.md'],
   [DOCS, '/blog/free-affiliate-software-for-saas', 301, 'https://affitor.com/blog/best-affiliate-software-saas'],
+  // Accept: text/markdown on affitor.com/docs, /blog, /changelog (the alias is what affitor.com proxies to).
+  [PROXY, '/docs/brand/quickstart', 200, null, 'text/markdown', MD],
+  [PROXY, '/docs/brand/quickstart', 200, null, 'text/html', HTML],
+  [PROXY, '/docs', 200, null, 'text/markdown', MD],
+  [PROXY, '/docs', 200, null, 'text/html', HTML],
+  [PROXY, '/blog/rewardful-alternatives', 200, null, 'text/markdown', MD],
+  [PROXY, '/blog/rewardful-alternatives', 200, null, 'text/html', HTML],
+  [PROXY, '/changelog/invite-partners', 200, null, 'text/markdown', MD],
+  [PROXY, '/changelog/invite-partners', 200, null, 'text/html', HTML],
+  [PROXY, '/changelog', 200, null, 'text/markdown', MD],
+  [PROXY, '/changelog', 200, null, 'text/html', HTML],
+  [PROXY, '/blog', 200, null, 'text/html', NO_TWIN],
+  [PROXY, '/docs/api/search?query=payout', 200, null, 'application/json', NO_TWIN],
+  [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml', NO_TWIN],
+  [PROXY, '/docs/brand/quickstart.md', 200, null, 'text/markdown', NO_TWIN],
+  [PROXY, '/docs/no-such-page', 404, null, undefined, REDIRECT_MD],
+  // Redirects come first; the client negotiates again at the new URL.
+  [PROXY, '/docs/advertisers/quickstart', 308, '/docs/brand/quickstart', undefined, REDIRECT_MD],
+  [DOCS, '/blog/rewardful-alternatives', 301, 'https://affitor.com/blog/rewardful-alternatives', undefined, REDIRECT_MD],
+  [DOCS, '/changelog/invite-partners', 301, 'https://affitor.com/changelog/invite-partners', undefined, REDIRECT_MD],
+  // The default share images moved to app/docs/ (metadataBase affitor.com); the old docs-host URL still answers.
+  [PROXY, '/docs/opengraph-image.png', 200, null, 'image/png'],
+  [PROXY, '/docs/twitter-image.png', 200, null, 'image/png'],
+  [DOCS, '/opengraph-image.png', 200, null, 'image/png'],
 ];
 const MODES = {
   '': [
@@ -110,6 +142,12 @@ const MODES = {
     [DOCS, '/advertisers', 308, '/brand/quickstart'],
     [DOCS, '/errors', 308, '/api-reference/errors'],
     [DOCS, '/api-reference', 308, '/api-reference/overview'],
+    [DOCS, '/brand/quickstart', 200, null, 'text/markdown', MD],
+    [DOCS, '/brand/quickstart', 200, null, 'text/html', HTML],
+    [DOCS, '/', 200, null, 'text/markdown', MD],
+    [DOCS, '/docs/brand/quickstart', 200, null, 'text/markdown', MD],
+    [DOCS, '/docs/brand/quickstart', 200, null, 'text/html', HTML],
+    [DOCS, '/advertisers/quickstart', 308, '/brand/quickstart', undefined, REDIRECT_MD],
   ],
   301: [
     ...ALWAYS,
@@ -121,14 +159,19 @@ const MODES = {
     [DOCS, '/advertisers', 301, 'https://affitor.com/docs/brand/quickstart'],
     [DOCS, '/errors', 301, 'https://affitor.com/docs/api-reference/errors'],
     [DOCS, '/api-reference', 301, 'https://affitor.com/docs/api-reference/overview'],
+    [DOCS, '/brand/quickstart', 301, 'https://affitor.com/docs/brand/quickstart', undefined, REDIRECT_MD],
   ],
-  302: [...ALWAYS, [DOCS, '/brand/quickstart', 302, 'https://affitor.com/docs/brand/quickstart']],
+  302: [
+    ...ALWAYS,
+    [DOCS, '/brand/quickstart', 302, 'https://affitor.com/docs/brand/quickstart'],
+    [DOCS, '/brand/quickstart', 302, 'https://affitor.com/docs/brand/quickstart', undefined, REDIRECT_MD],
+  ],
 };
 
 // node:http, not fetch: fetch drops a custom Host header.
-function get(host, path) {
+function get(host, path, headers = {}) {
   return new Promise((resolve, reject) => {
-    const req = request({ port: PORT, path, headers: { host } }, (res) => {
+    const req = request({ port: PORT, path, headers: { host, ...headers } }, (res) => {
       let body = '';
       res.setEncoding('utf8');
       res.on('data', (chunk) => { body += chunk; });
@@ -160,15 +203,29 @@ for (const [mode, cases] of Object.entries(MODES)) {
   try {
     await waitUp();
     console.log(`\n--- DOCS_HOST_REDIRECT=${mode || '(unset)'}`);
-    for (const [host, path, status, location, type] of cases) {
-      const res = await get(host, path);
+    for (const [host, path, status, location, type, neg] of cases) {
+      const res = await get(host, path, neg?.accept ? { accept: neg.accept } : {});
       // Same-host redirects must stay relative: proxied through affitor.com, an absolute
       // Location would send the browser to the alias host.
       const got = res.headers.location ?? null;
       const type_ = res.headers['content-type'] || '';
-      const ok = res.statusCode === status && got === location && (!type || type_.startsWith(type));
-      console.log(`${ok ? 'PASS' : 'FAIL'} ${host}${path} -> ${res.statusCode} ${got ?? ''} ${type ? type_ : ''}`);
+      // Next appends its own RSC tokens to Vary, so look for the Accept token.
+      const varyAccept = /(?:^|,)\s*accept\s*(?:,|$)/i.test(res.headers.vary || '');
+      const ok = res.statusCode === status && got === location && (!type || type_.startsWith(type)) &&
+        (neg?.vary === undefined || varyAccept === neg.vary) &&
+        (!neg?.md || res.body.startsWith('---\nid: ')) &&
+        (type !== 'text/html' || /<html[\s>]/.test(res.body));
+      const shown = neg?.accept ? ` [accept ${neg.accept.split(',')[0]}; vary ${res.headers.vary ?? '-'}]` : '';
+      console.log(`${ok ? 'PASS' : 'FAIL'} ${host}${path} -> ${res.statusCode} ${got ?? ''} ${type ? type_ : ''}${shown}`);
       if (!ok) failed += 1;
+    }
+    // The sitemap lists the blog index and its posts on affitor.com (CORE-690).
+    {
+      const xml = (await get(PROXY, '/sitemap.xml')).body;
+      const want = ['https://affitor.com/blog', ...slugs('content/blog').map((s) => `https://affitor.com/blog/${s}`)];
+      const missing = want.filter((url) => !xml.includes(`<loc>${url}</loc>`));
+      console.log(`${missing.length ? 'FAIL' : 'PASS'} sitemap.xml lists /blog and ${want.length - 1} posts on affitor.com${missing.length ? `; missing: ${missing.join(', ')}` : ''}`);
+      if (missing.length) failed += 1;
     }
     // affitor.com proxies /blog/*, /docs/* and /changelog/* to this app, so every root-relative
     // URL in zone HTML stays under /blog, /docs or /changelog (or /favicon.ico, which the dashboard has),

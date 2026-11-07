@@ -3,9 +3,13 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { PostHog } from '@/components/posthog';
 import { ThemeRoot } from '@/components/theme-root';
-import { BLOG_DOCS_ORIGIN } from '@/lib/site';
+import { BLOG_DOCS_ORIGIN, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
+  // Every page is published on affitor.com (multi-zone), so relative canonicals, alternates and
+  // og images resolve there. The default og/twitter images live in app/docs/, so they are served
+  // at affitor.com/docs/opengraph-image.png (affitor.com/<file> belongs to the dashboard).
+  metadataBase: new URL(SITE_URL),
   title: {
     template: '%s | Affitor Docs',
     default: 'Affitor Documentation',

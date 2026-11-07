@@ -543,7 +543,8 @@ function main() {
     };
   });
   const expectedUrls = pages.flatMap((page) => [page.url, markdownUrl(page)]);
-  expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
+  // The blog index has no twin; it is listed once, dated by the newest post (CORE-690).
+  expectedUrls.push(`${ORIGIN}/blog`, `${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
   assert.deepEqual(entries.map((entry) => entry.url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
   const dates = new Map(entries.map((entry) => [entry.url, entry.lastmod]));
   const datedPages = pages.filter((page) => page.updated);
@@ -551,6 +552,9 @@ function main() {
   for (const name of ['llms.txt', 'llms-full.txt']) {
     assert.equal(dates.get(`${SITE}/${name}`), latest, `${name}: sitemap date`);
   }
+  const latestPost = pages.filter((page) => page.type === 'blog').map((page) => page.updated).sort().at(-1);
+  assert.ok(latestPost, 'no blog post dates');
+  assert.equal(dates.get(`${ORIGIN}/blog`), latestPost, '/blog: sitemap date must be the newest post date');
 
   // Reject file-mtime / build-time ISO timestamps anywhere a content date appears.
   const BUILD_TIME = /^\d{4}-\d{2}-\d{2}T/;
