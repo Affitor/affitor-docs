@@ -12,7 +12,7 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ## Launch path (agent + human)
 
-Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). If you were given a program id and an API base to add tracking, skip to section 0. It takes a program from nothing to Live, then to Launch. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order.
+Use this when the founder says "launch my program on Affitor" from an AI app connected to the Affitor MCP server (`https://mcp.affitor.com/mcp`). It takes a program from nothing to Live, then to Launch. You do the code and read the state. The person does every one-time or sensitive step, and you hand it over with its link. Go in this order. If you were given a program id and an API base to add tracking, skip to section 0.
 
 ### Step 0. No program yet
 
@@ -47,7 +47,7 @@ Call `get_program`. Read these fields in each `details`:
 
 ### Step 2. Work the checklist
 
-**A** = you do it. **H** = the person does it; you explain and give the link. **A and H** = both. This program is on production, so `API_BASE` is `https://api.affitor.com` (§0). Add `?programId=<id>` so the right program opens, for example `https://affitor.com/brand/settings/commission?programId=42`.
+**A** = you do it. **H** = the person does it; you explain and give the link. **A and H** = both. Add `?programId=<id>` so the right program opens, for example `https://affitor.com/brand/settings/commission?programId=42`.
 
 | `checklist` id | Who | What you do | Link for the person |
 |---|---|---|---|
@@ -62,7 +62,7 @@ Call `get_program`. Read these fields in each `details`:
 
 `click-tracking` is also done when real server-side events arrive, so a server-only integration passes without the tag.
 
-Server-side code (§5b, §6b, §6c, §7) and §8 need a program API key. The person (an Owner or Admin) creates it at `https://affitor.com/brand/settings/api-keys` and puts it in `AFFITOR_API_KEY` in their environment (§0, §1). The browser tracker (§4) needs no key.
+Server-side code (§5b, §6b, §6c, §7) and §8 need a program API key. The person (an Owner or Admin) creates it at `https://affitor.com/brand/settings/api-keys` and puts it in `AFFITOR_API_KEY` in their environment (§0, §1). This program is on production, so `API_BASE` is `https://api.affitor.com` (§0). The browser tracker (§4) needs no key.
 
 ### Step 3. Verify
 
@@ -72,11 +72,11 @@ Server-side code (§5b, §6b, §6c, §7) and §8 need a program API key. The per
 
 ### Step 4. Live (go live)
 
-Going live is the person's step. Give them `https://affitor.com/brand/settings/share?programId=<id>`. In the settings menu this page reads **Go live** until the program is live, then **Status**. Go live opens when Business, Commission and Payments are done. Click tracking is optional. Only a team member with the go-live permission sees the button. Then read `get_program` again to confirm `status` is `live` and `share-program` is done. If it is not, ask the person what the Status page says.
+Going live is the person's step. Give them `https://affitor.com/brand/settings/share?programId=<id>`. In the settings menu this page reads **Go live** until the program is live, then **Status**. Go live opens when Business, Commission and Payments are done. Click tracking is optional. Only a team member with the go-live permission sees the button. After the person clicks Go live, read `get_program` again to confirm `status` is `live` and `share-program` is done. If it is not, ask the person what the Status page says.
 
 ### Step 5. Launch (the marketplace default list)
 
-The default list is what partners see when they open the Affitor marketplace. From Friday, November 27, 2026, 5:00 PM PST, it only includes programs that record partner sales and have a complete program page. A program that is not complete stays live, and partners find it under "Show all". The brand gets an email with the conditions before the change. Do not work out whether the program qualifies; point the person to that email and to `https://affitor.com/docs/brand/settings`.
+The default list is what partners see when they open the Affitor marketplace. From Friday, November 27, 2026, 5:00 PM PST, it only includes programs that record partner sales and have a complete program page. A program that is not complete stays live, and partners find it under "Show all". Brands with a live program when the notice goes out get an email with the conditions before the change. Do not work out whether the program qualifies; point the person to `https://affitor.com/docs/brand/settings`.
 
 ### Never
 
