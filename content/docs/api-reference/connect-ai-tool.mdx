@@ -1,6 +1,6 @@
 ---
 title: Connect your AI tool
-description: Add the Affitor MCP server to Claude, ChatGPT, Cursor, VS Code, Claude Code, Codex or another MCP client, then sign in with your Affitor account. No API key needed.
+description: Add the Affitor MCP server to Claude, Codex, ChatGPT, Cursor, VS Code, Claude Code or another MCP client, then sign in with your Affitor account. No API key needed.
 kind: guide
 last_updated: 2026-11-07
 ---
@@ -38,7 +38,27 @@ On Team and Enterprise plans, an owner adds the connector in **Organization sett
 
 **Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## ChatGPT
+## Codex
+
+1. Run this in your terminal:
+
+   ```bash
+   codex mcp add affitor --url https://mcp.affitor.com/mcp
+   ```
+
+2. Sign in:
+
+   ```bash
+   codex mcp login affitor
+   ```
+
+**Check it works:** run `codex mcp list`: affitor is listed. Then ask your AI tool "List my Affitor programs". It answers with your programs.
+
+## Other MCP clients
+
+These apps are offered in the dashboard; their steps are below.
+
+### ChatGPT
 
 1. Go to [chatgpt.com/plugins](https://chatgpt.com/plugins), click the plus button, then **Add custom MCP server**.
 2. Enter a name, and under **Connection** paste the URL.
@@ -50,7 +70,7 @@ Your workspace's policy may limit who can add custom MCP servers.
 
 **Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## Cursor
+### Cursor
 
 1. Add the server in one click: [Add to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=affitor&config=eyJ1cmwiOiJodHRwczovL21jcC5hZmZpdG9yLmNvbS9tY3AifQ%3D%3D).
 
@@ -70,7 +90,7 @@ Or add it by hand:
 
 **Check it works:** in **Cursor Settings**, open **MCP**: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## Claude Code
+### Claude Code
 
 1. Install the Affitor plugin (recommended):
 
@@ -95,23 +115,7 @@ Add `--scope user` to use Affitor in every project.
 
 **Check it works:** run `claude mcp list`: affitor shows `Connected`. Then ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## Codex
-
-1. Run this in your terminal:
-
-   ```bash
-   codex mcp add affitor --url https://mcp.affitor.com/mcp
-   ```
-
-2. Sign in:
-
-   ```bash
-   codex mcp login affitor
-   ```
-
-**Check it works:** run `codex mcp list`: affitor is listed. Then ask your AI tool "List my Affitor programs". It answers with your programs.
-
-## VS Code
+### VS Code
 
 GitHub Copilot in VS Code.
 
@@ -133,7 +137,7 @@ Or add it by hand:
 
 **Check it works:** in Copilot Chat in Agent mode, ask your AI tool "List my Affitor programs". It answers with your programs.
 
-## Other MCP clients
+### Any other MCP client
 
 1. Add this to your client's MCP config:
 
