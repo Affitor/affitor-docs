@@ -438,7 +438,8 @@ function checkNav() {
   const pageNav = [
     ['/docs/partners/account-settings', ['/docs/partners/referral-rewards', '/docs/partners/faq']],
     ['/docs/partners/faq', ['/docs/partners/account-settings']],
-    ['/docs/api-reference/sdks', ['/docs/api-reference/performance']],
+    ['/docs/api-reference/sdks', ['/docs/api-reference/performance', '/docs/api-reference/connect-ai-tool']],
+    ['/docs/api-reference/connect-ai-tool', ['/docs/api-reference/sdks']],
   ];
   for (const [route, hrefs] of pageNav) {
     const links = navs(route, 'Previous and next pages').flatMap((nav) => [...nav.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map((m) => m[1]));
