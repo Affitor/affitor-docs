@@ -5,7 +5,7 @@
 // NextRequest objects.
 // Run: node scripts/check-docs-host.mjs  (CI: .github/workflows/agent-surface.yml)
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,12 +17,18 @@ const { NextRequest } = require('next/server');
 
 const file = join(ROOT, 'src/middleware.ts');
 const { outputText } = ts.transpileModule(readFileSync(file, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
 });
 const mod = { exports: {} };
-const localRequire = (id) => (id === '@/lib/posthog' ? { POSTHOG_PUBLIC_KEY: 'phc_test' } : require(id));
+// The committed twin list the middleware imports (scripts/gen-llms.js writes it).
+const TWIN_PAGES = JSON.parse(readFileSync(join(ROOT, 'src/generated/markdown-twins.json'), 'utf8'));
+const localRequire = (id) => {
+  if (id === '@/lib/posthog') return { POSTHOG_PUBLIC_KEY: 'phc_test' };
+  if (id === '@/generated/markdown-twins.json') return TWIN_PAGES;
+  return require(id);
+};
 new Function('module', 'exports', 'require', outputText)(mod, mod.exports, localRequire);
-const { middleware } = mod.exports;
+const { middleware, wantsMarkdown } = mod.exports;
 
 // The AI-bot capture must keep running; count it instead of calling PostHog.
 let captures = 0;
@@ -40,6 +46,7 @@ function run(host, path, headers = {}) {
     location: res.headers.get('location'),
     rewrite: res.headers.get('x-middleware-rewrite'),
     link: res.headers.get('link'),
+    vary: res.headers.get('vary'),
     pending,
   };
 }
@@ -72,6 +79,28 @@ const serves = (path, internal, link = true) => () => {
   assert.equal(r.status, 200, `${path} status`);
   assert.equal(r.rewrite && new URL(r.rewrite).pathname, internal, `${path} rewrite`);
   assert.equal(r.link, link ? `<https://affitor.com${internal}>; rel="canonical"` : null, `${path} canonical Link`);
+};
+// Markdown negotiation (P12, CORE-690). An agent's Accept gets the .md twin; a browser's gets the
+// HTML (`html` = the internal rewrite, or null when the page is served as is). Both say Vary: Accept.
+const MD = { accept: 'text/markdown' };
+const BROWSER = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' };
+const internal = (r) => r.rewrite && `${new URL(r.rewrite).pathname}${new URL(r.rewrite).search}`;
+const negotiates = (host, path, twin, html = null) => () => {
+  for (const [headers, want] of [[MD, twin], [BROWSER, html], [{}, html]]) {
+    const r = run(host, path, headers);
+    const label = `${host}${path} (accept: ${headers.accept ?? 'none'})`;
+    assert.equal(r.location, null, `${label} must not redirect, got ${r.location}`);
+    assert.equal(r.status, 200, `${label} status`);
+    assert.equal(internal(r), want, `${label} rewrite`);
+    assert.equal(r.vary, 'Accept', `${label} Vary`);
+  }
+};
+// No twin: Accept: text/markdown changes nothing and adds no Vary.
+const untouched = (host, path) => () => {
+  const r = run(host, path, MD);
+  assert.equal(r.location, null, `${host}${path} must not redirect, got ${r.location}`);
+  assert.equal(r.rewrite, null, `${host}${path} must not rewrite, got ${r.rewrite}`);
+  assert.equal(r.vary, null, `${host}${path} Vary`);
 };
 function mode(value, fn) {
   if (value === undefined) delete process.env.DOCS_HOST_REDIRECT;
@@ -123,6 +152,9 @@ function invariants() {
     ['/affitor-logo.svg', '/docs/affitor-logo.svg'],
     ['/favicon.svg', '/docs/favicon.svg'],
     ['/apple-touch-icon.png', '/docs/apple-touch-icon.png'],
+    // The default share images moved to app/docs/ with metadataBase affitor.com (CORE-690).
+    ['/opengraph-image.png', '/docs/opengraph-image.png'],
+    ['/twitter-image.png', '/docs/twitter-image.png'],
     ['/images/how-it-works-diagram.png', '/docs/images/how-it-works-diagram.png'],
     ['/changelog/invite-partners/invite-compose.png', '/docs/changelog/invite-partners/invite-compose.png'],
     // renamed pages' twins resolve to the current twin (no 404 after the config phase)
@@ -137,7 +169,7 @@ function invariants() {
     ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
     ['/blog/free-affiliate-software-for-saas.md', '/blog/best-affiliate-software-saas.md'],
   ]) check(`docs host ${path} served in place from ${internal}`, serves(path, internal));
-  for (const path of ['/robots.txt', '/sitemap.xml', '/favicon.ico', '/opengraph-image.png', '/docs/brand/dashboard.png', '/docs/skill.md', '/docs/api-reference/errors.md', '/blog/rewardful-alternatives.md', '/blog/covers/x.png']) {
+  for (const path of ['/robots.txt', '/sitemap.xml', '/favicon.ico', '/docs/opengraph-image.png', '/docs/brand/dashboard.png', '/docs/skill.md', '/docs/api-reference/errors.md', '/blog/rewardful-alternatives.md', '/blog/covers/x.png']) {
     check(`docs host ${path} passes through`, passes(DOCS, path));
   }
   for (const host of PROXIES) {
@@ -192,7 +224,38 @@ function invariants() {
     for (const path of ['/changelog', '/changelog/invite-partners', '/changelog.md', '/changelog/invite-partners.md', '/changelog/rss.xml', '/changelog.json', '/changelog/context.md', '/docs/changelog/invite-partners/invite-compose.png']) {
       check(`${host}${path} is served by the changelog zone (no redirect)`, passes(host, path));
     }
+    // Accept: text/markdown -> the twin, anything else -> the HTML; Vary: Accept on both.
+    for (const [path, twin] of [
+      ['/docs/brand/quickstart', '/docs/brand/quickstart.md'],
+      ['/docs/brand/quickstart?x=1', '/docs/brand/quickstart.md?x=1'],
+      ['/docs', '/docs/index.md'],
+      ['/docs/api-reference/errors', '/docs/api-reference/errors.md'],
+      ['/blog/rewardful-alternatives', '/blog/rewardful-alternatives.md'],
+      ['/changelog', '/changelog.md'],
+      ['/changelog?for=brands', '/changelog.md?for=brands'],
+      ['/changelog/invite-partners', '/changelog/invite-partners.md'],
+    ]) check(`${host}${path}: markdown twin ${twin} for Accept: text/markdown, HTML otherwise, Vary: Accept`, negotiates(host, path, twin));
+    for (const path of [
+      // Not pages: no twin, even where a .md answers (/changelog/context.md is the AI context pack).
+      '/docs/no-such-page', '/docs/brand/no-such-page', '/blog/no-such-post', '/changelog/no-such-entry', '/changelog/context',
+      '/blog', '/docs/api/search', '/docs/openapi.json', '/docs/llms-full.txt', '/docs/brand/quickstart.md', '/docs/skill.md',
+      '/docs/brand/dashboard.png', '/blog/rewardful-alternatives.md', '/blog/covers/x.png', '/changelog.md', '/changelog/invite-partners.md',
+      '/changelog/rss.xml', '/changelog.json', '/changelog/context.md', '/docsy', '/brand/quickstart',
+    ]) check(`${host}${path} has no twin: Accept: text/markdown changes nothing`, untouched(host, path));
+    // Redirects run before negotiation: the client negotiates again at the new URL.
+    check(`${host} renamed page with Accept: text/markdown still 308s to the page`, redirects(host, '/docs/advertisers/quickstart', `https://${host}/docs/brand/quickstart`, MD, 308));
+    check(`${host} renamed post with Accept: text/markdown still 308s to the post`, redirects(host, '/blog/affiliate-software-pricing-comparison', `https://${host}/blog/best-affiliate-software-saas`, MD, 308));
+    check(`${host}/docs/changelog with Accept: text/markdown still 301s`, redirects(host, '/docs/changelog', 'https://affitor.com/changelog', MD));
   }
+  // On the docs host the blog and the changelog always leave for affitor.com, Accept or not.
+  check('docs host blog post with Accept: text/markdown -> same 301', redirects(DOCS, '/blog/rewardful-alternatives', 'https://affitor.com/blog/rewardful-alternatives', MD));
+  check('docs host changelog entry with Accept: text/markdown -> same 301', redirects(DOCS, '/changelog/invite-partners', 'https://affitor.com/changelog/invite-partners', MD));
+  check('docs host changelog index with Accept: text/markdown -> same 301', redirects(DOCS, '/changelog', 'https://affitor.com/changelog', MD));
+  check('docs host /skill.md with Accept: text/markdown is still served in place', () => {
+    const r = run(DOCS, '/skill.md', MD);
+    assert.equal(internal(r), '/docs/skill.md');
+    assert.equal(r.vary, null);
+  });
 }
 
 mode(undefined, () => {
@@ -216,6 +279,31 @@ mode(undefined, () => {
   check('off: /errors -> 308 /api-reference/errors', redirects(DOCS, '/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
   check('off: /docs/errors -> 308 /api-reference/errors', redirects(DOCS, '/docs/errors', 'https://docs.affitor.com/api-reference/errors', {}, 308));
   check('off: /getting-started/what-is-affitor -> 308 /', redirects(DOCS, '/getting-started/what-is-affitor', 'https://docs.affitor.com/', {}, 308));
+  // Served in place: negotiation on the /docs path it maps to.
+  check('off: docs host page negotiates (twin / HTML, Vary: Accept)', negotiates(DOCS, '/brand/quickstart', '/docs/brand/quickstart.md', '/docs/brand/quickstart'));
+  check('off: docs host / negotiates to the index twin', negotiates(DOCS, '/', '/docs/index.md', '/docs'));
+  check('off: docs host /docs/<page> negotiates', negotiates(DOCS, '/docs/brand/quickstart', '/docs/brand/quickstart.md'));
+  check('off: docs host query kept on the twin', negotiates(DOCS, '/api-reference/errors?x=1', '/docs/api-reference/errors.md?x=1', '/docs/api-reference/errors?x=1'));
+  check('off: docs host unknown page is served from /docs as before, no twin, no Vary', () => {
+    for (const [path, internalPath] of [['/no-such-page', '/docs/no-such-page'], ['/docs/no-such-page', null]]) {
+      const r = run(DOCS, path, MD);
+      assert.equal(r.location, null, `${path} location`);
+      assert.equal(internal(r), internalPath, `${path} rewrite`);
+      assert.equal(r.vary, null, `${path} Vary`);
+    }
+  });
+  check('off: docs host /api/search has no twin', () => {
+    const r = run(DOCS, '/api/search?query=x', MD);
+    assert.equal(internal(r), '/docs/api/search?query=x');
+    assert.equal(r.vary, null);
+  });
+  check('off: renamed root page with Accept: text/markdown still 308s', redirects(DOCS, '/advertisers/quickstart', 'https://docs.affitor.com/brand/quickstart', MD, 308));
+  check('off: AI crawler asking for markdown is captured and gets the twin', () => {
+    captures = 0;
+    const r = run(DOCS, '/brand/quickstart', { 'user-agent': 'Mozilla/5.0 (compatible; ClaudeBot/1.0)', ...MD });
+    assert.equal(internal(r), '/docs/brand/quickstart.md');
+    assert.equal(captures, 1, 'PostHog capture fired');
+  });
   check('off: AI crawler on a docs page is captured, page served', () => {
     captures = 0;
     const r = run(DOCS, '/brand/quickstart', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.2)' });
@@ -249,6 +337,8 @@ for (const status of ['301', '302']) {
     check(`${status}: affitor.com Host + x-forwarded-host docs.affitor.com is not redirected`, passes('affitor.com', '/docs/brand/quickstart', { 'x-forwarded-host': DOCS }));
     check(`${status}: docs Host + x-forwarded-host affitor.com still redirects`, redirects(DOCS, '/brand/quickstart', 'https://affitor.com/docs/brand/quickstart', { 'x-forwarded-host': 'affitor.com' }, Number(status)));
     check(`${status}: docs Host + x-forwarded-host alias still redirects`, redirects(DOCS, '/brand/quickstart', 'https://affitor.com/docs/brand/quickstart', { 'x-forwarded-host': PROXIES[0] }, Number(status)));
+    check(`${status}: docs host page with Accept: text/markdown -> same redirect`, redirects(DOCS, '/brand/quickstart', 'https://affitor.com/docs/brand/quickstart', MD, Number(status)));
+    check(`${status}: docs host / with Accept: text/markdown -> same redirect`, redirects(DOCS, '/', 'https://affitor.com/docs', MD, Number(status)));
     check(`${status}: RSC request redirects too (intended)`, redirects(DOCS, '/brand/quickstart?_rsc=x', 'https://affitor.com/docs/brand/quickstart?_rsc=x', { rsc: '1' }, Number(status)));
   });
 }
@@ -257,6 +347,49 @@ mode('yes', () => {
   check('an unknown DOCS_HOST_REDIRECT value keeps redirects off', serves('/brand/quickstart', '/docs/brand/quickstart', false));
 });
 delete process.env.DOCS_HOST_REDIRECT;
+
+check('twin list: docs index, changelog index, every blog post and changelog entry, no twin paths', () => {
+  const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.mdx')).map((f) => f.slice(0, -4));
+  for (const path of ['/docs', '/docs/brand/quickstart', '/changelog', ...slugs('content/blog').map((s) => `/blog/${s}`), ...slugs('content/changelog').map((s) => `/changelog/${s}`)]) {
+    assert.ok(TWIN_PAGES.includes(path), `${path} missing from src/generated/markdown-twins.json`);
+  }
+  for (const path of TWIN_PAGES) assert.match(path, /^\/(?:docs|blog|changelog)(?:\/[^.]+)?$/, `${path}: a page path, not a file`);
+  assert.equal(TWIN_PAGES.includes('/changelog/context'), false);
+  assert.equal(TWIN_PAGES.includes('/blog'), false);
+});
+check(`every listed page (${TWIN_PAGES.length}) negotiates on affitor.com`, () => {
+  for (const path of TWIN_PAGES) {
+    const twin = path === '/docs' ? '/docs/index.md' : `${path}.md`;
+    const md = run('affitor.com', path, MD);
+    assert.equal(internal(md), twin, `${path} twin`);
+    assert.equal(md.vary, 'Accept', `${path} Vary (markdown)`);
+    const html = run('affitor.com', path, BROWSER);
+    assert.equal(html.rewrite, null, `${path} HTML must not rewrite`);
+    assert.equal(html.vary, 'Accept', `${path} Vary (HTML)`);
+  }
+});
+
+for (const [accept, want] of [
+  ['text/markdown', true],
+  ['text/markdown, text/html;q=0.9', true],
+  ['text/markdown, */*', true],
+  ['TEXT/MARKDOWN;q=1.0', true],
+  [BROWSER.accept, false],
+  ['text/markdown;q=0.5, text/html', false],
+  ['text/markdown;q=0', false],
+  ['text/markdown;q=abc', false],
+  ['*/*', false],
+  ['', false],
+  [null, false],
+]) check(`wantsMarkdown(${JSON.stringify(accept)}) = ${want}`, () => assert.equal(wantsMarkdown(accept), want));
+
+check('AI crawler asking affitor.com for a post in markdown is captured and gets the twin', () => {
+  captures = 0;
+  const r = run('affitor.com', '/blog/rewardful-alternatives', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.2)', ...MD });
+  assert.equal(internal(r), '/blog/rewardful-alternatives.md');
+  assert.equal(r.vary, 'Accept');
+  assert.equal(captures, 1, 'PostHog capture fired');
+});
 
 check('AI crawler on docs host blog page is captured AND redirected', () => {
   captures = 0;
