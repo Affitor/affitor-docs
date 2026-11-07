@@ -1,0 +1,63 @@
+---
+title: Give each API key Full access or Tracking only
+date: 2026-10-27
+type: feature
+audience: [brands, developers]
+surfaces: [dashboard, api]
+description: Set Full access or Tracking only on each program API key, rename it or change its permission, and disable or enable it without a new key.
+context:
+  facts:
+    - "Owners and Admins manage program API keys at https://affitor.com/brand/settings/api-keys (program menu, Program settings, Developers, API keys)."
+    - "The API keys table shows Name, Key (masked), Permission, Last used and Created. On phones it shows Name, Permission and the menu, with the masked key under the name."
+    - "Create key asks for a Name (up to 80 characters) and a Permission: Full access (selected by default) or Tracking only."
+    - "Full access sends tracking events and reads stats. Tracking only can send clicks, signups, sales and refunds, and is refused when it asks for stats."
+    - "A new or rotated key is shown once, in Copy your key, with Copy and Done."
+    - "Each row's menu includes View details, Edit key, Rotate key, and Disable key or Enable key."
+    - "Edit key changes the name or the permission. Changes apply to the next call, and the key itself stays the same."
+    - "A disabled key shows Disabled next to its name and its calls are refused until it is enabled again."
+    - "Rotate key issues a new key with the same name and permission and stops the old key right away."
+    - "View details shows Key, Permission, Last used and Status (Active or Disabled), and who created the key when known."
+  ui: ["API keys", "Create key", "Name", "Permission", "Full access", "Tracking only", "Send tracking events and read your stats.", "Can only send clicks, signups, sales, refunds and chargebacks.", "Key", "Last used", "Created", "View details", "Edit key", "Rotate key", "Disable key", "Enable key", "Disabled", "Active", "Status", "Copy your key", "Copy", "Done", "Save", "Cancel"]
+  avoid:
+    - "Deleting a key, or saying Delete key works"
+    - "Expiring a key from this table (Expire is replaced by Disable and Enable)"
+    - "Test keys or test mode keys in this table (it lists live keys only)"
+    - "Members or Viewers managing keys (Owners and Admins only)"
+    - "Seeing a key again after Copy your key closes"
+    - "Permissions beyond Full access and Tracking only, or per-endpoint scopes"
+    - "Saying a disabled key is deleted or replaced"
+  cta: { label: "Open API keys", url: "https://affitor.com/brand/settings/api-keys" }
+---
+
+Give each program API key its own permission, **Full access** or **Tracking only**, and turn a key off and on again without replacing it, in [API keys](https://affitor.com/brand/settings/api-keys).
+
+Until this week, the API keys table showed Name, Created and Last used, a new key asked only for a name, and each key offered Rotate and Expire. Now every key has a permission you can change, and you can disable a key instead of expiring it.
+
+## How it works
+
+- **Two permissions**: **Full access** sends tracking events and reads your stats. **Tracking only** can send clicks, signups, sales and refunds.
+- **Edit any time**: rename a key or change its permission. The key itself stays the same.
+- **Disable and enable**: stop a key's calls, then turn it back on later.
+
+## Create a key with a permission
+
+Click **Create key**, enter a name and pick **Full access** or **Tracking only**. Full access is selected by default. Your new key appears once in **Copy your key**, so copy it before you click **Done**.
+
+Use Tracking only for a server that only reports events. If that key asks for your stats, the request is refused.
+
+## Manage a key from its menu
+
+The table shows **Name**, **Key**, **Permission**, **Last used** and **Created** for each live key. The row menu includes:
+
+- **View details**: the masked key, permission, last use and status.
+- **Edit key**: a new name or permission, applied from the next call.
+- **Disable key** or **Enable key**: a disabled key is marked **Disabled**, and its calls are refused until you enable it.
+- **Rotate key**: a new key with the same name and permission. The old key stops right away.
+
+## Where to find it
+
+Open the program menu, choose **Program settings**, then **Developers** › **API keys**. Owners and Admins of the program see this table.
+
+## Conclusion
+
+Each key now does only what you allow. [Learn more in API keys](https://affitor.com/brand/settings/api-keys), and write to support@affitor.com with any question.

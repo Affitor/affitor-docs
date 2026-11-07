@@ -1,0 +1,55 @@
+---
+title: Connect an AI tool to several programs at once
+date: 2026-11-03
+type: feature
+audience: [brands, partners, developers]
+surfaces: [mcp, dashboard]
+description: Pick up to 50 programs, or all current and future ones, when an AI tool connects over MCP, and see each connection's programs in AI agents.
+context:
+  facts:
+    - "When an AI tool such as Claude, ChatGPT or Cursor connects to Affitor over MCP, the consent page shows the signed-in account, then Access and Programs, then Cancel and Allow."
+    - "Under Programs, a person ticks up to 50 programs or chooses All current and future programs. All also covers programs they join later, without reconnecting."
+    - "Each program in the list shows the person's role, such as Owner. With more than six programs, Search programs narrows the list."
+    - "Someone who is on a brand team and is also a partner switches between As a brand and As a partner on the consent page."
+    - "Access reads Read-only. A brand connection reads programs and settings, partners and applications, clicks, leads and sales, and commissions and billing. A partner connection reads programs joined, links and clicks, commissions and earnings, and payouts."
+    - "Brands manage connections at https://affitor.com/brand/settings/ai-agents (program menu, Program settings, Developers, AI agents). Connections lists Client, Connected by, Added, Last used and Access, with the programs each connection reaches under the client name."
+    - "Partners manage their connections from the account menu, under Integrations."
+    - "Disconnect ends a connection's access to every program in it. Removing a teammate's connection from a program ends its access to that program only."
+  ui: ["Access", "Read-only", "Programs", "All current and future programs", "Search programs", "Select up to 50, or choose All", "As a brand", "As a partner", "Switch", "Remove access any time in Settings.", "Cancel", "Allow", "AI agents", "Affitor MCP", "Server URL", "Connections", "Client", "Connected by", "Added", "Last used", "Disconnect", "Remove", "Integrations"]
+  avoid:
+    - "Write actions or changes made through an AI tool (connections are read-only)"
+    - "Going live, creating programs or changing settings from an AI tool"
+    - "Editing which programs an existing connection reaches (there is no edit control)"
+    - "More than 50 hand-picked programs in one connection (beyond 50, choose All)"
+    - "Tabs such as Agents, Activity or Explore on the AI agents page, or a permission dropdown"
+    - "New ways for AI tools to register with Affitor"
+    - "An API key for the hosted MCP server (it uses sign-in)"
+    - "Saying a program owner, or any one role, decides who can remove a teammate's connection"
+  cta: { label: "Open AI agents", url: "https://affitor.com/brand/settings/ai-agents" }
+---
+
+Connect Claude, ChatGPT, Cursor or another AI tool to several of your programs in one step, or to all of them, including programs you join later.
+
+Until this week, a brand connection reached one program: the consent screen asked you to pick a single **Program**, so each program needed its own connection, and a partner connection always covered every program you had joined. Now you choose the programs on the same screen, and one connection reads all of them.
+
+## How it works
+
+- **Pick programs**: tick up to 50 programs, or choose **All current and future programs**.
+- **Read-only**: a connection reads your data and changes nothing.
+- **One list to manage**: **AI agents** shows which programs each connection reaches.
+
+## Choose programs when you connect
+
+When your AI tool asks to connect, Affitor shows the account you are signed in with, then **Access** and **Programs**. Open **Read-only** to see the four kinds of data the tool can read.
+
+Under **Programs**, tick the programs you want, each shown with your role, or choose **All current and future programs** so programs you join later are included without reconnecting. With a long list, **Search programs** narrows it. If you are on a brand team and also a partner, switch between **As a brand** and **As a partner**. Then click **Allow**.
+
+## See and remove access in Settings
+
+Brands open **AI agents** under **Developers** in Program settings. **Connections** lists each AI tool with **Connected by**, **Added**, **Last used** and **Access**, and shows the programs it reaches under its name. Partners find their list under **Integrations** in the account menu.
+
+**Disconnect** your own connection to end its access to every program in it. Removing a teammate's connection from a program ends its access to that program only; its other programs keep their access.
+
+## Conclusion
+
+One connection now reaches the programs you choose. [Learn more in AI agents](https://affitor.com/brand/settings/ai-agents), and write to support@affitor.com with any question.
