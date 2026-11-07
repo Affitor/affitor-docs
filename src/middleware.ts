@@ -133,9 +133,10 @@ export function markdownTwin(path: string): string | null {
 
 /**
  * `Accept: text/markdown` on a page with a twin gets the twin (rewrite), anyone else gets `html`
- * (P12, CORE-690). Both get Vary: Accept here; the twin (a route handler) keeps it, while Next 16
- * app-router pages replace Vary with their own (build/templates/app-page.js). The answers stay apart
- * anyway: the twin is a rewrite, so it has its own cache key on Vercel.
+ * (P12, CORE-690). Both get Vary: Accept here, but it does not survive on Vercel: Next 16 app-router
+ * pages replace Vary (build/templates/app-page.js) and the deployed twin answer carries Next's Vary
+ * too (`next start` keeps it on the twin only). The answers stay apart anyway: the twin is a rewrite
+ * with its own cache key, and both are max-age=0, must-revalidate with different ETags.
  */
 function negotiate(req: NextRequest, path: string, html: NextResponse) {
   const twin = markdownTwin(path);
