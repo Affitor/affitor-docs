@@ -2,7 +2,7 @@
 title: Set up with an AI agent, connect your program in one sign-in
 description: Add https://mcp.affitor.com/mcp to Claude, ChatGPT, Cursor or another AI app and sign in with Affitor. The app reads your program through read-only tools, and a coding agent adds the tracker to your site from the program's install snippet.
 kind: guide
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 use_case:
   name: Set up with an AI agent
   strip: [AI app, Sign in, Read-only tools]
@@ -41,7 +41,7 @@ sequenceDiagram
 
 The connection is read-only. Its only scope is `read`, and no tool writes, deletes or moves money: the app cannot approve an application, change a commission, create a link or send a payout. You sign in with your Affitor account, so no API key goes into the app, and the server refuses program API keys.
 
-A brand connection covers one program and gets the 7 brand tools. A partner connection covers that partner's programs and gets the 5 partner tools. An app on a web address Affitor does not list is refused when it registers; apps on your own computer can connect.
+A connection covers the programs you choose when you connect: all current and future programs, or up to 50 you select. A brand connection gets the 8 brand tools and a partner connection the 5 partner tools. An app on a web address Affitor does not list is refused when it registers; apps on your own computer can connect.
 
 ## Steps
 
