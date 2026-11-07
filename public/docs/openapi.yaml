@@ -6,7 +6,7 @@ info:
     Server-to-server tracking API for Affitor advertisers.
 
     The integration is a three-step funnel:
-    1. **Click** — captured automatically by the Affitor tracker script (`?aff=` links), or reported server-side.
+    1. **Click** — captured automatically by the Affitor tracker script (`?via=` or `?aff=` links), or reported server-side.
     2. **Lead** — ties your internal customer ID (`customer_key`) to the click at signup.
     3. **Sale** — reports revenue; Affitor resolves the partner and computes commission.
 
@@ -16,8 +16,9 @@ info:
     ## Authentication
     Server-to-server calls use your **program API key** as a Bearer token:
     `Authorization: Bearer <PROGRAM_API_KEY>`.
-    Find it in your advertiser dashboard under Program Settings (shown masked;
-    regenerating issues a new key and invalidates the old one immediately).
+    Owners and admins create and rotate it in your advertiser dashboard under
+    Program settings › Developers › API keys. A key is shown once, when it is
+    created or rotated; rotating stops the old key immediately.
 
     ## Test mode
     The click, lead and sale endpoints accept `additional_data: { "test_mode": true }`
@@ -57,9 +58,10 @@ paths:
       summary: Track a click
       description: |
         Records an affiliate click. Normally called by the Affitor tracker
-        script when a visitor lands with `?aff=<partner-code>`; can also be
+        script when a visitor lands with `?via=<partner-code>` or
+        `?aff=<partner-code>`; can also be
         called server-side. No authentication required — attribution is proven
-        by the `aff` short code inside `affiliate_url`.
+        by the partner code (`via` or `aff`) inside `affiliate_url`.
 
         On success, store the returned `click_id` in a first-party cookie named
         `affitor_click_id` with a lifetime of `cookie_window_days` days.
@@ -767,7 +769,7 @@ components:
                 error:
                   code: api_key_rotation_required
                   message: "This API key was retired on 2026-10-03."
-                  hint: "Create a new key in Affitor → Settings → API Key."
+                  hint: "In Affitor → Program settings → Developers → API keys, rotate the key you use."
                   docs_url: "https://affitor.com/docs/api-reference/errors#api_key_rotation_required"
     RateLimited:
       description: |
@@ -877,7 +879,7 @@ components:
         affiliate_url:
           type: string
           format: uri
-          description: The full landing URL containing `?aff=<partner-short-code>`. Required (except in test mode).
+          description: The full landing URL containing `?via=<partner-short-code>` or `?aff=<partner-short-code>`. Required (except in test mode).
         page_url: { type: string, format: uri }
         page_title: { type: string }
         referrer_url: { type: string }

@@ -2,7 +2,7 @@
 title: "Next.js + Clerk"
 description: "Add Affitor tracking to a Next.js (App Router) app that uses Clerk for authentication."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-06
 ---
 
 This guide covers the auth-specific parts of an Affitor integration when your Next.js app uses Clerk. Steps 1 (capture the click) and 3 (track the sale) are identical to the [base Next.js guide](/docs/api-reference/integrations/nextjs) — this guide focuses on **Step 2: tracking the signup** with Clerk's identity model.
@@ -137,7 +137,7 @@ Follow [Step 3 of the base Next.js guide](/docs/api-reference/integrations/nextj
 ## Verify
 
 <VerifySuccess
-  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set"]}
+  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default for new programs; programs created before October 16, 2026 keep `?aff=`), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set"]}
   network={["Your Clerk webhook's `trackLead()` call to `POST /api/v1/track/lead` returns 2xx without `provisional: true`"]}
   dashboard={["The click and lead appear under your program's tracking events, attributed to the partner"]}
   ifNotWorking={["Create a test lead from your server: `affitor.trackLead({ customerExternalId: 'test_customer', additionalData: { test_mode: true, program_id: YOUR_PROGRAM_ID } })`", "If using the webhook path and leads are unattributed, confirm `affitor_click_id` is present in `unsafe_metadata` before the webhook fires"]}

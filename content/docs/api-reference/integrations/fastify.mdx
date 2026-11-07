@@ -2,7 +2,7 @@
 title: "Fastify"
 description: "Server-side Affitor integration with @affitor/sdk/server — track signups and sales from your Fastify backend, including a raw-body Stripe webhook."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-06
 ---
 
 This guide wires Affitor into a Fastify app. Because Fastify is a pure server runtime, the click is captured by a frontend script tag, then the `affitor_click_id` is forwarded to your server so all tracking calls — lead and sale — happen server-side with `@affitor/sdk/server`. The sale is tracked from your Stripe webhook handler, which needs the **raw request body** for signature verification.
@@ -25,7 +25,7 @@ npm i @affitor/sdk stripe
 
 ## 1. Capture the click (frontend)
 
-Add the Affitor script tag to every page of your frontend. It reads `?aff=` from the URL and stores the `affitor_click_id` as a first-party cookie automatically — no JS call required.
+Add the Affitor script tag to every page of your frontend. It reads `?via=` or `?aff=` from the URL and stores the `affitor_click_id` as a first-party cookie automatically — no JS call required.
 
 ```html
 <script
@@ -229,7 +229,7 @@ These handlers are only for self-hosted sale tracking. If your Stripe account is
 ## Verify
 
 <VerifySuccess
-  browser={["Visit your site with `?aff=TESTCODE` — an `affitor_click_id` cookie is set in the browser"]}
+  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default for new programs; programs created before October 16, 2026 keep `?aff=`), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set in the browser"]}
   network={["Your `/api/signup` handler calls `trackLead` and receives a 2xx response; at checkout, your `/webhooks/stripe` handler verifies the Stripe signature and calls `trackSale`"]}
   dashboard={["The click, lead, and sale appear under your program's tracking events"]}
   ifNotWorking={["Create a test lead from your server: `affitor.trackLead({ customerExternalId: 'test_customer', additionalData: { test_mode: true, program_id: YOUR_PROGRAM_ID } })`. For a test sale, call `POST /api/v1/track/sale` directly with your API key and `additional_data: { test_mode: true }` — the SDK's `trackSale()` cannot send it"]}

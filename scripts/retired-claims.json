@@ -160,5 +160,17 @@
     "why": "First settlement enforces the program attribution window (60 days by default); only already-settled customers skip later window checks.",
     "since": "2026-11-04",
     "allow": []
+  },
+  {
+    "pattern": "TESTCODE",
+    "why": "A made-up partner code proves nothing: the click endpoint answers 400 for a code that matches no partner link and sets no cookie. Verify with a partner link from your program; new programs print ?via= by default, programs created before 2026-10-16 keep ?aff=, and the tracker reads both.",
+    "since": "2026-11-06",
+    "allow": []
+  },
+  {
+    "pattern": "\\*\\*(Generate|Regenerate)\\*\\*|click Regenerate|workspace owner (regenerates|to regenerate|can (generate|replace))|Settings → API Key\\b|Settings\\*\\* → \\*\\*API keys",
+    "why": "API keys v2: owners and admins use Create key or Rotate key under Program settings › Developers › API keys, and the key is shown once in Copy your key. There is no Generate/Regenerate button and no Settings → API Key page. The heading 'Step 3: Regenerate the key' in brand/settings stays for its anchor and is not matched.",
+    "since": "2026-11-06",
+    "allow": []
   }
 ]

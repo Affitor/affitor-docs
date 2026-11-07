@@ -2,7 +2,7 @@
 title: Any payment provider, credit partners from your server
 description: Your server reports each signup and sale with your program API key, and Affitor finds the partner who referred the customer and writes the commission.
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-06
 use_case:
   name: Any payment provider
   strip: [Partner link, Server, Commission]
@@ -48,7 +48,7 @@ If you take payments with Stripe Checkout or Stripe subscriptions, [Sell on Stri
 <UseCaseSteps
   items={[
     { title: 'Add the tracker to your site', text: 'It records the click when a visitor arrives through a partner link, and keeps the click id in the `affitor_click_id` cookie on your domain.', href: '/docs/brand/tracking/click-tracking' },
-    { title: 'Get your program API key', text: '**Program settings** › **Developers** › **API keys**, where an owner selects **Generate**. Keep the key on your server, never in the browser.', href: '/docs/brand/api-keys#where-to-find-it' },
+    { title: 'Get your program API key', text: '**Program settings** › **Developers** › **API keys**, where an owner or admin selects **Create key** and copies it from **Copy your key**. Keep the key on your server, never in the browser.', href: '/docs/brand/api-keys#where-to-find-it' },
     { title: 'Report the signup', text: 'When the customer signs up, your server sends `POST /api/v1/track/lead` with the `click_id` from the cookie and your `customer_key`. Affitor saves the key on the customer of that click.', href: '/docs/brand/tracking/lead-tracking-signup' },
     { title: 'Report each sale', text: 'After each payment, your server sends `POST /api/v1/track/sale` with the `customer_key` (or the `click_id`, for a buyer who never signed up), `amount_cents` and a unique `transaction_id`. A `transaction_id` sent again is answered `409` and not counted twice.', href: '/docs/api-reference/track-sale' },
     { title: 'Report refunds', text: 'When you refund a payment, send its `transaction_id` to `POST /api/v1/track/refund`, and Affitor reverses the commission. A partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved).', href: '/docs/api-reference/track-refund' },
