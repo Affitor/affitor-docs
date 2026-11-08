@@ -256,5 +256,23 @@
     "why": "The new-partner choice is Auto-approve or Manual review.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "\\*\\*Link to a page\\*\\*",
+    "why": "The partner program page has no Link to a page button; a partner makes a page link with Create link on the program's Links tab.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "Inviting a partner",
+    "why": "Partner invites were archived on 21/10/2026: brands no longer invite partners to a program, so it is not something that could earn.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "(partner|referral) link \\(\\?aff=CODE\\)|detects `\\?aff=` and creates|auto-detects `\\?aff=PARTNER_CODE` in",
+    "why": "?aff= is not the only partner link form: programs created from 16/10/2026 print ?via= unless the brand picks ?aff=, and the tracker reads both.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]

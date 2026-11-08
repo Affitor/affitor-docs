@@ -17,9 +17,9 @@ Understand how attribution moves from click → signup → sale in the current p
   participant Y as Your site
   participant S as Stripe
   participant A as Affitor
-  P->>C: Shares referral link (?aff=CODE)
+  P->>C: Shares referral link (?via=CODE or ?aff=CODE)
   C->>Y: Visits, the SDK stores the click
-  C->>Y: Signs up, lead event with the aff code
+  C->>Y: Signs up, lead event with the click ID
   alt Stripe integration (Stripe connected)
     C->>S: Pays through your Stripe Checkout
     S->>A: Payment event, through Stripe Connect
@@ -36,12 +36,14 @@ Understand how attribution moves from click → signup → sale in the current p
 A partner promotes your product with a referral URL such as:
 
 ```text
-https://yoursite.com?aff=PARTNER123
+https://yoursite.com?via=PARTNER123
 ```
+
+Programs created from October 16, 2026 (UTC) use `?via=` unless you pick `?aff=` in **Partner link parameter** under **Program settings** › **Tracking**; older programs keep `?aff=`.
 
 ### 2. Customer lands on your site
 
-The tracker detects `?aff=` and creates the click/customer relationship.
+The tracker detects `?via=` or `?aff=` (`aff` wins when a URL has both) and creates the click/customer relationship.
 
 **What happens:**
 - Click is recorded

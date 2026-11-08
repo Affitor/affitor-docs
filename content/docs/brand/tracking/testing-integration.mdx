@@ -1,8 +1,8 @@
 ---
 title: Testing Integration
-description: Verify click, signup, and server-side tracking before going live
+description: "Verify click, signup and sale tracking before going live, including the synthetic click, signup and sale chain that moves no real money."
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-07
 ---
 
 Before going live, verify each layer in order to confirm that your identifiers, metadata, and revenue path line up correctly:
@@ -60,7 +60,7 @@ Enable debug mode in your tracker install.
 
 :::caution
 
-When testing with real affiliate links, remember that a real `?aff=` flow can still create real attribution data. Use test/debug guidance carefully and avoid mixing production referral links into synthetic tests unless that is your intent.
+When testing with real affiliate links, remember that a real partner link (`?via=` or `?aff=`) can still create real attribution data. Use test/debug guidance carefully and avoid mixing production referral links into synthetic tests unless that is your intent.
 
 :::
 

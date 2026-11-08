@@ -1,8 +1,8 @@
 ---
 title: Tracking Overview
-description: How Affitor links clicks, signups, and sales together
+description: "How Affitor links a partner click, your customer's signup and the sale into one attribution chain, and what each integration step needs."
 kind: concept
-last_updated: 2026-10-17
+last_updated: 2026-11-07
 ---
 
 Affitor tracking links three events into one attribution chain:
@@ -28,7 +28,7 @@ Identifier consistency matters more than any single code snippet.
 ## The Tracking Flow
 
 <Mermaid chart={`flowchart LR
-  V["Visitor clicks partner link (?aff=CODE)"] --> S[Your site]
+  V["Visitor clicks partner link (?via=CODE or ?aff=CODE)"] --> S[Your site]
   S -->|SDK or script tag| CK[Click event]
   S -->|signup| LD[Lead event]
   ST[Stripe webhook or S2S API] --> SL[Sale event]
