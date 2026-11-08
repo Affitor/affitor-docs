@@ -367,6 +367,20 @@
       "presence": "Key recovery: init issues no replacement key; an owner or admin rotates or creates one",
       "match": "it does not issue a replacement key for one: if a program's key stopped working, an owner or admin of that program rotates it, or creates a new key, in the Affitor dashboard",
       "count": 1
+    },
+    {
+      "file": "content/docs/api-reference/mcp.mdx",
+      "rule": "mcp_selected_programs_max",
+      "match": "[Aa]ll current and future programs(?:\\*\\*)?, or up to (\\d+)",
+      "count": 2,
+      "why": "The cap on programs a connection can select: the overview table and the connect steps (page sizes on the same page are another rule)."
+    },
+    {
+      "file": "content/docs/use-cases/ai-agent-setup.mdx",
+      "rule": "mcp_selected_programs_max",
+      "match": "[Aa]ll current and future programs(?:\\*\\*)?, or up to (\\d+)",
+      "count": 2,
+      "why": "The cap on programs a connection can select: the intro and the sign-in step."
     }
   ],
   "sets": {
@@ -404,10 +418,6 @@
     {
       "rule": "mcp_write_requires",
       "why": "Deployment state: the server flag names behind hosted MCP write access; the docs describe only whether write access is on (mcp_write_live)."
-    },
-    {
-      "rule": "mcp_selected_programs_max",
-      "why": "Not stated in the docs: the connect screen enforces the cap; no page names the number."
     }
   ]
 }
