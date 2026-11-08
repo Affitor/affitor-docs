@@ -8,6 +8,7 @@ import { flattenTree } from 'fumadocs-core/page-tree';
 import { load, JSON_SCHEMA } from 'js-yaml';
 import { parse as parseHtml } from 'parse5';
 import { generateLlms, generateTwins } from './gen-llms.js';
+import { checkTrackingContract } from './tracking-contract.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = join(ROOT, '.next/server/app');
@@ -514,6 +515,8 @@ function checkOpenApi() {
 
 function main() {
   const retired = checkRetiredClaims();
+  const contract = checkTrackingContract(ROOT);
+  console.log(`PASS tracking contract: ${contract.statements} window statements, ${contract.examples} sale examples carry their idempotency key, ${contract.rules} rules in x-affitor-contract`);
   const openApiPaths = checkOpenApi();
   const pages = inventory();
   const ids = pages.map((page) => page.id);
