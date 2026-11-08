@@ -1,6 +1,6 @@
 ---
 title: Affitor MCP server
-description: "Connect Claude, ChatGPT, Cursor, Codex and other AI apps to your Affitor program or partner account at https://mcp.affitor.com/mcp. Access is read-only."
+description: "Reference for the hosted Affitor MCP server at https://mcp.affitor.com/mcp: which apps can connect, sign-in and consent, read-only tools, limits and removal."
 kind: reference
 last_updated: 2026-11-07
 ---
@@ -20,7 +20,7 @@ https://mcp.affitor.com/mcp
 | Access | Read-only. A connection reads the programs you choose when you connect: all current and future programs, or up to 50 you select. A partner connection sees only that partner |
 
 <Flow>
-  <FlowStep caption="Use the URL above, or follow your app's steps below.">
+  <FlowStep caption="Use the URL above. Connect your AI tool has the steps for each app.">
     **Add the server** in your AI app
   </FlowStep>
   <FlowStep caption="Your browser opens affitor.com.">
@@ -38,115 +38,9 @@ https://mcp.affitor.com/mcp
 
 ## Connect your AI app
 
-In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, ChatGPT, Cursor, VS Code, Claude Code and Codex, and under **Other** for Grok and any other MCP client. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**. Partners click their name at the bottom of the left menu to open the account menu, then **Integrations**.
+Server URL: `https://mcp.affitor.com/mcp`. [Connect your AI tool](/docs/api-reference/connect-ai-tool) has the steps for each app.
 
-<CodeGroup items={[
-  {
-    label: "Claude Code",
-    lang: "bash",
-    code: `claude mcp add --transport http affitor https://mcp.affitor.com/mcp
-# Then, inside Claude Code: /mcp, pick affitor and sign in.`
-  },
-  {
-    label: "Codex",
-    lang: "bash",
-    code: `codex mcp add affitor --url https://mcp.affitor.com/mcp
-# If no sign-in page opens:
-codex mcp login affitor`
-  },
-  {
-    label: "Gemini CLI",
-    lang: "bash",
-    code: `gemini mcp add --transport http affitor https://mcp.affitor.com/mcp
-# Then, inside Gemini CLI: /mcp auth affitor`
-  },
-  {
-    label: "Cursor",
-    lang: "json",
-    code: `{
-  "mcpServers": {
-    "affitor": { "url": "https://mcp.affitor.com/mcp" }
-  }
-}`
-  },
-  {
-    label: "VS Code",
-    lang: "json",
-    code: `{
-  "servers": {
-    "affitor": { "type": "http", "url": "https://mcp.affitor.com/mcp" }
-  }
-}`
-  },
-  {
-    label: "OpenClaw",
-    lang: "bash",
-    code: `openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth
-openclaw mcp login affitor`
-  },
-  {
-    label: "Hermes",
-    lang: "bash",
-    code: `hermes mcp add affitor --url https://mcp.affitor.com/mcp --auth oauth
-# To sign in again later:
-hermes mcp login affitor`
-  },
-  {
-    label: "Other clients",
-    lang: "json",
-    code: `{
-  "mcpServers": {
-    "affitor": { "url": "https://mcp.affitor.com/mcp" }
-  }
-}`
-  }
-]} />
-
-- **Claude Code:** add `--scope user` to use Affitor in every project.
-- **Cursor:** open this link to add the server in one click, or put the JSON in `~/.cursor/mcp.json`. Then, in **Cursor Settings** › **MCP**, click **Connect** and sign in.
-
-  ```text
-  cursor://anysphere.cursor-deeplink/mcp/install?name=affitor&config=eyJ1cmwiOiJodHRwczovL21jcC5hZmZpdG9yLmNvbS9tY3AifQ%3D%3D
-  ```
-
-- **VS Code:** put the JSON in `.vscode/mcp.json` in your workspace, or in the `mcp.json` of your user profile, or run **MCP: Add Server** from the Command Palette. Start the server and sign in when VS Code asks.
-- **Other clients:** put the JSON in the client's MCP config, restart it and sign in when it asks.
-
-### Claude (claude.ai and Claude Desktop)
-
-1. Open **Customize** › **Connectors**.
-2. Click **+ Add**, then **Add custom connector**.
-3. Name it Affitor, paste `https://mcp.affitor.com/mcp` and click **Continue**.
-4. Keep the detected sign-in settings. Affitor supports automatic registration, so under **OAuth client** pick **Register automatically** if Claude asks.
-5. Click **Add** and sign in to Affitor.
-
-On Team and Enterprise plans, an owner adds the connector in **Organization settings** › **Connectors**, and members click **Connect**.
-
-### ChatGPT
-
-1. Go to [chatgpt.com/plugins](https://chatgpt.com/plugins).
-2. Click the plus button, then **Add custom MCP server**.
-3. Enter a name, and under **Connection** paste `https://mcp.affitor.com/mcp`.
-4. Configure authentication (Affitor uses OAuth), review the warning and click **I understand and want to continue**.
-5. Click **Create as a plugin**, then sign in to Affitor.
-
-Your workspace's policy may limit who can add custom MCP servers.
-
-### Perplexity
-
-1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
-2. Select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**.
-3. Enter a name, and under **MCP Server URL** paste `https://mcp.affitor.com/mcp`.
-4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. Affitor supports automatic registration, so no Client ID or Client Secret is needed.
-5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
-
-In an organization, members can add custom connectors only if an admin allows it.
-
-### Grok
-
-1. Go to [grok.com/connectors](https://grok.com/connectors), click **New Connector**, then **Custom**.
-2. Paste `https://mcp.affitor.com/mcp` and sign in to Affitor.
-3. As a brand, pick your programs; then click **Allow**.
+In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, ChatGPT, Cursor, VS Code, Claude Code and Codex, and under **Other** for Grok, Muse Code and any other MCP client. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**. Partners click their name at the bottom of the left menu to open the account menu, then **Integrations**.
 
 ### Which apps can connect
 
@@ -235,7 +129,7 @@ Every tool is read-only, and the server declares it so on each tool: `readOnlyHi
 ## Example prompts
 
 <AgentPrompt prompt="In the repository of example.com: use the Affitor tools. Call get_program and check that its id is 123; if it is not, stop and tell me. Add its install snippet as it says, then tell me what to deploy and how verification works.">
-Brands: after you connect a coding agent (Claude Code, Cursor, Codex), give it this line to install the tracker. Replace example.com and 123 with your site and program id. The dashboard's **Connect an AI tool** fills both in when you open it from **Program settings** › **Developers** › **AI agents**.
+Brands: after you connect a coding agent (Claude Code, Cursor, Codex), give it this line to install the tracker. Replace example.com and 123 with your site and program id.
 </AgentPrompt>
 
 For a brand connection:
