@@ -25,7 +25,7 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ## 1. Prerequisites — verify before writing code
 
-1. Confirm `AFFITOR_API_KEY` is present in the environment (`test -n "$AFFITOR_API_KEY"`). **Do not echo its value.** If missing, stop and tell the founder to set it.
+1. Confirm `AFFITOR_API_KEY` is present in the environment (`test -n "$AFFITOR_API_KEY"`). **Do not echo its value.** If missing, stop and tell the founder to set it. The key needs the **Full access** permission (Program settings › Developers › API keys): a **Tracking only** key gets `403 insufficient_key_permission` from the readiness check in §8.
 2. Note `PROGRAM_ID` and `API_BASE` from the trigger line. Keep `PROGRAM_ID` as a non-secret config value (a public env var like `NEXT_PUBLIC_AFFITOR_PROGRAM_ID` is fine — it is not a secret).
 3. Detect the stack: package manager (`npm` / `pnpm` / `yarn` / `bun` from the lockfile), framework (Next.js App Router vs Pages Router, Vite/React, plain HTML), and payment provider (Stripe vs other).
 

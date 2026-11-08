@@ -76,7 +76,7 @@ export const POST = Webhooks({
       amount: order.totalAmount,         // minor units (cents for USD), after discounts, tax included
       taxCents: order.taxAmount,         // the tax inside totalAmount; commissions use totalAmount - taxAmount
       currency: order.currency,
-      invoiceId: order.id,               // idempotency key — 409 = already recorded
+      invoiceId: order.id,               // idempotency key; a 409 means this id was used before (the API's error.details.sale_id: yours, or null for another program)
       saleType: order.subscriptionId ? 'subscription' : 'payment',
       isRecurring: order.billingReason === 'subscription_cycle',
       subscriptionId: order.subscriptionId ?? undefined,

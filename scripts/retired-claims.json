@@ -220,5 +220,41 @@
     "why": "affitor init creates a new program and never replaces an API key; an owner or admin creates or rotates keys in Program settings, Developers, API keys. affitor CLI src/commands/init.ts.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "tick each write permission|is a box you tick",
+    "why": "The hosted MCP connection is read-only while write access is off: the consent screen shows Read account data, Always on, and no write boxes. Remove this entry in the docs PR that turns write access on.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "\\*\\*Your agent\\*\\* › \\*\\*Connect your AI\\*\\*|\\*\\*Your agent\\*\\*: select \\*\\*Connect your AI",
+    "why": "The Tracking step offers With AI and By hand. Connect an AI tool lives in Program settings › Developers › AI agents.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "Lead capture mode",
+    "why": "The dashboard has no Lead capture mode line. A browser lead that did not settle answers provisional: true.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "\\*\\*Preferred format\\*\\*|Choose a format and save",
+    "why": "Partner link format controls were removed on 2026-10-26; partner links use the query form.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "pick one \\*\\*Program\\*\\*|\\*\\*Access\\*\\* (is )?always (says )?\\*\\*Read-only\\*\\*|Check \\*\\*Signed in as\\*\\*",
+    "why": "The consent screen lets you choose all current and future programs or up to 50, shows your name and email with Switch, and lists Read account data as Always on.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "\\*\\*Approve all\\*\\*|\\*\\*Review each\\*\\*",
+    "why": "The new-partner choice is Auto-approve or Manual review.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]

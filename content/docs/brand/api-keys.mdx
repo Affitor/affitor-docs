@@ -2,7 +2,7 @@
 title: API key reference
 description: Which credential each Affitor call needs, where the program API key lives, how to replace it, and how mandatory rotation is signalled.
 kind: reference
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 Affitor has one self-serve credential: the **program API key**. It authenticates server-side tracking calls for a single program, you manage it yourself from the dashboard, and it is the key the integration guides, the SDKs, the CLI's tracking setup, and the agent skill all refer to. CLI commands that create or list programs are different: they act as your account, so they authenticate with your CLI login rather than with this key.
@@ -22,6 +22,7 @@ Affitor has one self-serve credential: the **program API key**. It authenticates
 |---|---|
 | Prefix | `aff_` |
 | Scope | One program. A key authenticates calls for the program it belongs to and nothing else. |
+| Permission | **Full access** sends tracking events and reads your stats. **Tracking only** sends clicks, signups, sales, refunds and chargebacks; the readiness check, analytics and the CLI's `status` and `test` answer `403 insufficient_key_permission` to it. The CLI and the [agent skill](/docs/skill.md) need **Full access**. You choose it in **Create key** or **Edit key**. |
 | Sent as | `Authorization: Bearer <key>` |
 | Created | Automatically, when the program is created. Owners and admins can create more keys and rotate any key at any time. |
 | Visibility | Never returned by a read. In the dashboard the full value is shown once, in **Copy your key**, right after **Create key** or **Rotate key**, so copy it there. |

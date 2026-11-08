@@ -2,7 +2,7 @@
 title: Track Lead
 description: Record a signup or lead event that links a customer to an affiliate click.
 kind: reference
-last_updated: 2026-10-17
+last_updated: 2026-11-07
 ---
 
 `POST /api/v1/track/lead`
@@ -28,7 +28,7 @@ Each program has a lead auth policy. **Every program requires server-verified le
 - the lead does not settle attribution, does not save your `customer_key` on the customer, and does not count in partner metrics or pay a per-lead commission
 - it settles only when your backend sends the same lead with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account. A sale sent to `/api/v1/track/sale` does not settle it, and a Bearer lead sent after that sale returns `400`
 
-A browser lead settles directly only on a program set to `browser_allowed`. The **Lead capture mode** line in your program's tracking settings shows which policy applies. Send leads from your server with a Bearer key so the lead settles under either policy.
+A browser lead settles directly only on a program set to `browser_allowed`. A browser lead that did not settle answers `200` with `"provisional": true`. Send leads from your server with a Bearer key so the lead settles under either policy.
 
 ---
 

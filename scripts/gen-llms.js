@@ -81,6 +81,7 @@ export function generateLlms() {
 ## Start here
 
 - [Agent integration runbook](${SITE}/skill.md): Integrate tracking and verify it end-to-end.
+- [Connect your AI tool](${SITE}/api-reference/connect-ai-tool.md): Add the Affitor MCP server to Claude, ChatGPT, Cursor and other AI apps and sign in with your Affitor account. Read-only, no API key.
 - [Complete documentation](${SITE}/llms-full.txt): Every documentation page, blog post, and changelog entry, with page identifiers and source metadata.
 - [Sitemap](https://affitor.com/sitemap.xml): Every public page on affitor.com, including the docs and the blog.
 

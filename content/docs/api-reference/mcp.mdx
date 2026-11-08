@@ -38,7 +38,7 @@ https://mcp.affitor.com/mcp
 
 ## Connect your AI app
 
-In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, Cursor, Claude Code and Codex. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**, and on the program's **Tracking** step under **Your agent** › **Connect your AI**. Partners click their name at the bottom of the left menu to open the account menu, then **Integrations**.
+In the Affitor dashboard, **Connect an AI tool** shows the server URL and steps for Claude, ChatGPT, Cursor, VS Code, Claude Code and Codex, and under **Other** for Grok and any other MCP client. Brands find it in the program menu under **Program settings**, then **Developers** › **AI agents**. Partners click their name at the bottom of the left menu to open the account menu, then **Integrations**.
 
 <CodeGroup items={[
   {
@@ -142,6 +142,12 @@ Your workspace's policy may limit who can add custom MCP servers.
 
 In an organization, members can add custom connectors only if an admin allows it.
 
+### Grok
+
+1. Go to [grok.com/connectors](https://grok.com/connectors), click **New Connector**, then **Custom**.
+2. Paste `https://mcp.affitor.com/mcp` and sign in to Affitor.
+3. As a brand, pick your programs; then click **Allow**.
+
 ### Which apps can connect
 
 After you sign in, Affitor sends you back to the app. It accepts only these return addresses:
@@ -149,6 +155,7 @@ After you sign in, Affitor sends you back to the app. It accepts only these retu
 - `claude.ai` and `claude.com` (Claude)
 - `chatgpt.com` (ChatGPT)
 - `www.cursor.com` (Cursor)
+- `grok.com/connectors-oauth-exchange-code/` (Grok)
 - `vscode.dev/redirect` and `insiders.vscode.dev/redirect` (VS Code)
 - `www.perplexity.ai/rest/connections/oauth_callback` (Perplexity)
 - `manufact.com/inspector/oauth/callback` (Manufact inspector)
@@ -163,10 +170,10 @@ An app that registers any other address is refused when it registers, with the e
 When your AI app connects, your browser opens **Connect an AI tool** on affitor.com. If you are signed out, you sign in first and come back to the same screen.
 
 1. The title names the app: **Claude wants to access Affitor**, or **An app on this computer wants to access Affitor** for a desktop or terminal app. A desktop or terminal app also shows **Unverified** and the name it gives itself in quotes ("It calls itself …"), because any app on your computer can call itself "Claude".
-2. Check **Signed in as** your email. To use another Affitor account, click **Switch**.
+2. Check the account shown, your name and email. To use another Affitor account, click **Switch**.
 3. If you are both a brand and a partner, choose **As a brand** or **As a partner**.
 4. Choose the programs the app can read: **All current and future programs**, or up to 50 programs you select. As a brand you need to be an active member of each program; as a partner you choose among the programs you are a partner in.
-5. **Access** is always **Read-only**: "Programs, partners, clicks and commissions." for a brand, "Your links, clicks and earnings." for a partner.
+5. Under **Access**, **Read account data** is **Always on**. Click it to see what the app can read: programs and settings, partners and applications, clicks and leads, commissions and billing for a brand; the programs you joined, your links and clicks, your earnings and commissions, and your payouts for a partner. The screen also says **Money actions always happen in Affitor**.
 6. Click **Allow**, or **Cancel** to refuse.
 
 A connection keeps the programs you chose. With **All current and future programs**, programs you join later are included; a selection stays as it is. To change it, connect again and choose again.
@@ -228,7 +235,7 @@ Every tool is read-only, and the server declares it so on each tool: `readOnlyHi
 ## Example prompts
 
 <AgentPrompt prompt="In the repository of example.com: use the Affitor tools. Call get_program and check that its id is 123; if it is not, stop and tell me. Add its install snippet as it says, then tell me what to deploy and how verification works.">
-Brands: after you connect a coding agent (Claude Code, Cursor, Codex), give it this line to install the tracker. Replace example.com and 123 with your site and program id. The dashboard's **Connect an AI tool** fills both in on the **Tracking** step.
+Brands: after you connect a coding agent (Claude Code, Cursor, Codex), give it this line to install the tracker. Replace example.com and 123 with your site and program id. The dashboard's **Connect an AI tool** fills both in when you open it from **Program settings** › **Developers** › **AI agents**.
 </AgentPrompt>
 
 For a brand connection:
@@ -269,17 +276,17 @@ Each server instance keeps its own request counts in memory, so the request limi
 
 ### Remove access
 
-- **Brands:** program menu › **Program settings**, then **Developers** › **AI agents**, lists the program's connections under **Connections** with **Client**, **Connected by**, **Added**, **Last used** and **Access**. Click **Remove** on your own connection. A program owner can remove any member's connection to that program.
-- **Partners:** your name at the bottom of the left menu › **Integrations**, then **Remove**.
+- **Brands:** program menu › **Program settings**, then **Developers** › **AI agents**, lists the program's connections under **Connections** with **Client**, **Connected by**, **Added**, **Last used** and **Access**. Click **Disconnect** on your own connection: the app loses every program in it. A program owner can click **Remove** on a member's connection: the app loses this program, and its other programs stay.
+- **Partners:** your name at the bottom of the left menu › **Integrations**, then **Disconnect**.
 
-Removal is immediate: the app's tokens are deleted and its next request gets `401`.
+**Disconnect** is immediate: the app's tokens are deleted and its next request gets `401`. After **Remove**, the app can no longer read that program. Removing the last available program from a selection ends the connection; an **All current and future programs** connection keeps its access to programs added later.
 
 ---
 
 ## Troubleshooting
 
 - **"This request has expired"** or **"This approval is no longer valid"**: the sign-in took too long. Start the connection again from your AI app.
-- **The app sees the wrong programs:** remove the connection and connect again, choosing the right ones. The install prompt above checks the program id for this reason.
+- **The app sees the wrong programs:** disconnect it and connect again, choosing the right ones. The install prompt above checks the program id for this reason.
 - **Signed in with the wrong account:** click **Switch** on the sign-in screen.
 - **"Too many rows for this window"**: ask for a shorter `from`/`to` window.
 - **`401` with "Program API keys are not accepted here"**: remove the `Authorization` header from your client's config and sign in instead.

@@ -115,7 +115,7 @@ When you contact support about a failed request, include the `X-Request-ID`. It 
 |--------|---------------|-----------|-----|
 | `401` | `Missing or malformed Authorization header. Expected: Bearer <token>` | `Authorization` header missing or does not start with `Bearer ` | Add `Authorization: Bearer YOUR_PROGRAM_API_KEY` to the request |
 | `401` | `Missing API token` (sale), `Empty Bearer token` (refund) | Header present but the token is empty after trimming | Check for trailing spaces or an empty env variable |
-| `401` | `Invalid API token` | The key is unknown, has been replaced, or is disabled | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask an owner or admin to [rotate the key](/docs/brand/settings#step-3-regenerate-the-key), copy it from **Copy your key** and deploy it: the dashboard never shows the full value again. If the key is disabled, an owner or admin can select **Enable key** |
+| `401` | `Invalid API token` | The key is unknown, has been replaced, or is disabled | Compare what you are sending against the full key you stored when it was issued. If you no longer hold that value, ask an owner or admin to [rotate the key](/docs/brand/settings#step-3-rotate-the-key), copy it from **Copy your key** and deploy it: the dashboard never shows the full value again. If the key is disabled, an owner or admin can select **Enable key** |
 
 The rows above apply to the endpoints that require a Bearer token: `POST /api/v1/track/sale` and `POST /api/v1/track/refund`.
 
@@ -194,7 +194,7 @@ The JSON body also gains a `warnings` array. No existing field is removed or ren
 
 This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `error.code` to branch on.
 
-**Fix:** In your Affitor dashboard, open the program menu and choose **Program settings**. Under **Developers** → **API keys**, open the **⋯** menu on the key's row and select **Rotate key**, copy the new value from **Copy your key**, then update `AFFITOR_API_KEY` on your server with it. See [Rotate your API key](/docs/brand/settings#step-3-regenerate-the-key) for the full walkthrough.
+**Fix:** In your Affitor dashboard, open the program menu and choose **Program settings**. Under **Developers** → **API keys**, open the **⋯** menu on the key's row and select **Rotate key**, copy the new value from **Copy your key**, then update `AFFITOR_API_KEY` on your server with it. See [Rotate your API key](/docs/brand/settings#step-3-rotate-the-key) for the full walkthrough.
 
 ---
 

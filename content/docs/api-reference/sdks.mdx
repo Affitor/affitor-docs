@@ -242,7 +242,7 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 
 - Omit `refundAmountCents` to refund everything not yet refunded → commission status set to `reversed`. Do not pass `0`: for a sale recorded from November 5, 2026 (16:00 UTC) with a commission to reverse, it answers `400` and nothing is refunded.
 - Pass **this refund's own amount** → it is added to what was already refunded on the sale. Once the total reaches the sale amount, the commission is `reversed`. Before that, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved); both end `refunded`.
-- Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call is counted as a new refund.
+- Do not pass a running total (such as Stripe's `charge.amount_refunded`): each call with a new amount is added as a new refund.
 - A retry with the same amount is ignored. To report two separate refunds of the same amount, call the [HTTP endpoint](/docs/api-reference/track-refund) with a distinct `refund_id` for each.
 
 `invoiceId` is required and throws synchronously if missing.
