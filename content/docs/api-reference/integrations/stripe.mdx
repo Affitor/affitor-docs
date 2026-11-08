@@ -139,7 +139,7 @@ case 'invoice.paid': {
       ?? invoice.subscription_details?.metadata?.affitor_customer_key,
     amount,                                 // ISO minor units of invoice.currency (cents for USD)
     currency: c,
-    invoiceId: invoice.id,                  // idempotency key — 409 = already recorded
+    invoiceId: invoice.id,                  // idempotency key; a 409 means this id was used before (the API's error.details.sale_id: yours, or null for another program)
     isRecurring: true,
     saleType: 'subscription',
     // Basil relocated the subscription id under invoice.parent.subscription_details;
