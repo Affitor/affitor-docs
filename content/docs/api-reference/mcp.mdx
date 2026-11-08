@@ -279,7 +279,7 @@ Each server instance keeps its own request counts in memory, so the request limi
 - **Brands:** program menu › **Program settings**, then **Developers** › **AI agents**, lists the program's connections under **Connections** with **Client**, **Connected by**, **Added**, **Last used** and **Access**. Click **Disconnect** on your own connection: the app loses every program in it. A program owner can click **Remove** on a member's connection: the app loses this program, and its other programs stay.
 - **Partners:** your name at the bottom of the left menu › **Integrations**, then **Disconnect**.
 
-**Disconnect** is immediate: the app's tokens are deleted and its next request gets `401`. After **Remove**, the app can no longer read that program; when no program is left, the connection ends too.
+**Disconnect** is immediate: the app's tokens are deleted and its next request gets `401`. After **Remove**, the app can no longer read that program. Removing the last available program from a selection ends the connection; an **All current and future programs** connection keeps its access to programs added later.
 
 ---
 
