@@ -10,9 +10,14 @@ surfaces:
 - dashboard
 - marketplace
 - mcp
+- tracking
 description: Team members land on their program after sign-in, Connect an AI tool has Grok steps, six more pages answer in Markdown, and deleting an API key no longer fails.
 context:
   avoid:
+  - "Saying Town or Perplexity Enterprise were tested end to end: Affitor now accepts their sign-in, and nobody has connected one yet."
+  - "Saying saves used to fail often or that money was lost: this only matters when the database fails at the moment of saving."
+  - "Saying an error means nothing was saved: the save may have happened when only its confirmation was lost; retrying is safe."
+  - "Saying partner withdrawal requests changed: they did not."
   - "Saying Grok has a one-click install: it is a custom connector added at grok.com/connectors."
   - "Saying anything about old directory pages or OpenAffiliate redirects."
   - "Saying Cancel on the AI app consent screen changed."
@@ -46,3 +51,6 @@ context:
 - Screen readers now announce when the totals on **Commissions** are updating.
 - Program pages in the marketplace no longer show the program name, facts and **Apply to promote** button stacked in one spot for a moment while loading.
 - Deleting an API key no longer fails. After you type the key's name to confirm, the key is deleted.
+- Affitor now accepts the sign-in from Town and from Perplexity Enterprise, so they can finish connecting when you add Affitor's MCP server.
+- If the database can't confirm a save, commission status changes, invoice settlement, payouts marked as sent and disputes now return an error and notify no one, instead of reporting success.
+- For an inactive referral link, the hint from `POST /api/v1/track/click` now says the link or its program is not active, instead of saying the partner or brand turned it off.
