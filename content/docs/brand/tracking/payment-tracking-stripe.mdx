@@ -1,8 +1,8 @@
 ---
-title: Payment Tracking
+title: Stripe
 description: "Record partner sales after a customer pays, with server-side tracking through POST /api/v1/track/sale or with your connected Stripe account."
 kind: guide
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 ```
 
-By default, `customer_key` matches only a customer your server already sent as a lead (`POST /api/v1/track/lead` with your API key). If the lead came only from the browser `signup()`, send `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
+For a real server-side sale, `customer_key` matches a key already stored on a customer in your program, for example by a server-verified lead or an attributed Stripe payment. If the key has not been stored, send a matching `click_id`; otherwise the request returns `400 Customer not found`.
 
 ### Full example
 
@@ -104,6 +104,22 @@ With the Stripe integration, you keep charging customers through your own Stripe
 
 Stripe refunds and active or lost chargebacks automatically reverse or adjust the related commission through Affitor's connected Stripe events; dispute inquiries and prevented disputes do not trigger a reversal.
 
+### Stripe events Affitor reads
+
+The sale rows describe payments that pass attribution and payment-admission checks. Zero-paid subscription invoices create no sale. New invoices with unsupported payment allocations or payments refunded before admission are not recorded automatically; some older payment records require manual reconciliation.
+
+| Stripe event | What Affitor does |
+|---|---|
+| `checkout.session.completed` | Records a one-time purchase. A subscription checkout records no sale here: its first invoice does |
+| `invoice.payment_succeeded`, `invoice.paid` | Records a subscription's first payment and each renewal, at most once per invoice |
+| `charge.refunded` | Applies the refund to a matched commission: a full refund reverses it; a partial refund marks it refunded, with balance adjustment based on its prior state. Some older invoice payments require manual reconciliation ([refund handling](/docs/brand/quickstart/commission-approval-cash-flow#refund-handling)) |
+| `charge.dispute.created`, `charge.dispute.funds_withdrawn` | Checks the dispute's current status. For an active or lost chargeback, applies the disputed amount to the matched commission. Inquiries and prevented disputes do not trigger a reversal |
+| `charge.dispute.funds_reinstated`, `charge.dispute.closed` | Checks the dispute's current status. When it is won, sends a notification to review the matched commission; partner credit is not restored automatically |
+| `account.updated` | Updates the program's Stripe card (**Program settings** › **Payments**) between **Not finished** and **Connected** |
+| `account.application.deauthorized` | Marks every program on that account **Not connected** |
+
+Stripe events credit Checkout purchases and subscription payments. A payment outside them, such as a PaymentIntent your server confirms, is not credited from Stripe: report it from your server ([Track Sale](/docs/api-reference/track-sale)).
+
 ### Recommended metadata fields
 
 | Field | Required | Description |
@@ -139,7 +155,7 @@ const session = await stripe.checkout.sessions.create({
 
 ### Subscription example
 
-For subscriptions, `subscription_data.metadata` is the one that counts: Affitor records a subscription's payments from its invoices, which carry the subscription's metadata, not the Checkout Session's `metadata`.
+For subscriptions, `subscription_data.metadata` is the one that counts: Affitor records a subscription's payments from its invoices, which carry the subscription's metadata, not the Checkout Session's `metadata`. Copying the same fields to the Checkout Session's `metadata` does not create an additional subscription sale; Affitor records subscription sales from invoice events.
 
 ```js
 const session = await stripe.checkout.sessions.create({
@@ -168,7 +184,7 @@ const session = await stripe.checkout.sessions.create({
 - Subscription commissions, for the first payment and each renewal, are created from the invoice events (`invoice.payment_succeeded`, `invoice.paid`)
 - An invoice carries the subscription's metadata (`subscription_data.metadata`), not the Checkout Session's `metadata`, so that is where the click reaches the subscription
 - Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email, when Affitor has recorded it, or else by that Stripe customer ID
-- Without it, the subscription is attributed only if the buyer's email or its Stripe customer ID matches a customer Affitor already has. The email matches only a customer whose email Affitor has recorded, from a lead your server sent with `trackLead` or an earlier attributed payment.
+- On your own Checkout Session, put the click in `subscription_data.metadata` so it reaches the invoices. Without a click in invoice metadata, Affitor can still match an existing customer or use a valid Affitor `client_reference_id` from the subscription's Checkout Session, subject to account and program checks. The email matches only a customer whose email Affitor has recorded, from a lead your server sent with `trackLead` or an earlier attributed payment.
 
 ---
 
@@ -339,5 +355,7 @@ Check:
 ## Related Guides
 
 - [3-Step Integration Guide](/docs/brand/tracking/quickstart-integration/)
-- [Payment Flow](/docs/brand/tracking/payment-flow/)
+- [Tracking Overview](/docs/brand/tracking/tracking-overview/): the whole flow, from partner click to commission
+- [Connect a new Stripe account](/docs/brand/tracking/connect-stripe-account): connect and test the account
+- [Stripe Checkout metadata](/docs/api-reference/integrations/stripe): the code, and a renewal handler for a Stripe webhook you host yourself
 - [Testing Integration](/docs/brand/tracking/testing-integration/)

@@ -2,7 +2,7 @@
 title: Connect a new Stripe account
 description: "Create a second Stripe account under your existing Stripe login, connect it to your Affitor program, test it in Stripe test mode, and check the connection."
 kind: guide
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Create a second Stripe account under your existing Stripe login, activate it, connect it to your Affitor program, and test it before partners send real customers. Affitor connects through Stripe Connect, so you do not create an API key or a webhook for it.
@@ -70,23 +70,13 @@ How the partner reaches Stripe depends on your checkout:
 | Checkout | What carries the partner |
 |---|---|
 | Payment Link, Buy Button, Pricing Table | The Affitor tracker on the page adds the click as `client_reference_id` ([how it works](https://affitor.com/changelog/stripe-payment-links-attribution)). Payment Links need a `buy.stripe.com` address. On all three, a `client_reference_id` you set yourself is kept, and if your tracker waits for consent, the visitor must have given it |
-| Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata, and for a subscription in `subscription_data.metadata` ([Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe)) |
+| Your own Checkout Session | Your server passes `affitor_click_id` in the session metadata, and for a subscription in `subscription_data.metadata` ([Stripe](/docs/brand/tracking/payment-tracking-stripe)) |
 
 If Stripe is connected and your server also sends sales through the Server API, send each purchase through one of them only, or it can count twice.
 
 ## What you do not set up
 
-**No webhook.** Stripe sends the events of every connected account to Affitor's own Connect endpoint, so you do not add a webhook endpoint in the new account. These are the events Affitor acts on:
-
-| Stripe event | What Affitor does |
-|---|---|
-| `checkout.session.completed` | Records a one-time purchase |
-| `invoice.payment_succeeded`, `invoice.paid` | Records a subscription's first payment and each renewal, at most once per invoice |
-| `charge.refunded` | Reverses the commission ([refund handling](/docs/brand/quickstart/commission-approval-cash-flow#refund-handling)) |
-| `charge.dispute.funds_withdrawn` | Reverses the commission when a chargeback takes the money |
-| `charge.dispute.funds_reinstated`, `charge.dispute.closed` (won) | Sends you a notification to review the commission. It stays reversed: Affitor does not re-credit the partner on its own |
-| `account.updated` | Updates the card between **Not finished** and **Connected** |
-| `account.application.deauthorized` | Marks every program on that account **Not connected** |
+**No webhook.** Stripe sends the events of every connected account to Affitor's own Connect endpoint, so you do not add a webhook endpoint in the new account. The events Affitor acts on, and what each one does, are on the [Stripe](/docs/brand/tracking/payment-tracking-stripe#stripe-events-affitor-reads) page.
 
 **No API key.** Affitor never asks for a Stripe secret key or a restricted key. You approve the connection on Stripe's own page, and you can revoke it in Stripe at any time.
 
@@ -132,7 +122,7 @@ Sales and commissions Affitor already recorded stay as they are. After the switc
 ## Related
 
 - [Set up your program](/docs/brand/quickstart/setup-program#step-4-connect-payments): the Payments step during setup
-- [Stripe payment tracking](/docs/brand/tracking/payment-tracking-stripe): metadata for your own Checkout Sessions
+- [Stripe](/docs/brand/tracking/payment-tracking-stripe): metadata for your own Checkout Sessions, and the Stripe events Affitor reads
 - [Testing your integration](/docs/brand/tracking/testing-integration): the full click, signup and sale check
 - [Track a refund](/docs/api-reference/track-refund): refunds when you use the Server API instead of Stripe
 

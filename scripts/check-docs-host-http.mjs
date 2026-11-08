@@ -126,6 +126,11 @@ const ALWAYS = [
   [PROXY, '/docs/api-reference/integrations/fastify.md', 308, '/docs/api-reference/integrations/node-express.md'],
   [PROXY, '/docs/api-reference/integrations/nextjs', 200, null, 'text/html'],
   [DOCS, '/api-reference/integrations/fastify.md', 200, null, 'text/markdown'],
+  // Payment Flow merged into Tracking Overview (08/11/2026).
+  [PROXY, '/docs/brand/tracking/payment-flow', 308, '/docs/brand/tracking/tracking-overview'],
+  [PROXY, '/docs/brand/tracking/payment-flow.md', 308, '/docs/brand/tracking/tracking-overview.md'],
+  [PROXY, '/docs/brand/tracking/tracking-overview', 200, null, 'text/html'],
+  [DOCS, '/brand/tracking/payment-flow.md', 200, null, 'text/markdown'],
   [PROXY, '/docs/blog/rewardful-alternatives', 308, '/blog/rewardful-alternatives'],
   [PROXY, '/blog/rewardful-alternatives', 200, null, 'text/html'],
   // Merged posts (13/10/2026): pages and .md twins 308 to the pricing comparison.
@@ -180,6 +185,7 @@ const MODES = {
     [DOCS, '/api-reference/agent-integration', 308, '/brand/cli/quickstart'],
     [DOCS, '/api-reference/integrations/nextjs-clerk', 308, '/api-reference/integrations/nextjs'],
     [DOCS, '/api-reference/integrations/fastify', 308, '/api-reference/integrations/node-express'],
+    [DOCS, '/brand/tracking/payment-flow', 308, '/brand/tracking/tracking-overview'],
     [DOCS, '/brand/quickstart', 200, null, 'text/markdown', MD],
     [DOCS, '/brand/quickstart', 200, null, 'text/html', HTML],
     [DOCS, '/', 200, null, 'text/markdown', MD],
@@ -201,6 +207,7 @@ const MODES = {
     [DOCS, '/api-reference/agent-integration', 301, 'https://affitor.com/docs/brand/cli/quickstart'],
     [DOCS, '/api-reference/integrations/nextjs-clerk', 301, 'https://affitor.com/docs/api-reference/integrations/nextjs'],
     [DOCS, '/api-reference/integrations/fastify', 301, 'https://affitor.com/docs/api-reference/integrations/node-express'],
+    [DOCS, '/brand/tracking/payment-flow', 301, 'https://affitor.com/docs/brand/tracking/tracking-overview'],
     [DOCS, '/brand/quickstart', 301, 'https://affitor.com/docs/brand/quickstart', undefined, REDIRECT_MD],
   ],
   302: [

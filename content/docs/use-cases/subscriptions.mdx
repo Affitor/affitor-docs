@@ -1,8 +1,8 @@
 ---
 title: Subscriptions, credit partners on renewals
-description: "Each paid invoice of a Stripe subscription earns the referring partner for as long as your commission type says. Refunds and disputes take the commission back."
+description: "Each paid invoice of a Stripe subscription earns the referring partner for as long as your commission type says. Refunds and active or lost chargebacks reverse or adjust matched commissions."
 kind: guide
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 use_case:
   name: Subscriptions
   strip: [Partner link, Subscription, Renewals]
@@ -25,9 +25,9 @@ sequenceDiagram
     S->>A: Sends the paid invoice
     A->>A: Same partner, a commission while the term lasts
   end
-  opt Refund or dispute
-    S->>A: Sends the refund or the withdrawn dispute
-    A->>A: Takes back the commission, in full or in part
+  opt Refund or active/lost chargeback
+    S->>A: Sends the refund or chargeback event
+    A->>A: Applies the refund or disputed amount to a matched commission
   end
 ```
 
@@ -42,9 +42,9 @@ sequenceDiagram
   ]}
 />
 
-Each paid invoice of the subscription is a sale: the first one, then every renewal. Renewals go to the partner of the first payment, through the click passed at checkout, the buyer's recorded email, or the Stripe customer ID saved with that first payment. The attribution window applies only to that first payment: once the customer has paid, renewals are credited however old the click is. The rate is the same for every plan, price and billing interval.
+Each paid invoice of the subscription is a sale: the first one, then every renewal. Renewals go to the partner of the first payment ([how Affitor matches them](/docs/brand/tracking/payment-tracking-stripe#why-subscriptions-need-subscription_datametadata)). The attribution window applies only to that first payment: once the customer has paid, renewals are credited however old the click is. The rate is the same for every plan, price and billing interval.
 
-Canceling, pausing or changing the plan writes nothing in Affitor: a canceled subscription stops earning because it stops paying, and after a plan change each paid invoice earns at the same rate. A refund or dispute is matched to its invoice and reverses the commission; some older sales, such as one payment shared by several invoices, are held for manual reconciliation instead. A new invoice whose payment was already refunded, even in part, before Affitor processed it is not recorded as a sale. A new invoice paid by several charges, or by one payment that also paid other invoices, is not recorded automatically. If you bill subscriptions outside Stripe, your server reports each payment and each refund ([Any payment provider](/docs/use-cases/any-payment-provider)).
+Canceling, pausing or changing the plan writes nothing in Affitor: a canceled subscription stops earning because it stops paying, and after a plan change each paid invoice earns at the same rate. A refund is applied to the matched commission: a full refund reverses it, while a partial refund marks it refunded, with balance adjustment based on its prior state. An active or lost chargeback applies the disputed amount; inquiries and prevented disputes do not trigger a reversal. Some older sales, such as one payment shared by several invoices, are held for manual reconciliation instead. A new invoice whose payment was already refunded, even in part, before Affitor processed it is not recorded as a sale. A new invoice paid by several charges, or by one payment that also paid other invoices, is not recorded automatically. If you bill subscriptions outside Stripe, your server reports each payment and each refund ([Any payment provider](/docs/use-cases/any-payment-provider)).
 
 ## Steps
 
@@ -53,7 +53,7 @@ Canceling, pausing or changing the plan writes nothing in Affitor: a canceled su
     { title: 'Connect Stripe', text: '**Program settings** › **Payments** › **Connect Stripe**, as the program owner. Your subscriptions must bill on the Stripe account you connect.', href: '/docs/brand/tracking/connect-stripe-account#step-3-connect-it-to-your-program' },
     { title: 'Pass the click to the subscription', text: 'On Payment Links, the Buy Button and the Pricing Table, the tracker on the page does it. Your own Checkout Session adds `affitor_click_id` to `subscription_data.metadata`: invoices carry the subscription\'s metadata, not the session\'s.', href: '/docs/brand/tracking/payment-tracking-stripe#subscription-example' },
     { title: 'Choose how long renewals earn', text: '**Program settings** › **Commission** › **Type**. **One-time** earns on the first payment for a product, not on its renewals. **Lifetime** earns on every paid invoice. **Recurring** earns until the months in **For** have passed since the customer\'s first click on the partner link, not since the first payment: with 12 months, a customer who clicked in January and subscribed in March earns the partner commissions until January of the next year.', href: '/docs/brand/quickstart/setup-program#step-2-set-your-commission' },
-    { title: 'Refund in Stripe', text: 'Refund an invoice in Stripe, a renewal or the first one, and Affitor finds its commission: a full refund reverses it, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved). A dispute takes the commission back when Stripe withdraws the funds. If you win it, the commission stays reversed and you get a notification to review it.', href: '/docs/brand/quickstart/commission-approval-cash-flow#refund-handling' },
+    { title: 'Refund in Stripe', text: 'Refund an invoice in Stripe, a renewal or the first one, and Affitor finds its commission: a full refund reverses it, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved). Affitor applies an active or lost chargeback to the matched commission; dispute inquiries and prevented disputes do not trigger a reversal. If the dispute is won, Affitor notifies you to review the commission and does not restore partner credit automatically.', href: '/docs/brand/quickstart/commission-approval-cash-flow#refund-handling' },
     { title: 'Make a test subscription', text: "In the connected account's test mode, subscribe through a partner link on your own Checkout Session, with the click in `subscription_data.metadata`. **Commissions** lists the first payment as **Test**. A test subscription from a Payment Link, the Buy Button or the Pricing Table can show no commission.", href: '/docs/brand/tracking/connect-stripe-account#step-4-test-with-stripe-test-mode' },
   ]}
 />

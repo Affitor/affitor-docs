@@ -2,23 +2,23 @@
 title: SDKs
 description: Typed client libraries for browser tracking (@affitor/sdk) and server-side conversion reporting (@affitor/sdk/server).
 kind: reference
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
-> **Beta** — The @affitor/sdk package and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
+> **Beta**: the @affitor/sdk package and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
 
 One package covers the full attribution chain via subpaths: the browser entry captures clicks and leads on the frontend; the `/server` entry reports conversions from your backend.
 
 <FeatureCards>
-  <FeatureCard icon="monitor" title="@affitor/sdk" href="#affitorsdk-browser">Browser SDK — captures affiliate clicks, persists attribution in a first-party cookie, and reports lead events.</FeatureCard>
-  <FeatureCard icon="server" title="@affitor/sdk/server" href="#affitorsdkserver-server">Node SDK — reports leads, sales, clicks, and refunds from your backend with Bearer auth.</FeatureCard>
+  <FeatureCard icon="monitor" title="@affitor/sdk" href="#affitorsdk-browser">Browser SDK: captures affiliate clicks, persists attribution in a first-party cookie, and reports lead events.</FeatureCard>
+  <FeatureCard icon="server" title="@affitor/sdk/server" href="#affitorsdkserver-server">Node SDK: reports leads, sales, clicks, and refunds from your backend with Bearer auth.</FeatureCard>
 </FeatureCards>
 
 ---
 
 ## @affitor/sdk (Browser)
 
-SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` (or `?via=`) attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server — safe to import in Next.js and other SSR frameworks without guards.
+SSR-safe typed npm wrapper over the Affitor tracking endpoints. Captures `?aff=` (or `?via=`) attribution, persists a `affitor_click_id` first-party cookie (60-day default), and reports click and lead events. All methods are no-ops on the server, so it is safe to import in Next.js and other SSR frameworks without guards.
 
 ### Install
 
@@ -77,7 +77,7 @@ The tracker sends events to `https://api.affitor.com`. To send them to a non-pro
 | `init` | `(options: { programId?: string \| number; debug?: boolean }) => void` | Starts the tracker. It runs on its own when the script loads (through `loadAffitor` or the script tag), so you do not need to call it. |
 | `trackLead` | `(data: TrackLeadData) => Promise<void>` | Deprecated: use `signup`. Older alias that calls `signup` with the object's `customer_key` (or `user_id`) and `email`. |
 
-> `signup()` requires `customerKey`, your own user id. By default a browser `signup()` records a provisional lead, which does not bind your customer key to the customer record for later sale matching (the Lead tracking section shows "Browser leads: server/payment confirmation required"). A later backend sale that sends only `customerExternalId` then finds no customer and is refused with `400` `Customer not found`. Send the lead from your server as well (`trackLead` with `customerExternalId` and `clickId`), or pass `clickId` with the sale.
+> `signup()` requires `customerKey`, your own user id. By default a browser `signup()` records a provisional lead, which does not bind your customer key to the customer record for later sale matching (the Lead tracking section shows "Browser leads: server/payment confirmation required"). Until the key is stored on a customer (by a server-verified lead or an attributed Stripe payment), a backend sale that sends only `customerExternalId` finds no customer and is refused with `400` `Customer not found`. Send the lead from your server as well (`trackLead` with `customerExternalId` and `clickId`), or pass `clickId` with the sale.
 
 ### `AffitorData`
 
@@ -95,7 +95,7 @@ Returned by `getData()`.
 ### Full example (Next.js)
 
 ```tsx
-// app/affitor-tracker.tsx — client component
+// app/affitor-tracker.tsx: client component
 'use client';
 import { useEffect } from 'react';
 import { loadAffitor } from '@affitor/sdk';
@@ -143,10 +143,10 @@ import Affitor from '@affitor/sdk/server';
 
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
-// On user signup — bind the customer to their affiliate click
+// On user signup: bind the customer to their affiliate click
 await affitor.trackLead({ customerExternalId: user.id, clickId });
 
-// On payment success — report the sale
+// On payment success: report the sale
 await affitor.trackSale({
   customerExternalId: user.id,
   amount: 4999,         // cents
@@ -207,11 +207,11 @@ At least one of `customerExternalId` or `clickId` is required, and `amount` must
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `customerExternalId` | `string` | Conditional | Your own user id — resolves attribution from the earlier `trackLead` call. |
+| `customerExternalId` | `string` | Conditional | Your own user id. It resolves attribution when it matches a key already stored on a customer in your program, for example by a server-verified lead or an attributed Stripe payment. |
 | `clickId` | `string` | Conditional | `affitor_click_id` cookie value (fallback if no prior lead). |
 | `amount` | `number` | **Yes** | Sale amount as an integer in the currency's [minor unit](/docs/api-reference/track-sale#minor-units-and-conversion): cents for USD (`4999` = $49.99), whole units for JPY or VND. |
 | `taxCents` | `number` | No | The tax included in `amount`, same unit. Commissions are calculated on `amount - taxCents`. Requires `@affitor/sdk` 2.1.2 or later. |
-| `invoiceId` | `string` | **Yes** | Unique invoice or transaction id — used as an idempotency key to deduplicate retries. |
+| `invoiceId` | `string` | **Yes** | Unique invoice or transaction id, used as an idempotency key to deduplicate retries. |
 | `currency` | `string` | No | A [supported ISO 4217 code](/docs/api-reference/track-sale#request-fields); another code returns `422`. Defaults to `USD`. Commissions and platform fees are calculated on the pre-tax amount [converted to USD](/docs/api-reference/track-sale#minor-units-and-conversion), and invoices are issued in USD. |
 | `saleType` | `'payment' \| 'subscription'` | No | Categorize the sale type. |
 | `isRecurring` | `boolean` | No | `true` for recurring subscription charges. |
@@ -249,7 +249,7 @@ Reverses the commission for a previously tracked sale. Call it once per refund, 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale` — identifies which sale to refund. |
+| `invoiceId` | `string` | **Yes** | The `invoiceId` you passed to `trackSale`; identifies which sale to refund. |
 | `refundAmountCents` | `number` | No | This refund's amount in the sale currency's minor unit (not the running total). Omit it to refund the rest of the sale; do not pass `0`. |
 | `refundReason` | `string` | No | Optional reason string passed through to the refund record. |
 
@@ -317,8 +317,8 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
 
 ## Related
 
-- [Track Click](/docs/api-reference/track-click) — raw HTTP endpoint reference
-- [Track Lead](/docs/api-reference/track-lead) — raw HTTP endpoint reference
-- [Track Sale](/docs/api-reference/track-sale) — raw HTTP endpoint reference
-- [Track Refund](/docs/api-reference/track-refund) — raw HTTP endpoint reference
-- [Lead Tracking Guide](/docs/brand/tracking/lead-tracking-signup) — implementation walkthrough
+- [Track Click](/docs/api-reference/track-click): raw HTTP endpoint reference
+- [Track Lead](/docs/api-reference/track-lead): raw HTTP endpoint reference
+- [Track Sale](/docs/api-reference/track-sale): raw HTTP endpoint reference
+- [Track Refund](/docs/api-reference/track-refund): raw HTTP endpoint reference
+- [Lead Tracking Guide](/docs/brand/tracking/lead-tracking-signup): implementation walkthrough

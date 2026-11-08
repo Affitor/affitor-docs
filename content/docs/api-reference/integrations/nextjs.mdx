@@ -486,6 +486,8 @@ await affitor.trackSale({
 });
 ```
 
+For a real server-side sale, `customer_key` matches a key already stored on a customer in your program, for example by a server-verified lead or an attributed Stripe payment. If the key has not been stored, send a matching `click_id`; otherwise the request returns `400 Customer not found`.
+
 ## Verify
 
 <VerifySuccess
@@ -499,7 +501,7 @@ await affitor.trackSale({
 
 <CommonMistakes items={[
   "Different customer IDs at signup vs sale: `affitor_customer_key` must equal the `customer_key`/`customerExternalId` you sent at signup.",
-  "Subscriptions missing `subscription_data.metadata`. The click never reaches the subscription's invoices, so its payments are attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
+  "Subscriptions missing `subscription_data.metadata`. On your own Checkout Session, put the click in `subscription_data.metadata` so it reaches the invoices. Without a click in invoice metadata, Affitor can still match an existing customer or use a valid Affitor `client_reference_id` from the subscription's Checkout Session, subject to account and program checks.",
   "Loading the tracker on the server: `AffitorProvider` and `loadAffitor()` must run in a client component (on the server they resolve to `null`).",
   "Calling `signup()` in a server component or route handler: it must run in a client component where the cookie is accessible.",
   "Relying on the browser `signup()` alone: by default it stays provisional until your server sends the lead.",
