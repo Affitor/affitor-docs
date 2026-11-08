@@ -106,6 +106,11 @@ const ALWAYS = [
   [PROXY, '/docs/errors', 308, '/docs/api-reference/errors'],
   [PROXY, '/docs/getting-started/glossary', 308, '/docs/support/glossary'],
   [PROXY, '/docs/getting-started/what-is-affitor', 308, '/docs'],
+  // The getting-started index merged into the docs home (07/11/2026): the folder URL only.
+  [PROXY, '/docs/getting-started', 308, '/docs'],
+  [PROXY, '/docs/getting-started.md', 308, '/docs/index.md'],
+  [PROXY, '/docs/getting-started/how-it-works', 200, null, 'text/html'],
+  [DOCS, '/getting-started.md', 200, null, 'text/markdown'],
   [PROXY, '/docs/blog/rewardful-alternatives', 308, '/blog/rewardful-alternatives'],
   [PROXY, '/blog/rewardful-alternatives', 200, null, 'text/html'],
   // Merged posts (13/10/2026): pages and .md twins 308 to the pricing comparison.

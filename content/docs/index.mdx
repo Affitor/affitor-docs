@@ -5,11 +5,13 @@ kind: concept
 last_updated: 2026-11-07
 ---
 
-Affitor is an affiliate growth platform for SaaS companies — run partner programs with click, signup, and sale attribution, then manage commissions and payouts through one workflow.
+Affitor is an affiliate growth platform for SaaS companies: run partner programs with click, signup, and sale attribution, then manage commissions and payouts through one workflow.
 
-> **Key terms:**
-> - **Advertiser** — the SaaS company running an affiliate program
-> - **Partner** — the affiliate, creator, agency, or other promoter sending traffic
+These docs cover both sides of a program:
+- **Advertisers** (brands) are the SaaS companies running an affiliate program. They configure the program, integrate tracking, review commissions, and handle payouts. Start with the [advertiser quickstart](/docs/brand/quickstart).
+- **Partners** are the affiliates, creators, agencies, and other promoters sending traffic. They join programs from the **Marketplace**, share their referral links, and get paid. Start at [Become a partner](/docs/partners).
+
+Look up any term in the [glossary](/docs/support/glossary).
 
 ## Overview
 
@@ -17,7 +19,7 @@ Affitor is an affiliate growth platform for SaaS companies — run partner progr
   <FeatureCard icon="users" title="Partner Program">Run an affiliate program with partner applications, links, tracking, and commission operations.</FeatureCard>
   <FeatureCard icon="chart" title="Attribution">Track clicks, signups, and sales through Server-side tracking or Stripe integration.</FeatureCard>
   <FeatureCard icon="card" title="Payout Workflow">Commissions move through review, hold, and payout operations inside Affitor.</FeatureCard>
-  <FeatureCard icon="zap" title="Agent Integration">Integrate via the `affitor` CLI, MCP server, or `skill.md` runbook — a self-verify loop fires a synthetic click, lead, and sale and returns `integration_verified: true`.</FeatureCard>
+  <FeatureCard icon="zap" title="Agent Integration">Hand the integration to an AI coding agent with the `affitor` CLI (`npx affitor onboard`), the local MCP server it sets up, or the `skill.md` runbook. A self-verify loop fires a synthetic click, lead, and sale and returns `integration_verified: true`.</FeatureCard>
 </FeatureCards>
 
 ## How it fits into your stack
@@ -34,7 +36,7 @@ Affitor runs alongside your existing product stack.
   <FlowStep caption="Revenue is matched to the click that drove it.">
     Customer pays → **sale attributed** via `Server-side tracking` or `Stripe integration`
   </FlowStep>
-  <FlowStep caption="Hold, approve, and pay out — all in one place.">
+  <FlowStep caption="Hold, approve, and pay out in one place.">
     **Commission + payout workflow** handled in Affitor
   </FlowStep>
 </Flow>
@@ -47,6 +49,8 @@ You keep your own site and checkout. In the invoice billing model, you continue 
 - No setup fee
 - 3.5% platform fee on partner-generated revenue
 - $10K fee-free threshold on affiliate-driven revenue, per program
+
+How the fee and the threshold work: [Pricing](/docs/getting-started/pricing-performance-model).
 
 ## Who this is best for
 
@@ -65,4 +69,4 @@ Affitor fits SaaS teams that want:
   <FeatureCard icon="users" title="Become a partner" href="/docs/partners">Join a program from the Marketplace, share your referral link, and get paid.</FeatureCard>
 </FeatureCards>
 
-Ready to start? [Create your program at affitor.com](https://affitor.com) — $0/month, no setup fee, and each program's first $10,000 in affiliate-driven revenue is fee-free.
+Ready to start? [Create your program at affitor.com](https://affitor.com) and explore the dashboard before you commit to anything: $0/month, no setup fee, and each program's first $10,000 in affiliate-driven revenue is fee-free.

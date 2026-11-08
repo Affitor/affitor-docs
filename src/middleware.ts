@@ -59,6 +59,8 @@ const FOLDER_HOMES: Record<string, string> = {
   '/docs/brand/cli': '/docs/brand/cli/quickstart',
   '/docs/partners/quickstart': '/docs/partners/quickstart/create-account',
   '/docs/api-reference/integrations': '/docs/api-reference/integrations/stripe',
+  // Its index merged into the docs home (07/11/2026). Exact path only: the pages under it stay.
+  '/docs/getting-started': '/docs',
 };
 
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and

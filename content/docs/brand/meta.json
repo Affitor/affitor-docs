@@ -4,7 +4,6 @@
   "pages": [
     "---Get started---",
     "../index",
-    "../getting-started/index",
     "../getting-started/how-it-works",
     "../getting-started/quickstart",
     "quickstart/index",
