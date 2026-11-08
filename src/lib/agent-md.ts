@@ -5,9 +5,11 @@ import { CHANGELOG_SUB, CHANGELOG_URL, aiContext, entrySlug, entryUrl, openDepre
 import { DOCS_URL, SITE_URL } from '@/lib/site';
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
+// A heading's custom id (`#### Hermes Agent [#hermes]`) is for the page's anchor, not for readers of the twin.
+const HEADING_ID = /^(#{1,6} .*?)\s*\[#[a-z][a-z0-9-]*\]\s*$/gm;
 
 export function toMarkdown(title: string, description: string | undefined, raw: string) {
-  const body = raw.replace(FRONTMATTER, '').trim();
+  const body = raw.replace(FRONTMATTER, '').replace(HEADING_ID, '$1').trim();
   const head = description ? `# ${title}\n\n> ${description}` : `# ${title}`;
   return `${head}\n\n${body}\n`;
 }
