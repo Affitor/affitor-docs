@@ -2,7 +2,7 @@
 title: CLI Command Reference
 description: "Reference for every npx affitor command, flag and option, the config file, and the error codes a failed command returns in --json output."
 kind: reference
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Every `npx affitor` command, flag, and option in one place. The agent setup, doctor, and Stripe-aware onboarding behavior below require CLI 0.4.5.
@@ -139,11 +139,11 @@ All four land inside `.affitor/`, not in the project root:
 | File | Purpose |
 |---|---|
 | `.affitor/config.json` | Program ID, domain, commission and cookie settings. No secrets |
-| `.affitor/.env.example` | The same variables as `.affitor/.env`, API key included. Gitignored |
+| `.affitor/.env.example` | The same variables as `.affitor/.env`, with the API key left empty. Gitignored |
 | `.affitor/AGENTS.md` | Tracking code snippets and AI agent instructions |
 | `.affitor/skills.md` | Backward-compatible copy of `AGENTS.md` |
 
-The API key goes to `.affitor/.env` and to `.affitor/.env.example`. `init` adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps both out of Git.
+The API key goes only to `.affitor/.env`. `init` adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps both files out of Git. In a Git repository it also asks Git whether `.affitor/.env` is ignored, and adds `.affitor/.env` as the last line of `.gitignore` when it is not. If Git already tracks `.affitor/.env`, `init` tells you to run `git rm --cached .affitor/.env`. Running `init` again on a project that an older CLI set up empties the key that CLI left in `.affitor/.env.example`, and tells you to rotate the key if that file was ever committed or shared.
 
 ---
 
@@ -152,8 +152,8 @@ The API key goes to `.affitor/.env` and to `.affitor/.env.example`. `init` adds 
 Preview and install project-scoped local MCP configuration and an Affitor skill. Run from your app's project root; no account login is required for this file setup.
 
 ```bash
-npx affitor@0.4.5 agent setup --client claude_code --dry-run --json
-npx affitor@0.4.5 agent setup --client claude_code --yes --json
+npx affitor@0.4.8 agent setup --client claude_code --dry-run --json
+npx affitor@0.4.8 agent setup --client claude_code --yes --json
 ```
 
 | Flag | Behavior |
@@ -181,7 +181,7 @@ A run with no selected clients and no `--dry-run` also exits `1`. The preview co
 Read-only static check of local agent configuration. It does not call Affitor, start an agent session, or verify integration readiness.
 
 ```bash
-npx affitor@0.4.5 doctor --client claude_code --json
+npx affitor@0.4.8 doctor --client claude_code --json
 ```
 
 Repeat `--client` to check selected clients. Without it, a detected coding-agent caller selects itself; otherwise the command checks existing Claude Code/Cursor config files, or both clients when neither file exists. Codex must be selected explicitly when there is no detected caller.
@@ -244,7 +244,7 @@ In `--json` mode `onboard` performs **no file edits**. Steps may report `manual`
 
 ```bash
 # Configure AFFITOR_API_KEY privately before running.
-npx affitor@0.4.5 onboard --yes --json
+npx affitor@0.4.8 onboard --yes --json
 ```
 
 The JSON summary reports the per-step status and the final verdict:
