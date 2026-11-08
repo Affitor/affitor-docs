@@ -282,7 +282,7 @@
     "allow": []
   },
   {
-    "pattern": "\\.env\\.example.*(safe[- ]to[- ]commit|template for teammates)|safe[- ]to[- ]commit template",
+    "pattern": "\\.env\\.example.*(?<!not )(safe[- ]to[- ]commit|template for teammates)|(?<!not a )safe[- ]to[- ]commit template|\\.env\\.example.*[Ee]nvironment variables template",
     "why": "npx affitor init writes the program API key into .affitor/.env.example as well as .affitor/.env, and the .affitor/.env.* rule it adds to .gitignore covers it. It is not a safe-to-commit or shareable template.",
     "since": "2026-11-07",
     "allow": []

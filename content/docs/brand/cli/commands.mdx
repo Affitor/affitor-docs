@@ -139,11 +139,11 @@ All four land inside `.affitor/`, not in the project root:
 | File | Purpose |
 |---|---|
 | `.affitor/config.json` | Program ID, domain, commission and cookie settings. No secrets |
-| `.affitor/.env.example` | Environment variables template |
+| `.affitor/.env.example` | The same variables as `.affitor/.env`, API key included. Gitignored |
 | `.affitor/AGENTS.md` | Tracking code snippets and AI agent instructions |
 | `.affitor/skills.md` | Backward-compatible copy of `AGENTS.md` |
 
-The API key itself goes to `.affitor/.env`, which `init` adds to your `.gitignore` along with `.affitor/.env.*`.
+The API key goes to `.affitor/.env` and to `.affitor/.env.example`. `init` adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps both out of Git.
 
 ---
 
