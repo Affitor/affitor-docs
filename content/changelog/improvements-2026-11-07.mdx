@@ -20,6 +20,10 @@ context:
   - "Saying Muse Code connects in one click: you add Affitor to its settings file, then sign in from the terminal."
   - "Saying the Markdown answer lists every program in a category: it lists the first page the category table shows."
   - "Saying every category address answers in Markdown: a category whose address a short link already uses redirects to that link."
+  - "Saying Affitor pays per click or per lead, or that CPC or CPL policies stop working, stop paying or are converted: commissions come from sales, and this update only changes what the menu offers."
+  - "Saying settings pages load faster: no measured number yet."
+  - "Saying AI tools can now write or change programs: connections still only read."
+  - "Saying brands can now pick several programs when an AI tool connects: that has worked since November 3; this update only changes the instructions and the AI agents page."
 ---
 
 ### Improved
@@ -28,9 +32,13 @@ context:
 - In **Connect an AI tool**, the **Other** tab now has steps for Muse Code: add Affitor to `~/.config/muse/settings.json`, then run `muse mcp login affitor` in your terminal.
 - AI tools can read `/agents`, `/switch`, `/privacy`, `/terms`, `/legal/refer-program` and `/legal/subprocessors` as Markdown: add `.md` to the address or send `Accept: text/markdown`.
 - AI tools can read category pages such as `/ai-video` as Markdown, with the first 50 programs the page lists: add `.md` to the address or send `Accept: text/markdown`.
+- The **Commission Type** menu in a commission policy now offers CPS One-time, CPS Recurring and CPS Lifetime only.
+- Policies that already use CPC or CPL are not changed.
 
 ### Fixed
 
+- In **Connect an AI tool**, the brand steps for Claude, ChatGPT, Grok and Muse Code now say to pick your programs, then click **Allow**.
+- The AI agents page at `/agents` lists all 13 tools, including `list_programs`, and says a brand connection reads the programs you choose when you connect.
 - Team members with no brand or partner account of their own now land on their team's program after signing in, instead of **How will you use Affitor?**
 - If your brand has no program yet, opening **Groups**, **Commissions** or another dashboard section takes you to creating your first program.
 - A saved **Dashboard** link for a program you can't open now takes you to a program you can, or to setting one up if you have none.
