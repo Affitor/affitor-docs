@@ -1,5 +1,5 @@
 ---
-title: CPS-only commission types and program choice for AI tools
+title: CPS-only commission types and all 13 tools on the AI agents page
 date: 2026-11-08
 type: digest
 audience:
@@ -8,17 +8,21 @@ audience:
 surfaces:
 - dashboard
 - mcp
-description: Commission policies offer CPS types only, the AI agents page lists all 13 tools, and Connect an AI tool asks brands to pick their programs.
+description: The commission policy menu offers CPS types only, the AI agents page lists all 13 tools, and Connect an AI tool says to pick your programs.
 context:
   avoid:
-  - "Saying CPC or CPL policies stop working or stop paying: the form only stops offering those types, and a policy that already uses one still shows it."
+  - "Saying Affitor pays per click or per lead, or that CPC or CPL policies stop working, stop paying or are converted: commissions come from sales, and this update only changes what the menu offers."
   - "Saying settings pages load faster: no measured number yet."
   - "Saying AI tools can now write or change programs: connections still only read."
+  - "Saying brands can now pick several programs when an AI tool connects: that has worked since November 3; this update only changes the instructions and the AI agents page."
 ---
 
 ### Improved
 
 - The **Commission Type** menu in a commission policy now offers CPS One-time, CPS Recurring and CPS Lifetime only.
-- A policy that already uses CPC or CPL still shows its type when you edit it, marked "no longer offered".
-- In **Connect an AI tool**, the steps for brands now say to pick your programs, then click **Allow**.
+- Policies that already use CPC or CPL are not changed.
+
+### Fixed
+
+- In **Connect an AI tool**, the brand steps for Claude, ChatGPT, Grok and Muse Code now say to pick your programs, then click **Allow**.
 - The AI agents page at `/agents` lists all 13 tools, including `list_programs`, and says a brand connection reads the programs you choose when you connect.
