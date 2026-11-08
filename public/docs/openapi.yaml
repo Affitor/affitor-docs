@@ -158,7 +158,7 @@ paths:
                     error:
                       code: link_disabled
                       message: "Referral link is inactive"
-                      hint: "The partner or brand turned this link off. No click was recorded."
+                      hint: "This link or its program is not active. No click was recorded."
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':

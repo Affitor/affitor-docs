@@ -310,5 +310,11 @@
     "why": "Since the backend release of 7 November 2026 the MCP sign-in accepts Perplexity's Enterprise callback (enterprise.perplexity.ai/rest/connections/oauth_callback).",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "partner or brand turned this link off",
+    "why": "POST /api/v1/track/click link_disabled hint: since the CMS release of 2026-11-07 it reads 'This link or its program is not active. No click was recorded.' (click-admission.ts refuseReferralClick); the same answer covers a link turned off and a program that is not active.",
+    "since": "2026-11-08",
+    "allow": []
   }
 ]
