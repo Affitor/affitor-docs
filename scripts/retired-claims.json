@@ -292,5 +292,17 @@
     "why": "Connect an AI tool does not fill in a site or program id: Program settings › Developers › AI agents and partner Integrations open it without a program, so it shows no install prompt. The reader replaces example.com and 123 in the prompt. Remove this entry in the docs PR that documents a Connect an AI tool opened for a program.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "no sale or commission was recorded",
+    "why": "A 500 from POST /api/v1/track/sale does not prove that nothing was recorded: on the fee-bearing path the server can lose the commit acknowledgement after the sale was saved. Clients retry with the same transaction_id and read a 409 sale_id as recorded.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "transaction_id`? is not consumed",
+    "why": "After a sale 500 the transaction_id may already hold a recorded sale; a retry with the same id that reaches the duplicate check answers 409 with the sale_id instead of recording again.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]
