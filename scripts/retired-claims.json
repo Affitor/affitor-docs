@@ -274,5 +274,11 @@
     "why": "?aff= is not the only partner link form: programs created from 16/10/2026 print ?via= unless the brand picks ?aff=, and the tracker reads both.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "respond to all inquiries within 24 hours|Response Commitment|Recruit quality partners in your space|Interested in joining our partner network",
+    "why": "The contact page made a 24-hour reply promise and partner-recruiting service claims with no source; partners join programs through the marketplace.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]
