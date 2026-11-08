@@ -516,7 +516,7 @@ function checkOpenApi() {
 function main() {
   const retired = checkRetiredClaims();
   const contract = checkTrackingContract(ROOT);
-  console.log(`PASS tracking contract: ${contract.statements} window statements, ${contract.examples} sale examples carry their idempotency key, ${contract.rules} rules in x-affitor-contract`);
+  console.log(`PASS tracking contract: ${contract.statements} window statements, ${contract.pins} pinned statements, ${contract.examples} sale examples carry their idempotency key; ${contract.checked} contract rules checked in the docs, ${contract.outside} outside the docs`);
   const openApiPaths = checkOpenApi();
   const pages = inventory();
   const ids = pages.map((page) => page.id);

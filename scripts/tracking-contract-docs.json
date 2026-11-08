@@ -1,7 +1,12 @@
 {
-  "about": "Per file: how many window statements it makes and which contract value each states (values: public/docs/openapi.yaml info.x-affitor-contract). Checked by scripts/tracking-contract.mjs inside scripts/check-agent-surface.mjs. A new window statement anywhere in the docs, blog, skill.md or openapi.yaml fails as unlisted until it is added here.",
-  "competitor_line": "\\b(Rewardful|FirstPromoter|Tolt|PartnerStack|Dub|Promotekit|Lemon Squeezy|Impact|Refersion|Tapfiliate)\\b",
+  "about": "What the docs say about the tracking contract (values: public/docs/openapi.yaml info.x-affitor-contract), checked by scripts/tracking-contract.mjs inside scripts/check-agent-surface.mjs. files: per file, how many window statements it makes and which value each states (near: a pattern on the statement, for files that state two rules); a new window statement anywhere in the docs, blog, skill.md or openapi.yaml fails as unlisted until it is added here. elsewhere: window statements about something else (a competitor's sentence or table cell, a sample program, the category default), each blanked by its exact span with a count per file, so Affitor's statements next to them are still read. pins: statements the window scan cannot read, with the value they must state. outside_docs: contract rules the docs do not state, and why.",
   "files": [
+    {
+      "file": "content/docs/api-reference/attribution.mdx",
+      "rule": "attribution_window_max_days",
+      "count": 1,
+      "near": "lifetime \\(1–\\d+ days\\)"
+    },
     {
       "file": "content/docs/api-reference/attribution.mdx",
       "rule": "attribution_window_default_days",
@@ -10,8 +15,8 @@
     {
       "file": "content/docs/api-reference/errors.mdx",
       "rule": "attribution_window_max_days",
-      "count": 1,
-      "lines": "from 1 to \\d+"
+      "count": 2,
+      "near": "from 1 to \\d+"
     },
     {
       "file": "content/docs/api-reference/errors.mdx",
@@ -51,7 +56,7 @@
     {
       "file": "content/docs/getting-started/how-it-works.mdx",
       "rule": "attribution_window_default_days",
-      "count": 1
+      "count": 2
     },
     {
       "file": "content/docs/support/glossary.mdx",
@@ -101,7 +106,7 @@
     {
       "file": "content/blog/rewardful-vs-firstpromoter.mdx",
       "rule": "attribution_window_default_days",
-      "count": 2
+      "count": 3
     },
     {
       "file": "content/blog/tolt-alternatives.mdx",
@@ -111,19 +116,14 @@
     {
       "file": "content/blog/tolt-vs-rewardful.mdx",
       "rule": "attribution_window_default_days",
-      "count": 2
+      "count": 3
     }
   ],
   "elsewhere": [
     {
       "file": "public/docs/openapi.yaml",
-      "match": "^\\s*x-affitor-contract:",
+      "match": "^x-affitor-contract: \\{.*\\}$",
       "why": "The contract values themselves."
-    },
-    {
-      "file": "content/docs/api-reference/errors.mdx",
-      "match": "window resets in 42",
-      "why": "A rate-limit window in seconds."
     },
     {
       "file": "content/docs/api-reference/agent-integration.mdx",
@@ -131,9 +131,9 @@
       "why": "A sample program's own setting in a generated instruction file."
     },
     {
-      "file": "content/docs/partners/quickstart/find-and-join-programs.mdx",
-      "match": "\\*\\*Cookie window\\*\\* \\(30",
-      "why": "A marketplace filter threshold."
+      "file": "content/docs/api-reference/errors.mdx",
+      "match": "window resets in 42",
+      "why": "A rate-limit window in seconds."
     },
     {
       "file": "content/docs/brand/cli/quickstart.mdx",
@@ -141,9 +141,25 @@
       "why": "An example command passing the window explicitly."
     },
     {
+      "file": "content/docs/partners/quickstart/find-and-join-programs.mdx",
+      "match": "\\*\\*Cookie window\\*\\* \\(30",
+      "why": "A marketplace filter threshold."
+    },
+    {
       "file": "content/blog/agent-commerce-attribution-layer.mdx",
       "match": "90-day cookie",
       "why": "Another program's terms quoted from a live OpenAffiliate response."
+    },
+    {
+      "file": "content/blog/firstpromoter-alternatives.mdx",
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "count": 2,
+      "why": "Rewardful's cell in the pricing tables."
+    },
+    {
+      "file": "content/blog/firstpromoter-alternatives.mdx",
+      "match": "Attribution is cookie-based \\(first- or last-touch, 60-day default\\)",
+      "why": "Rewardful's window."
     },
     {
       "file": "content/blog/how-to-start-saas-affiliate-program.mdx",
@@ -162,21 +178,209 @@
       "why": "Competitors' defaults."
     },
     {
+      "file": "content/blog/how-to-start-saas-affiliate-program.mdx",
+      "match": "Cookie, 60-day default(?= \\|)",
+      "count": 2,
+      "why": "Rewardful's and FirstPromoter's cells in the platform table."
+    },
+    {
+      "file": "content/blog/how-to-start-saas-affiliate-program.mdx",
+      "match": "Rewardful and FirstPromoter both ship 60-day cookie windows",
+      "count": 2,
+      "why": "Competitors' defaults, in the intro and the FAQ."
+    },
+    {
+      "file": "content/blog/partnerstack-alternatives.mdx",
+      "match": "Attribution is cookie-based \\(first- or last-touch, with a 60-day default window you can change per campaign\\)",
+      "why": "Rewardful's window, in its Cons paragraph (the sentence itself does not name it)."
+    },
+    {
+      "file": "content/blog/partnerstack-alternatives.mdx",
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "why": "Rewardful's cell in the pricing table."
+    },
+    {
+      "file": "content/blog/partnerstack-vs-rewardful.mdx",
+      "match": "uses cookie-based attribution with a \\[60-day default window\\]",
+      "why": "Rewardful's window."
+    },
+    {
+      "file": "content/blog/rewardful-alternatives.mdx",
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "why": "Rewardful's cell in the pricing table."
+    },
+    {
+      "file": "content/blog/rewardful-alternatives.mdx",
+      "match": "cookie-based attribution \\(60-day default window\\)",
+      "count": 2,
+      "why": "Rewardful's window, in the description and the FAQ."
+    },
+    {
+      "file": "content/blog/rewardful-alternatives.mdx",
+      "match": "first- or last-touch credit and a \\[60-day default window\\]",
+      "why": "Rewardful's window."
+    },
+    {
       "file": "content/blog/rewardful-vs-firstpromoter.mdx",
       "match": "A 60-day window is generous",
       "why": "Rewardful's window, in a comparison."
     },
     {
       "file": "content/blog/rewardful-vs-firstpromoter.mdx",
-      "match": "\\| Attribution \\| Cookie, 60-day default",
-      "why": "A comparison row: a competitor's default and Affitor's in one row."
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "count": 2,
+      "why": "Rewardful's cell: in the pricing table and in the comparison row, where the Affitor cell is checked."
+    },
+    {
+      "file": "content/blog/rewardful-vs-firstpromoter.mdx",
+      "match": "Rewardful's default cookie window is 60 days and can be changed per campaign",
+      "count": 2,
+      "why": "Rewardful's window, in the summary and the FAQ."
+    },
+    {
+      "file": "content/blog/rewardful-vs-firstpromoter.mdx",
+      "match": "attribution is cookie-based with a \\[60-day default window\\]",
+      "why": "Rewardful's window."
+    },
+    {
+      "file": "content/blog/tolt-alternatives.mdx",
+      "match": "Attribution is cookie-based \\(first- or last-touch, with a 60-day default window you can change per campaign\\)",
+      "why": "Rewardful's window, in its Cons paragraph (the sentence itself does not name it)."
+    },
+    {
+      "file": "content/blog/tolt-alternatives.mdx",
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "count": 2,
+      "why": "Rewardful's cell in the pricing tables."
     },
     {
       "file": "content/blog/tolt-vs-rewardful.mdx",
-      "match": "\\| Attribution \\| Cookie with a set duration",
-      "why": "A comparison row: a competitor's default and Affitor's in one row."
+      "match": "Cookie, 60-day default, first- or last-touch",
+      "count": 2,
+      "why": "Rewardful's cell: in the pricing table and in the comparison row, where the Affitor cell is checked."
+    },
+    {
+      "file": "content/blog/tolt-vs-rewardful.mdx",
+      "match": "Rewardful's default cookie window is 60 days, changeable per campaign",
+      "count": 2,
+      "why": "Rewardful's window, in the summary and the FAQ."
+    },
+    {
+      "file": "content/blog/tolt-vs-rewardful.mdx",
+      "match": "uses a cookie with a \\[60-day default window\\]",
+      "why": "Rewardful's window."
     }
   ],
+  "pins": [
+    {
+      "file": "content/docs/api-reference/attribution.mdx",
+      "rule": "attribution_window_max_days",
+      "match": "^\\| Attribution window \\| `\\d+` days \\| 1 – (\\d+) \\|",
+      "count": 1,
+      "why": "The maximum sits in its own cell of the settings table."
+    },
+    {
+      "file": "content/docs/api-reference/track-lead.mdx",
+      "rule": "lead_mode_default",
+      "expect": {
+        "server_required": "\\*\\*Every program requires server-verified leads\\*\\* \\(`server_required`\\) unless it is explicitly set to allow browser leads \\(`browser_allowed`\\)"
+      },
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/tracking/lead-tracking-signup.mdx",
+      "rule": "lead_mode_default",
+      "expect": {
+        "server_required": "Every program requires \\*\\*server-verified\\*\\* leads \\(`server_required`\\) unless it is explicitly set to allow browser leads \\(`browser_allowed`\\)"
+      },
+      "count": 1
+    },
+    {
+      "file": "public/docs/skill.md",
+      "rule": "lead_mode_default",
+      "expect": {
+        "server_required": "Every program uses `lead_auth: server_required` unless it is explicitly set to `browser_allowed`"
+      },
+      "count": 1
+    },
+    {
+      "file": "public/docs/openapi.yaml",
+      "rule": "lead_mode_default",
+      "expect": {
+        "server_required": "configured with `lead_auth: server_required` \\(every program unless it is set to `browser_allowed`\\)"
+      },
+      "count": 1
+    },
+    {
+      "file": "content/docs/api-reference/track-refund.mdx",
+      "rule": "refund_zero_on_v2",
+      "expect": {
+        "rejected": "`0` is rejected with `400 invalid_request`|`0`, `null`, negative values and non-integers return `400 invalid_request`|for a new sale is not a positive integer \\(including `0`\\)"
+      },
+      "count": 3
+    },
+    {
+      "file": "public/docs/openapi.yaml",
+      "rule": "refund_zero_on_v2",
+      "expect": {
+        "rejected": "not a positive integer \\(including 0\\) returns invalid_request"
+      },
+      "count": 1
+    },
+    {
+      "file": "content/docs/api-reference/sdks.mdx",
+      "rule": "refund_zero_on_v2",
+      "expect": {
+        "rejected": "Do not pass `0`: for a sale recorded from November 5, 2026 \\(16:00 UTC\\) with a commission to reverse, it answers `400` and nothing is refunded"
+      },
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/api-keys.mdx",
+      "rule": "key_operations_tracking_only",
+      "match": "\\*\\*Tracking only\\*\\* sends ([^;]+);",
+      "set": "operations",
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/api-keys.mdx",
+      "rule": "key_operations_full",
+      "minus": "key_operations_tracking_only",
+      "match": "; the ([^;]+?) answer `403 insufficient_key_permission` to it",
+      "set": "operations",
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/api-keys.mdx",
+      "presence": "Key recovery: only an owner or admin creates or rotates a key",
+      "match": "Only an owner or admin of the program can create or rotate a key\\.",
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/cli/quickstart.mdx",
+      "presence": "Key recovery: an owner or admin creates or rotates the key; init never replaces one",
+      "match": "ask an owner or admin of the program to create or rotate a key in \\*\\*Program settings › Developers › API keys\\*\\*\\. `npx affitor init` creates a new program; it never replaces a key\\.",
+      "count": 1
+    },
+    {
+      "file": "content/docs/brand/cli/commands.mdx",
+      "presence": "Key recovery: init issues no replacement key; an owner or admin rotates or creates one",
+      "match": "it does not issue a replacement key for one: if a program's key stopped working, an owner or admin of that program rotates it, or creates a new key, in the Affitor dashboard",
+      "count": 1
+    }
+  ],
+  "sets": {
+    "operations": {
+      "click": "\\bclicks?\\b",
+      "lead": "\\b(?:signups?|leads?)\\b",
+      "sale": "\\bsales?\\b",
+      "refund": "\\b(?:refunds?|chargebacks?)\\b",
+      "analytics": "\\banalytics\\b",
+      "readiness": "\\breadiness\\b",
+      "cli_status": "`status`",
+      "cli_test": "`test`"
+    }
+  },
   "required": [
     {
       "file": "content/docs/brand/api-keys.mdx",
@@ -191,5 +395,19 @@
     "tick each write permission",
     "is a box you tick",
     "write permission you allow"
+  ],
+  "outside_docs": [
+    {
+      "rule": "cli_published.version",
+      "why": "Published state: the product check compares it with the npm registry every night. The docs commands that pin a CLI version (npx affitor@<version>) are not checked against it yet."
+    },
+    {
+      "rule": "mcp_write_requires",
+      "why": "Deployment state: the server flag names behind hosted MCP write access; the docs describe only whether write access is on (mcp_write_live)."
+    },
+    {
+      "rule": "mcp_selected_programs_max",
+      "why": "Not stated in the docs: the connect screen enforces the cap; no page names the number."
+    }
   ]
 }
