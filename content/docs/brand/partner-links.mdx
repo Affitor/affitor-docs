@@ -2,7 +2,7 @@
 title: Choose where partners can link
 description: Allow page destinations, set an additional-link limit, and check what recent click activity tells you.
 kind: guide
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 Choose the pages partners can share and set how many additional links each partner can create in this program. Keep tracking installed on those destinations before partners send visitors there.
@@ -64,9 +64,9 @@ Under **Additional links**, enable **Allow partners to create links to your page
 
 The default program link is separate. Inactive additional links count toward the limit; deleted and test links do not. Lowering the limit preserves existing links and prevents new ones while the partner is at or above the new limit. Turning additional links off also preserves existing shared links.
 
-## Step 4: Choose a format and save
+## Step 4: Save
 
-Under **Link format**, choose a **Preferred format**, then select **Save changes**. Wait for **Partner link settings saved.** before leaving.
+Select **Save changes**. Wait for **Partner link settings saved.** before leaving.
 
 Page links use a query URL such as:
 
@@ -75,17 +75,6 @@ https://brand.example/pricing?plan=pro&via=partner-code
 ```
 
 A program may use `aff` instead of `via`. The saved link is authoritative; partners should copy it from the list rather than construct a URL from the preview.
-
-The short-format preview puts the page before the referral code, with the code last:
-
-```text
-https://brand.example/r/pricing/partner-code?plan=pro
-https://brand.example/r/guides/getting-started/partner-code
-```
-
-The page can contain multiple path segments. When your `/r/` redirect is installed, the default homepage link keeps the single-segment `/r/partner-code` form.
-
-The **Short** preference does not install the extended redirect handler needed for page links. An existing `/r/` homepage redirect alone is insufficient. Affitor does not yet verify that handler, so partners receive query links and the short-format preview is marked not ready.
 
 ## Step 5: Check tracking on the destinations
 

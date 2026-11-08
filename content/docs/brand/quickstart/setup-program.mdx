@@ -2,7 +2,7 @@
 title: Set Up Your Program
 description: Complete the five setup steps (Business, Commission, Tracking, Payments, Go live) and publish your program on the marketplace.
 kind: quickstart
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 Setup takes your program from created to live in five steps: **Business**, **Commission**, **Tracking**, **Payments** and **Go live**. It opens at the Business step as soon as you [create your program](/docs/brand/quickstart/create-account), at `affitor.com/brand/setup/business`.
@@ -68,9 +68,8 @@ The step is done once a sale commission is saved and a **New partners** choice i
 
 The **Tracking** step (**Install tracking**) puts the click tracker on your site. Pick an **Install method**:
 
-- **Your agent**: select **Connect your AI** to connect Claude, Cursor or another AI app and let it add the tracker. The last step gives you a prompt to paste to your agent; it first checks that the agent sees this program's ID. Shown only when AI agents are available for your program.
-- **Script tag**: paste the tag in `<head>` on every page of your site.
-- **npm**: install the SDK and wrap your app in the provider.
+- **With AI**: pick your AI tool (**Claude Code**, **Cursor**, **Codex**, **ChatGPT** or **Other**) and select **Copy prompt**. The prompt carries your website, Program ID and API base; your AI tool reads the API key from the `AFFITOR_API_KEY` environment variable and follows the [agent skill](/docs/skill.md).
+- **By hand**: paste the script tag in `<head>` on every page of your site. In **Program settings** › **Tracking**, **By hand** also offers **npm**: install the SDK and wrap your app in the provider.
 
 The snippets on the page already carry your Program ID (also shown on **Business**, with **Copy**):
 
@@ -116,9 +115,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 The provider runs in the browser, so it lives in a client component: in the App Router, `layout.tsx` is a Server Component. With the Pages Router, wrap your app in `AffitorProvider` in `pages/_app.tsx`.
 
-Below the snippets, **Tracker on** your site shows **Waiting for the first visit**, **Checking…**, **Tracker not found on your site yet**, **Tracker found on** your site, **Receiving events**, **Couldn't load** your site, or **First click** and how long ago it arrived. **Check now** asks Affitor to look for the tracker on your website again; it is gone once a first click arrives. **Continue** turns on once the step is done (see below) or a first click arrives, and **Skip for now** moves on to Payments.
+Below the snippets, **Tracker on** your site shows **Waiting for the first visit**, **Checking…**, **Tracker not found on your site yet**, **Tracker found on** your site, **Receiving events**, **Couldn't load** your site, or **First click** and how long ago it arrived. **Check now** asks Affitor to look for the tracker on your website again; it is gone once a first click arrives. **Continue** moves on to Payments at any time, and Affitor keeps checking.
 
-**Partner link parameter** sets how partner links name the partner: `yoursite.com/?via=PARTNER` or `yoursite.com/?aff=PARTNER`. The tracker reads both. Programs created from October 16, 2026 (UTC) use `?via=` unless you pick `?aff=`; older programs keep `?aff=`. If you change it, links partners already shared keep working. If your own server reads the partner code, read both `?aff=` and `?via=`.
+In **Program settings** › **Tracking**, **Partner link parameter** sets how partner links name the partner: `yoursite.com/?via=PARTNER` or `yoursite.com/?aff=PARTNER`. The tracker reads both. Programs created from October 16, 2026 (UTC) use `?via=` unless you pick `?aff=`; older programs keep `?aff=`. If you change it, links partners already shared keep working. If your own server reads the partner code, read both `?aff=` and `?via=`.
 
 The step is done once Affitor finds the tracker on your website or receives real tracking events. Signup tracking is a separate install: see [signup tracking](/docs/brand/tracking/lead-tracking-signup), and [click tracking](/docs/brand/tracking/click-tracking) for the full click guide.
 
@@ -155,7 +154,7 @@ Once payments are connected, **Check Affitor's tracking** offers **Run check**: 
 
 **Refunds and chargebacks**: with Stripe, Affitor reads refunds and disputes from your connected account. With the Server API, report each refund with [Track a refund](/docs/api-reference/track-refund).
 
-The step is done when either card is: Stripe is connected, or Affitor has received a sale from your server. **Skip for now** moves on to Go live, which shows what is still missing.
+The step is done when either card is: Stripe is connected, or Affitor has received a sale from your server. **Continue** moves on to Go live, which shows what is still missing.
 
 ## Step 5: Go live
 

@@ -2,7 +2,7 @@
 title: Lead Tracking (Signup)
 description: Track referred signups with the browser helper or the server-side lead API
 kind: guide
-last_updated: 2026-10-17
+last_updated: 2026-11-07
 ---
 
 Lead tracking connects a signup to the affiliate click that drove it — turning anonymous referral traffic into an identified customer record.
@@ -202,7 +202,7 @@ Each program has a lead auth policy. Every program requires **server-verified** 
 - a browser-mode lead returns `200` with `"provisional": true` and is stored, but it does not settle attribution, save `customer_key`, count in partner metrics, or pay a per-lead commission
 - the lead settles when your backend sends it with a Bearer key, or when a Stripe Checkout payment for that customer arrives through your connected Stripe account (a sale sent to `/api/v1/track/sale` does not settle it)
 
-A browser lead settles directly only on a program set to `browser_allowed`. The **Lead capture mode** line in your program's tracking settings shows which policy applies.
+A browser lead settles directly only on a program set to `browser_allowed`. A browser lead that did not settle answers `200` with `"provisional": true`.
 
 ---
 
