@@ -4,7 +4,6 @@
   "pages": [
     "---Get started---",
     "../index",
-    "../getting-started/index",
     "../getting-started/how-it-works",
     "../getting-started/quickstart",
     "quickstart/index",
@@ -46,7 +45,6 @@
     "---AI agents (MCP)---",
     "[Connect your AI tool](/docs/api-reference/connect-ai-tool)",
     "../api-reference/mcp",
-    "../api-reference/agent-integration",
     "---CLI---",
     "cli/quickstart",
     "cli/agent-setup",

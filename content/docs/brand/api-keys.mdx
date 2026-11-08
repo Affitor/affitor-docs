@@ -114,7 +114,7 @@ Separately from program keys, Affitor issues **agent API keys** (prefix `agt_`) 
 
 These are issued by Affitor — there is no endpoint to create one yourself, and a program API key does not authenticate agent endpoints. Each agent endpoint also requires a specific scope on the key, so a valid agent key is still refused where it was not granted that scope. If you are building an integration that needs one, [contact support](/docs/support/contact).
 
-If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://affitor.com/docs/skill.md) with your program API key in the environment. See [Agent Integration](/docs/api-reference/agent-integration).
+If you only want an AI coding agent to install tracking for you, you do not need an agent key: point it at [skill.md](https://affitor.com/docs/skill.md) with your program API key in the environment. From a terminal, `npx affitor onboard` uses the same key to wire in the tracking it can and verify it: see [`affitor onboard`](/docs/brand/cli/commands#affitor-onboard).
 
 ---
 

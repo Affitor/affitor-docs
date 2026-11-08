@@ -11,7 +11,6 @@
 ## Brands: Get started
 
 - [What is Affitor?](https://affitor.com/docs/index.md)
-- [Getting Started](https://affitor.com/docs/getting-started.md)
 - [How Affitor Works](https://affitor.com/docs/getting-started/how-it-works.md)
 - [How to Use Affitor](https://affitor.com/docs/getting-started/quickstart.md)
 - [Launch Your Program](https://affitor.com/docs/brand/quickstart.md)
@@ -66,7 +65,6 @@
 ## Brands: AI agents (MCP)
 
 - [Affitor MCP server](https://affitor.com/docs/api-reference/mcp.md)
-- [Agent Integration](https://affitor.com/docs/api-reference/agent-integration.md)
 
 ## Brands: CLI
 

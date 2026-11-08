@@ -49,14 +49,16 @@ After confirming, the CLI creates your program and generates:
 .affitor/
   AGENTS.md       -- AI agent instructions (primary, universal standard)
   config.json     -- program ID, settings
-  .env            -- API key and secrets (gitignored)
-  .env.example    -- env template for teammates and CI
-  skills.md       -- tracking code snippets (backward-compat)
+  .env            -- API key and program ID (gitignored)
+  .env.example    -- the same variables, API key included (gitignored)
+  skills.md       -- same content as AGENTS.md (backward-compat)
 ```
+
+`AGENTS.md` holds your program's values (program ID, domain, commission, cookie window, API base URL), the click, signup and sale snippets, the CLI commands, and the customer ID table from [Step 4](#use-one-customer-id-everywhere). It holds no API key, so you can commit it. `init` also adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps `.env` and `.env.example` out of Git: both hold the key.
 
 :::tip[Works with any AI coding tool]
 
-`AGENTS.md` follows the open standard supported by Claude Code, Cursor, GitHub Copilot, Windsurf, Aider, and 16+ AI tools. Your AI assistant reads it and integrates Affitor tracking into your codebase automatically.
+Claude Code, Cursor, GitHub Copilot, Windsurf, Aider and other AI coding tools can follow `AGENTS.md`. It sits in `.affitor/`, not your project root, so name it in your prompt, as the line below does.
 
 :::
 
@@ -66,7 +68,7 @@ Using an AI coding agent? Run `init` first (it needs your login), then give your
 
 ---
 
-For project-scoped MCP configuration in Claude Code, Cursor, or Codex, follow [Set up a coding agent](/docs/brand/cli/agent-setup). CLI 0.4.5 includes a no-write preview and `doctor` for static local checks; neither proves a live connection.
+For project-scoped MCP configuration in Claude Code, Cursor, or Codex, follow [Set up a coding agent](/docs/brand/cli/agent-setup). Since 0.4.5 the CLI includes a no-write preview and `doctor` for static local checks; neither proves a live connection.
 
 ## Step 2 -- Add Click Tracking
 
@@ -99,7 +101,7 @@ curl -X POST https://api.affitor.com/api/v1/track/lead \
   -d '{"click_id": "YOUR_TRACKED_CLICK_ID", "customer_key": "user_123", "email": "user@example.com"}'
 ```
 
-By default the browser call alone is provisional; the server call settles the lead. Send the visitor's `affitor_click_id` as `click_id`: a first lead with only `customer_key` answers `400`, because the key is saved on the customer only when a lead settles.
+By default the browser call alone is provisional; the server call settles the lead. Send the visitor's `affitor_click_id` as `click_id`: a first lead with only `customer_key` answers `400`, because the key is saved on the customer only when a lead settles. The server-side lead example that CLI 0.4.7 writes to `AGENTS.md` sends only `customer_key`, so add `click_id` as shown here.
 
 ---
 
@@ -111,7 +113,9 @@ Choose your payment tracking method: **Server-side tracking vs Stripe integratio
 
 Connect Stripe in the Affitor dashboard: open the program menu, choose **Program settings**, open **Payments**, and use **Connect Stripe**. Affitor's own webhook then records sales, renewals and refunds. Add Affitor metadata to your Checkout Session so each sale is attributed; see the [Stripe integration guide](/docs/api-reference/integrations/stripe). The CLI does not connect Stripe (`affitor setup stripe` only points you to the dashboard).
 
-### Option B: Server-side tracking — your backend calls POST /api/v1/track/sale (any payment provider)
+### Option B: Server-side tracking (any payment provider)
+
+Your backend calls `POST /api/v1/track/sale`:
 
 ```bash
 curl -X POST https://api.affitor.com/api/v1/track/sale \
@@ -119,6 +123,19 @@ curl -X POST https://api.affitor.com/api/v1/track/sale \
   -H "Content-Type: application/json" \
   -d '{"transaction_id": "inv_123", "customer_key": "user_123", "amount_cents": 4900, "currency": "USD"}'
 ```
+
+### Use one customer ID everywhere
+
+Use your internal user ID as the customer key at signup and again with each sale. Each surface names the field differently:
+
+| Where | Field |
+|---|---|
+| Browser `window.affitor.signup()` | first argument (`customerKey`) |
+| Lead API (`/api/v1/track/lead`) | `customer_key` |
+| Sale API (`/api/v1/track/sale`) | `customer_key` |
+| Stripe Checkout metadata | `affitor_customer_key` |
+
+Full request contracts: [Track Lead](/docs/api-reference/track-lead) and [Track Sale](/docs/api-reference/track-sale).
 
 ---
 
