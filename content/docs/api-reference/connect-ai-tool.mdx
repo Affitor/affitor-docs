@@ -1,6 +1,6 @@
 ---
 title: Connect your AI tool
-description: "Add the Affitor MCP server to Claude, Codex, ChatGPT, Cursor, VS Code, Grok or another MCP client and sign in with your Affitor account. No API key needed."
+description: "Add the Affitor MCP server to Claude, Codex, ChatGPT, Cursor, VS Code, Grok, Muse Code or another MCP client, then sign in with Affitor. No API key needed."
 kind: guide
 last_updated: 2026-11-07
 ---
@@ -56,7 +56,7 @@ On Team and Enterprise plans, an owner adds the connector in **Organization sett
 
 ## Other MCP clients
 
-These apps are offered in the dashboard; their steps are below.
+Each section below matches a tab in the dashboard's **Connect an AI tool**, or a block under its **Other** tab. **Any other MCP client** also has steps for apps the dashboard does not list.
 
 ### ChatGPT
 
@@ -123,7 +123,7 @@ GitHub Copilot in VS Code.
 
 Or add it by hand:
 
-2. Add this to `.vscode/mcp.json` in your workspace, or to the `mcp.json` of your user profile:
+2. Add this to `.vscode/mcp.json` in your workspace, or to the `mcp.json` of your user profile (or run **MCP: Add Server** from the Command Palette):
 
    ```json title="mcp.json"
    {
@@ -141,9 +141,37 @@ Or add it by hand:
 
 1. Go to [grok.com/connectors](https://grok.com/connectors), click **New Connector**, then **Custom**.
 2. Paste the URL and sign in to Affitor.
-3. As a brand, pick your programs; then click **Allow**.
+3. Pick your programs, or **All current and future programs**, then click **Allow**.
 
 **Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
+
+### Muse Code
+
+1. Add this to `~/.config/muse/settings.json` (create the file if it does not exist). If it exists, add only the `affitor` entry under `mcp_servers` and keep everything else:
+
+   ```json title="settings.json"
+   {
+     "schema_version": 1,
+     "mcp_servers": {
+       "affitor": {
+         "transport": "streamable_http",
+         "url": "https://mcp.affitor.com/mcp",
+         "enabled": true,
+         "mode": "optional"
+       }
+     }
+   }
+   ```
+
+2. Sign in from your terminal:
+
+   ```bash
+   muse mcp login affitor
+   ```
+
+3. Pick your programs, or **All current and future programs**, then click **Allow**.
+
+**Check it works:** in a Muse Code session, run `/mcp`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
 
 ### Any other MCP client
 
@@ -162,6 +190,40 @@ Or add it by hand:
 Apps on your own computer connect through `http://127.0.0.1` or `http://localhost`. A web app connects only if Affitor accepts its return address; the [MCP server reference](/docs/api-reference/mcp) lists them.
 
 **Check it works:** ask your AI tool "List my Affitor programs". It answers with your programs.
+
+Some clients add the server with their own command or screen:
+
+#### Gemini CLI
+
+```bash
+gemini mcp add --transport http affitor https://mcp.affitor.com/mcp
+# Then, inside Gemini CLI: /mcp auth affitor
+```
+
+#### OpenClaw
+
+```bash
+openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth
+openclaw mcp login affitor
+```
+
+#### Hermes
+
+```bash
+hermes mcp add affitor --url https://mcp.affitor.com/mcp --auth oauth
+# To sign in again later:
+hermes mcp login affitor
+```
+
+#### Perplexity
+
+1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
+2. Select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**.
+3. Enter a name, and under **MCP Server URL** paste `https://mcp.affitor.com/mcp`.
+4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. Affitor supports automatic registration, so no Client ID or Client Secret is needed.
+5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
+
+In an organization, members can add custom connectors only if an admin allows it.
 
 ## What the AI can do
 

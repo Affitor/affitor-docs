@@ -374,8 +374,8 @@
       "file": "content/docs/use-cases/ai-agent-setup.mdx",
       "rule": "mcp_selected_programs_max",
       "match": "[Aa]ll current and future programs(?:\\*\\*)?, or up to (\\d+)",
-      "count": 2,
-      "why": "The cap on programs a connection can select: the intro and the sign-in step."
+      "count": 1,
+      "why": "The cap on programs a connection can select: the Programs row of the MCP or CLI table (the sign-in steps live on Connect your AI tool and the MCP page)."
     }
   ],
   "sets": {
