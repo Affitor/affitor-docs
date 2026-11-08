@@ -2,7 +2,7 @@
 title: 3-Step Integration Guide
 description: Get Affitor tracking live with the supported click, signup, and server-side tracking flows
 kind: quickstart
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Three steps get Affitor tracking live: clicks → signups → sales. Steps 1 and 2 establish attribution; step 3 records revenue.
@@ -18,21 +18,21 @@ Make sure you have:
 - Your **program ID**
 - Your **program API key** for server-to-server calls
 - A decision on how you will track sales (server-side tracking vs Stripe integration):
-  - **Server-side tracking** — your backend calls `POST /api/v1/track/sale` — for any backend or payment provider
-  - **Stripe integration** — attach Affitor metadata to Stripe Checkout sessions
+  - **Server-side tracking**: your backend calls `POST /api/v1/track/sale`, for any backend or payment provider
+  - **Stripe integration**: attach Affitor metadata to Stripe Checkout sessions
 
 :::note
 
 Use one naming scheme consistently:
-- `customerKey` — browser helper argument (`signup(customerKey, email)`)
-- `customer_key` — tracking API field
-- `affitor_customer_key` — Stripe metadata field
+- `customerKey`: browser helper argument (`signup(customerKey, email)`)
+- `customer_key`: tracking API field
+- `affitor_customer_key`: Stripe metadata field
 
 :::
 
 ---
 
-## Step 1 — Install the Tracker
+## Step 1: Install the Tracker
 
 Add the tracker to every page where affiliate traffic can land.
 
@@ -67,11 +67,11 @@ Visit your site through a real affiliate link, or enable debug mode while testin
 
 ---
 
-## Step 2 — Track Signups
+## Step 2: Track Signups
 
 After signup succeeds, tell Affitor which internal user was created.
 
-### Option A — Browser-side helper
+### Option A: Browser-side helper
 
 Use this when your signup flow runs in the browser and the tracker is already loaded.
 
@@ -104,7 +104,7 @@ document.getElementById('signup-form').addEventListener('submit', async function
 
 By default a browser-only lead is provisional: it does not count as a signup until your server sends the lead (Option B) or a Stripe Checkout payment for that customer arrives through your connected Stripe account. See [lead auth policy](/docs/brand/tracking/lead-tracking-signup/).
 
-### Option B — Server-side lead API
+### Option B: Server-side lead API
 
 Use this when signup logic lives on your backend or you want the server to own the tracking call.
 
@@ -155,11 +155,11 @@ await fetch('https://api.affitor.com/api/v1/track/lead', {
 
 ---
 
-## Step 3 — Track Sales
+## Step 3: Track Sales
 
 When a customer pays, choose **one** revenue-tracking path.
 
-### Option A — Server-side tracking (works with any payment provider)
+### Option A: Server-side tracking (works with any payment provider)
 
 Send a server-to-server request once payment succeeds.
 
@@ -233,58 +233,9 @@ await fetch('https://api.affitor.com/api/v1/track/sale', {
 
 :::
 
-### Option B — Stripe integration
+### Option B: Stripe integration
 
-If you already use Stripe Checkout, keep taking payment in your own Stripe account. Connect it under **Program settings** › **Payments** (Affitor receives its events through Stripe Connect, with no webhook to add), then attach Affitor metadata to the checkout session.
-
-```js
-const session = await stripe.checkout.sessions.create({
-  line_items: [{ price: 'price_xxx', quantity: 1 }],
-  mode: 'payment',
-  success_url: 'https://yoursite.com/success',
-  cancel_url: 'https://yoursite.com/cancel',
-  metadata: {
-    affitor_click_id: clickId,
-    affitor_customer_key: currentUser.id,
-    program_id: 'YOUR_PROGRAM_ID',
-  },
-});
-```
-
-#### For subscriptions
-
-Put the same fields in `subscription_data.metadata`: a subscription's payments are read from its invoices, which carry the subscription's metadata, not the session's. Setting them in `metadata` too does no harm.
-
-```js
-const session = await stripe.checkout.sessions.create({
-  line_items: [{ price: 'price_xxx', quantity: 1 }],
-  mode: 'subscription',
-  success_url: 'https://yoursite.com/success',
-  cancel_url: 'https://yoursite.com/cancel',
-  metadata: {
-    affitor_click_id: clickId,
-    affitor_customer_key: currentUser.id,
-    program_id: 'YOUR_PROGRAM_ID',
-  },
-  subscription_data: {
-    metadata: {
-      affitor_click_id: clickId,
-      affitor_customer_key: currentUser.id,
-      program_id: 'YOUR_PROGRAM_ID',
-    },
-  },
-});
-```
-
-### Stripe integration rules
-
-- **One-time payments** are attributed from Stripe checkout metadata and webhook processing
-- **Subscriptions and renewals** rely on the invoice events (`invoice.payment_succeeded`, `invoice.paid`)
-- If `subscription_data.metadata` is missing, the click does not reach the subscription's invoices (first payment and renewals), and Affitor attributes the subscription only by the buyer's email or Stripe customer ID
-- Metadata fields to set on every checkout (recommended; none is strictly required):
-  - `affitor_click_id`
-  - `affitor_customer_key`
-  - `program_id`
+If you already use Stripe Checkout, keep taking payment in your own Stripe account. Connect it under **Program settings** › **Payments** (Affitor receives its events through Stripe Connect, with no webhook to add), then attach Affitor metadata to the checkout session, and to `subscription_data.metadata` for a subscription. The code and the rules are on the [Stripe](/docs/brand/tracking/payment-tracking-stripe#option-b-stripe-integration) page.
 
 ---
 
@@ -292,7 +243,7 @@ const session = await stripe.checkout.sessions.create({
 
 | Path | Best for |
 |------|----------|
-| **Server-side tracking** — `POST /api/v1/track/sale` | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
+| **Server-side tracking**: `POST /api/v1/track/sale` | Any backend, any payment provider, custom checkout, Paddle/LemonSqueezy/manual server events |
 | **Stripe integration** | Existing Stripe Checkout integration |
 
 Use server-side tracking when your backend controls the revenue event. Use Stripe integration when you want Affitor to attribute sales directly from the payment events of your connected Stripe account.
@@ -320,5 +271,5 @@ All three steps working means your integration is live:
 
 Next:
 - [Testing Integration](/docs/brand/tracking/testing-integration/)
-- [Payment Tracking](/docs/brand/tracking/payment-tracking-stripe/)
-- [Payment Flow](/docs/brand/tracking/payment-flow/)
+- [Stripe](/docs/brand/tracking/payment-tracking-stripe/)
+- [Tracking Overview](/docs/brand/tracking/tracking-overview/)

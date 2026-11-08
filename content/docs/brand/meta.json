@@ -17,7 +17,6 @@
     "tracking/lead-tracking-signup",
     "tracking/connect-stripe-account",
     "tracking/payment-tracking-stripe",
-    "tracking/payment-flow",
     "---Test your setup---",
     "tracking/testing-integration",
     "---Integrations---",

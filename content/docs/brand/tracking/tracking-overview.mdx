@@ -1,15 +1,15 @@
 ---
 title: Tracking Overview
-description: "How Affitor links a partner click, your customer's signup and the sale into one attribution chain, and what each integration step needs."
+description: "How Affitor links a partner click, your customer's signup and the sale into one attribution chain, step by step from referral link to commission."
 kind: concept
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Affitor tracking links three events into one attribution chain:
 
-- **click** — a visitor arrives through an affiliate link
-- **signup/lead** — you identify the customer after registration
-- **sale** — revenue is recorded through Server-side tracking or Stripe integration
+- **click**: a visitor arrives through an affiliate link
+- **signup/lead**: you identify the customer after registration
+- **sale**: revenue is recorded through Server-side tracking or Stripe integration
 
 ---
 
@@ -27,15 +27,24 @@ Identifier consistency matters more than any single code snippet.
 
 ## The Tracking Flow
 
-<Mermaid chart={`flowchart LR
-  V["Visitor clicks partner link (?via=CODE or ?aff=CODE)"] --> S[Your site]
-  S -->|SDK or script tag| CK[Click event]
-  S -->|signup| LD[Lead event]
-  ST[Stripe webhook or S2S API] --> SL[Sale event]
-  CK --> AT[Affitor attribution]
-  LD --> AT
-  SL --> AT
-  AT --> CM[Commission for the partner]
+<Mermaid chart={`sequenceDiagram
+  participant P as Partner
+  participant C as Customer
+  participant Y as Your site
+  participant S as Stripe
+  participant A as Affitor
+  P->>C: Shares referral link (?via=CODE or ?aff=CODE)
+  C->>Y: Visits, the SDK stores the click
+  C->>Y: Signs up, lead event with the click ID
+  alt Stripe integration (Stripe connected)
+    C->>S: Pays through your Stripe Checkout
+    S->>A: Payment event, through Stripe Connect
+  else Server-side tracking
+    C->>Y: Pays
+    Y->>A: POST /api/v1/track/sale
+  end
+  A->>A: Attributes the sale, creates the commission
+  A->>P: Commission appears (pending, then approved)
 `} />
 
 <Flow>
@@ -51,37 +60,65 @@ Identifier consistency matters more than any single code snippet.
 
 ---
 
-## What You Need to Implement
+## From Click to Commission
 
-### 1. Click tracking
+### 1. Partner shares a referral link
+
+A partner promotes your product with a referral URL such as:
+
+```text
+https://yoursite.com?via=PARTNER123
+```
+
+Programs created from October 16, 2026 (UTC) use `?via=` unless you pick `?aff=` in **Partner link parameter** under **Program settings** › **Tracking**; older programs keep `?aff=`.
+
+### 2. Click tracking
 
 Install the tracker so affiliate visits are detected automatically:
 
-- Detects `?via=` or `?aff=`
-- Stores `affitor_click_id`
-- Creates the initial relationship Affitor needs for attribution
+- Detects `?via=` or `?aff=` (`aff` wins when a URL has both)
+- Records the click and stores `affitor_click_id` in a first-party cookie
+- Links the visit to the correct partner/program, the initial relationship Affitor needs for attribution
 
 Guide: [Click Tracking](/docs/brand/tracking/click-tracking/)
 
-### 2. Signup tracking
+### 3. Signup tracking
 
 Send your internal customer/user identifier after signup succeeds.
 
 - browser helper: `signup(customerKey, email)`
-- server API: `POST /api/v1/track/lead` with `customer_key`
+- server API: `POST /api/v1/track/lead` with `click_id` and `customer_key`
+
+By default a browser `signup()` records a provisional lead, which does not bind your identifier to the customer record for later sale matching (the Lead tracking section shows "Browser leads: server/payment confirmation required"). Send the same lead from your server with your API key (`POST /api/v1/track/lead` with `click_id` and `customer_key`) so the identifier is stored for later matching.
+
+Reuse that same identifier as `customer_key` in server-side tracking and as `affitor_customer_key` in Stripe metadata.
 
 Guide: [Lead Tracking](/docs/brand/tracking/lead-tracking-signup/)
 
-### 3. Sale tracking
+### 4. Sale tracking
 
 Choose one supported revenue path:
 
 | Path | Use when |
 |------|----------|
 | **Server-side tracking** | your backend controls revenue events |
-| **Stripe metadata + webhook** | you already use Stripe Checkout / Stripe integration |
+| **Stripe integration** | you already use Stripe Checkout / Stripe integration |
 
-Guide: [Payment Tracking](/docs/brand/tracking/payment-tracking-stripe/)
+With server-side tracking, your backend calls `POST /api/v1/track/sale` when payment succeeds. By default, a sale with only `customer_key` is matched only after your server sent the lead with that key. If the lead came only from the browser, send the `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
+
+With the Stripe integration, you keep charging in your own Stripe account and attach Affitor metadata.
+
+Guide: [Stripe](/docs/brand/tracking/payment-tracking-stripe/), for both paths
+
+### 5. Affitor attributes the sale
+
+Affitor must be able to resolve the customer of a server-side sale via `customer_key` or `click_id`. A Stripe payment goes through a lookup order, from the click in the metadata to the customer key: [how Affitor resolves attribution from Stripe](/docs/brand/tracking/payment-tracking-stripe#how-affitor-resolves-attribution-from-stripe).
+
+### 6. Commission and platform records are created
+
+When attribution succeeds, Affitor records the sale and creates the commission flow. Commissions then wait out the program's hold period, are approved into the partner's balance, and are paid out when the partner requests a withdrawal after you pay the invoice that covers them.
+
+How you are billed for it: [Pricing](/docs/getting-started/pricing-performance-model).
 
 ---
 
@@ -113,7 +150,7 @@ See [Attribution Mechanics](/docs/api-reference/attribution/) for details.
 
 ### Why the signup step matters
 
-The click cookie is reliable, but the internal customer ID is what keeps attribution working across later payment events — especially when payment happens after signup or on a backend-controlled path.
+The click cookie is reliable, but the internal customer ID is what keeps attribution working across later payment events, especially when payment happens after signup or on a backend-controlled path.
 
 ---
 
@@ -153,7 +190,8 @@ Without subscription metadata, the click does not reach the subscription's invoi
 
 ## Related Guides
 
-1. [Click Tracking](/docs/brand/tracking/click-tracking/)
-2. [Lead Tracking](/docs/brand/tracking/lead-tracking-signup/)
-3. [Payment Tracking](/docs/brand/tracking/payment-tracking-stripe/)
-4. [Testing Integration](/docs/brand/tracking/testing-integration/)
+1. [3-Step Integration Guide](/docs/brand/tracking/quickstart-integration/)
+2. [Click Tracking](/docs/brand/tracking/click-tracking/)
+3. [Lead Tracking](/docs/brand/tracking/lead-tracking-signup/)
+4. [Stripe](/docs/brand/tracking/payment-tracking-stripe/)
+5. [Testing Integration](/docs/brand/tracking/testing-integration/)

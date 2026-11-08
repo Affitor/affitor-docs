@@ -1,11 +1,11 @@
 ---
-title: "Stripe"
-description: "Canonical recipe for attributing Stripe payments to Affitor partners: one-time and recurring."
+title: "Stripe Checkout metadata"
+description: "Code that passes the partner click to Stripe Checkout, one-time and subscription, plus a renewal handler for a Stripe webhook you host yourself."
 kind: guide
 last_updated: 2026-11-08
 ---
 
-This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
+This guide has the code for the Stripe sale path. How Affitor reads these payments (the events, the lookup order, subscriptions and repeat purchases) is on the [Stripe](/docs/brand/tracking/payment-tracking-stripe) page. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
 
 :::note
 
@@ -24,7 +24,7 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 
 These two steps are identical to the framework integration. Follow [Step 1](/docs/api-reference/integrations/nextjs#1-capture-the-click) and [Step 2](/docs/api-reference/integrations/nextjs#2-track-the-signup) in the Next.js guide, or your framework's equivalent.
 
-The key thing to take away: when you call `signup(userId)` or `trackLead({ customerExternalId: userId })`, keep that `userId` — you will attach it to every Checkout Session as `affitor_customer_key`.
+The key thing to take away: when you call `signup(userId)` or `trackLead({ customerExternalId: userId })`, keep that `userId`: you will attach it to every Checkout Session as `affitor_customer_key`.
 
 ## 2. Attach Affitor metadata to the Checkout Session
 
@@ -34,7 +34,7 @@ When you create a Stripe Checkout Session on your server, attach three metadata 
 
 :::note
 
-`affitor_customer_key` must be the **same stable user ID** you sent at signup — `signup(userId)` on the client, `customerExternalId: userId` on the server, and `affitor_customer_key: userId` in Stripe metadata are all the same field. Mismatching them breaks attribution.
+`affitor_customer_key` must be the **same stable user ID** you sent at signup: `signup(userId)` on the client, `customerExternalId: userId` on the server, and `affitor_customer_key: userId` in Stripe metadata are all the same field. Mismatching them breaks attribution.
 
 :::
 
@@ -58,7 +58,7 @@ Affitor listens to the `checkout.session.completed` webhook event and attributes
 
 ### Subscription (`mode: 'subscription'`)
 
-For subscriptions, put the same fields in `subscription_data.metadata`. Affitor records a subscription's first payment and each renewal from the invoice events (`invoice.payment_succeeded`, `invoice.paid`), and an invoice carries the subscription's metadata, not the Checkout Session's. Renewals do not depend on it: once the first payment is attributed, Affitor saves the buyer's Stripe customer ID and matches each renewal by the buyer's email, when Affitor has recorded it, or else by that Stripe customer ID.
+For subscriptions, put the same fields in `subscription_data.metadata`: an invoice carries the subscription's metadata, not the Checkout Session's ([why subscriptions need it](/docs/brand/tracking/payment-tracking-stripe#why-subscriptions-need-subscription_datametadata)).
 
 ```ts
 const session = await stripe.checkout.sessions.create({
@@ -82,50 +82,61 @@ const session = await stripe.checkout.sessions.create({
 });
 ```
 
-:::note
-
-**Set `subscription_data.metadata` on subscription checkouts.** Stripe keeps `metadata` on the Checkout Session; only `subscription_data.metadata` reaches the Subscription and its invoices. Without it the click never reaches the invoice, and Affitor can attribute the subscription only by matching the buyer's email or Stripe customer ID to a customer it already has.
-
-:::
-
 ## 3. How Affitor attributes payments
 
-Affitor processes these Stripe webhook events for sales:
+Which Stripe events record a sale and how Affitor finds the partner, from the click in the metadata to the customer key, are on the Stripe page: [the events](/docs/brand/tracking/payment-tracking-stripe#stripe-events-affitor-reads) and [the lookup order](/docs/brand/tracking/payment-tracking-stripe#how-affitor-resolves-attribution-from-stripe).
 
-| Event | When it fires | What Affitor does |
-|---|---|---|
-| `checkout.session.completed` | A one-time payment | Records the sale. A subscription checkout records no sale here: its first invoice does |
-| `invoice.payment_succeeded`, `invoice.paid` | A subscription's first payment and every renewal | Records the subscription sale. Both events go to the same handler, which records each invoice at most once |
+## 4. Alternative: server-side tracking (non-Stripe)
 
-**Attribution fallback chain.** Affitor resolves the partner in this order:
+If you are not using Stripe Checkout, or you need to report a sale from a different payment provider, report it from your server after the payment is confirmed: [server-side tracking](/docs/brand/tracking/payment-tracking-stripe#option-a-server-side-tracking) on the Stripe page, and [Track Sale](/docs/api-reference/track-sale) for every field.
 
-1. `affitor_click_id`: direct click attribution (most reliable)
-2. Email: matched against the lead record if `affitor_click_id` is missing
-3. Stripe customer ID: matched if the same customer appeared in a previous attributed session
-4. `client_reference_id`: used only when the metadata has no click. The Affitor tracker writes the click there on Payment Links, the Buy Button and the Pricing Table, which cannot carry metadata
-5. `affitor_customer_key` alone: matched against the lead record as a last resort
+## Verify
 
-Supplying all three fields (`affitor_click_id`, `affitor_customer_key`, `program_id`) on every checkout is the recommended default — it ensures Affitor can attribute the sale even if the click cookie expired or was blocked.
+<VerifySuccess
+  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default for new programs; programs created before October 16, 2026 keep `?aff=`), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set"]}
+  network={["At checkout, confirm the Stripe Session metadata contains `affitor_click_id`, `affitor_customer_key`, and `program_id`"]}
+  dashboard={["The sale appears under your program's tracking events with the partner correctly attributed"]}
+  ifNotWorking={["Send a test sale straight to `POST /api/v1/track/sale` with `additional_data: { test_mode: true }` (the SDK's `trackSale()` has no field for it); a test sale creates no commission"]}
+/>
 
-## Subscription Renewals
+## Common mistakes
 
-If you self-host the Stripe webhook and call `trackSale` yourself (rather than relying on Affitor's Connect webhook), renewals need their **own handler**. The first payment fires as `checkout.session.completed` — every subsequent renewal arrives as a separate `invoice.paid` event with `billing_reason: 'subscription_cycle'`. Without a dedicated `case`, every renewal commission is silently missed.
+<CommonMistakes items={[
+  "Putting the click only in the session `metadata` of a subscription checkout. Affitor records subscription payments from invoices, which carry `subscription_data.metadata`, not the session's; without it the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
+  "Different customer IDs at signup vs checkout: `affitor_customer_key` must equal the `customerExternalId` / `customer_key` you sent at signup.",
+  "Reading `affitor_click_id` from the wrong place on the server: it is a browser cookie, not a query param. Forward it from `req.cookies` or `cookies()` in your server handler.",
+  "Tracking a sale from the browser: sale tracking is server-side only. Stripe metadata and `@affitor/sdk/server` both run on your server.",
+  "Using a different `program_id` than the one in your `init()` call: all three metadata fields must reference the same program."
+]} />
 
-Attribution rides on the `affitor_customer_key` you planted in `subscription_data.metadata` at checkout creation — Stripe copies that onto the Subscription, and Stripe stamps it onto every renewal invoice.
+## Appendix: self-hosted webhook
+
+### Subscription Renewals
+
+If you self-host the Stripe webhook and call `trackSale` yourself (rather than relying on Affitor's Connect webhook), renewals need their **own handler**. The first payment fires as `checkout.session.completed`; every subsequent renewal arrives as a separate `invoice.paid` event with `billing_reason: 'subscription_cycle'`. Without a dedicated `case`, every renewal commission is silently missed.
+
+Attribution rides on the `affitor_customer_key` you planted in `subscription_data.metadata` at checkout creation: Stripe copies that onto the Subscription, and Stripe stamps it onto every renewal invoice. By default, `customer_key` matches only a customer your server already sent as a lead (`POST /api/v1/track/lead` with your API key). If the lead came only from the browser `signup()`, send `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
 
 Two nuances matter:
 
 - **Skip $0 renewals.** 100%-off coupons and fully credit-covered cycles produce `invoice.paid` events with `amount_paid` of `0`. The SDK rejects a non-positive amount, so guard against it.
 - **Stripe Basil metadata path.** Stripe API version Basil (`2025-03-31`+) moved `subscription_details` under `invoice.parent`. Pre-Basil accounts still expose it at the legacy top level (`invoice.subscription_details`). Read the Basil path first and fall back to the legacy one so the handler works on both.
 
+The handler calls the server SDK:
+
+```ts
+import Affitor from '@affitor/sdk/server';
+const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
+```
+
 Add this as a separate `case` in the **same** Stripe webhook handler that processes `checkout.session.completed`:
 
 ```ts
 case 'invoice.paid': {
   const invoice = event.data.object;
-  // Only renewals — the first invoice is already counted at checkout.session.completed.
+  // Only renewals: the first invoice is already counted at checkout.session.completed.
   if (invoice.billing_reason !== 'subscription_cycle') break;
-  // Skip $0 renewals (100%-off coupons, fully credit-covered) — the SDK rejects a non-positive amount.
+  // Skip $0 renewals (100%-off coupons, fully credit-covered): the SDK rejects a non-positive amount.
   if (!invoice.amount_paid || invoice.amount_paid <= 0) break;
   // The Tracking API reads ISO 4217 minor units. Stripe uses the same units except ISK and UGX
   // (sent with two extra decimals) and MGA (sent with none), so convert those three.
@@ -156,43 +167,5 @@ case 'invoice.paid': {
 This handler is only needed when you **self-host** sale tracking via `trackSale`. If Stripe is connected, Affitor already records each renewal from Stripe's events, so do **not** also call `trackSale`. Both record the renewal under the invoice id and Affitor refuses the second, but if your call lands first, its sale is not linked to the Stripe payment, so a refund in Stripe does not reverse its commission.
 
 :::
-
-## 4. Alternative: server-side tracking (non-Stripe)
-
-If you are not using Stripe Checkout, or you need to report a sale from a different payment provider, call the server SDK directly after the payment is confirmed:
-
-```ts
-import Affitor from '@affitor/sdk/server';
-const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
-
-await affitor.trackSale({
-  customerExternalId: user.id,   // SAME id as signup
-  amount:             4999,      // integer cents
-  invoiceId:          invoice.id, // idempotency key — duplicate returns 409
-  currency:           'usd',     // optional, defaults to usd
-  isRecurring:        false,     // true for renewals
-});
-```
-
-This path requires a Bearer API key and is called from your server only — never from the browser.
-
-## Verify
-
-<VerifySuccess
-  browser={["Open a partner link from your program. It carries the partner code in the **Partner link parameter** set on the **Tracking** settings page (`?via=` by default for new programs; programs created before October 16, 2026 keep `?aff=`), and the tracker reads both `?via=` and `?aff=`. An `affitor_click_id` cookie is set"]}
-  network={["At checkout, confirm the Stripe Session metadata contains `affitor_click_id`, `affitor_customer_key`, and `program_id`"]}
-  dashboard={["The sale appears under your program's tracking events with the partner correctly attributed"]}
-  ifNotWorking={["Send a test sale straight to `POST /api/v1/track/sale` with `additional_data: { test_mode: true }` (the SDK's `trackSale()` has no field for it); a test sale creates no commission"]}
-/>
-
-## Common mistakes
-
-<CommonMistakes items={[
-  "Putting the click only in the session `metadata` of a subscription checkout. Affitor records subscription payments from invoices, which carry `subscription_data.metadata`, not the session's; without it the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
-  "Different customer IDs at signup vs checkout — `affitor_customer_key` must equal the `customerExternalId` / `customer_key` you sent at signup.",
-  "Reading `affitor_click_id` from the wrong place on the server — it is a browser cookie, not a query param. Forward it from `req.cookies` or `cookies()` in your server handler.",
-  "Tracking a sale from the browser — sale tracking is server-side only. Stripe metadata and `@affitor/sdk/server` both run on your server.",
-  "Using a different `program_id` than the one in your `init()` call — all three metadata fields must reference the same program."
-]} />
 
 <NextStep title="Using Express or a non-Next.js server?" description="See the Node.js server guide (Express and Fastify) for server-side wiring." href="/docs/api-reference/integrations/node-express" />

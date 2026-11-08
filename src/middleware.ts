@@ -53,6 +53,9 @@ const RENAMES: [string, string][] = [
   ['/docs/api-reference/integrations/nextjs-nextauth', '/docs/api-reference/integrations/nextjs'],
   ['/docs/api-reference/integrations/nextjs-supabase', '/docs/api-reference/integrations/nextjs'],
   ['/docs/api-reference/integrations/fastify', '/docs/api-reference/integrations/node-express'],
+  // Merged into Tracking Overview (08/11/2026): its steps are the From Click to Commission section.
+  // A single page, nothing lives under it.
+  ['/docs/brand/tracking/payment-flow', '/docs/brand/tracking/tracking-overview'],
 ];
 
 // Folder URLs with no page of their own -> the page that opens the folder. Exact path only, also

@@ -170,6 +170,7 @@ function invariants() {
     ['/api-reference/integrations/nextjs-nextauth.md', '/docs/api-reference/integrations/nextjs.md'],
     ['/api-reference/integrations/nextjs-supabase.md', '/docs/api-reference/integrations/nextjs.md'],
     ['/api-reference/integrations/fastify.md', '/docs/api-reference/integrations/node-express.md'],
+    ['/brand/tracking/payment-flow.md', '/docs/brand/tracking/tracking-overview.md'],
     ['/errors.md', '/docs/api-reference/errors.md'],
     ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
     ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
@@ -227,6 +228,9 @@ function invariants() {
       ['/docs/api-reference/integrations/nextjs-supabase.md', '/docs/api-reference/integrations/nextjs.md'],
       ['/docs/api-reference/integrations/fastify', '/docs/api-reference/integrations/node-express'],
       ['/docs/api-reference/integrations/fastify.md', '/docs/api-reference/integrations/node-express.md'],
+      // Payment Flow merged into Tracking Overview (08/11/2026).
+      ['/docs/brand/tracking/payment-flow', '/docs/brand/tracking/tracking-overview'],
+      ['/docs/brand/tracking/payment-flow.md', '/docs/brand/tracking/tracking-overview.md'],
       ['/docs/blog/rewardful-alternatives', '/blog/rewardful-alternatives'],
       ['/docs/blog', '/blog'],
       ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
@@ -236,6 +240,9 @@ function invariants() {
     check(`${host}/docs/api-reference/errors is not a folder home`, passes(host, '/docs/api-reference/errors'));
     for (const path of ['/docs/api-reference/integrations/nextjs', '/docs/api-reference/integrations/nextjs.md', '/docs/api-reference/integrations/node-express', '/docs/api-reference/integrations/node-express.md']) {
       check(`${host}${path} stays put (a merged recipe redirects here, the page itself is not renamed)`, passes(host, path));
+    }
+    for (const path of ['/docs/brand/tracking/tracking-overview', '/docs/brand/tracking/tracking-overview.md', '/docs/brand/tracking/payment-tracking-stripe', '/docs/brand/tracking/payment-tracking-stripe.md']) {
+      check(`${host}${path} stays put (Payment Flow merged into Tracking Overview; neither page is renamed)`, passes(host, path));
     }
     for (const path of ['/docs/getting-started/how-it-works', '/docs/getting-started/pricing-performance-model', '/docs/getting-started/quickstart', '/docs/getting-started/quickstart.md']) {
       check(`${host}${path} stays put (the getting-started folder home is exact)`, passes(host, path));
@@ -312,6 +319,7 @@ mode(undefined, () => {
   check('off: /api-reference/agent-integration -> 308 /brand/cli/quickstart', redirects(DOCS, '/api-reference/agent-integration', 'https://docs.affitor.com/brand/cli/quickstart', {}, 308));
   check('off: /api-reference/integrations/nextjs-clerk -> 308 /api-reference/integrations/nextjs', redirects(DOCS, '/api-reference/integrations/nextjs-clerk', 'https://docs.affitor.com/api-reference/integrations/nextjs', {}, 308));
   check('off: /api-reference/integrations/fastify -> 308 /api-reference/integrations/node-express', redirects(DOCS, '/api-reference/integrations/fastify', 'https://docs.affitor.com/api-reference/integrations/node-express', {}, 308));
+  check('off: /brand/tracking/payment-flow -> 308 /brand/tracking/tracking-overview', redirects(DOCS, '/brand/tracking/payment-flow', 'https://docs.affitor.com/brand/tracking/tracking-overview', {}, 308));
   // Served in place: negotiation on the /docs path it maps to.
   check('off: docs host page negotiates (twin / HTML, Vary: Accept)', negotiates(DOCS, '/brand/quickstart', '/docs/brand/quickstart.md', '/docs/brand/quickstart'));
   check('off: docs host / negotiates to the index twin', negotiates(DOCS, '/', '/docs/index.md', '/docs'));
@@ -368,6 +376,7 @@ for (const status of ['301', '302']) {
     check(`${status}: /api-reference/agent-integration lands on the CLI quickstart in one hop`, to('/api-reference/agent-integration', 'https://affitor.com/docs/brand/cli/quickstart'));
     check(`${status}: /api-reference/integrations/nextjs-nextauth lands on the Next.js guide in one hop`, to('/api-reference/integrations/nextjs-nextauth', 'https://affitor.com/docs/api-reference/integrations/nextjs'));
     check(`${status}: /api-reference/integrations/fastify lands on the Node.js server guide in one hop`, to('/api-reference/integrations/fastify', 'https://affitor.com/docs/api-reference/integrations/node-express'));
+    check(`${status}: /brand/tracking/payment-flow lands on Tracking Overview in one hop`, to('/brand/tracking/payment-flow', 'https://affitor.com/docs/brand/tracking/tracking-overview'));
     check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
     // Only Host decides: Vercel external rewrites send the alias as Host while
     // x-forwarded-host can still carry the public host, and the reverse must not matter.

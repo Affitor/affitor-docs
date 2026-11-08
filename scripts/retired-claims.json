@@ -316,5 +316,35 @@
     "why": "POST /api/v1/track/click link_disabled hint: since the CMS release of 2026-11-07 it reads 'This link or its program is not active. No click was recorded.' (click-admission.ts refuseReferralClick); the same answer covers a link turned off and a program that is not active.",
     "since": "2026-11-08",
     "allow": []
+  },
+  {
+    "pattern": "links later payments back to the same internal user",
+    "why": "By default a browser signup() lead is provisional and writes no identity, so the customerKey sent at signup links later payments only once your server sends the lead (click_id and customer_key) or a Stripe payment settles it.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "ensures Affitor can attribute the sale even if",
+    "why": "affitor_customer_key finds a customer only after its key was saved (a lead your server sent, or an earlier attributed payment). With a browser-only signup and no click on the checkout, the key does not attribute the sale.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "relationship using any combination of",
+    "why": "A server-side sale is matched by customer_key or click_id only; email and Stripe customer ID belong to the Stripe lookup order, which runs in a fixed order (click, email, Stripe customer ID, client_reference_id, customer key).",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "track/lead` with `customer_key`\\s*$",
+    "why": "A first server lead with only customer_key finds no customer and answers 400 Customer not found; the lead sends click_id and customer_key.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "canonical (Stripe guide|reference for the Stripe sale path)",
+    "why": "The Stripe page (brand/tracking/payment-tracking-stripe) is the one reference for the Stripe sale path: events, lookup order, subscriptions. The integrations/stripe page is the code recipe.",
+    "since": "2026-11-08",
+    "allow": []
   }
 ]
