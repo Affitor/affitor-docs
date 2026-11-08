@@ -135,9 +135,11 @@ paths:
                   details: {}
         '410':
           description: |
-            The referral link exists but is inactive (turned off by the partner
-            or brand). No click was recorded. The body also carries
-            `success: false` and `message` for older clients.
+            The click is refused: the referral link is turned off, or its
+            program is not active (for example a draft or paused program).
+            No click was recorded. The response text is the same in both
+            cases. The body also carries `success: false` and `message` for
+            older clients.
           content:
             application/json:
               schema:
@@ -1148,7 +1150,7 @@ components:
         Typed agent error envelope so an agent can branch on `code`. No `data`
         key. Returned by rate limiting on every `/api/v1/` route, by a key past
         its rotation deadline, by every error on the readiness endpoint, and by
-        `POST /api/v1/track/click` on an inactive referral link (`link_disabled`).
+        `POST /api/v1/track/click` when it refuses a click (`link_disabled`).
 
         Only `code` and `message` are always present; the rest depends on the
         case.

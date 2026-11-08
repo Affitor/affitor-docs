@@ -2,7 +2,7 @@
 title: Payment Tracking
 description: Track completed sales with server-side tracking or Stripe integration
 kind: guide
-last_updated: 2026-11-04
+last_updated: 2026-11-07
 ---
 
 Payment tracking records revenue after a customer pays. Affitor supports two sale-tracking paths:
@@ -43,6 +43,8 @@ Content-Type: application/json
   "currency": "USD"
 }
 ```
+
+By default, `customer_key` matches only a customer your server already sent as a lead (`POST /api/v1/track/lead` with your API key). If the lead came only from the browser `signup()`, send `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
 
 ### Full example
 

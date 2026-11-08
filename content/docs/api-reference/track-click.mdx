@@ -2,7 +2,7 @@
 title: Track Click
 description: Record an affiliate click event when a visitor lands via a referral link
 kind: reference
-last_updated: 2026-10-18
+last_updated: 2026-11-07
 ---
 
 `POST /api/v1/track/click` records an affiliate click event from the Affitor tracker script. It resolves the referral link from the `?aff=` parameter (or its alias `?via=`; `aff` wins when both are present), creates or reuses the customer record, and returns the `click_id` that downstream lead and sale calls will use for attribution.
@@ -154,7 +154,7 @@ When `additional_data.test_mode` is `true`:
 | `400 Bad Request` | No referral link found matching the `aff` value |
 | `400 Bad Request` | Referral link configuration is invalid (missing partner or program) |
 | `403 Forbidden` | Test mode only: the Bearer key and `additional_data.program_id` name different programs (`program_id does not match the API key`) |
-| `410 Gone` | Referral link exists but is inactive. Body has `error.code: link_disabled`; no click is recorded |
+| `410 Gone` | The referral link is turned off, or its program is not active (for example a draft or paused program). Body has `error.code: link_disabled`; no click is recorded |
 | `500 Internal Server Error` | Unexpected server error |
 
 ---

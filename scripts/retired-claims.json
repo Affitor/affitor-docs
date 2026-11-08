@@ -178,5 +178,47 @@
     "why": "MCP connections read the programs chosen at consent: all current and future programs, or up to 50 selected; a brand connection has 8 brand tools (list_programs added), each with an optional program_id. affiliate-cms src/mcp/program-scope.ts, src/mcp/tools/defs.ts MULTI_BRAND_TOOLS.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "transaction_id`? is (still )?consumed",
+    "why": "A sale is one database transaction: when the commission cannot be created the whole sale rolls back, nothing is recorded and a retry with the same transaction_id is safe. affiliate-cms src/api/affiliate-tracking/services/sale-admission.ts (transaction, CommissionAdmissionFailure), controllers/v1-tracking.ts.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "already stored, so a resend returns `?409|do not cause a 500",
+    "why": "partnerId required to create commission is answered before the sale is written, and a metric update failure rolls the whole sale back (500, nothing recorded). affiliate-cms src/api/affiliate-tracking/services/sale-admission.ts.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "`USD`, `EUR`,? or `VND`",
+    "why": "Since November 5, 2026 (16:00 UTC) a sale accepts any supported ISO 4217 code and converts the pre-tax basis to USD; only unsupported codes answer 422. affiliate-cms controllers/v1-tracking.ts, utils/money-basis.ts.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "accepted,? (but )?not used yet",
+    "why": "tax_cents is subtracted from the commission basis (amount - tax). affiliate-cms utils/money-basis.ts s2sAmounts.",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "\\(or pass `0`\\)|Omit or pass `0`",
+    "why": "For sales recorded since the November 5, 2026 currency change, an explicit refund amount of 0 answers 400 and nothing is refunded; omit the field to refund the rest. affiliate-cms controllers/v1-tracking.ts (refund_amount_cents presence check).",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "Verbose `console\\.log` output|for verbose logging|Enable verbose console logs",
+    "why": "debug: true also makes signup() send a test event instead of a lead, so a site that ships with it records no real leads. affiliate-cms public/js/affitor-tracker.js signup().",
+    "since": "2026-11-07",
+    "allow": []
+  },
+  {
+    "pattern": "re-run `npx affitor init` to get a new",
+    "why": "affitor init creates a new program and never replaces an API key; an owner or admin creates or rotates keys in Program settings, Developers, API keys. affitor CLI src/commands/init.ts.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]

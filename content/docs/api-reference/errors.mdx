@@ -2,7 +2,7 @@
 title: Errors & Troubleshooting
 description: All API error codes, their causes, and how to fix common integration problems.
 kind: reference
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 > **Beta** — The Affitor SDKs and CLI are in active development. The documented happy-path works; edge cases may change. Report issues on GitHub.
@@ -17,13 +17,13 @@ Start from the status code. It tells you whose problem the request is and whethe
 
 | Status | Meaning | What to do | Retry? |
 |--------|---------|-----------|--------|
-| `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again. Exception: after `partnerId required to create commission` the sale is already stored, so a resend returns `409` | Not unchanged |
+| `400` | The request is invalid: a required field is missing or malformed, or an identifier resolved to nothing usable | Fix the request using `error.message`, then send it again | Not unchanged |
 | `401` | No usable credential: the `Authorization` header is missing or malformed, the key or login token matches nothing, or the key was [retired](#api_key_rotation_required) | Send a valid program API key, or run `affitor login` again for the account-session CLI routes | Not until the credential changes |
 | `403` | The credential is valid but not for this request: a `program_id` that belongs to another program, or an `advertiser_id` that is not yours. The CLI login callback also answers `403` [`ACCOUNT_BLOCKED`](#account_blocked) or [`PROVIDER_EMAIL_NOT_VERIFIED`](#provider_email_not_verified) | Use the key or account that owns the resource | No |
 | `404` | The thing the request points at does not exist: a sale to refund, or a CLI login session | Check the identifier you sent | Not unchanged |
 | `409` | A sale was already recorded under this `transaction_id` | Check `error.details.sale_id`: an id means your program's sale exists, so treat it as success; `null` means another program used this `transaction_id` and nothing was recorded for yours | No |
-| `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the referral link is turned off: `error.code` is `link_disabled` and no click was recorded | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; it works again once the partner or brand turns it back on | No |
-| `422` | `POST /api/v1/track/sale` only: the `currency` is not `USD`, `EUR` or `VND` (`error.code` `unsupported_currency`). No sale, commission or fee was created | Send `USD`, `EUR` or `VND` | Not unchanged |
+| `410` | The endpoint is retired, or (`POST /api/v1/track/click`) the click is refused: `error.code` is `link_disabled` and no click was recorded. A click is refused when the referral link is turned off or when its program is not active (for example a draft or paused program) | For a retired endpoint, use the replacement named in `error.message`. For `link_disabled`, stop sending clicks for that link; clicks are recorded again once the link is on and its program is active | No |
+| `422` | `POST /api/v1/track/sale` only: the `currency` is not a [supported ISO 4217 code](/docs/api-reference/track-sale#request-fields) (`error.code` `unsupported_currency`). No sale, commission or fee was created | Send a supported code | Not unchanged |
 | `429` | [Rate limited](#rate-limits-429). The per-minute limit records nothing; the verification-run cap may already have prepared its test fixture (see [Rate limits](#rate-limits-429)) | Wait `Retry-After` seconds, then retry | Yes, after the wait |
 | `500` | Something failed on our side | Retry with backoff. If it persists, contact support with the [request ID](#request-ids) | Yes, with backoff (see [server errors](#server-errors-500) for the two cases to check first) |
 
@@ -229,7 +229,7 @@ This body is the [typed envelope](#the-typed-envelope): no `data` key, and an `e
 | `400` | `amount_cents is required and must be a positive integer` | Field missing, zero, negative, or wrong type | Pass sale amount in smallest currency unit (e.g. `4900` for $49.00 USD) as a positive integer |
 | `400` | `occurred_at must be an ISO 8601 time within the last 30 days` | Not ISO 8601 with an offset, not a real date, older than 30 days, or more than 5 minutes in the future | Send for example `2026-10-16T09:30:00Z`, or omit it |
 | `400` | `provider must be one of: ...` / `provider_payment_id must be a string of 1 to 255 characters` / `livemode must be a boolean` | An optional field has the wrong shape | Fix the field or omit it |
-| `422` | `currency XXX is not supported` | The code is not `USD`, `EUR` or `VND` | Send a supported code; no sale was created, so you can resend |
+| `422` | `currency XXX is not supported` | The code is not a [supported ISO 4217 code](/docs/api-reference/track-sale#request-fields) | Send a supported code; no sale was created, so you can resend |
 | `400` | `Customer not found. Provide customer_key or click_id.` | Neither identifier resolved a customer | Ensure lead tracking ran first and the customer record exists |
 | `400` | `No affiliate attribution found for this customer in this program` | Customer exists but is attributed to a different program | Use the API key matching the program where the click originated |
 | `400` | `No partner-program relationship found for this customer` | Customer has no linked partner-program junction | The customer record is missing a partner relationship — check that the original click was tracked correctly |
@@ -345,7 +345,7 @@ A `500` means the request failed on our side. The message is deliberately generi
 | `500` | `Lead tracking failed` | The lead handler failed unexpectedly | Retry with backoff. If the first attempt did record the lead, the retry can answer `400` `Customer status cannot be updated to lead`, which is safe to ignore |
 | `500` | `Sale tracking failed` | The sale handler failed unexpectedly | Retry with backoff and the **same** `transaction_id`. If the first attempt recorded the sale, the retry answers `409`, so you cannot record it twice |
 | `500` | `Refund tracking failed` | The refund handler failed unexpectedly | Retry with backoff. If it persists, contact support with the `X-Request-ID` |
-| `500` | `Failed to create commission` | The sale event was written, but its commission was not created | Do not retry: the `transaction_id` is consumed and a retry answers `409`. Contact support with the `transaction_id` and the `X-Request-ID` |
+| `500` | `Failed to create commission` | The commission could not be created, so the whole sale was rolled back | No sale or commission was recorded. Retry with the same `transaction_id`. If it keeps failing, contact support with the `X-Request-ID` |
 | `500` | `Failed to compute readiness. Retry shortly.` | `GET /api/v1/programs/me/readiness` failed. [Typed envelope](#the-typed-envelope), code `internal_error` | Wait `retry_after_seconds` (10), then poll again |
 
 ```json
@@ -373,7 +373,7 @@ The readiness `500` uses the typed envelope:
 }
 ```
 
-Metric update failures (step 10 in the sale flow) are logged as warnings and do not cause a 500 — the sale and commission are still created.
+A metric update failure (step 10 in the sale flow) rolls the whole sale back and answers `500` `Sale tracking failed`. No sale or commission was recorded, so retry with the same `transaction_id`.
 
 For `500`s from the CLI endpoints, see [CLI endpoint errors](#cli-endpoint-errors).
 
@@ -568,7 +568,7 @@ The sale endpoint uses `transaction_id` as a globally unique idempotency key sto
 - The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
 - `error.details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program. A `null` means nothing was recorded for your program under this `transaction_id`.
 - Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
-- If a sale was recorded but commission creation failed (500), the `transaction_id` is still consumed. Contact Affitor support to investigate the commission state before re-submitting under a new ID.
+- If the commission cannot be created (`500` `Failed to create commission`), no sale or commission was recorded and the `transaction_id` is not consumed: retry with the same ID.
 
 **Recommended pattern:**
 
@@ -602,9 +602,9 @@ if (!response.ok) {
 
 ---
 
-### SDK `debug: true` for verbose logging
+### SDK `debug: true` for testing
 
-Pass `debug: true` to `loadAffitor()` to enable verbose console output.
+Pass `debug: true` to `loadAffitor()` while you test an integration.
 
 ```ts
 import { loadAffitor } from '@affitor/sdk';
@@ -612,16 +612,9 @@ import { loadAffitor } from '@affitor/sdk';
 const affitor = await loadAffitor(123, { debug: true });
 ```
 
-With `debug: true`, the SDK logs to the browser console using `[Affitor]` as the prefix for every `info` and `warn` level message — including initialization, program ID resolution, click tracking, and signup calls. Errors (`console.error`) are always logged regardless of the `debug` flag.
+With `debug: true`, the SDK logs its `info` and `warn` messages to the browser console with the `[Affitor]` prefix, and `signup()` sends a [test event](/docs/api-reference/test-mode) instead of a lead: no real lead is recorded. Errors (`console.error`) are always logged.
 
-```
-[Affitor] Affitor SDK initialized: { programId: 123, debug: true }
-[Affitor] Using program ID: 123
-[Affitor] Click tracked, click_id saved: cust_42_1712345678901
-[Affitor] Signup tracked successfully
-```
-
-**Disable in production.** The `debug` flag is intended for development and integration testing only. Leave it off in production builds to avoid leaking internal state to end users.
+**Turn it off before production.** A site that ships with `debug: true` records no real leads from `signup()`.
 
 To check the current tracker state at any point:
 

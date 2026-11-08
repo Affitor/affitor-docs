@@ -2,7 +2,7 @@
 title: Test mode
 description: How to send test clicks, leads and sales to the Tracking API with your real program API key, what a test event records, and what it never touches.
 kind: concept
-last_updated: 2026-10-20
+last_updated: 2026-11-07
 ---
 
 Test mode lets you, or an AI agent, call the Tracking API against production with your real program API key and get real responses, without creating a real sale, commission or platform fee. There is no separate test server or test account: you send the same requests to `https://api.affitor.com` and mark them as test.
@@ -44,7 +44,7 @@ Each successful test call stores one event flagged `is_test: true` and answers w
 
 - **Click:** a test click event. `affiliate_url` is not required.
 - **Lead:** a test lead event. `click_id` and `customer_key` are optional (placeholders are stored when they are missing).
-- **Sale:** a test sale event. `transaction_id` and `amount_cents` are optional (`amount_cents` defaults to `9999`). A test sale accepts `USD`, `EUR` or `VND` only (`422 unsupported_currency` otherwise). Sending the same `transaction_id` twice returns `409 duplicate_transaction`, as for a real sale.
+- **Sale:** a test sale event. `transaction_id` and `amount_cents` are optional (`amount_cents` defaults to `9999`). A test sale accepts the same [currency codes](/docs/api-reference/track-sale#request-fields) as a live sale (`422 unsupported_currency` otherwise). Sending the same `transaction_id` twice returns `409 duplicate_transaction`, as for a real sale.
 
 A test event is inserted directly. It does not resolve a partner, so it creates no commission and no platform fee, and it never takes over a real customer's attribution. Test sales are also left out of your revenue analytics.
 
