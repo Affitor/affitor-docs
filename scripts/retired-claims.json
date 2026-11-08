@@ -286,5 +286,11 @@
     "why": "npx affitor init writes the program API key into .affitor/.env.example as well as .affitor/.env, and the .affitor/.env.* rule it adds to .gitignore covers it. It is not a safe-to-commit or shareable template.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "Connect an AI tool(\\*\\*)? fills both in",
+    "why": "Connect an AI tool does not fill in a site or program id: Program settings › Developers › AI agents and partner Integrations open it without a program, so it shows no install prompt. The reader replaces example.com and 123 in the prompt. Remove this entry in the docs PR that documents a Connect an AI tool opened for a program.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]
