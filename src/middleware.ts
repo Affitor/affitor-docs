@@ -47,6 +47,12 @@ const RENAMES: [string, string][] = [
   ['/docs/brand/quickstart/inviting-partners', '/docs/brand/quickstart/partner-approval-quality-control'],
   // Merged into the CLI quickstart (07/11/2026); a single page, nothing lives under it.
   ['/docs/api-reference/agent-integration', '/docs/brand/cli/quickstart'],
+  // Framework recipes merged (08/11/2026): the auth providers are tabs in Step 2 of the Next.js
+  // guide, Fastify a tab of the Node.js server guide. Single pages, nothing lives under them.
+  ['/docs/api-reference/integrations/nextjs-clerk', '/docs/api-reference/integrations/nextjs'],
+  ['/docs/api-reference/integrations/nextjs-nextauth', '/docs/api-reference/integrations/nextjs'],
+  ['/docs/api-reference/integrations/nextjs-supabase', '/docs/api-reference/integrations/nextjs'],
+  ['/docs/api-reference/integrations/fastify', '/docs/api-reference/integrations/node-express'],
 ];
 
 // Folder URLs with no page of their own -> the page that opens the folder. Exact path only, also
