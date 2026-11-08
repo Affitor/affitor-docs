@@ -15,6 +15,7 @@ An AI app can read your Affitor account through the hosted MCP server, after one
 | Best for | Asking an AI app about your program, partners, commissions and billing, or about your earnings as a partner | A coding agent that adds tracking to your site's code |
 | Sign-in | Your Affitor account, in the browser. No API key | `npx affitor login` opens your browser; `npx affitor init` saves the program API key in `.affitor/.env` |
 | What it can do | Read-only: it cannot change data or move money. With a brand connection, `get_program` returns the tracker install snippet, where it goes and how to verify it | Create a program and write `.affitor/AGENTS.md` for your coding agent. `npx affitor onboard` fires a test click, lead and sale, and exits with an error until the integration is verified |
+| Programs | All current and future programs, or up to 50 you select when you sign in | The new program `npx affitor init` creates |
 | Start here | [Connect your AI tool](/docs/api-reference/connect-ai-tool) | [CLI quickstart](/docs/brand/cli/quickstart) |
 
 In the dashboard, **Program settings** › **Tracking** › **With AI** gives you a prompt that has your AI tool add tracking with your program API key; [Connect your AI tool](/docs/api-reference/connect-ai-tool) shows it.
