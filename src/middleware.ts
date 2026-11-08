@@ -45,6 +45,8 @@ const RENAMES: [string, string][] = [
   ['/blog/free-affiliate-software-for-saas', '/blog/best-affiliate-software-saas'],
   // Partner invites were archived (21/10/2026); the guide goes to reviewing applications.
   ['/docs/brand/quickstart/inviting-partners', '/docs/brand/quickstart/partner-approval-quality-control'],
+  // Merged into the CLI quickstart (07/11/2026); a single page, nothing lives under it.
+  ['/docs/api-reference/agent-integration', '/docs/brand/cli/quickstart'],
 ];
 
 // Folder URLs with no page of their own -> the page that opens the folder. Exact path only, also
@@ -59,6 +61,8 @@ const FOLDER_HOMES: Record<string, string> = {
   '/docs/brand/cli': '/docs/brand/cli/quickstart',
   '/docs/partners/quickstart': '/docs/partners/quickstart/create-account',
   '/docs/api-reference/integrations': '/docs/api-reference/integrations/stripe',
+  // Its index merged into the docs home (07/11/2026). Exact path only: the pages under it stay.
+  '/docs/getting-started': '/docs',
 };
 
 // The changelog left the docs for its own zone, affitor.com/changelog (14/10/2026). Absolute and
