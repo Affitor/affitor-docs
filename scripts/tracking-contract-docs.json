@@ -376,6 +376,34 @@
       "match": "[Aa]ll current and future programs(?:\\*\\*)?, or up to (\\d+)",
       "count": 1,
       "why": "The cap on programs a connection can select: the Programs row of the MCP or CLI table (the sign-in steps live on Connect your AI tool and the MCP page)."
+    },
+    {
+      "file": "content/docs/api-reference/mcp.mdx",
+      "rule": "cli_published.version",
+      "match": "npx affitor@(\\d+\\.\\d+\\.\\d+)",
+      "count": 1,
+      "why": "A command that pins the CLI names the published version, so a reader runs the CLI this page describes."
+    },
+    {
+      "file": "content/docs/brand/cli/agent-setup.mdx",
+      "rule": "cli_published.version",
+      "match": "npx affitor@(\\d+\\.\\d+\\.\\d+)",
+      "count": 3,
+      "why": "A command that pins the CLI names the published version, so a reader runs the CLI this page describes."
+    },
+    {
+      "file": "content/docs/brand/cli/commands.mdx",
+      "rule": "cli_published.version",
+      "match": "npx affitor@(\\d+\\.\\d+\\.\\d+)",
+      "count": 4,
+      "why": "A command that pins the CLI names the published version, so a reader runs the CLI this page describes."
+    },
+    {
+      "file": "public/docs/skill.md",
+      "rule": "cli_published.version",
+      "match": "npx affitor@(\\d+\\.\\d+\\.\\d+)",
+      "count": 1,
+      "why": "A command that pins the CLI names the published version, so a reader runs the CLI this page describes."
     }
   ],
   "sets": {
@@ -406,10 +434,6 @@
     "write permission you allow"
   ],
   "outside_docs": [
-    {
-      "rule": "cli_published.version",
-      "why": "Published state: the product check compares it with the npm registry every night. The docs commands that pin a CLI version (npx affitor@<version>) are not checked against it yet."
-    },
     {
       "rule": "mcp_write_requires",
       "why": "Deployment state: the server flag names behind hosted MCP write access; the docs describe only whether write access is on (mcp_write_live)."
