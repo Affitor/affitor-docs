@@ -58,7 +58,7 @@ The **Commission** step sets what partners earn and how they join.
 | **For** | Yes, for **Recurring** | How many months the partner keeps earning, counted from the customer's first click on the partner link (not the first payment): a whole number from 1 to 36. Later payments are still recorded, with a $0 commission. Shown only for **Recurring** |
 | **Attribution window** | Yes | How long after a click a signup still counts: 1 to 365 days |
 | **Hold period** | Yes | Days until a commission is payable, to cover refunds: 0 to 31 |
-| **New partners** | Yes | **Approve all** approves every application; **Review each** lets you review each one |
+| **New partners** | Yes | **Auto-approve** (Link right away) approves every application; **Manual review** (You approve first) lets you review each one |
 
 Once the rate is valid, a line shows what a $100 payment gives the partner, for example "$20 to the partner, monthly for 12 months". If your saved terms are ones this form cannot show exactly (for example a fixed amount), the step shows them as **Current terms** and keeps them unless you select **Set new terms**.
 
@@ -208,7 +208,7 @@ In the program menu, choose **Program settings** and check that each page kept w
 <VerifySuccess
   dashboard={[
     "Business shows your business name, website, program URL and logo",
-    "Commission shows your type, rate and, for Recurring, the months, plus Approve all or Review each, whichever you picked",
+    "Commission shows your type, rate and, for Recurring, the months, plus Auto-approve or Manual review, whichever you picked",
     "Payments shows Stripe Connected, or Received for the Server API",
     "Until the program is live, Get started in the left rail shows how many setup steps are done; once it is live, Go live in Program settings reads Status",
   ]}
