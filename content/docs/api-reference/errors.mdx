@@ -343,9 +343,9 @@ A `500` means the request failed on our side. The message is deliberately generi
 |--------|---------------|---------|-----|
 | `500` | `Click tracking failed` | The click handler failed unexpectedly | Retry with backoff |
 | `500` | `Lead tracking failed` | The lead handler failed unexpectedly | Retry with backoff. If the first attempt did record the lead, the retry can answer `400` `Customer status cannot be updated to lead`, which is safe to ignore |
-| `500` | `Sale tracking failed` | The sale handler failed unexpectedly | Retry with backoff and the **same** `transaction_id`. If the first attempt recorded the sale, the retry answers `409`, so you cannot record it twice |
+| `500` | `Sale tracking failed` | The sale could not be recorded, or the server could not confirm that it was | A `500` does not prove that nothing was recorded. Retry with backoff and the **same** `transaction_id`: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`, so it is never recorded twice. If it keeps failing, contact support with the `X-Request-ID` |
 | `500` | `Refund tracking failed` | The refund handler failed unexpectedly | Retry with backoff. If it persists, contact support with the `X-Request-ID` |
-| `500` | `Failed to create commission` | The commission could not be created, so the whole sale was rolled back | No sale or commission was recorded. Retry with the same `transaction_id`. If it keeps failing, contact support with the `X-Request-ID` |
+| `500` | `Failed to create commission` | The commission could not be created | Retry with the same `transaction_id`, as for `Sale tracking failed`: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`. If it keeps failing, contact support with the `X-Request-ID` |
 | `500` | `Failed to compute readiness. Retry shortly.` | `GET /api/v1/programs/me/readiness` failed. [Typed envelope](#the-typed-envelope), code `internal_error` | Wait `retry_after_seconds` (10), then poll again |
 
 ```json
@@ -373,7 +373,7 @@ The readiness `500` uses the typed envelope:
 }
 ```
 
-A metric update failure (step 10 in the sale flow) rolls the whole sale back and answers `500` `Sale tracking failed`. No sale or commission was recorded, so retry with the same `transaction_id`.
+A metric update failure (step 10 in the sale flow) answers `500` `Sale tracking failed`. Handle it like any sale `500`: retry with the same `transaction_id`.
 
 For `500`s from the CLI endpoints, see [CLI endpoint errors](#cli-endpoint-errors).
 
@@ -568,7 +568,7 @@ The sale endpoint uses `transaction_id` as a globally unique idempotency key sto
 - The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
 - `error.details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program. A `null` means nothing was recorded for your program under this `transaction_id`.
 - Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
-- If the commission cannot be created (`500` `Failed to create commission`), no sale or commission was recorded and the `transaction_id` is not consumed: retry with the same ID.
+- On a `500` from the sale endpoint (`Sale tracking failed` or `Failed to create commission`), retry the same request with the same `transaction_id`. A `500` does not prove that nothing was recorded: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`. Never switch to a new `transaction_id` to get past a `409`.
 
 **Recommended pattern:**
 
