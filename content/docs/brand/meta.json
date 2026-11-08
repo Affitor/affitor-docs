@@ -45,7 +45,6 @@
     "---AI agents (MCP)---",
     "[Connect your AI tool](/docs/api-reference/connect-ai-tool)",
     "../api-reference/mcp",
-    "../api-reference/agent-integration",
     "---CLI---",
     "cli/quickstart",
     "cli/agent-setup",

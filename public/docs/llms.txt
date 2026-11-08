@@ -65,7 +65,6 @@
 ## Brands: AI agents (MCP)
 
 - [Affitor MCP server](https://affitor.com/docs/api-reference/mcp.md)
-- [Agent Integration](https://affitor.com/docs/api-reference/agent-integration.md)
 
 ## Brands: CLI
 

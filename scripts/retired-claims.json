@@ -280,5 +280,11 @@
     "why": "The contact page made a 24-hour reply promise and partner-recruiting service claims with no source; partners join programs through the marketplace.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "\\.env\\.example.*(safe[- ]to[- ]commit|template for teammates)|safe[- ]to[- ]commit template",
+    "why": "npx affitor init writes the program API key into .affitor/.env.example as well as .affitor/.env, and the .affitor/.env.* rule it adds to .gitignore covers it. It is not a safe-to-commit or shareable template.",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]

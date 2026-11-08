@@ -165,6 +165,7 @@ function invariants() {
     ['/advertisers/tracking/pageview-tracker-click.md', '/docs/brand/tracking/click-tracking.md'],
     ['/getting-started/what-is-affitor.md', '/docs/index.md'],
     ['/getting-started.md', '/docs/index.md'],
+    ['/api-reference/agent-integration.md', '/docs/brand/cli/quickstart.md'],
     ['/errors.md', '/docs/api-reference/errors.md'],
     ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
     ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
@@ -210,6 +211,9 @@ function invariants() {
       ['/docs/getting-started', '/docs'],
       ['/docs/getting-started.md', '/docs/index.md'],
       ['/docs/getting-started?x=1', '/docs?x=1'],
+      // Agent Integration merged into the CLI quickstart (07/11/2026).
+      ['/docs/api-reference/agent-integration', '/docs/brand/cli/quickstart'],
+      ['/docs/api-reference/agent-integration.md', '/docs/brand/cli/quickstart.md'],
       ['/docs/blog/rewardful-alternatives', '/blog/rewardful-alternatives'],
       ['/docs/blog', '/blog'],
       ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
@@ -289,6 +293,7 @@ mode(undefined, () => {
   check('off: /getting-started/what-is-affitor -> 308 /', redirects(DOCS, '/getting-started/what-is-affitor', 'https://docs.affitor.com/', {}, 308));
   check('off: /getting-started -> 308 /', redirects(DOCS, '/getting-started', 'https://docs.affitor.com/', {}, 308));
   check('off: /getting-started/how-it-works is still served in place', serves('/getting-started/how-it-works', '/docs/getting-started/how-it-works', false));
+  check('off: /api-reference/agent-integration -> 308 /brand/cli/quickstart', redirects(DOCS, '/api-reference/agent-integration', 'https://docs.affitor.com/brand/cli/quickstart', {}, 308));
   // Served in place: negotiation on the /docs path it maps to.
   check('off: docs host page negotiates (twin / HTML, Vary: Accept)', negotiates(DOCS, '/brand/quickstart', '/docs/brand/quickstart.md', '/docs/brand/quickstart'));
   check('off: docs host / negotiates to the index twin', negotiates(DOCS, '/', '/docs/index.md', '/docs'));
@@ -342,6 +347,7 @@ for (const status of ['301', '302']) {
     check(`${status}: /getting-started/what-is-affitor in one hop`, to('/getting-started/what-is-affitor', 'https://affitor.com/docs'));
     check(`${status}: /getting-started in one hop`, to('/getting-started', 'https://affitor.com/docs'));
     check(`${status}: /getting-started/how-it-works keeps its path`, to('/getting-started/how-it-works', 'https://affitor.com/docs/getting-started/how-it-works'));
+    check(`${status}: /api-reference/agent-integration lands on the CLI quickstart in one hop`, to('/api-reference/agent-integration', 'https://affitor.com/docs/brand/cli/quickstart'));
     check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
     // Only Host decides: Vercel external rewrites send the alias as Host while
     // x-forwarded-host can still carry the public host, and the reverse must not matter.
