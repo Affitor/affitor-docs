@@ -166,6 +166,10 @@ function invariants() {
     ['/getting-started/what-is-affitor.md', '/docs/index.md'],
     ['/getting-started.md', '/docs/index.md'],
     ['/api-reference/agent-integration.md', '/docs/brand/cli/quickstart.md'],
+    ['/api-reference/integrations/nextjs-clerk.md', '/docs/api-reference/integrations/nextjs.md'],
+    ['/api-reference/integrations/nextjs-nextauth.md', '/docs/api-reference/integrations/nextjs.md'],
+    ['/api-reference/integrations/nextjs-supabase.md', '/docs/api-reference/integrations/nextjs.md'],
+    ['/api-reference/integrations/fastify.md', '/docs/api-reference/integrations/node-express.md'],
     ['/errors.md', '/docs/api-reference/errors.md'],
     ['/docs/advertisers/quickstart.md', '/docs/brand/quickstart.md'],
     ['/docs/blog/rewardful-alternatives.md', '/blog/rewardful-alternatives.md'],
@@ -214,6 +218,15 @@ function invariants() {
       // Agent Integration merged into the CLI quickstart (07/11/2026).
       ['/docs/api-reference/agent-integration', '/docs/brand/cli/quickstart'],
       ['/docs/api-reference/agent-integration.md', '/docs/brand/cli/quickstart.md'],
+      // Framework recipes merged (08/11/2026): auth providers into the Next.js guide, Fastify into Node.js server.
+      ['/docs/api-reference/integrations/nextjs-clerk', '/docs/api-reference/integrations/nextjs'],
+      ['/docs/api-reference/integrations/nextjs-clerk.md', '/docs/api-reference/integrations/nextjs.md'],
+      ['/docs/api-reference/integrations/nextjs-nextauth', '/docs/api-reference/integrations/nextjs'],
+      ['/docs/api-reference/integrations/nextjs-nextauth.md', '/docs/api-reference/integrations/nextjs.md'],
+      ['/docs/api-reference/integrations/nextjs-supabase', '/docs/api-reference/integrations/nextjs'],
+      ['/docs/api-reference/integrations/nextjs-supabase.md', '/docs/api-reference/integrations/nextjs.md'],
+      ['/docs/api-reference/integrations/fastify', '/docs/api-reference/integrations/node-express'],
+      ['/docs/api-reference/integrations/fastify.md', '/docs/api-reference/integrations/node-express.md'],
       ['/docs/blog/rewardful-alternatives', '/blog/rewardful-alternatives'],
       ['/docs/blog', '/blog'],
       ['/blog/affiliate-software-pricing-comparison', '/blog/best-affiliate-software-saas'],
@@ -221,6 +234,9 @@ function invariants() {
     ]) check(`${host}${path} -> 308 ${location} on the same host`, redirects(host, path, `https://${host}${location}`, {}, 308));
     check(`${host}/docs/advertisers-x is not a rename`, passes(host, '/docs/advertisers-x'));
     check(`${host}/docs/api-reference/errors is not a folder home`, passes(host, '/docs/api-reference/errors'));
+    for (const path of ['/docs/api-reference/integrations/nextjs', '/docs/api-reference/integrations/nextjs.md', '/docs/api-reference/integrations/node-express', '/docs/api-reference/integrations/node-express.md']) {
+      check(`${host}${path} stays put (a merged recipe redirects here, the page itself is not renamed)`, passes(host, path));
+    }
     for (const path of ['/docs/getting-started/how-it-works', '/docs/getting-started/pricing-performance-model', '/docs/getting-started/quickstart', '/docs/getting-started/quickstart.md']) {
       check(`${host}${path} stays put (the getting-started folder home is exact)`, passes(host, path));
     }
@@ -294,6 +310,8 @@ mode(undefined, () => {
   check('off: /getting-started -> 308 /', redirects(DOCS, '/getting-started', 'https://docs.affitor.com/', {}, 308));
   check('off: /getting-started/how-it-works is still served in place', serves('/getting-started/how-it-works', '/docs/getting-started/how-it-works', false));
   check('off: /api-reference/agent-integration -> 308 /brand/cli/quickstart', redirects(DOCS, '/api-reference/agent-integration', 'https://docs.affitor.com/brand/cli/quickstart', {}, 308));
+  check('off: /api-reference/integrations/nextjs-clerk -> 308 /api-reference/integrations/nextjs', redirects(DOCS, '/api-reference/integrations/nextjs-clerk', 'https://docs.affitor.com/api-reference/integrations/nextjs', {}, 308));
+  check('off: /api-reference/integrations/fastify -> 308 /api-reference/integrations/node-express', redirects(DOCS, '/api-reference/integrations/fastify', 'https://docs.affitor.com/api-reference/integrations/node-express', {}, 308));
   // Served in place: negotiation on the /docs path it maps to.
   check('off: docs host page negotiates (twin / HTML, Vary: Accept)', negotiates(DOCS, '/brand/quickstart', '/docs/brand/quickstart.md', '/docs/brand/quickstart'));
   check('off: docs host / negotiates to the index twin', negotiates(DOCS, '/', '/docs/index.md', '/docs'));
@@ -348,6 +366,8 @@ for (const status of ['301', '302']) {
     check(`${status}: /getting-started in one hop`, to('/getting-started', 'https://affitor.com/docs'));
     check(`${status}: /getting-started/how-it-works keeps its path`, to('/getting-started/how-it-works', 'https://affitor.com/docs/getting-started/how-it-works'));
     check(`${status}: /api-reference/agent-integration lands on the CLI quickstart in one hop`, to('/api-reference/agent-integration', 'https://affitor.com/docs/brand/cli/quickstart'));
+    check(`${status}: /api-reference/integrations/nextjs-nextauth lands on the Next.js guide in one hop`, to('/api-reference/integrations/nextjs-nextauth', 'https://affitor.com/docs/api-reference/integrations/nextjs'));
+    check(`${status}: /api-reference/integrations/fastify lands on the Node.js server guide in one hop`, to('/api-reference/integrations/fastify', 'https://affitor.com/docs/api-reference/integrations/node-express'));
     check(`${status}: old search API`, to('/api/search?query=x', 'https://affitor.com/docs/api/search?query=x'));
     // Only Host decides: Vercel external rewrites send the alias as Host while
     // x-forwarded-host can still carry the public host, and the reverse must not matter.

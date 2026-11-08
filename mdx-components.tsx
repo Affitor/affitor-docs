@@ -18,6 +18,7 @@ import { ResponseTabs } from '@/components/mdx/response-tabs';
 import { Callout } from '@/components/mdx/callout';
 import { UseCaseSteps } from '@/components/mdx/use-case-steps';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Media } from '@/components/changelog/media';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
@@ -45,6 +46,9 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ResponseTabs,
     Callout,
     UseCaseSteps,
+    // Prose tabs (framework recipes: one tab per auth provider or server framework)
+    Tabs,
+    Tab,
     // Changelog entries (content/changelog)
     Media,
     Accordion,

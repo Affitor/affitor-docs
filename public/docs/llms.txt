@@ -37,11 +37,7 @@
 - [Stripe](https://affitor.com/docs/api-reference/integrations/stripe.md)
 - [Polar](https://affitor.com/docs/api-reference/integrations/polar.md)
 - [Next.js](https://affitor.com/docs/api-reference/integrations/nextjs.md)
-- [Next.js + Clerk](https://affitor.com/docs/api-reference/integrations/nextjs-clerk.md)
-- [Next.js + Supabase Auth](https://affitor.com/docs/api-reference/integrations/nextjs-supabase.md)
-- [Next.js + NextAuth](https://affitor.com/docs/api-reference/integrations/nextjs-nextauth.md)
-- [Node / Express](https://affitor.com/docs/api-reference/integrations/node-express.md)
-- [Fastify](https://affitor.com/docs/api-reference/integrations/fastify.md)
+- [Node.js server](https://affitor.com/docs/api-reference/integrations/node-express.md)
 
 ## Brands: Partners
 
