@@ -126,11 +126,6 @@
       "why": "The contract values themselves."
     },
     {
-      "file": "content/docs/api-reference/agent-integration.mdx",
-      "match": "Cookie Duration\\*\\*: 30 days",
-      "why": "A sample program's own setting in a generated instruction file."
-    },
-    {
       "file": "content/docs/api-reference/errors.mdx",
       "match": "window resets in 42",
       "why": "A rate-limit window in seconds."
