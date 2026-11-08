@@ -17,12 +17,17 @@ context:
   - "Saying anything about old directory pages or OpenAffiliate redirects."
   - "Saying Cancel on the AI app consent screen changed."
   - "Saying team members get a brand account or new permissions: they land on a program they already belong to."
+  - "Saying Muse Code connects in one click: you add Affitor to its settings file, then sign in from the terminal."
+  - "Saying the Markdown answer lists every program in a category: it lists the first page the category table shows."
+  - "Saying every category address answers in Markdown: a category whose address a short link already uses redirects to that link."
 ---
 
 ### Improved
 
 - In **Connect an AI tool**, the **Other** tab now has steps for Grok: add Affitor as a custom connector at grok.com/connectors, then sign in.
+- In **Connect an AI tool**, the **Other** tab now has steps for Muse Code: add Affitor to `~/.config/muse/settings.json`, then run `muse mcp login affitor` in your terminal.
 - AI tools can read `/agents`, `/switch`, `/privacy`, `/terms`, `/legal/refer-program` and `/legal/subprocessors` as Markdown: add `.md` to the address or send `Accept: text/markdown`.
+- AI tools can read category pages such as `/ai-video` as Markdown, with the first 50 programs the page lists: add `.md` to the address or send `Accept: text/markdown`.
 
 ### Fixed
 
