@@ -41,7 +41,7 @@ You'll be asked for:
 - **Commission type** -- percentage, fixed, or recurring
 - **Commission rate** -- default is 40% for recurring
 - **Duration** -- how long recurring commissions last (default: 12 months)
-- **Cookie window** -- attribution window in days (default: 90 in CLI 0.4.6)
+- **Cookie window** -- attribution window in days (default: 60)
 
 After confirming, the CLI creates your program and generates:
 
@@ -80,7 +80,7 @@ Paste the script tag from the CLI output into your site's `<head>`:
 
 Replace `YOUR_PROGRAM_ID` with the program ID from step 1.
 
-The script auto-detects `?via=PARTNER_CODE` or `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (the window set on your program: 90 days by default when CLI 0.4.6 created it).
+The script auto-detects `?via=PARTNER_CODE` or `?aff=PARTNER_CODE` in URLs and stores a first-party cookie for attribution (the window set on your program, 60 days by default).
 
 ---
 
