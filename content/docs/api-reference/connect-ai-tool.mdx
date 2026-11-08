@@ -56,7 +56,7 @@ On Team and Enterprise plans, an owner adds the connector in **Organization sett
 
 ## Other MCP clients
 
-Each section below matches a tab in the dashboard's **Connect an AI tool**, or a block under its **Other** tab.
+Each section below matches a tab in the dashboard's **Connect an AI tool**, or a block under its **Other** tab. **Any other MCP client** also has steps for apps the dashboard does not list.
 
 ### ChatGPT
 
@@ -123,7 +123,7 @@ GitHub Copilot in VS Code.
 
 Or add it by hand:
 
-2. Add this to `.vscode/mcp.json` in your workspace, or to the `mcp.json` of your user profile:
+2. Add this to `.vscode/mcp.json` in your workspace, or to the `mcp.json` of your user profile (or run **MCP: Add Server** from the Command Palette):
 
    ```json title="mcp.json"
    {
@@ -135,15 +135,13 @@ Or add it by hand:
 
 3. Start the server and sign in when VS Code asks.
 
-Instead of editing `mcp.json`, you can run **MCP: Add Server** from the Command Palette.
-
 **Check it works:** in Copilot Chat in Agent mode, ask your AI tool "List my Affitor programs". It answers with your programs.
 
 ### Grok
 
 1. Go to [grok.com/connectors](https://grok.com/connectors), click **New Connector**, then **Custom**.
 2. Paste the URL and sign in to Affitor.
-3. As a brand, pick your programs; then click **Allow**.
+3. Pick your programs, or **All current and future programs**, then click **Allow**.
 
 **Check it works:** in a new chat, ask your AI tool "List my Affitor programs". It answers with your programs.
 
@@ -171,7 +169,7 @@ Instead of editing `mcp.json`, you can run **MCP: Add Server** from the Command 
    muse mcp login affitor
    ```
 
-3. As a brand, pick your programs; then click **Allow**.
+3. Pick your programs, or **All current and future programs**, then click **Allow**.
 
 **Check it works:** in a Muse Code session, run `/mcp`: affitor shows its tools. Then ask your AI tool "List my Affitor programs". It answers with your programs.
 
@@ -191,13 +189,37 @@ Instead of editing `mcp.json`, you can run **MCP: Add Server** from the Command 
 
 Some clients add the server with their own command or screen:
 
-**Gemini CLI:** run `gemini mcp add --transport http affitor https://mcp.affitor.com/mcp`, then run `/mcp auth affitor` inside Gemini CLI and sign in.
+#### Gemini CLI
 
-**OpenClaw:** run `openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth`, then `openclaw mcp login affitor`.
+```bash
+gemini mcp add --transport http affitor https://mcp.affitor.com/mcp
+# Then, inside Gemini CLI: /mcp auth affitor
+```
 
-**Hermes:** run `hermes mcp add affitor --url https://mcp.affitor.com/mcp --auth oauth`. To sign in again later, run `hermes mcp login affitor`.
+#### OpenClaw
 
-**Perplexity:** open **Plugins** in the sidebar (or **Customize** › **Connectors** if you don't see Plugins), select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**, enter a name and paste the URL under **MCP Server URL**. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**; Affitor supports automatic registration, so no Client ID or Client Secret is needed. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor; in an organization, members can add custom connectors only if an admin allows it.
+```bash
+openclaw mcp add affitor --url https://mcp.affitor.com/mcp --transport streamable-http --auth oauth
+openclaw mcp login affitor
+```
+
+#### Hermes
+
+```bash
+hermes mcp add affitor --url https://mcp.affitor.com/mcp --auth oauth
+# To sign in again later:
+hermes mcp login affitor
+```
+
+#### Perplexity
+
+1. Open **Plugins** in the sidebar, or **Customize** › **Connectors** if you don't see Plugins.
+2. Select **Add custom** › **Connector** › **Add MCP connector**, then **Remote**.
+3. Enter a name, and under **MCP Server URL** paste `https://mcp.affitor.com/mcp`.
+4. Under **Authentication** pick **OAuth** and under **Transport** pick **Streamable HTTP**. Affitor supports automatic registration, so no Client ID or Client Secret is needed.
+5. Check the acknowledgement box, click **Add**, then click the connector card and sign in to Affitor.
+
+In an organization, members can add custom connectors only if an admin allows it.
 
 Apps on your own computer connect through `http://127.0.0.1` or `http://localhost`. A web app connects only if Affitor accepts its return address; the [MCP server reference](/docs/api-reference/mcp) lists them.
 
