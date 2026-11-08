@@ -1,6 +1,6 @@
 ---
 title: Subscriptions, credit partners on renewals
-description: "Each paid invoice of a Stripe subscription earns the referring partner for as long as your commission type says. Refunds and disputes take the commission back."
+description: "Each paid invoice of a Stripe subscription earns the referring partner for as long as your commission type says. Refunds and active or lost chargebacks reverse or adjust matched commissions."
 kind: guide
 last_updated: 2026-11-08
 use_case:
@@ -25,9 +25,9 @@ sequenceDiagram
     S->>A: Sends the paid invoice
     A->>A: Same partner, a commission while the term lasts
   end
-  opt Refund or dispute
-    S->>A: Sends the refund or the dispute
-    A->>A: Takes back the commission, in full or in part
+  opt Refund or active/lost chargeback
+    S->>A: Sends the refund or chargeback event
+    A->>A: Applies the refund or disputed amount to a matched commission
   end
 ```
 
@@ -44,7 +44,7 @@ sequenceDiagram
 
 Each paid invoice of the subscription is a sale: the first one, then every renewal. Renewals go to the partner of the first payment ([how Affitor matches them](/docs/brand/tracking/payment-tracking-stripe#why-subscriptions-need-subscription_datametadata)). The attribution window applies only to that first payment: once the customer has paid, renewals are credited however old the click is. The rate is the same for every plan, price and billing interval.
 
-Canceling, pausing or changing the plan writes nothing in Affitor: a canceled subscription stops earning because it stops paying, and after a plan change each paid invoice earns at the same rate. A refund or dispute is matched to its invoice and reverses the commission; some older sales, such as one payment shared by several invoices, are held for manual reconciliation instead. A new invoice whose payment was already refunded, even in part, before Affitor processed it is not recorded as a sale. A new invoice paid by several charges, or by one payment that also paid other invoices, is not recorded automatically. If you bill subscriptions outside Stripe, your server reports each payment and each refund ([Any payment provider](/docs/use-cases/any-payment-provider)).
+Canceling, pausing or changing the plan writes nothing in Affitor: a canceled subscription stops earning because it stops paying, and after a plan change each paid invoice earns at the same rate. A refund is applied to the matched commission: a full refund reverses it, while a partial refund marks it refunded, with balance adjustment based on its prior state. An active or lost chargeback applies the disputed amount; inquiries and prevented disputes do not trigger a reversal. Some older sales, such as one payment shared by several invoices, are held for manual reconciliation instead. A new invoice whose payment was already refunded, even in part, before Affitor processed it is not recorded as a sale. A new invoice paid by several charges, or by one payment that also paid other invoices, is not recorded automatically. If you bill subscriptions outside Stripe, your server reports each payment and each refund ([Any payment provider](/docs/use-cases/any-payment-provider)).
 
 ## Steps
 
