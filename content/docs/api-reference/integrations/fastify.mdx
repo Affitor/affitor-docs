@@ -173,6 +173,11 @@ import { affitor } from '../lib/affitor.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// The Tracking API reads ISO 4217 minor units. Stripe uses the same units except ISK and UGX
+// (sent with two extra decimals) and MGA (sent with none), so convert those three.
+const toIsoMinor = (amount, currency) =>
+  currency === 'isk' || currency === 'ugx' ? amount / 100 : currency === 'mga' ? amount * 100 : amount;
+
 export default async function stripeWebhookRoutes(fastify) {
   fastify.post('/webhooks/stripe', async (request, reply) => {
     const signature = request.headers['stripe-signature'];
@@ -200,7 +205,7 @@ export default async function stripeWebhookRoutes(fastify) {
             // browser sent the lead; the customer key matches once your server sent the lead.
             clickId: session.metadata?.affitor_click_id,
             customerExternalId: session.metadata?.affitor_customer_key,
-            amount: session.amount_total, // minor units of session.currency (cents for USD)
+            amount: toIsoMinor(session.amount_total, session.currency), // ISO minor units (cents for USD)
             currency: session.currency,   // Stripe sends lowercase; Affitor reads it case-insensitively
             invoiceId: session.id,        // idempotency key; a duplicate returns 409
           });

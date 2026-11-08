@@ -2,7 +2,7 @@
 title: "Stripe"
 description: "Canonical recipe for attributing Stripe payments to Affitor partners — one-time and recurring."
 kind: guide
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 This guide is the **canonical reference for the Stripe sale path**. Other framework guides (Next.js, Express, etc.) link here for Step 3. If you need click capture or signup tracking first, start with the [Next.js guide](/docs/api-reference/integrations/nextjs) or the framework guide for your stack.
@@ -127,12 +127,18 @@ case 'invoice.paid': {
   if (invoice.billing_reason !== 'subscription_cycle') break;
   // Skip $0 renewals (100%-off coupons, fully credit-covered) — the SDK rejects a non-positive amount.
   if (!invoice.amount_paid || invoice.amount_paid <= 0) break;
+  // The Tracking API reads ISO 4217 minor units. Stripe uses the same units except ISK and UGX
+  // (sent with two extra decimals) and MGA (sent with none), so convert those three.
+  const c = invoice.currency; // lowercase from Stripe; Affitor reads it case-insensitively
+  const amount = c === 'isk' || c === 'ugx' ? invoice.amount_paid / 100
+    : c === 'mga' ? invoice.amount_paid * 100 : invoice.amount_paid;
   await affitor.trackSale({
     // Stripe Basil (2025-03-31+) moved subscription_details under invoice.parent;
     // read the Basil path first, fall back to the legacy top-level for pre-Basil accounts.
     customerExternalId: invoice.parent?.subscription_details?.metadata?.affitor_customer_key
       ?? invoice.subscription_details?.metadata?.affitor_customer_key,
-    amount: invoice.amount_paid,            // integer cents
+    amount,                                 // ISO minor units of invoice.currency (cents for USD)
+    currency: c,
     invoiceId: invoice.id,                  // idempotency key — 409 = already recorded
     isRecurring: true,
     saleType: 'subscription',

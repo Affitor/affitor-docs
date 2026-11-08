@@ -77,7 +77,7 @@ The tracker sends events to `https://api.affitor.com`. To send them to a non-pro
 | `init` | `(options: { programId?: string \| number; debug?: boolean }) => void` | Starts the tracker. It runs on its own when the script loads (through `loadAffitor` or the script tag), so you do not need to call it. |
 | `trackLead` | `(data: TrackLeadData) => Promise<void>` | Deprecated: use `signup`. Older alias that calls `signup` with the object's `customer_key` (or `user_id`) and `email`. |
 
-> `signup()` requires `customerKey`, your own user id. By default a browser `signup()` records a provisional lead that links no customer yet (the Lead tracking section shows "Browser leads: server/payment confirmation required"). A later backend sale that sends only `customerExternalId` then finds no customer and is refused with `400` `Customer not found`. Send the lead from your server as well (`trackLead` with `customerExternalId` and `clickId`), or pass `clickId` with the sale.
+> `signup()` requires `customerKey`, your own user id. By default a browser `signup()` records a provisional lead, which does not bind your customer key to the customer record for later sale matching (the Lead tracking section shows "Browser leads: server/payment confirmation required"). A later backend sale that sends only `customerExternalId` then finds no customer and is refused with `400` `Customer not found`. Send the lead from your server as well (`trackLead` with `customerExternalId` and `clickId`), or pass `clickId` with the sale.
 
 ### `AffitorData`
 
@@ -272,6 +272,13 @@ import Affitor from '@affitor/sdk/server';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY! });
 
+// The Tracking API reads ISO 4217 minor units. Stripe uses the same units except ISK and UGX
+// (sent with two extra decimals) and MGA (sent with none), so convert those three.
+function toIsoMinor(amount: number, currency: string): number {
+  if (currency === 'isk' || currency === 'ugx') return amount / 100;
+  return currency === 'mga' ? amount * 100 : amount;
+}
+
 // POST /webhooks/stripe
 export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
   const event = stripe.webhooks.constructEvent(
@@ -284,7 +291,7 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
     const session = event.data.object as Stripe.Checkout.Session;
     const result = await affitor.trackSale({
       customerExternalId: session.client_reference_id ?? undefined,
-      amount: session.amount_total ?? 0,
+      amount: toIsoMinor(session.amount_total ?? 0, session.currency ?? 'usd'),
       invoiceId: session.payment_intent as string,
       currency: session.currency?.toUpperCase(),
       saleType: 'payment',
@@ -300,7 +307,7 @@ export async function handleStripeWebhook(rawBody: Buffer, sig: string) {
     const refund = event.data.object as Stripe.Refund;
     await affitor.trackRefund({
       invoiceId: refund.payment_intent as string,
-      refundAmountCents: refund.amount,
+      refundAmountCents: toIsoMinor(refund.amount, refund.currency),
     });
   }
 }

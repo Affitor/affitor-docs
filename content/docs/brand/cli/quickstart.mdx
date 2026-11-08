@@ -96,10 +96,10 @@ window.affitor.signup("user_123", "user@example.com");
 curl -X POST https://api.affitor.com/api/v1/track/lead \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"customer_key": "user_123", "email": "user@example.com"}'
+  -d '{"click_id": "YOUR_TRACKED_CLICK_ID", "customer_key": "user_123", "email": "user@example.com"}'
 ```
 
-By default the browser call alone is provisional; the server call settles the lead.
+By default the browser call alone is provisional; the server call settles the lead. Send the visitor's `affitor_click_id` as `click_id`: a first lead with only `customer_key` answers `400`, because the key is saved on the customer only when a lead settles.
 
 ---
 

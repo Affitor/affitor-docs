@@ -61,7 +61,7 @@ if (window.affitor) {
 ```
 
 **What matters here:**
-- By default a browser `signup()` records a provisional lead and does not store your identifier yet (the Lead tracking section shows "Browser leads: server/payment confirmation required"). Send the same lead from your server with your API key (`POST /api/v1/track/lead` with `click_id` and `customer_key`) so the identifier is stored for later matching.
+- By default a browser `signup()` records a provisional lead, which does not bind your identifier to the customer record for later sale matching (the Lead tracking section shows "Browser leads: server/payment confirmation required"). Send the same lead from your server with your API key (`POST /api/v1/track/lead` with `click_id` and `customer_key`) so the identifier is stored for later matching.
 - Reuse that same identifier as:
   - `customer_key` in Server-side tracking — your backend calls POST /api/v1/track/sale
   - `affitor_customer_key` in Stripe metadata
