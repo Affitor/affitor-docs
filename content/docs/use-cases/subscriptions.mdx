@@ -26,7 +26,7 @@ sequenceDiagram
     A->>A: Same partner, a commission while the term lasts
   end
   opt Refund or dispute
-    S->>A: Sends the refund or the withdrawn dispute
+    S->>A: Sends the refund or the dispute
     A->>A: Takes back the commission, in full or in part
   end
 ```
@@ -53,7 +53,7 @@ Canceling, pausing or changing the plan writes nothing in Affitor: a canceled su
     { title: 'Connect Stripe', text: '**Program settings** › **Payments** › **Connect Stripe**, as the program owner. Your subscriptions must bill on the Stripe account you connect.', href: '/docs/brand/tracking/connect-stripe-account#step-3-connect-it-to-your-program' },
     { title: 'Pass the click to the subscription', text: 'On Payment Links, the Buy Button and the Pricing Table, the tracker on the page does it. Your own Checkout Session adds `affitor_click_id` to `subscription_data.metadata`: invoices carry the subscription\'s metadata, not the session\'s.', href: '/docs/brand/tracking/payment-tracking-stripe#subscription-example' },
     { title: 'Choose how long renewals earn', text: '**Program settings** › **Commission** › **Type**. **One-time** earns on the first payment for a product, not on its renewals. **Lifetime** earns on every paid invoice. **Recurring** earns until the months in **For** have passed since the customer\'s first click on the partner link, not since the first payment: with 12 months, a customer who clicked in January and subscribed in March earns the partner commissions until January of the next year.', href: '/docs/brand/quickstart/setup-program#step-2-set-your-commission' },
-    { title: 'Refund in Stripe', text: 'Refund an invoice in Stripe, a renewal or the first one, and Affitor finds its commission: a full refund reverses it, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved). A dispute takes the commission back when Stripe withdraws the funds. If you win it, the commission stays reversed and you get a notification to review it.', href: '/docs/brand/quickstart/commission-approval-cash-flow#refund-handling' },
+    { title: 'Refund in Stripe', text: 'Refund an invoice in Stripe, a renewal or the first one, and Affitor finds its commission: a full refund reverses it, a partial refund reduces a commission already approved and cancels one still `pending` (in its hold period, not yet approved). Affitor applies an active or lost chargeback to the matched commission; dispute inquiries and prevented disputes do not trigger a reversal. If the dispute is won, Affitor notifies you to review the commission and does not restore partner credit automatically.', href: '/docs/brand/quickstart/commission-approval-cash-flow#refund-handling' },
     { title: 'Make a test subscription', text: "In the connected account's test mode, subscribe through a partner link on your own Checkout Session, with the click in `subscription_data.metadata`. **Commissions** lists the first payment as **Test**. A test subscription from a Payment Link, the Buy Button or the Pricing Table can show no commission.", href: '/docs/brand/tracking/connect-stripe-account#step-4-test-with-stripe-test-mode' },
   ]}
 />

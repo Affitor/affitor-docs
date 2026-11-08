@@ -102,7 +102,7 @@ If you are not using Stripe Checkout, or you need to report a sale from a differ
 ## Common mistakes
 
 <CommonMistakes items={[
-  "Putting the click only in the session `metadata` of a subscription checkout. Affitor records subscription payments from invoices, which carry `subscription_data.metadata`, not the session's; without it the subscription is attributed only if the buyer's email or Stripe customer ID matches a customer Affitor already has.",
+  "Putting the click only in the session `metadata` of a subscription checkout. Affitor records subscription payments from invoices, which carry `subscription_data.metadata`, not the session's. On your own Checkout Session, put the click in `subscription_data.metadata` so it reaches the invoices. Without a click in invoice metadata, Affitor can still match an existing customer or use a valid Affitor `client_reference_id` from the subscription's Checkout Session, subject to account and program checks.",
   "Different customer IDs at signup vs checkout: `affitor_customer_key` must equal the `customerExternalId` / `customer_key` you sent at signup.",
   "Reading `affitor_click_id` from the wrong place on the server: it is a browser cookie, not a query param. Forward it from `req.cookies` or `cookies()` in your server handler.",
   "Tracking a sale from the browser: sale tracking is server-side only. Stripe metadata and `@affitor/sdk/server` both run on your server.",
@@ -115,7 +115,7 @@ If you are not using Stripe Checkout, or you need to report a sale from a differ
 
 If you self-host the Stripe webhook and call `trackSale` yourself (rather than relying on Affitor's Connect webhook), renewals need their **own handler**. The first payment fires as `checkout.session.completed`; every subsequent renewal arrives as a separate `invoice.paid` event with `billing_reason: 'subscription_cycle'`. Without a dedicated `case`, every renewal commission is silently missed.
 
-Attribution rides on the `affitor_customer_key` you planted in `subscription_data.metadata` at checkout creation: Stripe copies that onto the Subscription, and Stripe stamps it onto every renewal invoice. By default, `customer_key` matches only a customer your server already sent as a lead (`POST /api/v1/track/lead` with your API key). If the lead came only from the browser `signup()`, send `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
+Stripe copies the `subscription_data.metadata` you set at checkout creation onto the Subscription, and stamps it onto every renewal invoice. For a real server-side sale, `customer_key` matches a key already stored on a customer in your program. A default browser-only signup does not store it. Pass the subscription's `affitor_click_id` as `clickId` as well: a successful server-side sale does not save the customer key for later sales.
 
 Two nuances matter:
 
@@ -148,6 +148,8 @@ case 'invoice.paid': {
     // read the Basil path first, fall back to the legacy top-level for pre-Basil accounts.
     customerExternalId: invoice.parent?.subscription_details?.metadata?.affitor_customer_key
       ?? invoice.subscription_details?.metadata?.affitor_customer_key,
+    clickId: invoice.parent?.subscription_details?.metadata?.affitor_click_id
+      ?? invoice.subscription_details?.metadata?.affitor_click_id,
     amount,                                 // ISO minor units of invoice.currency (cents for USD)
     currency: c,
     invoiceId: invoice.id,                  // idempotency key; a 409 means this id was used before (the API's error.details.sale_id: yours, or null for another program)

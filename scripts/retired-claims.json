@@ -346,5 +346,35 @@
     "why": "The Stripe page (brand/tracking/payment-tracking-stripe) is the one reference for the Stripe sale path: events, lookup order, subscriptions. The integrations/stripe page is the code recipe.",
     "since": "2026-11-08",
     "allow": []
+  },
+  {
+    "pattern": "matches only a customer your server already sent as a lead|matched only after your server sent the lead with that key|as your server sent it in the lead|resolves attribution from the earlier `trackLead` call",
+    "why": "A real server-side sale matches customer_key against a key already stored on a customer of the program, which a server-verified lead or an attributed Stripe payment (the auto-lead) can store; a successful server-side sale does not store it. Without a stored key, send a matching click_id or the sale answers 400 Customer not found.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "Attribution rides on the `affitor_customer_key`",
+    "why": "A self-hosted renewal sent with only the customer key fails when the key was never stored (default browser-only signup); the renewal handler passes the subscription's affitor_click_id as clickId too.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "(subscription is|payments are|renewals are) attributed only if the buyer.s email|(attribute them|attributes the subscription) only by the buyer.s email",
+    "why": "Without a click in invoice metadata, the Stripe path can still match an existing customer or use a valid Affitor client_reference_id from the subscription's Checkout Session (Payment Links, Buy Button, Pricing Table), subject to account and program checks.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "stays reversed|when Stripe withdraws the funds|when a chargeback takes the money",
+    "why": "Dispute events are handled by the dispute's current status: an active or lost chargeback applies the disputed amount to the matched commission (full or partial); a won dispute sends a review notification and restores no partner credit. A commission is not guaranteed to be in reversed state.",
+    "since": "2026-11-08",
+    "allow": []
+  },
+  {
+    "pattern": "in `metadata` too does no harm",
+    "why": "The code only proves that copying the fields to the Checkout Session's metadata creates no additional subscription sale; it is not a general no-effect guarantee.",
+    "since": "2026-11-08",
+    "allow": []
   }
 ]

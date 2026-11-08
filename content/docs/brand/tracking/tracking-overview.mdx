@@ -104,7 +104,7 @@ Choose one supported revenue path:
 | **Server-side tracking** | your backend controls revenue events |
 | **Stripe integration** | you already use Stripe Checkout / Stripe integration |
 
-With server-side tracking, your backend calls `POST /api/v1/track/sale` when payment succeeds. By default, a sale with only `customer_key` is matched only after your server sent the lead with that key. If the lead came only from the browser, send the `click_id` as well; otherwise the sale is refused with `400` `Customer not found`.
+With server-side tracking, your backend calls `POST /api/v1/track/sale` when payment succeeds. For a real server-side sale, `customer_key` matches a key already stored on a customer in your program, for example by a server-verified lead or an attributed Stripe payment. If the key has not been stored, send a matching `click_id`; otherwise the request returns `400 Customer not found`.
 
 With the Stripe integration, you keep charging in your own Stripe account and attach Affitor metadata.
 
@@ -116,7 +116,7 @@ Affitor must be able to resolve the customer of a server-side sale via `customer
 
 ### 6. Commission and platform records are created
 
-When attribution succeeds, Affitor records the sale and creates the commission flow. Commissions then wait out the program's hold period, are approved into the partner's balance, and are paid out when the partner requests a withdrawal after you pay the invoice that covers them.
+After attribution and payment-admission checks pass, Affitor records the sale. Commission creation can be held when the payment cannot be priced. Eligible commissions follow the program's hold and approval rules; test, self-referral and other held commissions have separate rules. See the [cash-flow guide](/docs/brand/quickstart/commission-approval-cash-flow) for approval, invoice funding and withdrawal conditions.
 
 How you are billed for it: [Pricing](/docs/getting-started/pricing-performance-model).
 
@@ -168,7 +168,7 @@ If you use Stripe subscriptions:
 - Include metadata on the checkout session.
 - Include the same metadata on `subscription_data.metadata`.
 
-Without subscription metadata, the click does not reach the subscription's invoices (first payment and renewals), and Affitor can attribute them only by the buyer's email or Stripe customer ID.
+On your own Checkout Session, put the click in `subscription_data.metadata` so it reaches the invoices. Without a click in invoice metadata, Affitor can still match an existing customer or use a valid Affitor `client_reference_id` from the subscription's Checkout Session, subject to account and program checks.
 
 ---
 
