@@ -51,11 +51,12 @@ After you sign in, Affitor sends you back to the app. It accepts only these retu
 - `www.cursor.com` (Cursor)
 - `grok.com/connectors-oauth-exchange-code/` (Grok)
 - `vscode.dev/redirect` and `insiders.vscode.dev/redirect` (VS Code)
-- `www.perplexity.ai/rest/connections/oauth_callback` (Perplexity)
+- `www.perplexity.ai/rest/connections/oauth_callback` and `enterprise.perplexity.ai/rest/connections/oauth_callback` (Perplexity, including Perplexity Enterprise)
+- `www.town.com/api/mcp/oauth/callback` and `town.com/api/mcp/oauth/callback` (Town)
 - `manufact.com/inspector/oauth/callback` (Manufact inspector)
 - apps on your own computer: `http://127.0.0.1` or `http://localhost`, any port
 
-An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost". Organizations that use Perplexity on its Enterprise address, `enterprise.perplexity.ai`, cannot connect: that address is not on the list.
+An app that registers any other address is refused when it registers, with the error "redirect_uris must be https on a supported AI app host, or http on 127.0.0.1 or localhost".
 
 ---
 

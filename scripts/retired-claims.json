@@ -304,5 +304,11 @@
     "why": "After a sale 500 the transaction_id may already hold a recorded sale; a retry with the same id that reaches the duplicate check answers 409 with the sale_id instead of recording again.",
     "since": "2026-11-07",
     "allow": []
+  },
+  {
+    "pattern": "enterprise\\.perplexity\\.ai`?,? cannot connect|Perplexity Enterprise cannot connect",
+    "why": "Since the backend release of 7 November 2026 the MCP sign-in accepts Perplexity's Enterprise callback (enterprise.perplexity.ai/rest/connections/oauth_callback).",
+    "since": "2026-11-07",
+    "allow": []
   }
 ]
