@@ -295,7 +295,7 @@
   },
   {
     "pattern": "transaction_id`? is not consumed",
-    "why": "After a sale 500 the transaction_id may already hold a recorded sale; the retry with the same id answers 409 with the sale_id instead of recording again.",
+    "why": "After a sale 500 the transaction_id may already hold a recorded sale; a retry with the same id that reaches the duplicate check answers 409 with the sale_id instead of recording again.",
     "since": "2026-11-07",
     "allow": []
   }

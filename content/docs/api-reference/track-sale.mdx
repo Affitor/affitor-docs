@@ -247,7 +247,7 @@ The USD example sends a total of 4900 minor units, including 400 of tax. The com
 | `money_status` | string | `fx_pending` in the unpriced response above. |
 
 <Callout type="info" title="Idempotency">
-  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program. Affitor does not create a duplicate sale, so you can safely retry on network failure. Retry a `500` the same way: a `500` does not prove that nothing was recorded, and if an earlier attempt recorded the sale, the retry answers `409` with its `sale_id`.
+  Re-sending the same `transaction_id` returns `409 Conflict` with `error.code` `duplicate_transaction` and your program's earlier sale id in `error.details.sale_id`, or `null` when the earlier sale belongs to another program. Affitor does not create a duplicate sale, so you can safely retry on network failure. Retry a `500` the same way, with the same `transaction_id`: a `500` does not prove that nothing was recorded. A retry can fail again with `500`; one that reaches the duplicate check answers `409` with the earlier `sale_id`.
 </Callout>
 
 <Callout type="warning" title="409 is not an error">

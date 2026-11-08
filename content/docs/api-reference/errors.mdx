@@ -343,9 +343,9 @@ A `500` means the request failed on our side. The message is deliberately generi
 |--------|---------------|---------|-----|
 | `500` | `Click tracking failed` | The click handler failed unexpectedly | Retry with backoff |
 | `500` | `Lead tracking failed` | The lead handler failed unexpectedly | Retry with backoff. If the first attempt did record the lead, the retry can answer `400` `Customer status cannot be updated to lead`, which is safe to ignore |
-| `500` | `Sale tracking failed` | The sale could not be recorded, or the server could not confirm that it was | A `500` does not prove that nothing was recorded. Retry with backoff and the **same** `transaction_id`: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`, so it is never recorded twice. If it keeps failing, contact support with the `X-Request-ID` |
+| `500` | `Sale tracking failed` | The sale could not be recorded, or the server could not confirm that it was | A `500` does not prove that nothing was recorded. Retry with backoff and the **same** `transaction_id`. A retry can fail again with `500`; one that reaches the duplicate check answers `409` with your program's `sale_id` if an earlier attempt recorded the sale, so the sale is not recorded twice. If it keeps failing, contact support with the `X-Request-ID` |
 | `500` | `Refund tracking failed` | The refund handler failed unexpectedly | Retry with backoff. If it persists, contact support with the `X-Request-ID` |
-| `500` | `Failed to create commission` | The commission could not be created | Retry with the same `transaction_id`, as for `Sale tracking failed`: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`. If it keeps failing, contact support with the `X-Request-ID` |
+| `500` | `Failed to create commission` | The commission could not be created | Retry with backoff and the same `transaction_id`, as for `Sale tracking failed`. If it keeps failing, contact support with the `X-Request-ID` |
 | `500` | `Failed to compute readiness. Retry shortly.` | `GET /api/v1/programs/me/readiness` failed. [Typed envelope](#the-typed-envelope), code `internal_error` | Wait `retry_after_seconds` (10), then poll again |
 
 ```json
@@ -565,10 +565,10 @@ The SDK applies this value as the cookie expiry. Edge cases:
 The sale endpoint uses `transaction_id` as a globally unique idempotency key stored as `processor_event_id`. The rules:
 
 - Sending the same `transaction_id` twice returns `409 Conflict` — the second request is a no-op.
-- The 409 is **not** an error to retry. Your integration should treat it as "already recorded" and proceed.
+- A `409` with a non-null `error.details.sale_id` is **not** an error to retry: your program already recorded the sale, so treat it as recorded and proceed. A `409` with `sale_id: null` is not a recorded sale for your program: do not switch to a new `transaction_id`; contact support with the `X-Request-ID`.
 - `error.details.sale_id` is your program's earlier sale id, or `null` when the earlier sale belongs to another program. A `null` means nothing was recorded for your program under this `transaction_id`.
 - Test-mode sales use `test_txn_<timestamp>` when `transaction_id` is omitted, so test records are never duplicates unless you pass the same value explicitly.
-- On a `500` from the sale endpoint (`Sale tracking failed` or `Failed to create commission`), retry the same request with the same `transaction_id`. A `500` does not prove that nothing was recorded: if an earlier attempt recorded the sale, the retry answers `409` with your program's `sale_id`. Never switch to a new `transaction_id` to get past a `409`.
+- On a `500` from the sale endpoint (`Sale tracking failed` or `Failed to create commission`), retry the same request with the same `transaction_id`. A `500` does not prove that nothing was recorded. A retry can fail again with `500`; one that reaches the duplicate check answers `409` with your program's `sale_id` if an earlier attempt recorded the sale, so the sale is not recorded twice. Never switch to a new `transaction_id` to get past a `409`.
 
 **Recommended pattern:**
 
@@ -583,12 +583,18 @@ const response = await fetch('https://api.affitor.com/api/v1/track/sale', {
 });
 
 if (response.status === 409) {
-  // Already recorded — safe to continue
-  return;
+  const body = await response.json();
+  if (body.error?.details?.sale_id != null) {
+    // Your program already recorded this sale: safe to continue
+    return;
+  }
+  // Another program used this transaction_id: nothing was recorded for yours
+  throw new Error(`Affitor 409 without a sale_id, contact support: ${response.headers.get('X-Request-ID')}`);
 }
 
 if (!response.ok) {
-  // Unexpected error — log and alert
+  // On a 500, retry later with the same transaction_id: a 500 does not prove nothing was recorded.
+  // Other errors: log and alert
   const body = await response.json();
   // `error` is always an object. `code` is on the typed envelope and, for
   // track/sale and track/refund, on the platform envelope too; other platform
