@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 Pick the tab for how your app signs users up.
 
 <Tabs items={['No auth library', 'Clerk', 'NextAuth', 'Supabase']}>
-<Tab value="No auth library" id="no-auth-library">
+<Tab value="No auth library" id="no-auth-library" forceMount>
 
 When a user finishes signing up, link them to their click from your server, with **your own stable user ID**: you'll reuse this exact value at sale time. Send it with the server SDK and your program API key (e.g. in a route handler or right after the DB write):
 
@@ -94,7 +94,7 @@ The tracker also has a browser helper, `affitor.signup(user.id, user.email)` (fr
 :::
 
 </Tab>
-<Tab value="Clerk" id="clerk">
+<Tab value="Clerk" id="clerk" forceMount>
 
 The `affitor_click_id` is stored in a **first-party browser cookie**. A server-side Clerk webhook (`user.created`) runs with no access to that cookie, so it cannot supply the click ID on its own.
 
@@ -202,7 +202,7 @@ Place `<AffitorSignup />` only on the page a new user lands on right after regis
 :::
 
 </Tab>
-<Tab value="NextAuth" id="nextauth">
+<Tab value="NextAuth" id="nextauth" forceMount>
 
 **The cookie gap**
 
@@ -373,7 +373,7 @@ export const authConfig: NextAuthConfig = {
 If you cannot reliably forward the click ID into `events.createUser`, **use the server route above.**
 
 </Tab>
-<Tab value="Supabase" id="supabase">
+<Tab value="Supabase" id="supabase" forceMount>
 
 Send the lead from your server with your program API key, which is what settles it: every program requires server-verified leads unless it is set to `browser_allowed` (see [Lead auth policy](/docs/api-reference/track-lead/#lead-auth-policy)).
 

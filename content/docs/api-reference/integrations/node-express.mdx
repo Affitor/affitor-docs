@@ -20,14 +20,14 @@ The `@affitor/sdk` package is **Beta**. The documented happy-path works; report 
 - `@affitor/sdk` installed in your backend (the Fastify example also installs `stripe`)
 
 <Tabs groupId="node-framework" items={['Express', 'Fastify']}>
-<Tab value="Express">
+<Tab value="Express" forceMount>
 
 ```bash
 npm i @affitor/sdk
 ```
 
 </Tab>
-<Tab value="Fastify">
+<Tab value="Fastify" forceMount>
 
 ```bash
 npm i @affitor/sdk stripe
@@ -79,7 +79,7 @@ export const affitor = new Affitor({ apiKey: process.env.AFFITOR_API_KEY });
 ```
 
 <Tabs groupId="node-framework" items={['Express', 'Fastify']}>
-<Tab value="Express">
+<Tab value="Express" forceMount>
 
 ```js
 // routes/signup.js
@@ -114,7 +114,7 @@ export default router;
 ```
 
 </Tab>
-<Tab value="Fastify">
+<Tab value="Fastify" forceMount>
 
 ```js
 // routes/signup.js
@@ -192,7 +192,7 @@ const session = await stripe.checkout.sessions.create({
 ### Option B: Server-side tracking (any payment provider)
 
 <Tabs groupId="node-framework" items={['Express', 'Fastify']}>
-<Tab value="Express">
+<Tab value="Express" forceMount>
 
 Call `trackSale` directly from your payment webhook or post-charge handler.
 
@@ -226,7 +226,7 @@ router.post('/webhooks/payment', async (req, res) => {
 ```
 
 </Tab>
-<Tab value="Fastify">
+<Tab value="Fastify" forceMount>
 
 This example tracks the sale from your own Stripe webhook (self-hosted sale tracking). It reads the Affitor metadata from the Checkout Session, so attach it as in Option A.
 
