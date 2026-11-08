@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  x-affitor-contract: {"attribution_window_default_days": 60, "attribution_window_max_days": 365, "cli_published": {"version": "0.4.6", "attribution_window_default_days": 90}, "lead_mode_default": "server_required", "sale_transaction_id_required": true, "refund_zero_on_v2": "rejected", "key_operations_full": ["click", "lead", "sale", "refund", "analytics", "readiness", "cli_status", "cli_test"], "key_operations_tracking_only": ["click", "lead", "sale", "refund"], "mcp_write_requires": ["MCP_MULTI_PROGRAM", "MCP_ACT"], "mcp_write_live": false, "mcp_selected_programs_max": 50}
+  x-affitor-contract: {"attribution_window_default_days": 60, "attribution_window_max_days": 365, "cli_published": {"version": "0.4.7", "attribution_window_default_days": 60}, "lead_mode_default": "server_required", "sale_transaction_id_required": true, "refund_zero_on_v2": "rejected", "key_operations_full": ["click", "lead", "sale", "refund", "analytics", "readiness", "cli_status", "cli_test"], "key_operations_tracking_only": ["click", "lead", "sale", "refund"], "mcp_write_requires": ["MCP_MULTI_PROGRAM", "MCP_ACT"], "mcp_write_live": false, "mcp_selected_programs_max": 50}
   title: Affitor Tracking API
   version: 1.0.0
   description: |
