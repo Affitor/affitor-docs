@@ -16,6 +16,8 @@ const APP = join(ROOT, '.next/server/app');
 const ORIGIN = 'https://affitor.com';
 const SITE = `${ORIGIN}/docs`;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+// Same rule as src/lib/agent-md.ts: a heading's custom id stays out of the twin.
+const HEADING_ID = /^(#{1,6} .*?)[ \t]*\[#[a-z][a-z0-9-]*\][ \t]*$/gm;
 // Mirror of DOC_KINDS in source.config.ts.
 const DOC_KINDS = ['concept', 'quickstart', 'guide', 'reference', 'terms', 'explainer', 'faq'];
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -45,7 +47,7 @@ function document(file) {
 function markdown(data, fallbackTitle) {
   const title = data.title ?? fallbackTitle;
   const head = data.description ? `# ${title}\n\n> ${data.description}` : `# ${title}`;
-  return `${head}\n\n${data.raw.replace(FRONTMATTER, '').trim()}\n`;
+  return `${head}\n\n${data.raw.replace(FRONTMATTER, '').replace(HEADING_ID, '$1').trim()}\n`;
 }
 
 /**
