@@ -2,7 +2,7 @@
 title: CLI Quickstart
 description: "Create your affiliate program from the terminal with npx affitor, add click, signup and payment tracking, and test the integration."
 kind: quickstart
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Get your affiliate program running in under 5 minutes -- program creation and live tracking from your terminal. Stripe is connected in the dashboard, not the CLI.
@@ -50,11 +50,11 @@ After confirming, the CLI creates your program and generates:
   AGENTS.md       -- AI agent instructions (primary, universal standard)
   config.json     -- program ID, settings
   .env            -- API key and program ID (gitignored)
-  .env.example    -- the same variables, API key included (gitignored)
+  .env.example    -- the same variables, API key left empty (gitignored)
   skills.md       -- same content as AGENTS.md (backward-compat)
 ```
 
-`AGENTS.md` holds your program's values (program ID, domain, commission, cookie window, API base URL), the click, signup and sale snippets, the CLI commands, and the customer ID table from [Step 4](#use-one-customer-id-everywhere). It holds no API key, so you can commit it. `init` also adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps `.env` and `.env.example` out of Git: both hold the key.
+`AGENTS.md` holds your program's values (program ID, domain, commission, cookie window, API base URL), the click, signup and sale snippets, the CLI commands, and the customer ID table from [Step 4](#use-one-customer-id-everywhere). It holds no API key, so you can commit it. `init` also adds `.affitor/.env` and `.affitor/.env.*` to your `.gitignore`, which keeps `.env` and `.env.example` out of Git. Only `.env` holds the key.
 
 :::tip[Works with any AI coding tool]
 
@@ -180,7 +180,7 @@ Output is valid JSON, ready for AI agents to parse:
 ```json
 {
   "program_id": 430,
-  "api_key": "aff_...",
+  "api_key_file": ".affitor/.env",
   "domain": "example.com",
   "status": "created",
   "tracking": {

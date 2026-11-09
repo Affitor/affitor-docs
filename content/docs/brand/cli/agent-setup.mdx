@@ -2,7 +2,7 @@
 title: Set up a coding agent
 description: Preview project-scoped Affitor MCP configuration, apply it for your coding agent, and check local files with doctor.
 kind: guide
-last_updated: 2026-11-07
+last_updated: 2026-11-08
 ---
 
 Configure Claude Code, Cursor, or Codex to use Affitor's local tracking MCP server in your project. CLI 0.4.5 adds a preview, an explicit apply step, and a read-only static check.
@@ -14,7 +14,7 @@ This uses a **program API key** for integration work. To read account reports th
 Run from your app's project root. This example selects Claude Code; replace `claude_code` with `cursor` or `codex` for your client.
 
 ```bash
-npx affitor@0.4.5 agent setup --client claude_code --dry-run --json
+npx affitor@0.4.8 agent setup --client claude_code --dry-run --json
 ```
 
 The output has `status: "planned"`, file paths, operations, backup paths, and any manual instructions. It does not include existing config contents or write files. Repeat `--client` to select multiple clients from your own terminal.
@@ -26,7 +26,7 @@ When a coding agent invokes setup, it can configure only itself. Without `--clie
 After reviewing the preview, run:
 
 ```bash
-npx affitor@0.4.5 agent setup --client claude_code --yes --json
+npx affitor@0.4.8 agent setup --client claude_code --yes --json
 ```
 
 Unlike `onboard --json`, **`agent setup --yes --json` writes files**. Without `--yes` or `--auto-confirm`, an interactive run asks before applying; a JSON or non-interactive run returns `needs_confirmation` and exits `1`.
@@ -52,7 +52,7 @@ The launcher reads the environment first, then `.affitor/.env`. It starts the pi
 ## 4. Check the local files
 
 ```bash
-npx affitor@0.4.5 doctor --client claude_code --json
+npx affitor@0.4.8 doctor --client claude_code --json
 ```
 
 `doctor` reads local configuration without editing files or calling Affitor. It checks `AFFITOR_API_KEY` in the environment or `.affitor/.env`; the global `--api-key` and `--api-url` flags do not change this check.

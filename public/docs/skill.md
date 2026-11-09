@@ -33,7 +33,7 @@ Affitor tracks affiliate **click → lead (signup) → sale** and attributes rev
 
 ### Optional local agent connection
 
-CLI 0.4.5 can preview project-scoped MCP configuration and an Affitor skill with `npx affitor@0.4.5 agent setup --dry-run --json`. A detected agent selects itself and can configure only itself. Review the plan before applying it. See [Set up a coding agent](https://affitor.com/docs/brand/cli/agent-setup) for explicit client selection, private key configuration, and Codex's manual step.
+The CLI can preview project-scoped MCP configuration and an Affitor skill with `npx affitor@0.4.8 agent setup --dry-run --json`. A detected agent selects itself and can configure only itself. Review the plan before applying it. See [Set up a coding agent](https://affitor.com/docs/brand/cli/agent-setup) for explicit client selection, private key configuration, and Codex's manual step.
 
 `affitor doctor` checks local files and credential format only; it does not authenticate the key or prove a live session. Restart the client, call `affitor_readiness`, and confirm the program identity. Ask before synthetic verification or other writes.
 
