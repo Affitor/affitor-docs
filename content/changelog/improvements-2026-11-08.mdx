@@ -1,5 +1,5 @@
 ---
-title: Grok and Muse Code on Integrations, and traffic in Markdown
+title: Link preview images, four more AI agents, and a withdrawal check
 date: 2026-11-08
 type: digest
 audience:
@@ -7,9 +7,10 @@ audience:
 - partners
 - developers
 surfaces:
+- dashboard
 - marketplace
 - mcp
-description: The Integrations page lists Grok and Muse Code, AI tool cards open their own setup steps, and Markdown category pages show monthly traffic.
+description: Shared links show preview images, Integrations adds Grok, Muse Code, Hermes Agent and OpenClaw, and a repeat withdrawal within five minutes is refused.
 context:
   avoid:
   - "Saying Grok or Muse Code connect in one click: Grok is a custom connector added at grok.com/connectors, Muse Code is set up from the terminal."
@@ -17,11 +18,22 @@ context:
   - "Saying category pages in Markdown showed traffic before: the values were left out since those pages first answered in Markdown."
   - "Saying partners can now choose programs: the consent screen already offered it; only the written steps changed."
   - "Saying AI tools can now write or change programs: connections still only read."
+  - "Saying every shared link shows a custom image: a page that cannot be drawn falls back to the default Affitor card."
+  - "Saying Hermes Agent or OpenClaw connect in one click: their cards open written steps."
+  - "Saying duplicate withdrawals are impossible: a different amount, or the same request after five minutes, still creates a second pending request."
+  - "Saying partners can cancel a payout: they cannot."
+  - "Saying a full refund before processing counts revenue: it stays at zero."
+  - "Saying the refund fix applies to older sales: it applies going forward only."
+  - "Saying every real visit now counts once: this change only stops previews from counting."
 ---
+
+### New
+
+- Links you share from Affitor now show a preview image made for that page or program.
 
 ### Improved
 
-- The **Integrations** page lists Grok and Muse Code with the other AI agents.
+- The **Integrations** page lists Grok, Muse Code, Hermes Agent and OpenClaw with the other AI agents.
 - Each AI tool card on **Integrations** opens that tool's own steps in Connect your AI tool.
 - The **Build on the Affitor API** tile is now **Server API**, under Frameworks and auth: track clicks, signups and sales from your backend.
 
@@ -29,3 +41,6 @@ context:
 
 - In **Connect an AI tool**, the partner steps now also say to pick your programs, then click **Allow**.
 - Category pages that answer in Markdown, such as `/ai-video.md`, now list each program's monthly traffic.
+- A repeat withdrawal, same amount to the same account within five minutes, is refused, and Affitor tells you the first one is already in **Payouts**.
+- On programs using Stripe Connect, a sale partly refunded before Affitor finished processing it now counts its net revenue and its conversion instead of staying at zero.
+- A chat app or crawler previewing a referral short link no longer adds to that link's visitor count.
