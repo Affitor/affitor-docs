@@ -25,6 +25,8 @@ context:
   - "Saying a full refund before processing counts revenue: it stays at zero."
   - "Saying the refund fix applies to older sales: it applies going forward only."
   - "Saying every real visit now counts once: this change only stops previews from counting."
+  - "Saying bots can never count: a direct request to the redirect endpoint still counts."
+  - "Saying every early-refunded sale is recovered: one whose refund record is missing or disputed stays held."
 ---
 
 ### New
@@ -41,6 +43,6 @@ context:
 
 - In **Connect an AI tool**, the partner steps now also say to pick your programs, then click **Allow**.
 - Category pages that answer in Markdown, such as `/ai-video.md`, now list each program's monthly traffic.
-- A repeat withdrawal, same amount to the same account within five minutes, is refused, and Affitor tells you the first one is already in **Payouts**.
-- On programs using Stripe Connect, a sale partly refunded before Affitor finished processing it now counts its net revenue and its conversion instead of staying at zero.
-- A chat app or crawler previewing a referral short link no longer adds to that link's visitor count.
+- Requesting the same amount to the same payout account again within five minutes, while the first is pending or approved, is refused with a note pointing to **Payouts**.
+- On Stripe Connect programs, a sale partly refunded before its numbers were counted now adds its net to program revenue and counts as a conversion, instead of staying at zero.
+- Chat app previews of a referral short link on affitor.com no longer add to its visitor count.
