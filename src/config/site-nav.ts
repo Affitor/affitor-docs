@@ -135,6 +135,7 @@ export const FOOTER_COLUMNS: { title: string; links: SiteLink[] }[] = [
 export const SOCIAL_LINKS = {
   x: 'https://x.com/affitor_ai',
   linkedin: 'https://linkedin.com/company/affitor',
+  github: 'https://github.com/Affitor',
 };
 
 // Same prompt as the dashboard's AskAI footer row (affiliate-dashboard LandingRedesign/AskAI.tsx, dash#758):
