@@ -388,5 +388,11 @@
     "why": "An overdue pause lifts only when no invoice of the program is still open (pending or overdue), and only for a pause the overdue check made. Paying the overdue invoice while a newer one is still open leaves the program paused.",
     "since": "2026-11-11",
     "allow": []
+  },
+  {
+    "pattern": "fixed amount for each (click|qualified lead)|percentage or fixed amount|CPC \\+ CPS",
+    "why": "A brand can save only sale commissions (one-time, recurring or lifetime), each a percentage of the sale: program settings refuse per-click and per-lead types, and no code pays a per-click or per-lead commission.",
+    "since": "2026-11-11",
+    "allow": []
   }
 ]
