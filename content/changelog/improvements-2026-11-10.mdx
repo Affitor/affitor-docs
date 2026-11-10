@@ -19,6 +19,9 @@ context:
   - "Saying Members gained or lost access: only the description of the Member permission level changed."
   - "Calling the Auto-approve card's page anything but Program settings › Status (its menu item reads Go live until the program is live)."
   - "Saying existing AI app connections were reset or must be reconnected: connections you already have keep working; only a new connection opens the consent screen."
+  - "Saying commission statuses, amounts or money changed: the two MCP list tools gained two read-only fields; what is stored is unchanged."
+  - "Saying other AI tools changed: only the Muse Code steps in Connect an AI tool changed."
+  - "Saying earnings or refunds were recalculated or paid: only the earned total a partner reads now keeps that commission."
 ---
 
 ### Improved
@@ -30,7 +33,10 @@ context:
 - **Auto-approve** is a **Yes** (Link right away) or **No** (You approve first) choice in program setup and in Program settings › **Status**. Saved choices stay as they are.
 - On **Members**, the permission level menu that Owners and Admins use describes **Member** as "Partners and the program, no money".
 - Connecting an AI app, including reconnecting the same one, always opens the consent screen for the account you are signed in with.
+- AI apps that list commissions over MCP (`list_commissions`, `list_my_commissions`) get each commission's `display_status`, and a `held_reason` when it is on hold or not eligible.
 
 ### Fixed
 
+- The **Muse Code** steps in **Connect an AI tool** give a `settings.json` that Muse Code reads: an `affitor` entry under `mcpServers` with `type: "streamable-http"`. Keep one `mcpServers` section in the file.
+- A commission that was partly refunded on a $0 sale no longer drops out of a partner's earned total, in the dashboard and for AI apps.
 - Switching a group that still pays per click or per lead to Cost Per Sale in **Edit Group** starts with an empty **Commission Rate (%)**, required before saving.
