@@ -19,9 +19,9 @@ context:
   - "Saying Members gained or lost access: only the description of the Member permission level changed."
   - "Calling the Auto-approve card's page anything but Program settings › Status (its menu item reads Go live until the program is live)."
   - "Saying existing AI app connections were reset or must be reconnected: connections you already have keep working; only a new connection opens the consent screen."
-  - "Saying commission statuses, amounts or money changed: the two MCP list tools gained two read-only fields; what is stored is unchanged."
-  - "Saying other AI tools changed: only the Muse Code steps in Connect an AI tool changed."
-  - "Saying earnings or refunds were recalculated or paid: only the earned total a partner reads now keeps that commission."
+  - "Saying the new display fields changed commission statuses, amounts or money: display_status and held_reason are two read-only fields on the two MCP list tools; what is stored is unchanged."
+  - "Saying other AI tools changed, or that the old Muse Code steps did not work: Muse Code's guide accepts the old spelling too; only the Muse Code steps changed, in Connect an AI tool and in the Connect your AI tool guide."
+  - "Saying a partner's Total earnings on Commissions changed, or that earnings were recalculated or paid: only the Commission column on Partners and the earnings AI apps read now count that commission."
   - "Saying program click counts or attribution changed, or that short links used to count twice: only the old referral program's Clicks stop counting full ?via= visits; credit rules and old counts stay as they were."
 ---
 
@@ -35,10 +35,12 @@ context:
 - On **Members**, the permission level menu that Owners and Admins use describes **Member** as "Partners and the program, no money".
 - Connecting an AI app, including reconnecting the same one, always opens the consent screen for the account you are signed in with.
 - AI apps that list commissions over MCP (`list_commissions`, `list_my_commissions`) get each commission's `display_status`, and a `held_reason` when it is on hold or not eligible.
-- Visits through a full referral link with `?via=` keep their referral credit but no longer add to **Clicks** under **From the old referral program** on **Referrals**. Short links still record clicks.
+- Visits through a full `?via=` referral link keep their referral credit but no longer add to **Clicks** under **From the old referral program** on **Referrals**. Short links still record clicks.
+- The **Muse Code** steps in **Connect an AI tool** use Muse Code's canonical `settings.json` spelling: `mcpServers` with `type: "streamable-http"`. A file with both `mcpServers` and `mcp_servers` disables MCP.
+- The docs have a new [Team roles](https://affitor.com/docs/brand/team-roles) page: what Owners, Admins, Members and Viewers can do in a program.
+- We tightened the address checks Affitor applies when it reads a program's website for its logo and health check.
 
 ### Fixed
 
-- The **Muse Code** steps in **Connect an AI tool** give a `settings.json` that Muse Code reads: an `affitor` entry under `mcpServers` with `type: "streamable-http"`. Keep one `mcpServers` section in the file.
-- A commission that was partly refunded on a $0 sale no longer drops out of a partner's earned total, in the dashboard and for AI apps.
+- On **Partners**, a partner's **Commission** now counts a commission that was partly refunded on a $0 sale, as do the earnings AI apps read. Balances and payouts are unchanged.
 - Switching a group that still pays per click or per lead to Cost Per Sale in **Edit Group** starts with an empty **Commission Rate (%)**, required before saving.
