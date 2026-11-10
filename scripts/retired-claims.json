@@ -376,5 +376,17 @@
     "why": "The code only proves that copying the fields to the Checkout Session's metadata creates no additional subscription sale; it is not a general no-effect guarantee.",
     "since": "2026-11-08",
     "allow": []
+  },
+  {
+    "pattern": "continue to resolve|never breaks partner URLs|tracking links keep working|click, lead, and sale events\\*\\* continue|not a tracking kill switch",
+    "why": "A program that is not active, including one paused for an overdue invoice, records no clicks: the click call answers 410 link_disabled. Leads and sales of customers who clicked before the pause are still recorded.",
+    "since": "2026-11-11",
+    "allow": []
+  },
+  {
+    "pattern": "returns to active automatically (once|when) the overdue invoice is marked paid|marking the invoice paid resumes the program",
+    "why": "An overdue pause lifts only when no invoice of the program is still open (pending or overdue), and only for a pause the overdue check made. Paying the overdue invoice while a newer one is still open leaves the program paused.",
+    "since": "2026-11-11",
+    "allow": []
   }
 ]

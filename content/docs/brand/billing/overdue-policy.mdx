@@ -2,10 +2,10 @@
 title: Overdue Invoices & Program Pause Policy
 description: How Affitor handles unpaid commission invoices, when programs pause, and how to resume.
 kind: reference
-last_updated: 2026-09-24
+last_updated: 2026-11-11
 ---
 
-When a commission invoice is not paid by its due date, Affitor pauses the program until the balance clears. Tracking links keep working, partner data is preserved, and the program returns to active automatically once the overdue invoice is marked paid.
+When a commission invoice is not paid by its due date, Affitor pauses the program until the balance clears. While it is paused, Affitor records no clicks on partner links, but leads and sales are still recorded and partner data is preserved. The program returns to active on its own once all of its open invoices are paid.
 
 <PageMeta
   items={[
@@ -22,7 +22,7 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
   <FlowStep>Invoice issued Mon 09:00 UTC</FlowStep>
   <FlowStep>Pay within 7 days → **paid:** Status: paid · **past due:** Status: overdue</FlowStep>
   <FlowStep>Program paused</FlowStep>
-  <FlowStep>Mark invoice paid</FlowStep>
+  <FlowStep>All open invoices paid</FlowStep>
   <FlowStep>Program auto-resumed</FlowStep>
 </Flow>
 
@@ -33,7 +33,7 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
 | **Net terms** | 7 days from issue date | The default. Talk to your account contact if you need different terms |
 | **Overdue check** | Daily at 10:00 UTC | Invoices past their due date are marked overdue |
 | **Program paused** | Same overdue run | The program enters a paused state; an email is sent to the workspace owner |
-| **Auto-resume** | When the invoice is marked paid | The program returns to active on its own; you do not need to reactivate it. A wire transfer is marked paid by Affitor's billing team after they match it to the invoice |
+| **Auto-resume** | When the last open invoice is marked paid | The program returns to active on its own once none of its invoices is still **Open** or **Overdue**, so pay any newer invoice along with the overdue one. You do not need to reactivate it. A wire transfer is marked paid by Affitor's billing team after they match it to the invoice |
 
 ---
 
@@ -43,31 +43,34 @@ Pause is triggered automatically the first time a commission invoice passes its 
 
 ### What changes while paused
 
-- **Program status** flips to **Paused** in your dashboard and in partner-facing views.
+- **Program status** shows **Paused** in your dashboard, and the top of **Billing** says what resumes it. Partners in the program see **Paused** on its page in their dashboard.
+- **Clicks** are not recorded. A visit through a partner link creates no click: the click call answers `410` with `link_disabled` ("Referral link is inactive"). See [Track Click](/docs/api-reference/track-click).
 - **Marketplace visibility** — paused programs are hidden from public partner discovery. Existing partners keep their dashboard access.
 - **Audit log** records the transition with a reference to the originating invoice.
 
 ### What does not change while paused
 
-- **Existing tracking links** continue to resolve. Affitor never breaks partner URLs while you resolve billing.
-- **Click, lead, and sale events** continue to be recorded. Sales attributed while paused still create commissions and platform fees exactly as when the program is active, and they appear on your next invoice. Pausing does not stop charges from accruing.
+- **Partner links** are not deleted or changed. They record clicks again as soon as the program is active.
+- **Lead and sale events** continue to be recorded for customers who clicked a partner link before the pause, by the same rules as when the program is active. Attributed sales still create commissions and platform fees, and once approved they are billed on a weekly invoice like any other commission. Pausing does not stop charges from accruing.
 - **Partner data** — referrals, audience, and historic commissions are preserved in full.
 - **Stripe Connect and customer-facing checkout** continue to work. Pause is a billing state, not a checkout state.
 
-> Pause is a billing signal, not a tracking kill switch. Your customers are unaffected. Partners see the program as paused inside their dashboard and stop receiving new applications.
+> Pause is a billing signal: it stops new clicks from being recorded, but your customers are unaffected and conversions from earlier clicks still count. New partners cannot find the program or apply to it in the marketplace until it resumes.
 
 ---
 
 ## How to resume
 
-A paused program returns to active automatically when the overdue invoice is marked paid. You do not need to reactivate it yourself. For a wire transfer, the invoice is marked paid once Affitor's billing team has matched your payment to it.
+A program paused by the overdue check returns to active on its own when its last open invoice is marked paid, so pay any newer invoice along with the overdue one. You do not need to reactivate it yourself. For a wire transfer, the invoice is marked paid once Affitor's billing team has matched your payment to it.
+
+A pause that the overdue check did not make, for example one set by Affitor for another reason, is not lifted by paying an invoice.
 
 ```mermaid
 sequenceDiagram
     Advertiser->>Affitor: Wire transfer arrives
     Affitor->>Affitor: Billing team matches payment to invoice
     Affitor->>Invoice: status = paid
-    Invoice->>Program: status = active
+    Invoice->>Program: status = active (no open invoice left)
     Affitor->>Audit: program_unpaused entry
 ```
 
@@ -79,7 +82,7 @@ sequenceDiagram
     Affitor's billing team matches the transfer to your invoice and marks it paid.
   </FlowCard>
   <FlowCard step="3" title="Your program returns to active">
-    Marking the invoice paid resumes the program, and the audit log records the unpause with the invoice number. You don't need to reactivate anything.
+    When no other invoice of the program is still open, marking this one paid resumes the program, and the audit log records the unpause with the invoice number. You don't need to reactivate anything.
   </FlowCard>
 </FlowGrid>
 
