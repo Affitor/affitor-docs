@@ -1,0 +1,76 @@
+---
+title: Team roles
+description: What Owners, Admins, Members and Viewers can do in a brand's program, who can invite or change whom, how ownership moves, and who is in partner chats.
+kind: concept
+last_updated: 2026-11-09
+---
+
+Everyone on your brand's team has a permission level in each program they work on: **Owner**, **Admin**, **Member** or **Viewer**. Open **Members** from the program menu to see who is on the team and each person's level. Every level can open it; only Owners and Admins can change it.
+
+Each level can do everything the level below it can, and more. Partner chats are the one exception: **Chat access** decides which levels join them (see [Partner chats](#partner-chats)).
+
+## What each level can do
+
+| Action | Owner | Admin | Member | Viewer |
+|---|---|---|---|---|
+| See the program's dashboard, partners, commissions, billing and team | Yes | Yes | Yes | Yes |
+| Approve or decline partner applications | Yes | Yes | Yes | No |
+| Rename groups, and add or move partners between them | Yes | Yes | Yes | No |
+| Change program settings: business details, tracking, partner links and how new partners join | Yes | Yes | Yes | No |
+| Run tracking checks (**Run check**) and **Go live** | Yes | Yes | Yes | No |
+| Change the commission type, rate or duration, for the program or a group | Yes | Yes | No | No |
+| Create or delete groups | Yes | Yes | No | No |
+| Approve, reject, extend the hold on, or mark a commission as fraud | Yes | Yes | No | No |
+| Create and manage API keys | Yes | Yes | No | No |
+| Choose who is in partner chats (**Chat access**) | Yes | Yes | No | No |
+| Invite, change and remove Admins, Members and Viewers | Yes | Members and Viewers only | No | No |
+| Make someone an owner | Yes | No | No | No |
+| Connect Stripe | Yes | No | No | No |
+| Pay an invoice by card, when card payment is available | Yes | No | No | No |
+| Read and reply in partner chats | Always | By default | When added | Read only, when added |
+
+The **Permission level** menu sums up three of the levels: **Admin**, "Manage the program, commissions, Members and Viewers"; **Member**, "Partners, chat and the program, no money"; **Viewer**, "Read only". A Member is in partner chats only once **Chat access** includes Members.
+
+## Invite people
+
+Owners and Admins see **Invite people** on **Members**.
+
+1. Select **Invite people**.
+2. Enter one or more emails, separated by commas.
+3. Choose a **Permission level**. An Owner can pick Admin, Member or Viewer; an Admin can pick Member or Viewer. It starts on Member.
+4. Select **Send invite**.
+
+The invite email has an **Accept invitation** link that works for 7 days. The person signs in, or creates an account, with the email you invited, and the program opens. Until they accept, their row's **⋯** menu has **Resend invite**, which emails a new 7-day link, and **Cancel invite**, which stops the link working. An expired invite can't be resent: invite the person again.
+
+An invite depends on the person who sent it, or last resent it. If that person is removed, or can no longer give that level, before the invite is accepted, it stops working and the invitee needs a new one.
+
+## Change or remove someone
+
+On a teammate's row, an Owner can move an Admin, Member or Viewer to another of those levels with the **Permission level** menu, or select **Remove from team** in the row's **⋯** menu. An Admin can do the same for Members and Viewers. Members and Viewers can't change anyone.
+
+No one can change their own level or remove themselves on **Members**, and Owner rows have no controls. Removing someone ends their access to the program, its partner chats included.
+
+## Owners
+
+When a program is created, the person who created the brand becomes its Owner. No one on the team can change that person's level or remove them.
+
+An Owner can make an active Admin, Member or Viewer an owner too: open their row's **⋯** menu, select **Make owner**, and confirm. The new owner can do everything you can, and you stay an owner. Owner isn't a choice in **Invite people**, so to add an owner, invite the person at another level and select **Make owner** once they accept.
+
+**Members** has no control that changes or removes an Owner, so **Make owner** adds an owner. It doesn't hand yours over.
+
+## Partner chats
+
+**Chat access**, on **Members**, sets which levels are in every chat with the program's partners:
+
+- **Owners**: always.
+- **Admins**: in by default.
+- **Members** and **Viewers**: in once an Owner or Admin ticks them and selects **Save**. Viewers can read but not reply.
+
+The setting belongs to the program and applies to all of its partner chats at once. Only Owners and Admins can change it. Unticking a level, or moving someone to a level that isn't ticked, takes them out of the program's partner chats. **Chat** shows in the left menu only for people who are in them.
+
+<NextStep
+  title="Manage program settings"
+  description="Where Members, Billing and API keys live, and how to rotate a key when someone with key access leaves."
+  href="/docs/brand/settings"
+  ctaLabel="Open the settings guide"
+/>
