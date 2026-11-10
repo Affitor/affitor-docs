@@ -378,8 +378,8 @@
     "allow": []
   },
   {
-    "pattern": "continue to resolve|never breaks partner URLs|tracking links keep working|click, lead, and sale events\\*\\* continue|not a tracking kill switch",
-    "why": "A program that is not active, including one paused for an overdue invoice, records no clicks: the click call answers 410 link_disabled. Leads and sales of customers who clicked before the pause are still recorded.",
+    "pattern": "Existing tracking links\\*\\* continue to resolve|never breaks partner URLs|tracking links keep working|click, lead, and sale events\\*\\* continue|not a tracking kill switch",
+    "why": "A program that is not active, including one paused for an overdue invoice, records no clicks: the click call answers 410 link_disabled. Leads and sales linked to earlier recorded clicks remain subject to the usual attribution rules.",
     "since": "2026-11-11",
     "allow": []
   },
@@ -390,8 +390,8 @@
     "allow": []
   },
   {
-    "pattern": "fixed amount for each (click|qualified lead)|percentage or fixed amount|CPC \\+ CPS",
-    "why": "A brand can save only sale commissions (one-time, recurring or lifetime), each a percentage of the sale: program settings refuse per-click and per-lead types, and no code pays a per-click or per-lead commission.",
+    "pattern": "fixed amount for each (click|qualified lead)|How much partners earn \\(percentage or fixed amount\\)|CPC \\+ CPS \\+ milestone bonuses",
+    "why": "Current dashboard settings offer One-time, Recurring and Lifetime sale commissions. Per-click and per-lead policies are unavailable as paid commission options.",
     "since": "2026-11-11",
     "allow": []
   }
