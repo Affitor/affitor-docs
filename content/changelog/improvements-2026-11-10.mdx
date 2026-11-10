@@ -22,6 +22,7 @@ context:
   - "Saying commission statuses, amounts or money changed: the two MCP list tools gained two read-only fields; what is stored is unchanged."
   - "Saying other AI tools changed: only the Muse Code steps in Connect an AI tool changed."
   - "Saying earnings or refunds were recalculated or paid: only the earned total a partner reads now keeps that commission."
+  - "Saying program click counts or attribution changed, or that short links used to count twice: only the old referral program's Clicks stop counting full ?via= visits; credit rules and old counts stay as they were."
 ---
 
 ### Improved
@@ -34,6 +35,7 @@ context:
 - On **Members**, the permission level menu that Owners and Admins use describes **Member** as "Partners and the program, no money".
 - Connecting an AI app, including reconnecting the same one, always opens the consent screen for the account you are signed in with.
 - AI apps that list commissions over MCP (`list_commissions`, `list_my_commissions`) get each commission's `display_status`, and a `held_reason` when it is on hold or not eligible.
+- Visits through a full referral link with `?via=` keep their referral credit but no longer add to **Clicks** under **From the old referral program** on **Referrals**. Short links still record clicks.
 
 ### Fixed
 
