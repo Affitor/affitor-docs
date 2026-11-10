@@ -2,7 +2,7 @@
 title: Connect your AI tool
 description: "Add the Affitor MCP server to Claude, Codex, ChatGPT, Cursor, VS Code, Grok, Muse Code or another MCP client, then sign in with Affitor. No API key needed."
 kind: guide
-last_updated: 2026-11-08
+last_updated: 2026-11-10
 ---
 
 Add the Affitor MCP server to your AI tool, then sign in with your Affitor account. No API key needed. You will add the server, sign in on affitor.com, choose your programs and click **Allow**.
@@ -147,17 +147,17 @@ Or add it by hand:
 
 ### Muse Code
 
-1. Add this to `~/.config/muse/settings.json` (create the file if it does not exist). If it exists, add only the `affitor` entry under `mcp_servers` and keep everything else:
+1. Add this to `~/.config/muse/settings.json` (create the file if it does not exist). If it exists, add only the `affitor` entry under `mcpServers` and keep everything else. Keep one `mcpServers` section. Having both `mcpServers` and `mcp_servers` disables MCP.
 
    ```json title="settings.json"
    {
      "schema_version": 1,
-     "mcp_servers": {
+     "mcpServers": {
        "affitor": {
-         "transport": "streamable_http",
+         "type": "streamable-http",
          "url": "https://mcp.affitor.com/mcp",
          "enabled": true,
-         "mode": "optional"
+         "required": false
        }
      }
    }
