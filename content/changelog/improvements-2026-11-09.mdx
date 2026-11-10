@@ -1,0 +1,42 @@
+---
+title: Planned integrations and One-click Stripe Payment Links
+date: 2026-11-09
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- tracking
+- dashboard
+description: Integrations lists planned integrations and marks Stripe Payment Links One-click; a missing page outside Docs, Blog and Changelog has one button.
+context:
+  avoid:
+  - "Saying a Planned integration works today: the section lists names only, with no date."
+  - "Saying Planned integrations appear in integrations.md or llms.txt: they stay out, so an AI agent never reads them as live."
+  - "Saying Stripe Payment Links tracking is new: only its label changed."
+  - "Saying the Clerk, Supabase Auth or NextAuth guides are new pages: the links now open the signup step of the Next.js guide."
+  - "Saying Stripe Payment Links need nothing on your site: the Affitor tracker on your page adds the click."
+  - "Saying the Page not found screen has a Go Back button or a large 404: it has one button and three links."
+  - "Saying groups that pay per click or per lead were converted or stop paying: their terms stay as they are."
+---
+
+### New
+
+- **Integrations** has a **Planned** section under **All**: Dodo Payments, Paddle, Vercel, Stripe App and Webhooks.
+
+### Improved
+
+- **Stripe Payment Links** on **Integrations** is marked **One-click**: one approval on Stripe's page, with no key and no webhook.
+
+<Media src="/docs/changelog/improvements-2026-11-09/payments.png" alt="Payments on the Integrations page: Stripe, Stripe Payment Links with a One-click tag, and Polar, each with its logo" />
+
+- The guide links on the Clerk, Supabase and NextAuth integration pages open the signup step of the Next.js guide.
+- A missing page outside Docs, Blog and the Changelog shows **Page not found** and one button: **Go to Dashboard** when signed in, **Go to Marketplace** when not.
+- The homepage steps and FAQ describe revenue share on sales only; the FAQ lists one-time, recurring for a set number of months, or lifetime.
+- The footer on the homepage, Pricing, Docs, Blog and the Changelog links to Affitor on GitHub.
+
+### Fixed
+
+- Partners who open a link to **Integrations** in their dashboard while signed out see it right after signing in, without reloading.
+- Editing a group that still pays per click or per lead keeps those terms unless you pick new ones.
