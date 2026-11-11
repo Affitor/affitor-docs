@@ -24,10 +24,20 @@ context:
   - "Saying a partner's Total earnings on Commissions changed, or that earnings were recalculated or paid: only the Commission column on Partners and the earnings AI apps read now count that commission."
   - "Saying program click counts or attribution changed, or that short links used to count twice: only the old referral program's Clicks stop counting full ?via= visits; credit rules and old counts stay as they were."
   - "Saying the Next.js guide changed: only the guide links on three integration pages changed, to open the guide on the matching library's tab."
+  - "Saying brands see a name and role on every message, or that partners see who on the brand's team wrote: on the brand side a name alone shows where another person's messages start, your own carry none, and the partner side shows no names."
+  - "Saying sign-up has one password field or asks for a password: the default sign-up uses Google or an email code; the one New password field is on Login and security and the Set a new password page, with the same password rules."
+  - "Saying a paused program moved out of the Active filter or stopped tracking: only its label on the partner's Programs list changed, and it still lists under Active."
+  - "Saying everyone who signs up sees Check Your Email: only a sign-up with a password shows it, and the default sign-up uses an email code or Google."
+  - "Saying existing accounts lost their passwords or that anyone must act: only a password sign-up confirmed by its email link after this fix loses that password, and accounts already confirmed keep theirs."
 ---
 
 ### Improved
 
+- **Chat** groups messages under a centered day and time at each new day or after an hour of quiet. Times show on hover or tap; only brands see writer names.
+
+<Media src="/docs/changelog/improvements-2026-11-10/chat-dividers.png" alt="A partner chat on the brand side: centered Today dividers with their times, the partner's name above each run of her messages, a teammate's name above their run on the right, and one message's time shown under it on hover" />
+
+- You type a new password once, in one **New password** field, on **Login and security** in your account and on the **Set a new password** page.
 - The **Planned** integrations on **Integrations** show their logos: Dodo Payments, Paddle, Vercel and Stripe App. Webhooks has an icon.
 
 <Media src="/docs/changelog/improvements-2026-11-10/planned.png" alt="The Planned section of the Integrations page: Dodo Payments and Paddle under Payments, Vercel and Stripe App under App platforms, Webhooks under Automation, each tile with its logo (an icon for Webhooks) and a Planned tag" />
@@ -46,3 +56,6 @@ context:
 - On **Partners**, a partner's **Commission** now counts a commission partly refunded after approval on a $0 sale, as do the earnings AI apps read. Balances and payouts are unchanged.
 - Switching a group that still pays per click or per lead to Cost Per Sale in **Edit Group** starts with an empty **Commission Rate (%)**, required before saving.
 - On the **Next.js + Clerk**, **Next.js + NextAuth** and **Next.js + Supabase** integration pages, **Read the guide** opens the Next.js guide on that library's tab, not **No auth library**.
+- On a partner's **Programs** list, a joined program that its brand paused shows **Paused**, not **Active**.
+- A sign-up with a password keeps **Check Your Email** on screen after **Create account**, with the address you entered; sign-ups by email code or Google never show it.
+- A password chosen at sign-up stops working when you confirm by the email link: sign in with **Email me a code** or set a new password. Confirmed accounts are unchanged.
