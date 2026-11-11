@@ -1,0 +1,71 @@
+---
+title: See what connects to Affitor in one diagram
+date: 2026-11-10
+type: feature
+audience: [brands, developers]
+surfaces: [sdk, cli, mcp]
+description: A diagram under Featured on Integrations groups payments, frameworks and auth, AI agents and payouts around Affitor, with how each group connects.
+context:
+  facts:
+    - "https://affitor.com/integrations shows the diagram under Featured and above All integrations. The page is public and shows in light theme only."
+    - "Affitor's blue A mark sits in the middle. On a wide screen, Payments and Frameworks and auth sit to its left and AI agents and Payouts to its right; on a phone, the first two sit above the mark and the other two below it."
+    - "Payments shows Stripe and Polar, each with a guide; its line is labeled Guide."
+    - "Frameworks and auth shows Next.js, Next.js + Clerk, Next.js + Supabase, Next.js + NextAuth, Node.js and Express, and Fastify, through the SDK, in beta; its line is labeled SDK beta, which opens the Next.js guide at https://affitor.com/docs/api-reference/integrations/nextjs."
+    - "CLI sits above the mark and opens the CLI quickstart at https://affitor.com/docs/brand/cli/quickstart. The CLI sets up a program from the terminal."
+    - "AI agents shows Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code, Gemini CLI, Perplexity, Grok, Muse Code, Hermes Agent and OpenClaw, over MCP; its line is labeled MCP, which opens the AI agents page at https://affitor.com/agents."
+    - "Payouts shows Wise; its line is labeled Built in. Partners get paid by Wise or bank transfer."
+    - "Each logo is a link and shows its name on hover. Stripe, Polar and the six framework logos open their pages under https://affitor.com/integrations; each AI app opens its section of the Connect your AI tool guide at https://affitor.com/docs/api-reference/connect-ai-tool; Wise opens the Payouts page at https://affitor.com/docs/brand/quickstart/payouts."
+    - "The lines draw once when the diagram scrolls into view, first into the mark and then out of it, and then stay still. With reduced motion, the finished diagram shows at once."
+    - "The category filter under All integrations changes only the list; the diagram stays the same."
+    - "In All integrations, the last Frameworks and auth tile is named API reference (it was Server API) and opens https://affitor.com/docs/api-reference/overview. The Featured payments card keeps the name Server API."
+  ui: ["Integrations", "Connect Affitor to the tools you use", "Featured", "All integrations", "Payments", "Frameworks and auth", "AI agents", "Payouts", "Guide", "SDK beta", "CLI", "MCP", "Built in", "API reference", "Server API"]
+  avoid:
+    - "Calling the integrations or the CLI new: they existed before this change; the diagram is what is new."
+    - "Saying the diagram shows every integration: Stripe Payment Links, the API reference tile, the Featured Server API card and the Planned integrations are not in it."
+    - "Moving dots, live data or numbers on the lines: the lines draw once and stop, and the diagram shows no counts."
+    - "Saying the diagram connects or sets up anything: it is a picture whose logos and three labels (SDK beta, CLI, MCP) open pages and guides."
+    - "Showing the diagram in the dashboard or behind a sign-in: it is on the public Integrations page."
+    - "Saying the diagram shows your own connections or their status: every visitor sees the same diagram of what can connect."
+    - "Saying the SDK is out of beta, or putting the SDK beta label on a group other than Frameworks and auth."
+    - "A dark version of the page: affitor.com shows Integrations in light theme only."
+    - "A drawn or typed logo, or another mark in the middle: every tile uses the vendor's own logo file, and the middle is Affitor's blue A mark."
+    - "Saying the Featured Server API card was renamed or removed, or that the API changed: only the All integrations tile's name changed."
+    - "Planned integrations (Dodo Payments, Paddle, Vercel, Stripe App, Webhooks) in the diagram or shown as live."
+  cta: { label: "See the diagram", url: "https://affitor.com/integrations" }
+---
+
+See what connects to Affitor, and how, in one diagram on the [Integrations](https://affitor.com/integrations) page.
+
+Until this week, the Integrations page went from the four **Featured** cards straight to the full list of tiles. Now a diagram sits between them: Affitor's mark in the middle, the four groups around it, and a label on each line that says how that part connects.
+
+## How it works
+
+- **Four groups**: Payments, Frameworks and auth, AI agents and Payouts, named like the filters below and shown with their real logos.
+- **A label per line**: **Guide**, **SDK beta**, **CLI**, **MCP** and **Built in** say how each part connects to Affitor.
+- **Links**: every logo opens a page or guide, and so do **SDK beta**, **CLI** and **MCP**.
+
+## Find your payment provider and framework
+
+**Payments** and **Frameworks and auth** sit to the left of the Affitor mark, or above it on a phone. Payments has Stripe and Polar, each with a guide. Frameworks and auth has Next.js, Next.js with Clerk, Supabase or NextAuth, Node.js and Express, and Fastify, all through the SDK, which is in beta.
+
+Click a logo to open its integration page, or **SDK beta** to open the Next.js guide. Above the mark, **CLI** opens the CLI quickstart, for setting up a program from the terminal.
+
+<Media src="/docs/changelog/integrations-hub/payments-frameworks.png" alt="Integrations diagram: Payments with the Stripe and Polar logos and Frameworks and auth with six logos, joined to the Affitor mark by lines labeled Guide and SDK beta, with CLI above the mark" todo="Not shot yet: payments-frameworks-light.png, -dark.png, -phone-light.png, -phone-dark.png, -raw.png and -phone-raw.png" />
+
+## Find your AI app, and see how partners get paid
+
+**AI agents** and **Payouts** sit to the right of the mark, or below it on a phone. AI agents has 12 apps that connect over MCP, from Claude and ChatGPT to Cursor and Codex. Click one to open its steps in the Connect your AI tool guide, or **MCP** to open the AI agents page.
+
+Payouts has Wise, on a line labeled **Built in**: partners get paid by Wise or bank transfer, with nothing to connect.
+
+<Media src="/docs/changelog/integrations-hub/agents-payouts.png" alt="Integrations diagram: the Affitor mark joined by a line labeled MCP to AI agents with 12 app logos, and by a line labeled Built in to Payouts with the Wise logo" todo="Not shot yet: agents-payouts-light.png, -dark.png, -phone-light.png, -phone-dark.png, -raw.png and -phone-raw.png" />
+
+## Where to find it
+
+Open **Integrations** from **Product** in the site header, or go to [affitor.com/integrations](https://affitor.com/integrations). The diagram sits under **Featured** and above **All integrations**. The category filter changes only the list below it.
+
+In **All integrations**, the last **Frameworks and auth** tile, which opens the API reference, is now named **API reference**. It was named **Server API**, like the payments card in **Featured**, which keeps that name.
+
+## Conclusion
+
+What connects to Affitor, and how, now fits in one picture. [Learn more on Integrations](https://affitor.com/integrations), and write to support@affitor.com with any question.
