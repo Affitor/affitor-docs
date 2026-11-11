@@ -1,0 +1,46 @@
+---
+title: Planned integration logos and Auto-approve as Yes or No
+date: 2026-11-10
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- tracking
+- dashboard
+- mcp
+description: Planned integrations show their logos, Auto-approve is a Yes or No choice, and a per-click or per-lead group asks for a new rate when switched to sales.
+context:
+  avoid:
+  - "Saying a Planned integration works today: a Planned tile has a mark, a name and a Planned tag, with no link and no date."
+  - "Saying Auto-approve is a new setting or that a program's choice changed: only the wording changed, and saved choices stay as they are."
+  - "Saying groups that pay per click or per lead were converted: their terms stay until you pick a Cost Per Sale type and enter a rate."
+  - "Saying Members gained or lost access: only the description of the Member permission level changed."
+  - "Calling the Auto-approve card's page anything but Program settings › Status (its menu item reads Go live until the program is live)."
+  - "Saying existing AI app connections were reset or must be reconnected: connections you already have keep working; only a new connection opens the consent screen."
+  - "Saying the new display fields changed commission statuses, amounts or money: display_status and held_reason are two read-only fields on the two MCP list tools; what is stored is unchanged."
+  - "Saying other AI tools changed, or that the old Muse Code steps did not work: Muse Code's guide accepts the old spelling too; only the Muse Code steps changed, in Connect an AI tool and in the Connect your AI tool guide."
+  - "Saying a partner's Total earnings on Commissions changed, or that earnings were recalculated or paid: only the Commission column on Partners and the earnings AI apps read now count that commission."
+  - "Saying program click counts or attribution changed, or that short links used to count twice: only the old referral program's Clicks stop counting full ?via= visits; credit rules and old counts stay as they were."
+---
+
+### Improved
+
+- The **Planned** integrations on **Integrations** show their logos: Dodo Payments, Paddle, Vercel and Stripe App. Webhooks has an icon.
+
+<Media src="/docs/changelog/improvements-2026-11-10/planned.png" alt="The Planned section of the Integrations page: Dodo Payments and Paddle under Payments, Vercel and Stripe App under App platforms, Webhooks under Automation, each tile with its logo (an icon for Webhooks) and a Planned tag" />
+
+- **Auto-approve** is a **Yes** (Link right away) or **No** (You approve first) choice in program setup and in Program settings › **Status**. Saved choices stay as they are.
+- On **Members**, the permission level menu that Owners and Admins use describes **Member** as "Partners and the program, no money".
+- The docs have a new [Team roles](https://affitor.com/docs/brand/team-roles) page: what Owners, Admins, Members and Viewers can do in a program.
+- Connecting an AI app, including reconnecting the same one, always opens the consent screen for the account you are signed in with.
+- AI apps that list commissions over MCP (`list_commissions`, `list_my_commissions`) get each commission's `display_status`, and a `held_reason` when it is on hold or not eligible.
+- The **Muse Code** steps in **Connect an AI tool** use Muse Code's canonical `settings.json` spelling: `mcpServers` with `type: "streamable-http"`. A file with both `mcpServers` and `mcp_servers` disables MCP.
+- Visits through a full `?via=` referral link keep their referral credit but no longer add to **Clicks** under **From the old referral program** on **Referrals**. Short links still record clicks.
+- We tightened the address checks Affitor applies when it reads a program's website for its logo and health check.
+
+### Fixed
+
+- On **Partners**, a partner's **Commission** now counts a commission partly refunded after approval on a $0 sale, as do the earnings AI apps read. Balances and payouts are unchanged.
+- Switching a group that still pays per click or per lead to Cost Per Sale in **Edit Group** starts with an empty **Commission Rate (%)**, required before saving.
