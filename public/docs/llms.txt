@@ -17,6 +17,7 @@
 - [Launch Your Program](https://affitor.com/docs/brand/quickstart.md)
 - [Create your advertiser account](https://affitor.com/docs/brand/quickstart/create-account.md)
 - [Set Up Your Program](https://affitor.com/docs/brand/quickstart/setup-program.md)
+- [How marketplace levels work](https://affitor.com/docs/brand/marketplace-levels.md)
 - [Pricing](https://affitor.com/docs/getting-started/pricing-performance-model.md)
 
 ## Brands: Track sales
