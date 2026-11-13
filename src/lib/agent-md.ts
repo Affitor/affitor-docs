@@ -1,8 +1,9 @@
 import { source } from '@/lib/source';
 import { blog } from '@/../.source/server';
 import { postSlug } from '@/components/blog/post-meta';
+import { BLOG_DESCRIPTION, sortedPosts } from '@/lib/blog';
 import { CHANGELOG_SUB, CHANGELOG_URL, aiContext, entrySlug, entryUrl, openDeprecations, preamble, sortedEntries } from '@/lib/changelog';
-import { DOCS_URL, SITE_URL } from '@/lib/site';
+import { BLOG_URL, DOCS_URL, SITE_URL } from '@/lib/site';
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
 // A heading's custom id (`#### Hermes Agent [#hermes]`) is for the page's anchor, not for readers of the twin.
@@ -27,7 +28,18 @@ export function changelogIndex() {
   return `${head}${open.length ? `## Open deprecations\n\n${open.join('\n')}\n\n` : ''}## Entries\n\n${lines.join('\n')}\n`;
 }
 
+/** Body of /blog.md: one line per post, in the page's order. check-agent-surface.mjs rebuilds the same text from the sources. */
+export function blogIndex() {
+  const lines = sortedPosts().map(
+    (p) => `- ${p.date} · ${p.category} · [${p.title}](${BLOG_URL}/${postSlug(p.info.path)}): ${p.description}`,
+  );
+  return `# Affitor Blog\n\n> ${BLOG_DESCRIPTION}\n\n## Posts\n\n${lines.join('\n')}\n`;
+}
+
 async function renderBody(slug: string[]): Promise<string | null> {
+  // /blog.md: one line per post (each post has its own twin).
+  if (slug.length === 1 && slug[0] === 'blog') return blogIndex();
+
   // /blog/<slug>.md
   if (slug[0] === 'blog' && slug.length === 2) {
     const post = blog.find((p) => postSlug(p.info.path) === slug[1]);
@@ -135,9 +147,17 @@ function changelogPages(): AgentPage[] {
   ];
 }
 
+/** The blog index and its twin /blog.md; it changes whenever a post does, so it carries the newest post date. */
+function blogIndexPage(): AgentPage {
+  const updated = blog.map((post) => post.updated ?? post.date).sort().at(-1);
+  assertDates(updated ? [updated] : [], 'blog');
+  return { id: 'blog', type: 'blog', url: BLOG_URL, markdownUrl: `${BLOG_URL}.md`, updated };
+}
+
 export function getAgentPages(): AgentPage[] {
   return [
     ...source.getPages().map(getDocMetadata),
+    blogIndexPage(),
     ...blog.map((post): AgentPage => {
       const id = `blog/${postSlug(post.info.path)}`;
       const updated = post.updated ?? post.date;
