@@ -266,6 +266,8 @@ function invariants() {
       ['/docs', '/docs/index.md'],
       ['/docs/api-reference/errors', '/docs/api-reference/errors.md'],
       ['/blog/rewardful-alternatives', '/blog/rewardful-alternatives.md'],
+      // The blog index has its twin since the blog index twin change (13/11/2026), like the changelog index.
+      ['/blog', '/blog.md'],
       ['/changelog', '/changelog.md'],
       ['/changelog?for=brands', '/changelog.md?for=brands'],
       ['/changelog/invite-partners', '/changelog/invite-partners.md'],
@@ -273,8 +275,8 @@ function invariants() {
     for (const path of [
       // Not pages: no twin, even where a .md answers (/changelog/context.md is the AI context pack).
       '/docs/no-such-page', '/docs/brand/no-such-page', '/blog/no-such-post', '/changelog/no-such-entry', '/changelog/context',
-      '/blog', '/docs/api/search', '/docs/openapi.json', '/docs/llms-full.txt', '/docs/brand/quickstart.md', '/docs/skill.md',
-      '/docs/brand/dashboard.png', '/blog/rewardful-alternatives.md', '/blog/covers/x.png', '/changelog.md', '/changelog/invite-partners.md',
+      '/docs/api/search', '/docs/openapi.json', '/docs/llms-full.txt', '/docs/brand/quickstart.md', '/docs/skill.md',
+      '/docs/brand/dashboard.png', '/blog.md', '/blog/rewardful-alternatives.md', '/blog/covers/x.png', '/changelog.md', '/changelog/invite-partners.md',
       '/changelog/rss.xml', '/changelog.json', '/changelog/context.md', '/docsy', '/brand/quickstart',
     ]) check(`${host}${path} has no twin: Accept: text/markdown changes nothing`, untouched(host, path));
     // Redirects run before negotiation: the client negotiates again at the new URL.
@@ -395,14 +397,13 @@ mode('yes', () => {
 });
 delete process.env.DOCS_HOST_REDIRECT;
 
-check('twin list: docs index, changelog index, every blog post and changelog entry, no twin paths', () => {
+check('twin list: docs index, blog index, changelog index, every blog post and changelog entry, no twin paths', () => {
   const slugs = (dir) => readdirSync(join(ROOT, dir)).filter((f) => f.endsWith('.mdx')).map((f) => f.slice(0, -4));
-  for (const path of ['/docs', '/docs/brand/quickstart', '/changelog', ...slugs('content/blog').map((s) => `/blog/${s}`), ...slugs('content/changelog').map((s) => `/changelog/${s}`)]) {
+  for (const path of ['/docs', '/docs/brand/quickstart', '/blog', '/changelog', ...slugs('content/blog').map((s) => `/blog/${s}`), ...slugs('content/changelog').map((s) => `/changelog/${s}`)]) {
     assert.ok(TWIN_PAGES.includes(path), `${path} missing from src/generated/markdown-twins.json`);
   }
   for (const path of TWIN_PAGES) assert.match(path, /^\/(?:docs|blog|changelog)(?:\/[^.]+)?$/, `${path}: a page path, not a file`);
   assert.equal(TWIN_PAGES.includes('/changelog/context'), false);
-  assert.equal(TWIN_PAGES.includes('/blog'), false);
 });
 check(`every listed page (${TWIN_PAGES.length}) negotiates on affitor.com`, () => {
   for (const path of TWIN_PAGES) {

@@ -1,17 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { blog } from '@/../.source/server';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_URL } from '@/lib/site';
+import { BLOG_DESCRIPTION, sortedPosts, type Post } from '@/lib/blog';
+import { BLOG_URL, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
   title: { absolute: 'Blog | Affitor' },
-  description:
-    'Essays, launches, and guides from the team building Affitor — affiliate infrastructure for the agent era.',
-  // Canonical home of the blog is the proxied affitor.com/blog zone.
-  alternates: { canonical: BLOG_URL },
+  description: BLOG_DESCRIPTION,
+  // Canonical home of the blog is the proxied affitor.com/blog zone; /blog.md is its machine-readable twin.
+  alternates: { canonical: BLOG_URL, types: { 'text/markdown': '/blog.md' } },
   openGraph: {
     title: 'Affitor Blog',
     description:
@@ -27,10 +26,28 @@ export const metadata: Metadata = {
   },
 };
 
-type Post = (typeof blog)[number];
-
-function byDateDesc(a: Post, b: Post) {
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
+/** CollectionPage of every post, in the page's order (same list as /blog.md); each post page has its own BlogPosting. */
+function jsonLd(posts: Post[]) {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': BLOG_URL,
+    url: BLOG_URL,
+    name: 'Affitor Blog',
+    description: BLOG_DESCRIPTION,
+    publisher: { '@type': 'Organization', name: 'Affitor', url: SITE_URL },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      numberOfItems: posts.length,
+      itemListElement: posts.map((post, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${BLOG_URL}/${postSlug(post.info.path)}`,
+        name: post.title,
+      })),
+    },
+  }).replace(/</g, '\\u003c');
 }
 
 function PostCard({ post }: { post: Post }) {
@@ -78,10 +95,12 @@ function PostCard({ post }: { post: Post }) {
 }
 
 export default function BlogIndexPage() {
-  const posts = [...blog].sort(byDateDesc);
+  const posts = sortedPosts();
 
   return (
     <BlogShell>
+      {/* eslint-disable-next-line react/no-danger -- server-rendered schema; `<` escaped */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(posts) }} />
       <div className="mx-auto w-full max-w-[1152px] px-6 py-16 md:py-24">
         <header className="mb-16 md:mb-20">
           <p className="text-[13px] font-medium uppercase tracking-[0.04em] text-fd-primary mb-3">

@@ -65,6 +65,8 @@ const ALWAYS = [
   [PROXY, '/changelog/invite-partners', 200, null, 'text/html'],
   [PROXY, '/changelog.md', 200, null, 'text/markdown'],
   [PROXY, '/changelog/invite-partners.md', 200, null, 'text/markdown'],
+  // The blog index twin (13/11/2026), which affitor.com/blog.md proxies to.
+  [PROXY, '/blog.md', 200, null, 'text/markdown'],
   [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml'],
   [PROXY, '/changelog.json', 200, null, 'application/json'],
   [PROXY, '/changelog/context.md', 200, null, 'text/markdown'],
@@ -150,7 +152,8 @@ const ALWAYS = [
   [PROXY, '/changelog/invite-partners', 200, null, 'text/html', HTML],
   [PROXY, '/changelog', 200, null, 'text/markdown', MD],
   [PROXY, '/changelog', 200, null, 'text/html', HTML],
-  [PROXY, '/blog', 200, null, 'text/html', NO_TWIN],
+  [PROXY, '/blog', 200, null, 'text/markdown', MD],
+  [PROXY, '/blog', 200, null, 'text/html', HTML],
   [PROXY, '/docs/api/search?query=payout', 200, null, 'application/json', NO_TWIN],
   [PROXY, '/changelog/rss.xml', 200, null, 'application/rss+xml', NO_TWIN],
   [PROXY, '/docs/brand/quickstart.md', 200, null, 'text/markdown', NO_TWIN],

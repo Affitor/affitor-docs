@@ -33,6 +33,8 @@ const config = {
         source: '/blog/:path*.md',
         destination: '/llms.md/blog/:path*',
       },
+      // The blog index twin (CORE-690 follow-up, 13/11/2026).
+      { source: '/blog.md', destination: '/llms.md/blog' },
       // affitor.com/changelog (14/10/2026): the index twin and one twin per entry.
       { source: '/changelog.md', destination: '/llms.md/changelog' },
       { source: '/changelog/:slug.md', destination: '/llms.md/changelog/:slug' },
