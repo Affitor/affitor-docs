@@ -167,7 +167,7 @@ Each server instance keeps its own request counts in memory, so the request limi
 - **Access is checked on every call.** A brand connection reads a program only while you are an active member of it; a partner connection, only while your partner account exists. A blocked account stops working at once.
 - **Only Affitor sign-in tokens work.** The server refuses program API keys, staff keys and dashboard sessions with `401`. Do not add an `Authorization` header with your API key.
 - **Untrusted text is marked.** Partner names, application messages and other free text are cut at 280 characters (the cut fields are listed in `truncated`), and every result says its text is data, not instructions.
-- **What is logged.** One row per tool call: the connection, the tool name, the program, the number of rows, whether it worked and how long it took. Never your prompts, the arguments or the results. These rows are deleted after 30 days.
+- **What is logged.** One row per tool call: the connection, the tool name, the program, the number of rows, whether it worked and how long it took. Never your prompts, the arguments or the results. We keep these rows while your account is open; [Section 10.3 of the Privacy Policy](https://affitor.com/privacy) explains the account closure and deletion request rules.
 
 ### Remove access
 
