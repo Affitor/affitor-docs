@@ -1,0 +1,28 @@
+---
+title: Self-bought and test sales wait for the brand, and payout notices
+date: 2026-11-15
+type: digest
+audience:
+- brands
+- partners
+surfaces:
+- dashboard
+description: Sales a partner bought themselves or sent as test orders now wait for the brand, and the Payout sent notice shows what the partner receives.
+context:
+  avoid:
+  - "Saying such sales are rejected or marked as tests: they wait for the brand, who approves a real one or rejects it."
+  - "Saying every sale with test in it is held: only a sale sent through the Tracking API whose order reference has test or e2e as a whole word."
+  - "Saying sales the brand already sent in test mode change: they stay test sales, as before."
+  - "Saying older payout notices changed: notices written before today keep their words."
+---
+
+### Improved
+
+- When the partner is the buyer (their email matches the customer's), the commission now waits for the brand instead of being approved on its own. Its row says so: approve it if it was a real purchase, or reject it.
+- A sale sent through the Tracking API with **test** or **e2e** as a word in its order reference also waits for the brand, with a line asking to approve it if it was a real customer or reject it as a test.
+- Partners see these commissions as under brand review.
+- The **Payout sent** notice shows the amount you receive, in your payout's currency, and says the money arrives on Wise's usual timing (or your bank's, or PayPal's).
+
+### Fixed
+
+- Invoice PDFs and invoice emails show wire transfer details only when they are set up. Otherwise they point you to the invoice page.
