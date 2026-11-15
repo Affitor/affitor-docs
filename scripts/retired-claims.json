@@ -376,5 +376,11 @@
     "why": "The code only proves that copying the fields to the Checkout Session's metadata creates no additional subscription sale; it is not a general no-effect guarantee.",
     "since": "2026-11-08",
     "allow": []
+  },
+  {
+    "pattern": "Estimated fees|Confirm your withdrawal",
+    "why": "Partner withdraw: the Payout page opens one form (Amount, To, Affitor fee, Amount sent) with a Withdraw button; the old three-step page with Estimated fees and Confirm your withdrawal is no longer served (it redirects to the Payout page).",
+    "since": "2026-11-14",
+    "allow": []
   }
 ]
