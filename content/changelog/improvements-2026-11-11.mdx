@@ -1,0 +1,42 @@
+---
+title: Commission statuses, chat dividers, and filtered link clicks
+date: 2026-11-11
+type: digest
+audience:
+- brands
+- partners
+surfaces:
+- dashboard
+- tracking
+description: Commissions show a status with its reason, chat shows a day and time between message groups, and short-link clicks skip bots, previews and prefetches.
+context:
+  avoid:
+  - "Saying brands see a name and role on every message, or that partners see who on the brand's team wrote: on the brand side a name alone shows where another person's messages start, your own carry none, and the partner side shows no names above messages."
+  - "Saying the default sign-up asks for a password: it uses Google or an email code; the one New password field is on Login and security and the Set a new password page, with the same password rules."
+  - "Saying a brand paused the program, or that this release changed what a paused program does or which filter lists it: only the label in the Status column of the partner's Programs list changed, and the program still lists under Active."
+  - "Saying everyone who signs up sees Check Your Email: only a sign-up with a password shows it, and the default sign-up uses an email code or Google."
+  - "Saying existing accounts lost their passwords or must do anything: only a password sign-up confirmed by its email link after this fix loses that password, and accounts already confirmed keep theirs."
+  - "Saying every click now skips bots, or that past click counts changed: only clicks recorded when someone opens an affitor.com short link changed, and counts already recorded stay as they were."
+  - "Saying the Application checklist showed private data to signed-out visitors, or that signed-in partners lost it: it showed only after a sign-in had expired, and signed-in partners still see it."
+  - "Saying Members can no longer change program settings in general: only the attribution window and hold period (and two timing settings with no field on the page) need an Owner or Admin; Members still edit the rest."
+  - "Saying commission amounts, fees or payout timing changed: the statuses, reasons and filters describe the same commissions, and the $0 commissions were already stored; the lists now show them as Not eligible."
+  - "Saying partners see the brand's reasons: a partner sees its own shorter line, for example 'The brand is reviewing this sale before it counts.'"
+---
+
+### Improved
+
+- Commissions show one status for brands and partners, such as **On hold** or **Not eligible**, with the reason on hover or tap, and both lists filter by status.
+- **Chat** groups messages under a centered day and time at each new day or after an hour of quiet. Times show on hover or tap; only brands see writer names.
+- You type a new password once, in one **New password** field, on **Login and security** in your account and on the **Set a new password** page.
+- Clicks on short links count only people who open them: crawlers, link previews, uptime monitors and browser prefetches no longer add clicks.
+
+### Fixed
+
+- In the **Status** column of a partner's **Programs** list, a joined program that is paused shows **Paused**, not **Active**.
+- A sign-up with a password keeps **Check Your Email** on screen after **Create account**, with the address you entered; sign-ups by email code or Google never show it.
+- A password chosen at sign-up stops working when you confirm by the email link: sign in with **Email me a code** or set a new password. Confirmed accounts are unchanged.
+- A program page shows the **Application** checklist only while you are signed in; once your sign-in has expired it no longer appears.
+- Only a program's **Owners** and **Admins** can change its attribution window and hold period. **Members** see both as read-only.
+- A $0 commission for a sale outside a program's terms now shows in commission lists as **Not eligible**, and it can't be approved, rejected, extended or marked as fraud.
+- Column headers in the partner **Programs** table stay on one line.
+- Text fields you can't edit right now, such as a form that is saving, look disabled.

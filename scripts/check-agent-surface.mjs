@@ -205,9 +205,50 @@ function inventory() {
       updated: data.updated ?? data.date,
       sourceDate: data.updated ?? data.date,
       body: markdown(data, id),
+      date: data.date, category: data.category, title: data.title, description: data.description,
     };
   });
-  return [...docs, ...posts, ...changelogInventory()];
+  return [...docs, blogIndexInventory(posts), ...posts, ...changelogInventory()];
+}
+
+// Mirror of BLOG_DESCRIPTION in src/lib/blog.ts.
+const BLOG_DESCRIPTION = 'Essays, launches, and guides from the team building Affitor — affiliate infrastructure for the agent era.';
+
+/**
+ * affitor.com/blog and its twin /blog.md (CORE-690 follow-up, 13/11/2026): one line per post, newest first and then
+ * by slug, so same-day posts keep one order on the page, in its JSON-LD and in the twin. Dated by the newest post.
+ * Mirror of blogIndex() and sortedPosts() in src/lib/blog.ts and src/lib/agent-md.ts.
+ */
+function blogIndexInventory(posts) {
+  const listed = [...posts].sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
+  const updated = posts.map((post) => post.updated).sort().at(-1);
+  const lines = listed.map((post) => `- ${post.date} · ${post.category} · [${post.title}](${post.url}): ${post.description}`);
+  return {
+    id: 'blog', type: 'blog', url: `${ORIGIN}/blog`, updated, sourceDate: updated, listed,
+    body: `# Affitor Blog\n\n> ${BLOG_DESCRIPTION}\n\n## Posts\n\n${lines.join('\n')}\n`,
+  };
+}
+
+/** The built /blog page: the twin link, and one CollectionPage whose ItemList is the twin's list, in order. */
+function checkBlogIndexHtml(index) {
+  const html = read(join(APP, 'blog.html'));
+  const links = [...html.matchAll(/<link\b[^>]*>/g)].map((match) => match[0])
+    .filter((tag) => /\brel="alternate"/.test(tag) && /\btype="text\/markdown"/.test(tag));
+  assert.equal(links.length, 1, '/blog: expected one text/markdown alternate link');
+  assert.equal(new URL(decodeEntities(links[0].match(/\bhref="([^"]*)"/)[1]), ORIGIN).href, `${ORIGIN}/blog.md`, '/blog: twin link');
+  const schemas = [...html.matchAll(/<script\b[^>]*\btype="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
+    .map((match) => JSON.parse(match[1])).filter((schema) => schema['@type'] === 'CollectionPage');
+  assert.equal(schemas.length, 1, '/blog: expected one CollectionPage');
+  const [schema] = schemas;
+  assert.equal(schema['@id'], index.url, '/blog: CollectionPage @id');
+  assert.equal(schema.description, BLOG_DESCRIPTION, '/blog: CollectionPage description');
+  assert.equal(schema.mainEntity?.['@type'], 'ItemList', '/blog: CollectionPage mainEntity');
+  assert.equal(schema.mainEntity.numberOfItems, index.listed.length, '/blog: ItemList size');
+  assert.deepEqual(
+    schema.mainEntity.itemListElement.map((item) => [item.position, item.url, item.name]),
+    index.listed.map((post, i) => [i + 1, post.url, post.title]),
+    '/blog: ItemList differs from the twin list',
+  );
 }
 
 /**
@@ -549,8 +590,8 @@ function main() {
     };
   });
   const expectedUrls = pages.flatMap((page) => [page.url, markdownUrl(page)]);
-  // The blog index has no twin; it is listed once, dated by the newest post (CORE-690).
-  expectedUrls.push(`${ORIGIN}/blog`, `${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
+  // The blog index is a page with a twin since 13/11/2026 (CORE-690 follow-up), dated by the newest post.
+  expectedUrls.push(`${SITE}/llms.txt`, `${SITE}/llms-full.txt`);
   assert.deepEqual(entries.map((entry) => entry.url).sort(), expectedUrls.sort(), 'Sitemap URL inventory differs from source');
   const dates = new Map(entries.map((entry) => [entry.url, entry.lastmod]));
   const datedPages = pages.filter((page) => page.updated);
@@ -599,7 +640,8 @@ function main() {
     assert.equal(corpus.indexOf(twin, position + twin.length), -1, `${page.id}: duplicate twin in llms-full.txt`);
     corpus = corpus.slice(0, position) + corpus.slice(position + twin.length);
     if (page.type === 'doc') checkHtml(page, new URL(page.url).pathname);
-    console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', HTML and canonical' : ''}`);
+    if (page.id === 'blog') checkBlogIndexHtml(page);
+    console.log(`PASS ${page.id}: twin, source body, sitemap dates, full corpus${page.type === 'doc' ? ', HTML and canonical' : page.id === 'blog' ? ', twin link and CollectionPage' : ''}`);
   }
   assert.match(corpus, /^\n*$/, 'llms-full.txt contains unexpected content or extra pages');
 

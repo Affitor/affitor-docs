@@ -1,0 +1,69 @@
+---
+title: How marketplace levels work
+description: "Live, Launch and Verified: what each level needs, what partners see, and how the default marketplace list changes on November 27, 2026."
+kind: concept
+last_updated: 2026-11-12
+---
+
+Every program on the Affitor marketplace is at one of three levels: **Live**, **Launch** or **Verified**. The level decides where partners find your program and what they see next to its name.
+
+## The three levels
+
+| Level | What your program needs | What partners see |
+|---|---|---|
+| Live | You pressed **Go live** | Your program page, where partners apply and get their links. From November 27, 2026, the program shows in the marketplace when partners turn on **All programs** |
+| Launch | Live, plus payments, a complete program page and terms (below) | Your program in the default list, the one partners see when they open the marketplace |
+| Verified | Launch, plus the Verified checks (below) | A blue check mark after your program name |
+
+The program count on the marketplace counts every live program, at every level.
+
+## The default list changes on November 27, 2026
+
+From **Friday, November 27, 2026, 5:00 PM PST**, the default list only includes programs at the Launch level. To be in it on that day, complete your program by **Thursday, November 26, 2026, 5:00 PM PST**.
+
+From that time, a program that is not complete stays live: partners find it when they turn on **All programs** in the marketplace filter, and its card says **Pre-launch**. Its page keeps the same address. A program you or our team hid from the marketplace stays hidden.
+
+Affitor checks programs again on its own. When yours meets every condition, it joins the default list. There is nothing to request.
+
+## What the Launch level needs
+
+### Payments
+One of these:
+- The program owner [connects Stripe](/docs/brand/tracking/payment-tracking-stripe) on this program in **Program settings > Payments**, with an account that accepts payments.
+- Your server [sends sales](/docs/api-reference/track-sale) to Affitor, and at least one real paid sale has come in for a customer referred by a partner outside your team.
+
+Test sales don't count.
+
+### Program page
+In **Program settings > Business**:
+- **Business name**.
+- **Website**.
+- **Logo**: an uploaded logo. A logo shown from your website does not count.
+- **About**: at least 40 characters about your product.
+
+### Terms
+In **Program settings > Commission**:
+- A commission type and rate.
+- An **Attribution window** of 1 to 365 days.
+- A **Hold period** of 0 to 31 days.
+
+## The Verified badge
+
+A Verified program shows a blue check mark after its name. Partners can pick **Verified only** in the marketplace filter to see these programs.
+
+The badge is automatic and follows your data. It shows while all of these hold, and goes away by itself when one stops:
+- Your program is live and its website is an `https://` address.
+- Your payments are connected: Stripe on the program, accepting payments, or a real sale your server sent in the last 90 days.
+- Affitor has recorded at least one real click, lead or sale.
+- No Affitor invoice is overdue.
+
+Affitor's team can also remove the badge from a program.
+
+When partners have already been paid through Affitor, the badge also says so.
+
+From November 27, 2026, only programs at the Launch level show the badge.
+
+## Related
+- [Program settings](/docs/brand/settings)
+- [Track payments with Stripe](/docs/brand/tracking/payment-tracking-stripe)
+- [Track a sale from your server](/docs/api-reference/track-sale)

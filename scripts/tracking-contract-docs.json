@@ -39,6 +39,12 @@
       "count": 1
     },
     {
+      "file": "content/docs/brand/marketplace-levels.mdx",
+      "rule": "attribution_window_max_days",
+      "count": 1,
+      "near": "1 to \\d+ days"
+    },
+    {
       "file": "content/docs/brand/tracking/payment-tracking-stripe.mdx",
       "rule": "attribution_window_default_days",
       "count": 1

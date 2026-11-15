@@ -99,12 +99,14 @@ ${sections()}
 const mdxSlugs = (dir) => readdirSync(join(ROOT, dir)).filter((file) => file.endsWith('.mdx')).map((file) => file.slice(0, -4));
 
 /**
- * Page paths with a real .md twin (src/app/llms.md): docs pages, blog posts (content/blog), the
- * changelog index and its entries (content/changelog/*.mdx). Sorted, so the file is deterministic.
+ * Page paths with a real .md twin (src/app/llms.md): docs pages, the blog index and its posts
+ * (content/blog), the changelog index and its entries (content/changelog/*.mdx). Sorted, so the file
+ * is deterministic.
  */
 export function generateTwins() {
   const paths = [
     ...docsSource().getPages().map((page) => page.url),
+    '/blog',
     ...mdxSlugs('content/blog').map((slug) => `/blog/${slug}`),
     '/changelog',
     ...mdxSlugs('content/changelog').map((slug) => `/changelog/${slug}`),

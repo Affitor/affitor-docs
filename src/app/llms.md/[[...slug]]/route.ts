@@ -26,6 +26,7 @@ export async function GET(
 export function generateStaticParams(): { slug: string[] }[] {
   return [
     { slug: ['index'] },
+    { slug: ['blog'] },
     { slug: ['changelog'] },
     ...source
       .generateParams()
