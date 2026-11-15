@@ -2,10 +2,10 @@
 title: Overdue Invoices & Program Pause Policy
 description: How Affitor handles unpaid commission invoices, when programs pause, and how to resume.
 kind: reference
-last_updated: 2026-09-24
+last_updated: 2026-11-11
 ---
 
-When a commission invoice is not paid by its due date, Affitor pauses the program until the balance clears. Tracking links keep working, partner data is preserved, and the program returns to active automatically once the overdue invoice is marked paid.
+When a commission invoice is not paid by its due date and overdue pausing is on, as it is by default, Affitor pauses the program until the balance clears. While the program is paused, Affitor stops recording new clicks on its partner links. Eligible conversions from earlier recorded clicks can still count. Existing partner data is preserved. A program paused by the overdue check resumes automatically once none of its invoices remains Open or Overdue.
 
 <PageMeta
   items={[
@@ -22,7 +22,7 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
   <FlowStep>Invoice issued Mon 09:00 UTC</FlowStep>
   <FlowStep>Pay within 7 days → **paid:** Status: paid · **past due:** Status: overdue</FlowStep>
   <FlowStep>Program paused</FlowStep>
-  <FlowStep>Mark invoice paid</FlowStep>
+  <FlowStep>No Open or Overdue invoices remain</FlowStep>
   <FlowStep>Program auto-resumed</FlowStep>
 </Flow>
 
@@ -32,42 +32,45 @@ When a commission invoice is not paid by its due date, Affitor pauses the progra
 | **Invoice minimum** | Each Monday | If the approved commissions add up to less than the invoice minimum (currently $10), no invoice is issued that week. They carry forward and appear on a later invoice |
 | **Net terms** | 7 days from issue date | The default. Talk to your account contact if you need different terms |
 | **Overdue check** | Daily at 10:00 UTC | Invoices past their due date are marked overdue |
-| **Program paused** | Same overdue run | The program enters a paused state; an email is sent to the workspace owner |
-| **Auto-resume** | When the invoice is marked paid | The program returns to active on its own; you do not need to reactivate it. A wire transfer is marked paid by Affitor's billing team after they match it to the invoice |
+| **Program paused** | Same overdue run | If overdue pausing is enabled, the program enters a paused state; an email is sent to the workspace owner |
+| **Auto-resume** | When no Open or Overdue invoices remain | A program paused by the overdue check resumes automatically once none of its invoices remains **Open** or **Overdue**. An invoice leaves that set when it is paid or voided, so pay any newer invoice along with the overdue one. You do not need to reactivate it. A wire transfer is marked paid by Affitor's billing team after they match it to the invoice |
 
 ---
 
 ## When a program is paused
 
-Pause is triggered automatically the first time a commission invoice passes its due date.
+If overdue pausing is enabled, the daily overdue check pauses an active program when an unpaid invoice passes its due date.
 
 ### What changes while paused
 
-- **Program status** flips to **Paused** in your dashboard and in partner-facing views.
-- **Marketplace visibility** — paused programs are hidden from public partner discovery. Existing partners keep their dashboard access.
+- **Program status** shows **Paused** in your dashboard, and the top of **Billing** says what resumes it. Partners in the program see **Paused** on its page in their dashboard.
+- **Clicks** are not recorded. A visit through a partner link creates no click: the click call answers `410` with `link_disabled` ("Referral link is inactive"). See [Track Click](/docs/api-reference/track-click).
+- **Marketplace visibility:** paused programs are hidden from public partner discovery. Existing partners keep their dashboard access.
 - **Audit log** records the transition with a reference to the originating invoice.
 
 ### What does not change while paused
 
-- **Existing tracking links** continue to resolve. Affitor never breaks partner URLs while you resolve billing.
-- **Click, lead, and sale events** continue to be recorded. Sales attributed while paused still create commissions and platform fees exactly as when the program is active, and they appear on your next invoice. Pausing does not stop charges from accruing.
-- **Partner data** — referrals, audience, and historic commissions are preserved in full.
+- **Partner links** are not deleted or changed. They record clicks again as soon as the program is active.
+- **Lead and sale events:** leads and sales linked to earlier recorded clicks remain subject to the usual attribution rules. Eligible commissions and applicable platform fees go through the usual weekly invoice process.
+- **Partner data:** referrals, audience, and historic commissions are preserved in full.
 - **Stripe Connect and customer-facing checkout** continue to work. Pause is a billing state, not a checkout state.
 
-> Pause is a billing signal, not a tracking kill switch. Your customers are unaffected. Partners see the program as paused inside their dashboard and stop receiving new applications.
+> Pausing stops new clicks from being recorded. Eligible conversions from earlier clicks can still count. New partners cannot find the program or apply to it in the marketplace until it resumes.
 
 ---
 
 ## How to resume
 
-A paused program returns to active automatically when the overdue invoice is marked paid. You do not need to reactivate it yourself. For a wire transfer, the invoice is marked paid once Affitor's billing team has matched your payment to it.
+A program paused by the overdue check resumes automatically once none of its invoices remains Open or Overdue. An invoice leaves that set when it is paid or voided, so pay any newer invoice along with the overdue one. You do not need to reactivate it yourself. For a wire transfer, the invoice is marked paid once Affitor's billing team has matched your payment to it.
+
+A pause that the overdue check did not make, for example one set by Affitor for another reason, is not lifted by paying an invoice.
 
 ```mermaid
 sequenceDiagram
     Advertiser->>Affitor: Wire transfer arrives
     Affitor->>Affitor: Billing team matches payment to invoice
     Affitor->>Invoice: status = paid
-    Invoice->>Program: status = active
+    Invoice->>Program: status = active (no open invoice left)
     Affitor->>Audit: program_unpaused entry
 ```
 
@@ -79,11 +82,11 @@ sequenceDiagram
     Affitor's billing team matches the transfer to your invoice and marks it paid.
   </FlowCard>
   <FlowCard step="3" title="Your program returns to active">
-    Marking the invoice paid resumes the program, and the audit log records the unpause with the invoice number. You don't need to reactivate anything.
+    When no other invoice of the program is still Open or Overdue, marking this one paid resumes a program the overdue check paused, and the audit log records the unpause with the invoice number. You don't need to reactivate anything.
   </FlowCard>
 </FlowGrid>
 
-If you've paid and the program is still paused a business day later, contact billing — the most common cause is a missing invoice number in the transfer reference.
+If you've paid and the program is still paused a business day later, contact billing. The most common cause is a missing invoice number in the transfer reference.
 
 ---
 
@@ -106,7 +109,7 @@ Affitor bills through Wise wire transfers. Each invoice page shows the destinati
 
 <TaskCardGrid>
   <TaskCard title="Pay within the 7-day window" href="#how-to-pay-an-invoice">
-    Check the Billing tab after each Monday's invoice run. A new-invoice email is not sent on every account, so don't wait for an email — and don't wait for the overdue email.
+    Check the Billing tab after each Monday's invoice run. A new-invoice email is not sent on every account, so don't wait for an email, and don't wait for the overdue email.
   </TaskCard>
   <TaskCard title="Allowlist noreply@affitor.com and billing@affitor.com" href="mailto:billing@affitor.com">
     Billing emails are sent from noreply@affitor.com with billing@affitor.com as the reply-to address. Add both to your AP allowlist so invoice and overdue emails reach the right inbox.
