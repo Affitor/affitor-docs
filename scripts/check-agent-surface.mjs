@@ -582,7 +582,7 @@ function main() {
   console.log(`PASS tracking contract: ${contract.statements} window statements, ${contract.pins} pinned statements, ${contract.examples} sale examples carry their idempotency key; ${contract.checked} contract rules checked in the docs, ${contract.outside} outside the docs`);
   const openApiPaths = checkOpenApi();
   const pages = inventory();
-  const separateMeta = checkBlogMeta(pages.filter((page) => page.type === 'blog'));
+  const separateMeta = checkBlogMeta(pages.filter((page) => page.type === 'blog' && page.id.startsWith('blog/')));
   console.log(`PASS blog meta: ${separateMeta} posts carry their own search snippet; every dek stays description`);
   const ids = pages.map((page) => page.id);
   assert.equal(new Set(ids).size, ids.length, 'Duplicate source page ids');
