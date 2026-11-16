@@ -2,7 +2,7 @@
 title: Track Lead
 description: Record a signup or lead event that links a customer to an affiliate click.
 kind: reference
-last_updated: 2026-11-07
+last_updated: 2026-11-16
 ---
 
 `POST /api/v1/track/lead`
@@ -55,7 +55,7 @@ A browser lead settles directly only on a program set to `browser_allowed`. A br
     Your internal customer or user ID. Send it with the `click_id`: when the lead settles, Affitor saves it on that customer, so later sales can find the customer by your own id. On its own it finds no customer on a first lead, because the key is saved only when a lead settles.
   </ParamField>
   <ParamField name="email" type="string">
-    Customer email address. Used for hashed/masked attribution support.
+    The buyer's email address. Send it on every lead. When the lead settles, Affitor saves a one-way hash of it and a masked form (`j***@example.com`) on the customer, only if the customer has none yet; the lead never stores the address itself. It is the fallback that keeps a sale with the right partner: a Stripe Checkout payment that carries no click id (the buyer paid on another device or cleared their cookies) is matched to this customer by its checkout email, so it can still go to the partner who referred them. A provisional browser lead does not save it.
   </ParamField>
   <ParamField name="additional_data" type="object">
     Optional metadata. Supports `test_mode` (boolean), `program_id` (number), and `event_name` (string).
