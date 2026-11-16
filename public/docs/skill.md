@@ -51,6 +51,8 @@ Attribution only works if **one stable internal user ID** is identical across ev
 
 If signup uses `user.id` but checkout uses `user.email`, sales will not attribute. **Same id, every time.**
 
+**Also send the buyer's email on every lead** (`signup(customerKey, email)` 2nd arg, `trackLead({ email })`, `email` on the wire). Affitor keeps only a one-way hash and a masked form (`j***@example.com`). It is the fallback that keeps a sale with the right partner: a Stripe Checkout payment without a click id (other device, cleared cookies) is matched to the customer by its checkout email.
+
 ---
 
 ## 3. Install the SDK
