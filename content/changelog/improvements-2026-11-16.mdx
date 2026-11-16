@@ -1,0 +1,22 @@
+---
+title: Recovered Stripe commissions and billing for partial refunds
+date: 2026-11-16
+type: digest
+audience:
+- brands
+- partners
+surfaces:
+- dashboard
+description: A Stripe sale whose commission was not created now gets it once, and the weekly invoice bills what a partner keeps after a partial refund.
+context:
+  avoid:
+  - "Saying older sales are paid in a batch: only a sale from the last 7 days, or one Stripe sends again, gets its missing commission."
+  - "Saying a sale can now get two commissions: the recovery creates one only when the sale has none."
+  - "Saying the platform fee changed: the sale's fee is billed in full, as before."
+  - "Saying test sales are billed: they stay unbilled."
+---
+
+### Fixed
+
+- A Stripe sale that was recorded but whose commission was not created now gets its commission, once. This happens when Stripe sends the sale again, or at our daily check for paid sales from the last 7 days that were not refunded or disputed.
+- When an approved commission is partly refunded before it is invoiced, the weekly invoice now bills the part the partner keeps. Until now that part was left off the invoice. The sale's platform fee is billed in full, as before.
