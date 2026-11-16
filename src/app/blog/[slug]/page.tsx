@@ -55,7 +55,7 @@ function buildJsonLd(post: Post, slug: string) {
   graph.push({
     '@type': 'BlogPosting',
     headline: post.title,
-    description: post.description,
+    description: post.metaDescription ?? post.description,
     datePublished: post.date,
     dateModified,
     url,
@@ -110,7 +110,7 @@ function buildJsonLd(post: Post, slug: string) {
       graph.push({
         '@type': 'HowTo',
         name: post.title,
-        description: post.description,
+        description: post.metaDescription ?? post.description,
         step: steps.map((item, i) => ({
           '@type': 'HowToStep',
           position: i + 1,
@@ -147,7 +147,7 @@ export async function generateMetadata(props: {
   return {
     // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
     title: { absolute: `${post.title} | Affitor` },
-    description: post.description,
+    description: post.metaDescription ?? post.description,
     alternates: {
       // Canonical home of every post is the proxied affitor.com/blog zone.
       canonical: `${BLOG_URL}/${slug}`,
@@ -156,7 +156,7 @@ export async function generateMetadata(props: {
     },
     openGraph: {
       title: post.title,
-      description: post.description,
+      description: post.metaDescription ?? post.description,
       type: 'article',
       url: `${BLOG_URL}/${slug}`,
       publishedTime: post.date,
@@ -166,7 +166,7 @@ export async function generateMetadata(props: {
     twitter: {
       card: 'summary_large_image',
       title: post.title,
-      description: post.description,
+      description: post.metaDescription ?? post.description,
     },
   };
 }

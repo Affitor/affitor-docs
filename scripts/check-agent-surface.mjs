@@ -206,6 +206,7 @@ function inventory() {
       sourceDate: data.updated ?? data.date,
       body: markdown(data, id),
       date: data.date, category: data.category, title: data.title, description: data.description,
+      metaDescription: data.metaDescription,
     };
   });
   return [...docs, blogIndexInventory(posts), ...posts, ...changelogInventory()];
@@ -230,6 +231,25 @@ function blogIndexInventory(posts) {
 }
 
 /** The built /blog page: the twin link, and one CollectionPage whose ItemList is the twin's list, in order. */
+/**
+ * CORE-1010 P1.2: a post's search snippet may differ from its dek. The prerendered page carries
+ * metaDescription (or description) in <meta name="description">, and still shows description as the dek.
+ */
+function checkBlogMeta(posts) {
+  for (const post of posts) {
+    const route = `/${post.id}`;
+    const html = read(join(APP, `${post.id}.html`));
+    const metas = [...html.matchAll(/<meta\b[^>]*\bname="description"[^>]*>/g)].map((m) => m[0]);
+    assert.equal(metas.length, 1, `${route}: expected one meta description`);
+    const content = decodeEntities(metas[0].match(/\bcontent="([^"]*)"/)[1]);
+    const expected = post.metaDescription ?? post.description;
+    assert.equal(content, expected, `${route}: meta description`);
+    if (post.metaDescription !== undefined) assert.ok(post.metaDescription.length <= 160, `${route}: metaDescription over 160`);
+    assert.ok(decodeEntities(html).includes(post.description), `${route}: the dek under the H1 must stay description`);
+  }
+  return posts.filter((post) => post.metaDescription !== undefined).length;
+}
+
 function checkBlogIndexHtml(index) {
   const html = read(join(APP, 'blog.html'));
   const links = [...html.matchAll(/<link\b[^>]*>/g)].map((match) => match[0])
@@ -562,6 +582,8 @@ function main() {
   console.log(`PASS tracking contract: ${contract.statements} window statements, ${contract.pins} pinned statements, ${contract.examples} sale examples carry their idempotency key; ${contract.checked} contract rules checked in the docs, ${contract.outside} outside the docs`);
   const openApiPaths = checkOpenApi();
   const pages = inventory();
+  const separateMeta = checkBlogMeta(pages.filter((page) => page.type === 'blog' && page.id.startsWith('blog/')));
+  console.log(`PASS blog meta: ${separateMeta} posts carry their own search snippet; every dek stays description`);
   const ids = pages.map((page) => page.id);
   assert.equal(new Set(ids).size, ids.length, 'Duplicate source page ids');
   const manifest = json(join(ROOT, '.next/prerender-manifest.json'));
