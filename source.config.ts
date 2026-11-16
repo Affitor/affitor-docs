@@ -101,6 +101,9 @@ export const blog = defineCollections({
   schema: frontmatterSchema.extend({
     // description doubles as the one-line dek + machine summary — required for blog
     description: z.string(),
+    // Search snippet only (meta, og, twitter, JSON-LD). The dek under the H1, the /blog card and the
+    // .md twin keep `description`. Falls back to `description` when absent.
+    metaDescription: z.string().max(160).optional(),
     date: z.string(),
     category: z.string(),
     authors: z.array(z.string()),
