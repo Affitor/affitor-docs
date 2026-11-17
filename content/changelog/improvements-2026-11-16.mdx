@@ -15,9 +15,11 @@ context:
   - "Saying the platform fee shrinks with the refund: the invoice bills the sale's full platform fee next to the remainder."
   - "Saying a sale held without a price gets a commission: a sale in an unsupported currency or waiting for an exchange rate still gets none."
   - "Saying test sales are billed: they stay unbilled."
+  - "Saying the invoice email can go out for an invoice that was not saved: the email goes only after every line is written."
 ---
 
 ### Fixed
 
 - A recorded Stripe sale missing its commission now gets it once, on Stripe's resend or our daily check of the last 7 days' paid sales with no refund or dispute.
 - An approved commission partly refunded before invoicing is now billed on the weekly invoice: the part the partner keeps, plus the sale's full platform fee. Until now neither was billed.
+- The weekly invoice is now written in one step: if any line fails, nothing is written, and the next run bills each commission once.
