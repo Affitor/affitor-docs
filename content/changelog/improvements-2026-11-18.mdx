@@ -1,0 +1,31 @@
+---
+title: Partner earnings without refunds, and website logos for Launch
+date: 2026-11-18
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- api
+description: Partner earnings leave out fully refunded commissions, a logo found on your website counts for Launch, and click-matched sales keep your customer_key.
+context:
+  avoid:
+  - "Saying a partly refunded commission adds nothing: it adds the amount the partner keeps, as its row shows."
+  - "Saying refunded commissions disappear from the table: the rows stay; only Total earnings and the chart leave them out."
+  - "Saying any logo on the web counts: only the logo found on the program's own current website counts, and an uploaded logo still wins."
+  - "Saying a customer_key replaces one already saved: a customer that has a key keeps it, and test sales save none."
+  - "Naming what the access change covered or how it could be misused."
+---
+
+### Improved
+
+- A logo we find on your program's website now counts for the Launch logo requirement, so you can Launch without uploading a logo first.
+- We tightened access to internal settings. Nothing changes for you.
+
+### Fixed
+
+- On a partner's Commissions tab, Total earnings and the earnings chart add what each row shows as paid: a fully refunded or charged-back commission adds nothing.
+- The partner earnings chart now covers every commission in the current filter, not only the rows on the page you are viewing.
+- A server-side sale matched by its click ID now saves the `customer_key` you send, so later sales sent with only that key match the same customer and partner.
