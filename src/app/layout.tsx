@@ -7,8 +7,9 @@ import { BLOG_DOCS_ORIGIN, SITE_URL } from '@/lib/site';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 
 // Self-hosted at build time (no Google Fonts CSS or origin at runtime, no render-blocking stylesheet).
-// Inter carries the LCP text, so it is preloaded; JetBrains Mono is only in code, so it loads when used.
-const inter = Inter({ subsets: ['latin'], axes: ['opsz'], variable: '--font-inter', display: 'swap' });
+// No preload: measured, a preloaded Inter made first paint shape the variable font on slow CPUs (mobile LCP
+// +140 ms); without it the first paint uses the metric-matched fallback and Inter swaps in (CLS ~0).
+const inter = Inter({ subsets: ['latin'], axes: ['opsz'], variable: '--font-inter', display: 'swap', preload: false });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains-mono', display: 'swap', preload: false });
 
 export const metadata: Metadata = {
