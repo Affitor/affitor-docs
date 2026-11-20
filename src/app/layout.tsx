@@ -4,6 +4,13 @@ import type { Metadata } from 'next';
 import { PostHog } from '@/components/posthog';
 import { ThemeRoot } from '@/components/theme-root';
 import { BLOG_DOCS_ORIGIN, SITE_URL } from '@/lib/site';
+import { Inter, JetBrains_Mono } from 'next/font/google';
+
+// Self-hosted at build time (no Google Fonts CSS or origin at runtime, no render-blocking stylesheet).
+// No preload: measured, a preloaded Inter made first paint shape the variable font on slow CPUs (mobile LCP
+// +140 ms); without it the first paint uses the metric-matched fallback and Inter swaps in (CLS ~0).
+const inter = Inter({ subsets: ['latin'], axes: ['opsz'], variable: '--font-inter', display: 'swap', preload: false });
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains-mono', display: 'swap', preload: false });
 
 export const metadata: Metadata = {
   // Every page is published on affitor.com (multi-zone), so relative canonicals, alternates and
@@ -30,13 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>
         <ThemeRoot>{children}</ThemeRoot>
         <PostHog />
