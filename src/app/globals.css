@@ -83,7 +83,7 @@
 /* ── Typography ── */
 @layer base {
   body {
-    font-family: 'Inter', 'Inter Fallback', -apple-system, 'system-ui',
+    font-family: var(--font-inter), -apple-system, 'system-ui',
       'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -207,7 +207,7 @@ article figure:has(pre) figcaption {
   background: rgba(255, 255, 255, 0.03) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   color: rgba(199, 210, 230, 0.72) !important;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 12.5px !important;
   padding: 9px 16px !important;
   margin: 0 !important;
@@ -231,7 +231,7 @@ article pre:not(figure pre) {
 }
 article pre,
 article pre code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Light base text so untokened/plain code (e.g. ASCII diagrams) is never
      dark-on-dark. Shiki's per-token inline colors still win for highlighted code. */
   color: var(--aff-code-text);
@@ -239,7 +239,7 @@ article pre code {
 
 /* Inline code — minimal chip, mono carries it */
 article :where(p, li, td) code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.82em;
   padding: 0.12em 0.4em;
   border-radius: 4px;
@@ -1059,7 +1059,7 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
   padding: 0.1em 0.35em;
   border-radius: 3px;
   background: var(--color-fd-muted);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
 }
 .aff-uc-steps strong { font-weight: 600; color: var(--color-fd-foreground); }
@@ -1226,7 +1226,7 @@ article [data-card] {
 
 /* ESC key hint badge */
 [role='dialog'] kbd {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.6875rem;
   letter-spacing: 0.02em;
 }
@@ -1454,7 +1454,7 @@ article [data-card] {
    These sit in .not-prose, so the article typography rules never reach them. */
 .docs-common-mistakes code,
 .docs-verify-card code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
   padding: 0.1em 0.35em;
   border-radius: 3px;
@@ -1630,7 +1630,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 }
 
 .docs-param-name {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-fd-foreground);
@@ -1638,7 +1638,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 }
 
 .docs-param-type {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11.5px;
   color: var(--color-fd-muted-foreground);
 }
@@ -1677,7 +1677,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 }
 /* inline code inside param desc */
 .docs-param-desc code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.82em;
   padding: 0.1em 0.35em;
   border-radius: 3px;
@@ -1697,7 +1697,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   margin-top: 7px;
 }
 .docs-param-enum-chip {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11.5px;
   padding: 1px 6px;
   border-radius: 3px;
@@ -1749,7 +1749,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   cursor: pointer;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   position: relative;
   white-space: nowrap;
   transition: color 0.12s ease;
@@ -1809,7 +1809,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   cursor: pointer;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   transition: color 0.12s ease, border-color 0.12s ease;
 }
 .docs-code-copy-btn:hover {
@@ -1826,7 +1826,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
   overflow-x: auto;
 }
 .docs-code-group-body pre {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace !important;
   font-size: 12.5px !important;
   line-height: 1.7 !important;
   color: #c7d2e6 !important;
@@ -1898,7 +1898,7 @@ a.docs-feature-card:hover .docs-feature-title { color: var(--color-fd-primary); 
 
 /* Inline code inside callout */
 .docs-callout-text code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.9em;
   padding: 0.1em 0.35em;
   border-radius: 3px;

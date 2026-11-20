@@ -85,7 +85,7 @@
 .cl-row[hidden] { display: none; }
 .cl-empty { padding-left: 200px; color: var(--cl-muted); }
 .cl-older { margin-left: 200px; border: 1px solid var(--cl-line); background: none; border-radius: 8px; padding: 8px 14px; color: var(--cl-body); font: inherit; font-size: 14px; cursor: pointer; min-height: 40px; }
-.cl code { font: 14px/20px 'JetBrains Mono', ui-monospace, monospace; background: var(--cl-soft); border: 1px solid var(--cl-line); border-radius: 5px; padding: 1px 5px; color: var(--cl-ink); }
+.cl code { font: 14px/20px var(--font-jetbrains-mono), ui-monospace, monospace; background: var(--cl-soft); border: 1px solid var(--cl-line); border-radius: 5px; padding: 1px 5px; color: var(--cl-ink); }
 
 /* Entry */
 .cl-entry { max-width: 806px; margin: 0 auto; padding: 48px 32px 96px; }
