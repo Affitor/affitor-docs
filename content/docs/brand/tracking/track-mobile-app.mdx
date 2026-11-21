@@ -1,0 +1,63 @@
+---
+title: Track a mobile app
+description: "Credit partners for an iOS or Android app: web checkout versus app store purchases, carrying the click into the app, and sending store purchases to the Tracking API from your backend. What Affitor does and does not do for mobile."
+kind: guide
+last_updated: 2026-11-21
+---
+
+A mobile app is tracked with the same model as a [desktop app](/docs/brand/tracking/track-desktop-app): record the partner click on your website, carry the click ID into the app once, send a lead at signup, and send each purchase from your backend. What changes is where people pay.
+
+## Where your customers pay
+
+| Customers pay | Who learns about the payment | How it reaches Affitor |
+|---|---|---|
+| On your website (web checkout) | Your payment provider | As for any web product: [Stripe](/docs/brand/tracking/payment-tracking-stripe), or your server calling [Track Sale](/docs/api-reference/track-sale) |
+| Inside the app, through the App Store or Google Play | Apple or Google, then your backend or your subscription service | Your backend calls [Track Sale](/docs/api-reference/track-sale) and [Track Refund](/docs/api-reference/track-refund) |
+
+Which payment method your app may use is set by each store's rules, for example Apple's [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/) section 3.1.
+
+## What Affitor does not do
+
+- There is no iOS or Android SDK. `@affitor/sdk` is for JavaScript in the browser, React and a Node server.
+- Affitor does not create deep links or deferred deep links, and does not read install referrers for you.
+- Affitor has no connection to the App Store, Google Play or a subscription service. Purchases made there reach Affitor only when your backend sends them to the Tracking API.
+
+## Step 1: Send partners to your website
+
+Partner links open a page on your website, where the [click is recorded](/docs/brand/tracking/click-tracking) and the click ID is kept. A link straight to a store page runs none of your code, so no click is recorded. From your page, send the visitor on to the store.
+
+## Step 2: Carry the click ID into the app
+
+The app needs the click ID once, before or at account creation. These are the platform tools you can build on; each is set up in your app, not in Affitor:
+
+| Way | Platform documentation |
+|---|---|
+| Sign up on the web, then sign in to the app | None needed: the account is created where the click ID already is |
+| Open the installed app from a link on your site, with the click ID in the URL | Apple [universal links](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app), Android [App Links](https://developer.android.com/training/app-links) |
+| Read the referrer of an install from Google Play | Google [Play Install Referrer API](https://developer.android.com/google/play/installreferrer) |
+| A one-time code your site shows and your app asks for | Your own: your server maps the code to the click ID |
+
+Save the click ID on the user record. At account creation your server sends [`POST /api/v1/track/lead`](/docs/api-reference/track-lead) with the `click_id` and your user ID as `customer_key`, as in [Step 4 of the desktop guide](/docs/brand/tracking/track-desktop-app#step-4-send-the-lead-at-signup).
+
+## Step 3: Send store purchases from your backend
+
+Apple and Google notify your backend, directly or through a subscription service. Your backend then sends each purchase or renewal as one sale, keyed by the `customer_key` you sent with the lead, and each refund as one refund.
+
+| Source | What it tells your backend |
+|---|---|
+| Apple [App Store Server Notifications](https://developer.apple.com/documentation/appstoreservernotifications) | In-app purchase events, including purchases, subscription renewals and refunds |
+| Google Play [Real-time developer notifications](https://developer.android.com/google/play/billing/rtdn-reference) | That a purchase or subscription changed state; Google asks you to call the Play Developer API for the details |
+| A subscription service, for example [RevenueCat webhooks](https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields) | Events such as `INITIAL_PURCHASE`, `RENEWAL` and `CANCELLATION` (which also covers refunds), with the subscriber's `app_user_id` |
+
+For each event, look up your user and send:
+
+- a new purchase or a renewal: [`POST /api/v1/track/sale`](/docs/api-reference/track-sale) with a unique `transaction_id` (for example the store's transaction ID), your user ID as `customer_key`, `amount_cents` and `currency`;
+- a refund: [`POST /api/v1/track/refund`](/docs/api-reference/track-refund) with the `transaction_id` of the sale it refunds.
+
+The request bodies are the same as in [Step 5 of the desktop guide](/docs/brand/tracking/track-desktop-app#step-5-send-payments-renewals-and-refunds-from-your-server). Commissions then follow your [hold period](/docs/brand/quickstart/commission-approval-cash-flow).
+
+## Related
+
+- [Track a desktop app](/docs/brand/tracking/track-desktop-app): the full flow with server examples and a worked example.
+- [Test mode](/docs/api-reference/test-mode): try the calls before partners share links.
+- [Attribution](/docs/api-reference/attribution): the window and who gets credit on a repeat click.
