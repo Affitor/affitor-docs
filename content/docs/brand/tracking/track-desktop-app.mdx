@@ -89,7 +89,7 @@ The click ID lives in the visitor's browser. The app needs it once, before or at
 | Way | How it works | Good to know |
 |---|---|---|
 | Sign up on the web | The account is created on your website, where the click ID is, and the app signs in to that account. | Needs no handoff into the app. |
-| Store link parameter | On a Windows app sold in the Microsoft Store, add the click ID (or a short reference your server maps to it) to the Store link as `?cid=`. Your app can read the campaign ID with the `StoreContext` class (Windows 10, version 1607 or later). | Microsoft returns it only when the customer gets the app from that Store page visit; if they leave and come back later, it is not returned. See Microsoft's [custom app promotion campaign](https://learn.microsoft.com/en-us/windows/apps/publish/create-a-custom-app-promotion-campaign) guide. |
+| Store link parameter | On a Windows app sold in the Microsoft Store, add the click ID (or a short reference your server maps to it) to the Store link as `?cid=`. Your app can read the campaign ID with the `StoreContext` class. | Microsoft returns it only when the customer gets the app from that Store page visit; if they leave and come back later, it is not returned. See Microsoft's [custom app promotion campaign](https://learn.microsoft.com/en-us/windows/apps/publish/create-a-custom-app-promotion-campaign) guide. |
 | App link | When the app is already installed, an **Open the app** button on your site opens a custom URL such as `exampleapp://welcome?click_id=...`. | Your app registers the scheme. On Windows: [Handle URI activation](https://learn.microsoft.com/en-us/windows/apps/develop/launch/handle-uri-activation). |
 | One-time code | Your website shows a short code that your server maps to the click ID; the person types it in the app before signing up. | The code is yours, not an Affitor partner code: your server looks up the click ID behind it. |
 
@@ -162,7 +162,7 @@ A `409 duplicate_transaction` with your `sale_id` means the sale is already reco
 
 ## Step 6: Commissions follow your hold period
 
-An attributed sale creates a commission that starts as pending. It is approved automatically when your hold period ends, unless you approve or reject it first, and it reaches the partner's balance once approved. A full refund reverses the commission, and a refund you report while it is still pending takes nothing from the partner's balance. See [Commission approval and cash flow](/docs/brand/quickstart/commission-approval-cash-flow).
+An attributed sale creates a commission that starts as pending. When your hold period ends it is approved, apart from the exceptions listed on the page below, and it reaches the partner's balance once approved. A full refund reverses the commission, and a refund you report while it is still pending takes nothing from the partner's balance. See [Commission approval and cash flow](/docs/brand/quickstart/commission-approval-cash-flow).
 
 ## Worked example
 
@@ -175,7 +175,7 @@ Example Notes is a desktop note-taking app sold by monthly subscription, with it
 5. A week later Sam subscribes inside the app. Your payment provider notifies your server, which sends a sale for `usr_123` with the payment's ID as `transaction_id`.
 6. Each month the renewal is sent as a new sale for `usr_123`.
 7. Sam is refunded one month's payment. Your server sends a refund with that payment's `transaction_id`. If that commission was still pending, nothing is taken from Alex's balance.
-8. The other commissions are approved when the hold period ends and are added to Alex's balance.
+8. Sam's other commissions are approved after the hold period and are added to Alex's balance.
 
 ## Test before you share links
 
