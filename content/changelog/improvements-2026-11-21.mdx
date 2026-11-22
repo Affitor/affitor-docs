@@ -8,15 +8,16 @@ audience:
 - developers
 surfaces:
 - dashboard
-description: Pages outside the partner area load about 88 KB less code, and the brand home loads its cards and program list sooner.
+description: The code every page loads up front is about 88 KB smaller, and the brand home loads its cards and program list sooner.
 context:
   avoid:
   - "Giving a fixed load time: how much sooner depends on the visit, the device and the network."
+  - "Saying pages download 88 KB less in total: analytics still downloads, right after the page paints."
   - "Saying analytics was removed: it still runs, and starts after the page has painted."
 ---
 
 ### Improved
 
-- Pages outside the partner area download about 88 KB less code on a first visit: analytics starts after the page paints, and partner code loads only in the partner area.
+- The code every page loads up front is about 88 KB smaller: analytics loads right after the page paints, and partner code loads only in the partner area.
 - The brand home loads its summary cards in one request, and starts its program list together with the user check.
 - The tracking check in brand setup stops asking for new clicks while its tab is hidden, and checks again when you return.
