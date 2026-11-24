@@ -382,5 +382,11 @@
     "why": "Partner withdraw: the Payout page opens one form (Amount, To, Affitor fee, Amount sent) with a Withdraw button; the old three-step page with Estimated fees and Confirm your withdrawal is no longer served (it redirects to the Payout page).",
     "since": "2026-11-14",
     "allow": []
+  },
+  {
+    "pattern": "logo suggested from your website counts once you save it|a logo you uploaded and saved",
+    "why": "Launch logo condition: a website logo stored for the program's own current site counts without a save step (CMS src/api/affiliate-program/services/marketplace-listing-facts.ts listingPage, from v3.16.236). An uploaded logo still counts and is shown first.",
+    "since": "2026-11-23",
+    "allow": []
   }
 ]
