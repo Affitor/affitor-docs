@@ -251,7 +251,7 @@ export default async function BlogPostPage(props: {
           </p>
         </header>
 
-        <div className="prose dark:prose-invert max-w-none text-[17px] leading-[28px] [&_p]:leading-[28px] [&_a]:text-fd-primary [&_a]:font-medium [&_a]:no-underline hover:[&_a]:underline [&_img]:rounded-lg [&_img]:border [&_img]:border-fd-border">
+        <div className={`${post.look === 'accent' ? 'aff-accent ' : ''}prose dark:prose-invert max-w-none text-[17px] leading-[28px] [&_p]:leading-[28px] [&_a]:text-fd-primary [&_a]:font-medium [&_a]:no-underline hover:[&_a]:underline [&_img]:rounded-lg [&_img]:border [&_img]:border-fd-border`}>
           <Body components={{ ...components, ...articleComponents }} />
         </div>
 

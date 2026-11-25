@@ -192,6 +192,38 @@ article table:where(:not(.compare-frame *)) tbody td {
 article table:where(:not(.compare-frame *)) :where(th, td):first-child { padding-left: 0; }
 article table:where(:not(.compare-frame *)) tbody tr:last-child td { border-bottom: 0 !important; }
 
+/* ── `look: accent` blog posts (.aff-accent on the article body): blue links like the comparison layout,
+   and plain tables in a bordered box with ruled cells. Comparison tables (.compare-frame) are untouched. ── */
+.aff-accent :where(p, li, td):where(:not(.compare-frame *)) a {
+  color: var(--color-fd-primary);
+  font-weight: 500;
+  border-bottom: 0;
+}
+.aff-accent :where(p, li, td):where(:not(.compare-frame *)) a:hover {
+  color: var(--color-fd-primary);
+  text-decoration: underline !important;
+}
+.aff-accent table:where(:not(.compare-frame *)) {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--color-fd-border) !important;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.aff-accent table:where(:not(.compare-frame *)) thead th {
+  background: var(--color-fd-muted);
+  padding: 12px 16px !important;
+  vertical-align: middle;
+}
+.aff-accent table:where(:not(.compare-frame *)) tbody td {
+  padding: 12px 16px !important;
+  vertical-align: middle;
+}
+.aff-accent table:where(:not(.compare-frame *)) :where(th, td):not(:last-child) {
+  border-right: 1px solid var(--color-fd-border) !important;
+}
+.aff-accent table:where(:not(.compare-frame *)) :where(th, td):first-child { white-space: nowrap; }
+
 /* ── Code blocks — the Fumadocs <figure> wrapper IS the dark surface; the
    <pre> fills it edge-to-edge (kills the white "box-in-box" + shadow). ── */
 article figure:has(pre) {
