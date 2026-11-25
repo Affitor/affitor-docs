@@ -96,7 +96,7 @@
 .cl-action b { color: var(--cl-ink); font-weight: 600; }
 .cl-prose { max-width: 672px; margin-top: 28px; }
 .cl-prose h2 { color: var(--cl-ink); font-size: 22px; line-height: 30px; font-weight: 600; margin: 48px 0 8px; }
-.cl-prose h3 { color: var(--cl-ink); font-size: 17px; line-height: 26px; font-weight: 600; margin: 36px 0 6px; }
+.cl-prose h3, .cl-prose h2.cl-h3 { color: var(--cl-ink); font-size: 17px; line-height: 26px; font-weight: 600; margin: 36px 0 6px; }
 .cl-prose p { margin: 0 0 18px; }
 .cl-prose ul { padding-left: 20px; margin: 0 0 18px; list-style: disc; }
 .cl-prose ol { padding-left: 20px; margin: 0 0 18px; list-style: decimal; }

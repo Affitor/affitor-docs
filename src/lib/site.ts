@@ -7,6 +7,9 @@
  * structured data and the machine-readable surface.
  */
 export const SITE_URL = 'https://affitor.com';
+
+/** Share card for blog and changelog pages that carry no image of their own: the docs card (1200×630). */
+export const DEFAULT_OG_IMAGE = { url: `${SITE_URL}/docs/opengraph-image.png`, width: 1200, height: 630 };
 export const DOCS_URL = `${SITE_URL}/docs`;
 export const BLOG_URL = `${SITE_URL}/blog`;
 
