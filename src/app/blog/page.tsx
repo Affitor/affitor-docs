@@ -6,7 +6,7 @@ import { BLOG_DESCRIPTION, sortedPosts, type Post } from '@/lib/blog';
 import { BLOG_URL, SITE_URL, shareCard } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Blog · Affitor' },
+  title: { absolute: 'Blog | Affitor' },
   description: BLOG_DESCRIPTION,
   // Canonical home of the blog is the proxied affitor.com/blog zone; /blog.md is its machine-readable twin.
   alternates: { canonical: BLOG_URL, types: { 'text/markdown': '/blog.md' } },
