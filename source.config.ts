@@ -124,6 +124,8 @@ export const blog = defineCollections({
     layout: z.enum(['comparison']).optional(),
     // A word of the title the comparison hero tints
     highlight: z.string().optional(),
+    // `accent` (article layout only): blue links and boxed, ruled tables (.aff-accent in globals.css)
+    look: z.enum(['accent']).optional(),
   }),
 });
 
