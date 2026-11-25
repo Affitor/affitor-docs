@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ComponentProps, ComponentType } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = entryUrl(entry);
   const image = entry.banner ? [{ url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 }] : undefined;
   return {
-    title: { absolute: `${entry.title} · Affitor Changelog` },
+    title: { absolute: `${entry.title} · Affitor` },
     description: entry.description,
     alternates: { canonical: url, types: { 'text/markdown': `/changelog/${slug}.md` } },
     openGraph: { title: entry.title, description: entry.description, type: 'article', url, publishedTime: entry.date, images: image },
@@ -78,11 +79,17 @@ function jsonLd(entry: ReturnType<typeof sortedEntries>[number], slug: string) {
 export default async function ChangelogEntryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { entry, slug, older, newer } = await getEntry(params);
   const Body = entry.body;
-  const lead = leadMedia(await entry.getText('raw'));
+  const raw = await entry.getText('raw');
+  const lead = leadMedia(raw);
   // The lead visual moves above the tags, so the body skips its first occurrence.
   let skipped = false;
+  // Digest entries go `# title` → `### Improved`; with no `##` in the body those render as <h2> (h3 look) so
+  // the outline does not skip a level. Entries that use `##` keep their own levels.
+  const flat = /^### /m.test(raw) && !/^## /m.test(raw);
+  const H2 = useMDXComponents({}).h2 as ComponentType<ComponentProps<'h2'>>;
   const components = useMDXComponents({
     Callout: NoCallout,
+    ...(flat ? { h3: (props: ComponentProps<'h2'>) => <H2 {...props} className={`cl-h3 ${props.className ?? ''}`.trim()} /> } : {}),
     ...(lead
       ? {
           Media: (props: Parameters<typeof Media>[0]) => {
