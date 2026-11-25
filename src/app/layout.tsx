@@ -13,9 +13,9 @@ const inter = Inter({ subsets: ['latin'], axes: ['opsz'], variable: '--font-inte
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains-mono', display: 'swap', preload: false });
 
 export const metadata: Metadata = {
-  // Every page is published on affitor.com (multi-zone), so relative canonicals, alternates and
-  // og images resolve there. The default og/twitter images live in app/docs/, so they are served
-  // at affitor.com/docs/opengraph-image.png (affitor.com/<file> belongs to the dashboard).
+  // Every page is published on affitor.com (multi-zone), so relative canonicals and alternates resolve there.
+  // Share images are the approved card from affitor.com/api/og (shareCard in lib/site.ts, CORE-687); the old static
+  // card stays at public/docs/opengraph-image.png so links to it keep answering.
   metadataBase: new URL(SITE_URL),
   title: {
     template: '%s | Affitor Docs',

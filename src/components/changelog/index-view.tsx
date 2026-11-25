@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Card } from '@/components/changelog/parts';
 import { ChangelogList } from '@/components/changelog/list';
 import { CHANGELOG_SUB, CHANGELOG_TITLE, CHANGELOG_URL, PAGE_SIZE, entryUrl, indexOrder, isPinned, sortedEntries, surfaceLabel, todayPT } from '@/lib/changelog';
-import { DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/site';
+import { SITE_URL, shareCard } from '@/lib/site';
 
 const SURFACES = Object.fromEntries(
   ['dashboard', 'marketplace', 'tracking', 'api', 'sdk', 'cli', 'mcp'].map((s) => [s, surfaceLabel(s)]),
@@ -16,8 +16,8 @@ export const indexMetadata: Metadata = {
     canonical: CHANGELOG_URL,
     types: { 'text/markdown': '/changelog.md', 'application/rss+xml': '/changelog/rss.xml' },
   },
-  openGraph: { title: 'Affitor Changelog', description: CHANGELOG_SUB, type: 'website', url: CHANGELOG_URL, images: [DEFAULT_OG_IMAGE] },
-  twitter: { card: 'summary_large_image', title: 'Affitor Changelog', description: CHANGELOG_SUB, images: [DEFAULT_OG_IMAGE.url] },
+  openGraph: { title: 'Affitor Changelog', description: CHANGELOG_SUB, type: 'website', url: CHANGELOG_URL, images: [shareCard('Affitor Changelog')] },
+  twitter: { card: 'summary_large_image', title: 'Affitor Changelog', description: CHANGELOG_SUB, images: [shareCard('Affitor Changelog').url] },
 };
 
 /** CollectionPage of every entry, newest first (same order as /changelog.md); each entry page has its own TechArticle. */

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useMDXComponents } from '@/../mdx-components';
 import { formatDay } from '@/lib/changelog';
+import { shareCard } from '@/lib/site';
 import { CopyForLLM, MarkdownIcon, ShareFeedback } from '@/components/page-actions';
 
 // Docs pages live under /docs: https://affitor.com/docs/<slug> proxies here
@@ -188,6 +189,8 @@ export async function generateMetadata(props: { params: Promise<{ slug?: string[
   return {
     title: page.data.title,
     description: page.data.description,
+    openGraph: { title: page.data.title, description: page.data.description, images: [shareCard(page.data.title)] },
+    twitter: { card: 'summary_large_image', title: page.data.title, images: [shareCard(page.data.title).url] },
     alternates: {
       canonical: getDocArticle(page).url,
       // machine-readable markdown twin of this page

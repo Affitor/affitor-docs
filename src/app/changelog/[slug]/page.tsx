@@ -8,7 +8,7 @@ import { Media } from '@/components/changelog/media';
 import { Chips, actionText } from '@/components/changelog/parts';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
 import { CHANGELOG_URL, bannerSrc, capitalize, entrySlug, entryUrl, formatDay, leadMedia, sortedEntries } from '@/lib/changelog';
-import { DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/site';
+import { SITE_URL, shareCard } from '@/lib/site';
 
 // Fully static: an entry only changes with a deploy.
 export const dynamicParams = false;
@@ -37,7 +37,7 @@ async function getEntry(params: Promise<{ slug: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { entry, slug } = await getEntry(params);
   const url = entryUrl(entry);
-  const image = entry.banner ? [{ url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 }] : [DEFAULT_OG_IMAGE];
+  const image = [entry.banner ? { url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 } : shareCard(entry.title)];
   return {
     title: { absolute: `${entry.title} · Affitor` },
     description: entry.description,

@@ -8,8 +8,16 @@
  */
 export const SITE_URL = 'https://affitor.com';
 
-/** Share card for blog and changelog pages that carry no image of their own: the docs card (1200×630). */
-export const DEFAULT_OG_IMAGE = { url: `${SITE_URL}/docs/opengraph-image.png`, width: 1200, height: 630 };
+/**
+ * The approved share card (CORE-687, Sơn's "ok share card" 07/11/2026): affitor.com renders the 1200×630 template
+ * (Affitor logo + title) for any title. Used for every page without a designed image of its own; designed blog
+ * covers and changelog banners stay (CTO ruling D1, 25/11).
+ */
+export const shareCard = (title: string) => ({
+  url: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
+  width: 1200,
+  height: 630,
+});
 export const DOCS_URL = `${SITE_URL}/docs`;
 export const BLOG_URL = `${SITE_URL}/blog`;
 
