@@ -8,7 +8,7 @@ import { Media } from '@/components/changelog/media';
 import { Chips, actionText } from '@/components/changelog/parts';
 import { renderInlineMarkdown } from '@/components/mdx/inline-markdown';
 import { CHANGELOG_URL, bannerSrc, capitalize, entrySlug, entryUrl, formatDay, leadMedia, sortedEntries } from '@/lib/changelog';
-import { SITE_URL } from '@/lib/site';
+import { DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/site';
 
 // Fully static: an entry only changes with a deploy.
 export const dynamicParams = false;
@@ -37,13 +37,13 @@ async function getEntry(params: Promise<{ slug: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { entry, slug } = await getEntry(params);
   const url = entryUrl(entry);
-  const image = entry.banner ? [{ url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 }] : undefined;
+  const image = entry.banner ? [{ url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 }] : [DEFAULT_OG_IMAGE];
   return {
     title: { absolute: `${entry.title} · Affitor` },
     description: entry.description,
     alternates: { canonical: url, types: { 'text/markdown': `/changelog/${slug}.md` } },
     openGraph: { title: entry.title, description: entry.description, type: 'article', url, publishedTime: entry.date, images: image },
-    twitter: { card: 'summary_large_image', title: entry.title, description: entry.description, images: image?.map((i) => i.url) },
+    twitter: { card: 'summary_large_image', title: entry.title, description: entry.description, images: image.map((i) => i.url) },
   };
 }
 

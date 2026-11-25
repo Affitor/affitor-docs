@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { BlogShell } from '@/components/blog/blog-shell';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
 import { BLOG_DESCRIPTION, sortedPosts, type Post } from '@/lib/blog';
-import { BLOG_URL, SITE_URL } from '@/lib/site';
+import { BLOG_URL, DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
@@ -17,12 +17,14 @@ export const metadata: Metadata = {
       'Essays, launches, and guides from the team building Affitor.',
     type: 'website',
     url: BLOG_URL,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Affitor Blog',
     description:
       'Essays, launches, and guides from the team building Affitor.',
+    images: [DEFAULT_OG_IMAGE.url],
   },
 };
 

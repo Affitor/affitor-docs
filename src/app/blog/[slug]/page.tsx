@@ -9,7 +9,7 @@ import { BlogShell } from '@/components/blog/blog-shell';
 import { articleComponents } from '@/components/blog/comparison/article-tables';
 import { ComparisonLayout, comparisonComponents } from '@/components/blog/comparison/comparison-layout';
 import { formatDate, postSlug } from '@/components/blog/post-meta';
-import { BLOG_DOCS_ORIGIN, BLOG_URL, SITE_URL } from '@/lib/site';
+import { BLOG_DOCS_ORIGIN, BLOG_URL, DEFAULT_OG_IMAGE, SITE_URL } from '@/lib/site';
 
 function getPost(slug: string) {
   return blog.find((post) => postSlug(post.info.path) === slug);
@@ -161,12 +161,13 @@ export async function generateMetadata(props: {
       url: `${BLOG_URL}/${slug}`,
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
-      ...(post.image ? { images: [{ url: `${SITE_URL}${post.image}` }] } : {}),
+      images: post.image ? [{ url: `${SITE_URL}${post.image}` }] : [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.metaDescription ?? post.description,
+      images: [post.image ? `${SITE_URL}${post.image}` : DEFAULT_OG_IMAGE.url],
     },
   };
 }
