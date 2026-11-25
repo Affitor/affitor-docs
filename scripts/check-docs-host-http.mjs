@@ -168,7 +168,7 @@ const ALWAYS = [
   [PROXY, '/docs/advertisers/quickstart', 308, '/docs/brand/quickstart', undefined, REDIRECT_MD],
   [DOCS, '/blog/rewardful-alternatives', 301, 'https://affitor.com/blog/rewardful-alternatives', undefined, REDIRECT_MD],
   [DOCS, '/changelog/invite-partners', 301, 'https://affitor.com/changelog/invite-partners', undefined, REDIRECT_MD],
-  // The default share images moved to app/docs/ (metadataBase affitor.com); the old docs-host URL still answers.
+  // The old default share images live in public/docs/ (pages use affitor.com/api/og); the old URLs still answer.
   [PROXY, '/docs/opengraph-image.png', 200, null, 'image/png'],
   [PROXY, '/docs/twitter-image.png', 200, null, 'image/png'],
   [DOCS, '/opengraph-image.png', 200, null, 'image/png'],

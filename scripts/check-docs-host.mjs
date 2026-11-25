@@ -152,7 +152,7 @@ function invariants() {
     ['/affitor-logo.svg', '/docs/affitor-logo.svg'],
     ['/favicon.svg', '/docs/favicon.svg'],
     ['/apple-touch-icon.png', '/docs/apple-touch-icon.png'],
-    // The default share images moved to app/docs/ with metadataBase affitor.com (CORE-690).
+    // The old default share images live in public/docs/ (CORE-690, CORE-687); pages use affitor.com/api/og now.
     ['/opengraph-image.png', '/docs/opengraph-image.png'],
     ['/twitter-image.png', '/docs/twitter-image.png'],
     ['/images/how-it-works-diagram.png', '/docs/images/how-it-works-diagram.png'],
