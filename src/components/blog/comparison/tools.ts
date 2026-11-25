@@ -22,6 +22,13 @@ export const TOOLS: Record<string, { id: string; logo: string }> = {
   Everflow: { id: 'everflow', logo: 'everflow.svg' },
   'CJ Affiliate': { id: 'cj', logo: 'cj.svg' },
   'Rakuten Advertising': { id: 'rakuten', logo: 'rakuten.png' },
+  'Stripe Managed Payments': { id: 'stripe-managed-payments', logo: 'stripe-256.png' },
+  Paddle: { id: 'paddle', logo: 'paddle-256.png' },
+  Polar: { id: 'polar', logo: 'polar-256.png' },
+  'Dodo Payments': { id: 'dodo-payments', logo: 'dodo-payments-256.png' },
+  Creem: { id: 'creem', logo: 'creem-256.png' },
+  Freemius: { id: 'freemius', logo: 'freemius-256.png' },
+  Gumroad: { id: 'gumroad', logo: 'gumroad-256.png' },
 };
 
 /** The tool we make: its row and column get the primary tint. */
