@@ -37,7 +37,7 @@ async function getEntry(params: Promise<{ slug: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { entry, slug } = await getEntry(params);
   const url = entryUrl(entry);
-  const image = [shareCard(entry.title)];
+  const image = [entry.banner ? { url: `${SITE_URL}${bannerSrc(slug, 'light')}`, width: 1200, height: 630 } : shareCard(entry.title)];
   return {
     title: { absolute: `${entry.title} · Affitor` },
     description: entry.description,

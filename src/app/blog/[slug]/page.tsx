@@ -161,13 +161,13 @@ export async function generateMetadata(props: {
       url: `${BLOG_URL}/${slug}`,
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
-      images: [shareCard(post.title)],
+      images: [post.image ? { url: `${SITE_URL}${post.image}` } : shareCard(post.title)],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.metaDescription ?? post.description,
-      images: [shareCard(post.title).url],
+      images: [post.image ? `${SITE_URL}${post.image}` : shareCard(post.title).url],
     },
   };
 }

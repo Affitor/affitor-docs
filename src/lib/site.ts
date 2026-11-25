@@ -9,8 +9,9 @@
 export const SITE_URL = 'https://affitor.com';
 
 /**
- * The one share card for every page of this app (CORE-687, Sơn's "ok share card" 07/11/2026): affitor.com renders
- * the approved 1200×630 template (Affitor logo + title) for any title, as it does for its own pages.
+ * The approved share card (CORE-687, Sơn's "ok share card" 07/11/2026): affitor.com renders the 1200×630 template
+ * (Affitor logo + title) for any title. Used for every page without a designed image of its own; designed blog
+ * covers and changelog banners stay (CTO ruling D1, 25/11).
  */
 export const shareCard = (title: string) => ({
   url: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
