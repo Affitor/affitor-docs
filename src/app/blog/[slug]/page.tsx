@@ -145,8 +145,8 @@ export async function generateMetadata(props: {
   if (!post) notFound();
 
   return {
-    // absolute: the blog lives on affitor.com, so no "| Affitor Docs" suffix.
-    title: { absolute: `${post.title} | Affitor` },
+    // absolute: the blog skips the docs layout's title template; same format, "<page> · Affitor".
+    title: { absolute: `${post.title} · Affitor` },
     description: post.metaDescription ?? post.description,
     alternates: {
       // Canonical home of every post is the proxied affitor.com/blog zone.

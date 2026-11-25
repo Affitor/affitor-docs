@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   // card stays at public/docs/opengraph-image.png so links to it keep answering.
   metadataBase: new URL(SITE_URL),
   title: {
-    template: '%s | Affitor Docs',
+    template: '%s · Affitor',
     default: 'Affitor Documentation',
   },
   description: 'Complete guide to the Affitor affiliate management platform',
