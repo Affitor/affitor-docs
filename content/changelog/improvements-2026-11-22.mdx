@@ -8,10 +8,10 @@ audience:
 surfaces:
 - dashboard
 - tracking
-description: Check it works tests programs priced by product rule, the first partner payment step counts a paid invoice, and the tracker skips signups without a click.
+description: Check it works tests programs priced by product rule, the first partner payment step can count a paid invoice, and the tracker skips signups without a click.
 context:
   avoid:
-  - "Saying every program with product rules now matches: the check uses one program-wide rule for one-time sales that is in effect now; partner, group or recurring-only rules are not used for it."
+  - "Saying every program with product rules now matches: the check uses one program-wide rule for one-time sales that is in effect now; with recurring-only rules, or any partner or group rule in effect, Sale can still read Not matched."
   - "Saying partners get paid sooner: only the step in the brand's setup list and first results changed."
   - "Saying signups without an affiliate click are now tracked or counted: the tracking script sends nothing for them."
 ---
@@ -19,7 +19,7 @@ context:
 ### Fixed
 
 - **Check it works** now tests a program that prices sales by product rule through one of its own program-wide rules, so a correct setup can show **Sale** as **Matched**.
-- **You paid your first partner** now completes once you pay the invoice for a partner's commission, not only after Affitor pays the partner out.
+- **You paid your first partner** can now complete once you pay the invoice for a partner's commission.
 
 ### Improved
 
