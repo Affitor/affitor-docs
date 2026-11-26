@@ -1,0 +1,107 @@
+---
+title: List applications
+description: List partner applications to your program, newest first, filtered by status.
+kind: reference
+last_updated: 2026-11-26
+---
+
+`GET /programs/{program_id}/applications` lists the applications partners sent to your program, newest first. Filter by `status` to see only the ones waiting for you.
+
+```http
+GET https://api.affitor.com/api/v1/programs/{program_id}/applications
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl "https://api.affitor.com/api/v1/programs/me/applications?status=pending" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY"`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me/applications?status=pending', {
+  headers: { Authorization: 'Bearer YOUR_PROGRAM_API_KEY' },
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.get(
+    'https://api.affitor.com/api/v1/programs/me/applications?status=pending',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+| `status` | query | string | No | One of `approved`, `pending`, `rejected`. |
+| `limit` | query | integer | No | 1 to 100, default 50. |
+| `cursor` | query | string | No | next_cursor from the previous page; bound to this route, program and filters. It is an offset in a stable newest-first order: a row added while you page can appear twice, never be skipped. |
+
+This list is paged: pass `limit` (1 to 100, default 50) and, for the next page, the `next_cursor` of the previous answer as `cursor`. `next_cursor` is `null` on the last page. A cursor works only with the same route, program and filters.
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "880",
+      "status": "pending",
+      "partner": { "name": "Jamie Lee" },
+      "marketing_experience": "I review analytics tools on my blog.",
+      "initial_message": null,
+      "reject_message": null,
+      "created_at": "2026-11-20T09:12:00.000Z",
+      "updated_at": "2026-11-20T09:12:00.000Z"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+### Fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `id` | string | Yes |  |
+| `status` | string or null | Yes |  |
+| `partner` | object | Yes |  |
+| `marketing_experience` | string or null | No |  |
+| `initial_message` | string or null | No |  |
+| `reject_message` | string or null | No |  |
+| `created_at` | string or null | Yes |  |
+| `updated_at` | string or null | Yes |  |
+| `truncated` | Truncated | No | Present only when a text field was cut to 280 characters. |
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api-errors#invalid_request) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api-errors#invalid_key), [`wrong_key_type`](/docs/api-reference/brand-api-errors#wrong_key_type), [`key_revoked`](/docs/api-reference/brand-api-errors#key_revoked) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api-errors#insufficient_permission) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api-errors#not_found) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api-errors#internal_error) | Retry with backoff; if it keeps failing, send us the `request_id` |
+
+## Related
+
+- [Partners](/docs/api-reference/brand-api-partners)

@@ -1,0 +1,152 @@
+---
+title: Get billing summary
+description: Read what your program owes Affitor: the due amount, this week so far, the platform fee and your invoices.
+kind: reference
+last_updated: 2026-11-26
+---
+
+`GET /programs/{program_id}/billing-summary` answers what your program owes Affitor: the amount due and when, this week's commission and fee so far, the platform fee to date, invoice counts and your invoices, 20 per page.
+
+```http
+GET https://api.affitor.com/api/v1/programs/{program_id}/billing-summary
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl "https://api.affitor.com/api/v1/programs/me/billing-summary?status=open" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY"`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me/billing-summary?status=open', {
+  headers: { Authorization: 'Bearer YOUR_PROGRAM_API_KEY' },
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.get(
+    'https://api.affitor.com/api/v1/programs/me/billing-summary?status=open',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+| `status` | query | string | No | One of `all`, `open`, `overdue`, `paid`, `void`. |
+| `cursor` | query | string | No | next_cursor from the previous page; bound to this route, program and filters. It is an offset in a stable newest-first order: a row added while you page can appear twice, never be skipped. |
+
+Invoices come 20 per page; this route takes no `limit`, and sending one answers `400 invalid_request`. For the next page pass `next_cursor` as `cursor`.
+
+## Response
+
+```json
+{
+  "data": {
+    "currency": "USD",
+    "due": {
+      "invoice_id": "312",
+      "amount": { "amount": 16415, "currency": "USD" },
+      "due_at": "2026-12-01T00:00:00.000Z",
+      "overdue": false,
+      "outstanding": { "amount": 16415, "currency": "USD" }
+    },
+    "program": { "status": "active", "paused_for_billing": false, "paused_for_billing_at": null },
+    "this_week": {
+      "from": "2026-11-23",
+      "to": "2026-11-29",
+      "commission": { "amount": 4410, "currency": "USD" },
+      "fee": { "amount": 515, "currency": "USD" },
+      "accrued": { "amount": 4925, "currency": "USD" },
+      "invoice_on": "2026-11-30"
+    },
+    "fee": {
+      "rate_bps": 350,
+      "free_threshold": { "amount": 1000000, "currency": "USD" },
+      "lifetime_revenue": { "amount": 1250000, "currency": "USD" },
+      "invoiced": { "amount": 1715, "currency": "USD" },
+      "accrued": { "amount": 515, "currency": "USD" },
+      "fee_to_date": { "amount": 2230, "currency": "USD" }
+    },
+    "pay": { "card": true },
+    "counts": { "all": 6, "open": 1, "overdue": 0, "paid": 5, "void": 0 },
+    "invoices": [
+      {
+        "id": "312",
+        "number": "AFF-2026-0312",
+        "period": { "from": "2026-11-16", "to": "2026-11-22" },
+        "issued_at": "2026-11-23T00:00:00.000Z",
+        "due_at": "2026-12-01T00:00:00.000Z",
+        "commission": { "amount": 14700, "currency": "USD" },
+        "fee": { "amount": 1715, "currency": "USD" },
+        "total": { "amount": 16415, "currency": "USD" },
+        "currency": "USD",
+        "status": "open"
+      }
+    ]
+  },
+  "next_cursor": null
+}
+```
+
+Every amount is in the invoice currency. The example numbers are illustrative, not your terms.
+
+### Fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `currency` | string | Yes |  |
+| `due` | object | Yes | The oldest open invoice: its id, amount and due date, whether it is overdue, and everything still outstanding. |
+| `program` | object | Yes | The program status, and whether and since when it is paused for an unpaid invoice. |
+| `this_week` | object | Yes | This week so far: commission, fee and their sum, and the day it will be invoiced. |
+| `fee` | object | Yes | The platform fee: rate in basis points, the free threshold, lifetime partner revenue, fee invoiced, fee accrued this week, and fee to date. |
+| `counts` | object | Yes | Invoices per status: `all`, `open`, `overdue`, `paid`, `void`. |
+| `invoices` | list of Invoice | Yes | This page of invoices, newest first. |
+
+### Invoice fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `id` | string | Yes |  |
+| `number` | string or null | Yes |  |
+| `period` | object | Yes | The days the invoice covers: `from`, `to`. |
+| `issued_at` | string or null | Yes |  |
+| `due_at` | string or null | Yes |  |
+| `commission` | Money object | Yes |  |
+| `fee` | Money object | Yes |  |
+| `total` | Money object | Yes |  |
+| `currency` | string | Yes |  |
+| `status` | string or null | Yes |  |
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api-errors#invalid_request) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api-errors#invalid_key), [`wrong_key_type`](/docs/api-reference/brand-api-errors#wrong_key_type), [`key_revoked`](/docs/api-reference/brand-api-errors#key_revoked) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api-errors#insufficient_permission) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api-errors#not_found) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api-errors#internal_error) | Retry with backoff; if it keeps failing, send us the `request_id` |
+
+## Related
+
+- [Commissions](/docs/api-reference/brand-api-commissions)

@@ -1,0 +1,133 @@
+---
+title: Query metrics
+description: Read named metrics of your program in day, week or month buckets, with an optional comparison period.
+kind: reference
+last_updated: 2026-11-26
+---
+
+`POST /programs/{program_id}/metrics/query` answers named metrics from the metric catalog for a date range, in day, week or month buckets, optionally next to the previous period. Send the metric names, `starts_at` and `ends_at`. The answer's `definitions` say what each metric counts and its unit.
+
+```http
+POST https://api.affitor.com/api/v1/programs/{program_id}/metrics/query
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST "https://api.affitor.com/api/v1/programs/me/metrics/query" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"metrics": ["funnel.sales@1"], "starts_at": "2026-11-01", "ends_at": "2026-11-26", "granularity": "week", "compare": "previous_period"}'`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me/metrics/query', {
+  method: 'POST',
+  headers: {
+    Authorization: 'Bearer YOUR_PROGRAM_API_KEY',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    "metrics": [
+      "funnel.sales@1"
+    ],
+    "starts_at": "2026-11-01",
+    "ends_at": "2026-11-26",
+    "granularity": "week",
+    "compare": "previous_period"
+  }),
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.post(
+    'https://api.affitor.com/api/v1/programs/me/metrics/query',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+    json={"metrics": ["funnel.sales@1"], "starts_at": "2026-11-01", "ends_at": "2026-11-26", "granularity": "week", "compare": "previous_period"},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+
+Body:
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `metrics` | list of string | Yes | Metric names of one namespace, with their version, for example `funnel.sales@1`. |
+| `starts_at` | string | Yes | First day, `YYYY-MM-DD`. |
+| `ends_at` | string | Yes | Day after the last day, `YYYY-MM-DD` (exclusive). |
+| `granularity` | string | No | One of `day`, `week`, `month`. |
+| `timezone` | string | No | IANA time zone for the buckets. Default `America/Los_Angeles`. |
+| `compare` | string | No | One of `previous_period`. |
+| `limit` | integer | No | Most rows to answer, 1 to 1000. Default 1000. |
+
+## Response
+
+```json
+{
+  "data": {
+    "rows": [
+      { "bucket": "2026-11-02", "currency": "USD", "values": { "funnel.sales@1": 4 } }
+    ],
+    "previous_rows": [
+      { "bucket": "2026-10-05", "currency": "USD", "values": { "funnel.sales@1": 2 } }
+    ],
+    "truncated": false,
+    "refreshed_at": "2026-11-26T09:00:00.000Z",
+    "definitions": [{ "name": "funnel.sales@1", "unit": "count", "queries": ["Q-FUNNEL"] }]
+  }
+}
+```
+
+A metric in money (unit `minor`) answers a Money object in its row's currency instead of a number.
+
+### Fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `rows` | list of MetricRow | Yes | One row per bucket (and per currency for money metrics). `bucket` is the first local day of the bucket, or `null` for a range-only metric. |
+| `previous_rows` | list of MetricRow | No | Present when `compare` is `previous_period`. |
+| `truncated` | boolean | Yes | `true` when `limit` cut the rows. |
+| `refreshed_at` | string | Yes |  |
+| `definitions` | list of object | Yes | For each metric: its name, unit (`count`, `minor` or `bps`) and the queries it reads. |
+
+## Limits
+
+10 requests per second per key. The 11th answers `429 rate_limited` with `Retry-After: 1`, before the body is read.
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api-errors#invalid_request) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api-errors#invalid_key), [`wrong_key_type`](/docs/api-reference/brand-api-errors#wrong_key_type), [`key_revoked`](/docs/api-reference/brand-api-errors#key_revoked) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api-errors#insufficient_permission) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api-errors#not_found) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api-errors#internal_error) | Retry with backoff; if it keeps failing, send us the `request_id` |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api-errors#insufficient_permission) | A metric this program scope cannot read, such as payout metrics |
+| 429 | [`rate_limited`](/docs/api-reference/brand-api-errors#rate_limited) | More than 10 requests in one second for this key. Wait for `Retry-After` |
+| 503 | [`unavailable`](/docs/api-reference/brand-api-errors#unavailable) | Analytics is busy. Retry after `Retry-After` (2 seconds) |
+
+## Related
+
+- [Brand API](/docs/api-reference/brand-api)
