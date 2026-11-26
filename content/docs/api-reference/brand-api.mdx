@@ -1,0 +1,80 @@
+---
+title: "Brand API"
+description: "Read your program, partners, commissions, customers, billing and metrics with a program API key."
+kind: reference
+last_updated: 2026-11-26
+---
+
+The Brand API reads your Affitor program from your own server: the program and its setup, partners, applications, commissions, customers, billing and metrics. It is read-only. To send tracking events, use the [Tracking API](/docs/api-reference/track-sale).
+
+Base URL: `https://api.affitor.com/api/v1`
+
+## Authentication
+
+Every request sends a program API key as a Bearer token:
+
+```bash
+curl https://api.affitor.com/api/v1/programs \
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY"
+```
+
+A key can read only when all of these hold:
+
+| Requirement | Where to check it |
+|---|---|
+| It is a live program API key (`aff_…`, or an older `affitor_…` key) | **Program settings** › **Developers** › **API keys** |
+| Its permission is **Full access** (a **Tracking only** key is refused with `insufficient_permission`) | the key's **Permission** |
+| Its read tick **Can use the read API** is on | **Edit key** on that page |
+| It is enabled and not retired | the key's **Status** |
+
+A test key (`aff_test_…`) and a coding agent key are refused with `wrong_key_type`. Keys that existed before the Brand API launched start with the read tick off: tick it on the keys you want to read with. A key created later has it on by default, and you can untick it when you create the key.
+
+A key reads only its own program. Every path takes that program's id, or `me` for the key's own program: `/programs/me/partners`.
+
+## What a read key can see
+
+A key with the read tick reads partners, applications, commissions, customers, billing and stats of its own program. Customers come without contact details: an email is masked, and no name, phone or payment id is returned.
+
+## Requests and responses
+
+- One object answers `{ "data": { ... } }`; a list answers `{ "data": [ ... ], "next_cursor": "..." }`.
+- Lists are newest first and paged by cursor. This list is paged: pass `limit` (1 to 100, default 50) and, for the next page, the `next_cursor` of the previous answer as `cursor`. `next_cursor` is `null` on the last page. A cursor works only with the same route, program and filters.
+- Ids are strings. Money is an object `{ "amount": 4900, "currency": "USD" }` with `amount` in the currency's minor units; amounts in different currencies are never added together, so totals are lists with one entry per currency.
+- Times are ISO 8601 in UTC; date parameters (`from`, `to`) are UTC days, `YYYY-MM-DD`.
+- Every response carries `X-Request-Id`. Errors repeat it as `request_id`: send it when you contact us.
+- Responses are not cached (`Cache-Control: private, no-store`).
+- A free-text field longer than 280 characters is cut and ends with `…`; the answer's `truncated` list names the fields that were cut.
+
+## Rate limits
+
+Every request with an accepted key gets the IETF `RateLimit` and `RateLimit-Policy` headers for a budget of 300 requests per minute per key. The budget is counted but not enforced yet. [Query metrics](/docs/api-reference/brand-api-metrics) is enforced: 10 requests per second per key, then `429 rate_limited` with `Retry-After`.
+
+## Errors
+
+Every error has the same shape, with an HTTP status:
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "limit must be an integer from 1 to 100.",
+    "param": "limit",
+    "doc_url": "https://affitor.com/docs/api/errors#invalid_request",
+    "request_id": "req_4Hq8sZkT2mN6pWc1xYv0Ab"
+  }
+}
+```
+
+`param` names the field when one is at fault. `retry_after_seconds` comes with `rate_limited` and `unavailable`. Send `request_id` when you contact us about a failed call.
+
+## Endpoints
+
+| Read | Endpoint |
+|---|---|
+| [Programs](/docs/api-reference/brand-api-programs) | `GET /programs`, `GET /programs/{program_id}` |
+| [Partners](/docs/api-reference/brand-api-partners) | `GET /programs/{program_id}/partners`, `GET /programs/{program_id}/partners/{partner_id}` |
+| [Applications](/docs/api-reference/brand-api-applications) | `GET /programs/{program_id}/applications` |
+| [Commissions](/docs/api-reference/brand-api-commissions) | `GET /programs/{program_id}/commissions`, `GET /programs/{program_id}/commissions/summary` |
+| [Customers](/docs/api-reference/brand-api-customers) | `GET /programs/{program_id}/customers` |
+| [Billing summary](/docs/api-reference/brand-api-billing) | `GET /programs/{program_id}/billing-summary` |
+| [Metrics](/docs/api-reference/brand-api-metrics) | `POST /programs/{program_id}/metrics/query` |

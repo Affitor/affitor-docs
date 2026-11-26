@@ -109,6 +109,17 @@
 - [List Tracking Events](https://affitor.com/docs/api-reference/events.md)
 - [GET /tracking/performance/:programId](https://affitor.com/docs/api-reference/performance.md)
 
+## API Reference: Brand API
+
+- [Brand API](https://affitor.com/docs/api-reference/brand-api.md)
+- [Get your program](https://affitor.com/docs/api-reference/brand-api-programs.md)
+- [List partners](https://affitor.com/docs/api-reference/brand-api-partners.md)
+- [List applications](https://affitor.com/docs/api-reference/brand-api-applications.md)
+- [List commissions](https://affitor.com/docs/api-reference/brand-api-commissions.md)
+- [List customers](https://affitor.com/docs/api-reference/brand-api-customers.md)
+- [Get billing summary](https://affitor.com/docs/api-reference/brand-api-billing.md)
+- [Query metrics](https://affitor.com/docs/api-reference/brand-api-metrics.md)
+
 ## API Reference: SDKs and MCP
 
 - [SDKs](https://affitor.com/docs/api-reference/sdks.md)

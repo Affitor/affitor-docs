@@ -1,0 +1,141 @@
+---
+title: "Get your program"
+description: "Read the program your API key belongs to: its terms, setup checklist, tracking counts and tracker snippet."
+kind: reference
+last_updated: 2026-11-26
+---
+
+`GET /programs` lists the program the key belongs to (a program key reads one program); `GET /programs/{program_id}` reads it in full: commission terms, approval mode, setup checklist, the last 24 hours of tracking and the tracker snippet to install.
+
+```http
+GET https://api.affitor.com/api/v1/programs
+GET https://api.affitor.com/api/v1/programs/{program_id}
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl "https://api.affitor.com/api/v1/programs/me" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY"`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me', {
+  headers: { Authorization: 'Bearer YOUR_PROGRAM_API_KEY' },
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.get(
+    'https://api.affitor.com/api/v1/programs/me',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+| `limit`, `cursor` | query | | No | `GET /programs` only. Paging, see [Brand API](/docs/api-reference/brand-api). |
+
+## Response
+
+`GET /programs/me`:
+
+```json
+{
+  "data": {
+    "id": "1042",
+    "name": "Acme Analytics",
+    "slug": "acme-analytics",
+    "status": "active",
+    "website": "https://example.com",
+    "category": "Analytics",
+    "tagline": "Product analytics for small teams",
+    "description": "Acme helps small teams see what users do.",
+    "currency": "USD",
+    "approval": "auto",
+    "pending_applications": 2,
+    "commission": {
+      "type": "recurring",
+      "rate_pct": 30,
+      "fixed": null,
+      "duration_months": 12,
+      "attribution_days": 60,
+      "hold_days": 30
+    },
+    "checklist": [
+      { "id": "business-details", "done": true },
+      { "id": "approval-mode", "done": true },
+      { "id": "click-tracking", "done": true },
+      { "id": "payment-tracking", "done": false }
+    ],
+    "tracking": {
+      "counts_24h": { "clicks": 128, "leads": 9, "sales": 3, "sales_amount": { "amount": 14700, "currency": "USD" } },
+      "tag": "found"
+    },
+    "install": {
+      "script_tag": "<script ...></script>",
+      "npm_install": "npm install @affitor/sdk",
+      "npm_files": [{ "path": "app/affitor-provider.tsx", "code": "..." }],
+      "where": "In <head> on every page of https://example.com, ...",
+      "verify": "..."
+    }
+  }
+}
+```
+
+`GET /programs` answers a list of rows (`id`, `name`, `currency`, `status`) with `next_cursor`.
+
+### Fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `id` | string | Yes |  |
+| `name` | string or null | Yes |  |
+| `slug` | string or null | Yes |  |
+| `status` | string or null | Yes |  |
+| `website` | string or null | No |  |
+| `category` | string or null | No |  |
+| `tagline` | string or null | No |  |
+| `description` | string or null | No |  |
+| `currency` | string | Yes |  |
+| `approval` | string or null | No | `auto` approves applications when they arrive; `manual` waits for you. |
+| `pending_applications` | integer or null | No |  |
+| `partners` | any | No |  |
+| `commission` | object or null | Yes | The current terms of the program. |
+| `checklist` | list of object | Yes | Setup steps, each with `id` and `done`. |
+| `tracking` | object or null | Yes | `counts_24h`: clicks, leads, sales and their amount in the last 24 hours. `tag`: what the last tracker check found. |
+| `install` | object | No | The tracker snippet for this program, where it goes, and how to check it works. |
+| `truncated` | Truncated | No | Present only when a text field was cut to 280 characters. |
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` usually names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api#errors), [`wrong_key_type`](/docs/api-reference/brand-api#errors), [`key_revoked`](/docs/api-reference/brand-api#errors) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api#errors) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api#errors) | Retry with backoff; if it keeps failing, send us the `request_id` |
+
+## Related
+
+- [Partners](/docs/api-reference/brand-api-partners)

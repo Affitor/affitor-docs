@@ -502,7 +502,8 @@ function checkNav() {
   const pageNav = [
     ['/docs/partners/account-settings', ['/docs/partners/referral-rewards', '/docs/partners/faq']],
     ['/docs/partners/faq', ['/docs/partners/account-settings']],
-    ['/docs/api-reference/sdks', ['/docs/api-reference/performance', '/docs/api-reference/connect-ai-tool']],
+    // The Brand API group sits between Dashboard API and SDKs, so SDKs follows Query metrics.
+    ['/docs/api-reference/sdks', ['/docs/api-reference/brand-api-metrics', '/docs/api-reference/connect-ai-tool']],
     ['/docs/api-reference/connect-ai-tool', ['/docs/api-reference/sdks']],
   ];
   for (const [route, hrefs] of pageNav) {

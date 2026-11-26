@@ -1,0 +1,172 @@
+---
+title: "Query metrics"
+description: "Read named metrics of your program in day, week or month buckets, with an optional comparison period."
+kind: reference
+last_updated: 2026-11-26
+---
+
+`POST /programs/{program_id}/metrics/query` answers named metrics from the metric catalog for a date range, in day, week or month buckets, optionally next to the previous period. Send the metric names, `starts_at` and `ends_at`. The answer's `definitions` say what each metric counts and its unit.
+
+```http
+POST https://api.affitor.com/api/v1/programs/{program_id}/metrics/query
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl -X POST "https://api.affitor.com/api/v1/programs/me/metrics/query" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"metrics": ["funnel.sales@1"], "starts_at": "2026-11-01", "ends_at": "2026-11-26", "granularity": "week", "compare": "previous_period"}'`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me/metrics/query', {
+  method: 'POST',
+  headers: {
+    Authorization: 'Bearer YOUR_PROGRAM_API_KEY',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    "metrics": [
+      "funnel.sales@1"
+    ],
+    "starts_at": "2026-11-01",
+    "ends_at": "2026-11-26",
+    "granularity": "week",
+    "compare": "previous_period"
+  }),
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.post(
+    'https://api.affitor.com/api/v1/programs/me/metrics/query',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+    json={"metrics": ["funnel.sales@1"], "starts_at": "2026-11-01", "ends_at": "2026-11-26", "granularity": "week", "compare": "previous_period"},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+
+Body:
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `metrics` | list of string | Yes | 1 to 20 metric names of one namespace, with their version, for example `funnel.sales@1`. |
+| `starts_at` | string | Yes | First day, `YYYY-MM-DD`. |
+| `ends_at` | string | Yes | Day after the last day, `YYYY-MM-DD` (exclusive). |
+| `granularity` | string | No | Bucket size: `day`, `week` or `month`. Default `day`. |
+| `timezone` | string | No | IANA time zone for the buckets. Default `America/Los_Angeles`. |
+| `compare` | string | No | One of `previous_period`. |
+| `limit` | integer | No | Most rows to answer, 1 to 1000. Default 1000. |
+
+## Metrics you can ask
+
+`count` is a number, `bps` a rate in basis points (10,000 = 100%), `minor` money in minor units. A range metric answers one total for the whole date range (`bucket` is `null`).
+
+| Metric | Unit | Shape |
+|---|---|---|
+| `traffic.clicks@1` | `count` | bucketed |
+| `traffic.visits@1` | `count` | bucketed |
+| `traffic.unique_visitors@1` | `count` | bucketed |
+| `funnel.leads@1` | `count` | bucketed |
+| `funnel.sales@1` | `count` | bucketed |
+| `funnel.click_to_lead_rate@1` | `bps` | bucketed |
+| `funnel.click_to_sale_rate@1` | `bps` | bucketed |
+| `funnel.lead_to_sale_rate@1` | `bps` | bucketed |
+| `revenue.gross_sales_amount@1` | `minor` | bucketed |
+| `revenue.net_sales_amount@1` | `minor` | bucketed |
+| `revenue.refunds_amount@1` | `minor` | bucketed |
+| `revenue.average_order_value@1` | `minor` | bucketed |
+| `revenue.revenue_per_click@1` | `minor` | bucketed |
+| `commissions.pending@1` | `minor` | bucketed |
+| `commissions.earned@1` | `minor` | bucketed |
+| `commissions.reversed@1` | `minor` | bucketed |
+| `commissions.count@1` | `count` | per currency |
+| `commissions.awaiting_brand@1` | `minor` | range |
+| `partners.applications@1` | `count` | bucketed |
+| `partners.new_partners@1` | `count` | bucketed |
+| `partners.active_partners@1` | `count` | range |
+
+## Request limits
+
+Each of these answers `400 invalid_request`, with `param` naming the field:
+- 1 to 20 metric names, none repeated, all of one namespace (`traffic`, `funnel`, `revenue`, `commissions` or `partners`);
+- range metrics asked apart from bucketed ones;
+- a date range of at most 92 days by day, 397 days by week, 36 months by month;
+- with `compare` and month buckets, `starts_at` and `ends_at` on the 1st of a month;
+- `filters` and `group_by`, which are not supported yet.
+
+## Response
+
+```json
+{
+  "data": {
+    "rows": [
+      { "bucket": "2026-10-26", "values": { "funnel.sales@1": 1 } },
+      { "bucket": "2026-11-02", "values": { "funnel.sales@1": 4 } }
+    ],
+    "previous_rows": [
+      { "bucket": "2026-10-05", "values": { "funnel.sales@1": 2 } }
+    ],
+    "truncated": false,
+    "refreshed_at": "2026-11-26T09:00:00.000Z",
+    "definitions": [{ "name": "funnel.sales@1", "unit": "count", "queries": ["Q-FUNNEL"] }]
+  }
+}
+```
+
+Week buckets start on Monday, so the first row can begin before `starts_at`. A row has a `currency` only when a requested metric is counted per currency (the `minor` metrics and `commissions.count@1`); a metric in money answers a Money object in that currency instead of a number. The example shows the first two rows.
+
+### Fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `rows` | list of MetricRow | Yes | One row per bucket (and per currency for money metrics). `bucket` is the first local day of the bucket, or `null` for a range-only metric. |
+| `previous_rows` | list of MetricRow | No | Present when `compare` is `previous_period`. |
+| `truncated` | boolean | Yes | `true` when `limit` cut the rows. |
+| `refreshed_at` | string | Yes |  |
+| `definitions` | list of object | Yes | For each metric: its name, unit (`count`, `minor` or `bps`) and the queries it reads. |
+
+## Limits
+
+10 requests per second per key. The 11th answers `429 rate_limited` with `Retry-After: 1`, before the body is read.
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` usually names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api#errors), [`wrong_key_type`](/docs/api-reference/brand-api#errors), [`key_revoked`](/docs/api-reference/brand-api#errors) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api#errors) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api#errors) | Retry with backoff; if it keeps failing, send us the `request_id` |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | A metric your key may not ask (platform or partner-wallet metrics) |
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | Also `payouts.paid_out@1` and `payouts.in_flight@1`, not available until payout allocation is recorded |
+| 429 | [`rate_limited`](/docs/api-reference/brand-api#errors) | More than 10 requests in one second for this key. Wait for `Retry-After` |
+| 503 | [`unavailable`](/docs/api-reference/brand-api#errors) | Analytics is busy. Retry after `Retry-After` (2 seconds) |
+
+## Related
+
+- [Brand API](/docs/api-reference/brand-api)

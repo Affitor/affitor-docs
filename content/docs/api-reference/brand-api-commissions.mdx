@@ -1,0 +1,151 @@
+---
+title: "List commissions"
+description: "List your program's commissions, newest sale first, or read totals per status for a date window."
+kind: reference
+last_updated: 2026-11-26
+---
+
+`GET /programs/{program_id}/commissions` lists commissions, newest sale first, with the partner, the sale and the amounts. `GET /programs/{program_id}/commissions/summary` answers count and amount per status, plus earned and pending, for a date window.
+
+```http
+GET https://api.affitor.com/api/v1/programs/{program_id}/commissions
+GET https://api.affitor.com/api/v1/programs/{program_id}/commissions/summary
+```
+
+## Authentication
+
+Send a live program API key as a Bearer token: `Authorization: Bearer <key>`. The key must have **Full access** and its read tick (**Can use the read API**) on. See [Brand API](/docs/api-reference/brand-api) for which keys can read.
+
+## Request
+
+<CodeGroup items={[
+  {
+    label: "cURL",
+    lang: "bash",
+    code: `curl "https://api.affitor.com/api/v1/programs/me/commissions?status=approved&status=paid&from=2026-11-01&to=2026-11-25" \\
+  -H "Authorization: Bearer YOUR_PROGRAM_API_KEY"`
+  },
+  {
+    label: "Node.js",
+    lang: "javascript",
+    code: `const res = await fetch('https://api.affitor.com/api/v1/programs/me/commissions?status=approved&status=paid&from=2026-11-01&to=2026-11-25', {
+  headers: { Authorization: 'Bearer YOUR_PROGRAM_API_KEY' },
+});
+const { data } = await res.json();`
+  },
+  {
+    label: "Python",
+    lang: "python",
+    code: `import requests
+
+res = requests.get(
+    'https://api.affitor.com/api/v1/programs/me/commissions?status=approved&status=paid&from=2026-11-01&to=2026-11-25',
+    headers={'Authorization': 'Bearer YOUR_PROGRAM_API_KEY'},
+)
+data = res.json()['data']`
+  }
+]} />
+
+## Parameters
+
+| Parameter | In | Type | Required | Notes |
+|---|---|---|---|---|
+| `program_id` | path | string | Yes | The key's own program id, or me. |
+| `status` | query | string, repeatable | No | Repeat to ask for several. One of `pending`, `approved`, `invoiced`, `collected`, `paid`, `rejected`, `refunded`, `reversed`, `fraud`. |
+| `from` | query | string | No | First day (UTC, YYYY-MM-DD). From `from` to `to` is at most 366 days. |
+| `to` | query | string | No | Last day (UTC, YYYY-MM-DD). |
+| `partner_id` | query | string | No | Only this partner's commissions. |
+| `limit` | query | integer | No | 1 to 100, default 50. |
+| `cursor` | query | string | No | next_cursor from the previous page; bound to this route, program and filters. It is an offset in a stable newest-first order: a row added while you page can appear twice, never be skipped. |
+
+Both take `from` and `to`. The list has no date filter unless you send one; the summary covers the last 30 days ending today unless you send them. `status`, `partner_id`, `limit` and `cursor` are for the list only. This list is paged: pass `limit` (1 to 100, default 50) and, for the next page, the `next_cursor` of the previous answer as `cursor`. `next_cursor` is `null` on the last page. A cursor works only with the same route, program and filters. A summary over too many rows answers `400 invalid_request`: ask for a shorter date range.
+
+## Response
+
+The list:
+
+```json
+{
+  "data": [
+    {
+      "id": "20417",
+      "status": "approved",
+      "type": "cps_recurring",
+      "currency": "USD",
+      "amount": { "amount": 1470, "currency": "USD" },
+      "gross_sale": { "amount": 4900, "currency": "USD" },
+      "remaining": { "amount": 1470, "currency": "USD" },
+      "sale_date": "2026-11-21T14:03:00.000Z",
+      "on_hold": false,
+      "display_status": "approved",
+      "held_reason": null,
+      "partner": { "id": "5531", "name": "Jamie Lee" }
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+The summary:
+
+```json
+{
+  "data": {
+    "from": "2026-11-01",
+    "to": "2026-11-25",
+    "by_status": {
+      "approved": { "count": 4, "amount": [{ "amount": 5880, "currency": "USD" }] },
+      "pending": { "count": 2, "amount": [{ "amount": 2940, "currency": "USD" }] }
+    },
+    "earned": [{ "amount": 5880, "currency": "USD" }],
+    "pending": [{ "amount": 2940, "currency": "USD" }],
+    "unresolved_refunds": 0
+  }
+}
+```
+
+### Commission fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `id` | string | Yes |  |
+| `status` | string | Yes |  |
+| `type` | string or null | Yes |  |
+| `currency` | string | Yes |  |
+| `amount` | Money object | Yes | The commission, in the currency of the row. |
+| `gross_sale` | Money object | Yes | The sale it was earned on. |
+| `remaining` | Money object | Yes |  |
+| `sale_date` | string or null | Yes |  |
+| `on_hold` | boolean | Yes |  |
+| `display_status` | string or null | Yes |  |
+| `held_reason` | string or null | Yes |  |
+| `partner` | object or null | Yes | The partner, with the id the [Partners](/docs/api-reference/brand-api-partners) list uses. |
+| `truncated` | Truncated | No | Present only when a text field was cut to 280 characters. |
+
+### Summary fields
+
+| Field | Type | Always present | Notes |
+|---|---|---|---|
+| `from` | string | Yes |  |
+| `to` | string | Yes |  |
+| `by_status` | object (one key per status) | Yes | One entry per status: `count` and `amount` (one entry per currency). |
+| `earned` | list of Money object | Yes | One entry per currency, never summed across currencies. |
+| `pending` | list of Money object | Yes | One entry per currency. |
+| `unresolved_refunds` | integer | Yes |  |
+
+## Errors
+
+Errors use one shape with a `code` and a `request_id`. The codes this endpoint can return:
+
+| Status | `code` | When |
+|---|---|---|
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` usually names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api#errors), [`wrong_key_type`](/docs/api-reference/brand-api#errors), [`key_revoked`](/docs/api-reference/brand-api#errors) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api#errors) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api#errors) | Retry with backoff; if it keeps failing, send us the `request_id` |
+
+## Related
+
+- [Partners](/docs/api-reference/brand-api-partners)
+- [Billing summary](/docs/api-reference/brand-api-billing)
