@@ -23,7 +23,8 @@ Every Brand API v1 error has one shape and an HTTP status. Branch on `error.code
 |---|---|
 | `code` | One of the codes below |
 | `message` | What went wrong, in words |
-| `param` | The query parameter that caused it, when one did |
+| `param` | The query parameter or body field that caused it, when one did |
+| `retry_after_seconds` | How long to wait before you retry, on `rate_limited` and `unavailable`. The `Retry-After` header carries the same value |
 | `doc_url` | This page, at the code's section |
 | `request_id` | The same value as the `X-Request-Id` response header. Send it when you contact us |
 
@@ -40,9 +41,9 @@ Errors of the tracking endpoints (`/api/v1/track/...`) use a different shape: se
 | [`insufficient_permission`](#insufficient_permission) | 403 | Not until the key's permission changes |
 | [`not_found`](#not_found) | 404 | Not unchanged |
 | [`conflict`](#conflict) | 409 | Not returned yet |
-| [`rate_limited`](#rate_limited) | 429 | Not returned yet |
+| [`rate_limited`](#rate_limited) | 429 | Yes, after `Retry-After` |
 | [`internal_error`](#internal_error) | 500 | Yes, with backoff |
-| [`unavailable`](#unavailable) | 503 | Not returned yet |
+| [`unavailable`](#unavailable) | 503 | Yes, after `Retry-After` |
 
 ## invalid_request
 
@@ -54,7 +55,8 @@ The request can't be read. `param` names the query parameter when one caused it.
 - a parameter sent more than once;
 - an id that isn't a positive whole number;
 - a value outside the allowed list (for example a `status` that isn't `lead` or `conversion`);
-- a date window with too many rows: ask for a smaller window.
+- a date window with too many rows: ask for a smaller window;
+- a metrics query body the API can't run (`param` names the field).
 
 Fix the request using `message`, then send it again.
 
@@ -72,7 +74,7 @@ The key no longer works: it was disabled, or it was retired after a rotation (th
 
 ## insufficient_permission
 
-The key works but can't read: it is a **Tracking only** key, or **Can use the read API** is off for it. Use a **Full access** key and tick **Can use the read API** in **Program settings** › **Developers** › **API keys**.
+The key works but can't read this: it is a **Tracking only** key, or **Can use the read API** is off for it, or a metrics query asks for a metric a program key can't read. Use a **Full access** key and tick **Can use the read API** in **Program settings** › **Developers** › **API keys**; for a metric, `message` names it.
 
 ## not_found
 
@@ -84,7 +86,7 @@ Not returned yet.
 
 ## rate_limited
 
-Not returned yet: the Brand API doesn't refuse requests for volume today. Once the key is accepted, every answer carries `RateLimit-Policy` and `RateLimit` headers that show the budget and what is left of it.
+Metrics queries (`POST /programs/{program_id}/metrics/query`) are limited to 10 per second per key. Above that you get `429` with `Retry-After: 1` and `retry_after_seconds: 1`; wait that long, then retry. Other routes don't refuse requests for volume today. Once the key is accepted, every answer carries `RateLimit-Policy` and `RateLimit` headers that show the budget and what is left of it.
 
 ## internal_error
 
@@ -92,4 +94,4 @@ Something failed on our side. Retry with backoff. If it keeps failing, contact u
 
 ## unavailable
 
-Not returned yet.
+A metrics query found analytics busy and stopped before it finished. Nothing is wrong with the request: wait `Retry-After` seconds (`retry_after_seconds`, 2), then send it again.
