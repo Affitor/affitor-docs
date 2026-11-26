@@ -2,10 +2,15 @@
 title: API Reference
 description: Base URL, authentication, request/response envelope, and available endpoints for the Affitor Tracking API.
 kind: reference
-last_updated: 2026-11-08
+last_updated: 2026-11-25
 ---
 
 The Affitor Tracking API lets your backend record affiliate events — clicks, signups, sales, and refunds — and retrieve program performance data.
+
+## Before you start
+
+- **You create your own API key.** In the dashboard, open **Program settings**, then **API keys** under **Developers**, and select **Create key**. Owners and admins of the program can do this. No request to Affitor is needed. Details: [API key reference](/docs/brand/api-keys).
+- **You can try clicks, signups and sales safely.** Add `"test_mode": true` to `additional_data` on a click, lead or sale and it is stored as a test event that creates no commission and no platform fee. Refunds have no test mode. Details: [Test mode](/docs/api-reference/test-mode).
 
 ---
 
@@ -40,7 +45,7 @@ Different endpoints use different auth modes.
 | `POST /api/v1/track/sale` | Required | `Authorization: Bearer <program_api_key>` |
 | `POST /api/v1/track/refund` | Required | `Authorization: Bearer <program_api_key>` |
 
-Your **program API key** (`api_token`) is found in the Affitor dashboard under your program settings.
+Your **program API key** (`api_token`) is on **Program settings** › **Developers** › **API keys** in the Affitor dashboard ([API key reference](/docs/brand/api-keys)).
 
 ### Server mode vs browser mode (lead endpoint)
 
