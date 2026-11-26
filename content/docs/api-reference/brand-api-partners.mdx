@@ -52,7 +52,7 @@ data = res.json()['data']`
 |---|---|---|---|---|
 | `program_id` | path | string | Yes | The key's own program id, or me. |
 | `partner_id` | path | string | Yes | A partner's id from the partners list. |
-| `from` | query | string | No | First day (UTC, YYYY-MM-DD). Default: 29 days before to. A window is at most 366 days. |
+| `from` | query | string | No | First day (UTC, YYYY-MM-DD). Default: 29 days before `to`. From `from` to `to` is at most 366 days. |
 | `to` | query | string | No | Last day (UTC, YYYY-MM-DD). Default: today. |
 | `limit` | query | integer | No | 1 to 100, default 50. |
 | `cursor` | query | string | No | next_cursor from the previous page; bound to this route, program and filters. It is an offset in a stable newest-first order: a row added while you page can appear twice, never be skipped. |

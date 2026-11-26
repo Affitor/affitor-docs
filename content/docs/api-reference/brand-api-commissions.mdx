@@ -52,7 +52,7 @@ data = res.json()['data']`
 |---|---|---|---|---|
 | `program_id` | path | string | Yes | The key's own program id, or me. |
 | `status` | query | string, repeatable | No | Repeat to ask for several. One of `pending`, `approved`, `invoiced`, `collected`, `paid`, `rejected`, `refunded`, `reversed`, `fraud`. |
-| `from` | query | string | No | First day (UTC, YYYY-MM-DD). Default: 29 days before to. A window is at most 366 days. |
+| `from` | query | string | No | First day (UTC, YYYY-MM-DD). Default: 29 days before `to`. From `from` to `to` is at most 366 days. |
 | `to` | query | string | No | Last day (UTC, YYYY-MM-DD). Default: today. |
 | `partner_id` | query | string | No | Only this partner's commissions. |
 | `limit` | query | integer | No | 1 to 100, default 50. |
