@@ -37,6 +37,8 @@ const RENAMES: [string, string][] = [
   ['/docs/getting-started/what-is-affitor', '/docs'],
   ['/docs/getting-started/glossary', '/docs/support/glossary'],
   ['/docs/errors', '/docs/api-reference/errors'],
+  // Brand API v1 error bodies link here (doc_url = /docs/api/errors#<code>).
+  ['/docs/api/errors', '/docs/api-reference/brand-api-errors'],
   // The product links the MCP setup guide as /docs/mcp (06/11/2026).
   ['/docs/mcp', '/docs/api-reference/connect-ai-tool'],
   ['/docs/blog', '/blog'],
