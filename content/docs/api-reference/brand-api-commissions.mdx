@@ -58,7 +58,7 @@ data = res.json()['data']`
 | `limit` | query | integer | No | 1 to 100, default 50. |
 | `cursor` | query | string | No | next_cursor from the previous page; bound to this route, program and filters. It is an offset in a stable newest-first order: a row added while you page can appear twice, never be skipped. |
 
-`status`, `partner_id`, `limit` and `cursor` are for the list; the summary takes `from` and `to`. This list is paged: pass `limit` (1 to 100, default 50) and, for the next page, the `next_cursor` of the previous answer as `cursor`. `next_cursor` is `null` on the last page. A cursor works only with the same route, program and filters. A window with too many rows answers `400 invalid_request`: ask for a smaller window.
+`from` and `to` work on both; `status`, `partner_id`, `limit` and `cursor` are for the list only. This list is paged: pass `limit` (1 to 100, default 50) and, for the next page, the `next_cursor` of the previous answer as `cursor`. `next_cursor` is `null` on the last page. A cursor works only with the same route, program and filters. A window with too many rows answers `400 invalid_request`: ask for a smaller window.
 
 ## Response
 
@@ -139,11 +139,11 @@ Errors use one shape with a `code` and a `request_id`. The codes this endpoint c
 
 | Status | `code` | When |
 |---|---|---|
-| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors#invalid_request) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
-| 401 | [`invalid_key`](/docs/api-reference/brand-api#errors#invalid_key), [`wrong_key_type`](/docs/api-reference/brand-api#errors#wrong_key_type), [`key_revoked`](/docs/api-reference/brand-api#errors#key_revoked) | The key is missing, unknown, not a live program key, disabled or retired |
-| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors#insufficient_permission) | The key is tracking-only or its read tick is off |
-| 404 | [`not_found`](/docs/api-reference/brand-api#errors#not_found) | The program in the path is not the key's own program |
-| 500 | [`internal_error`](/docs/api-reference/brand-api#errors#internal_error) | Retry with backoff; if it keeps failing, send us the `request_id` |
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
+| 401 | [`invalid_key`](/docs/api-reference/brand-api#errors), [`wrong_key_type`](/docs/api-reference/brand-api#errors), [`key_revoked`](/docs/api-reference/brand-api#errors) | The key is missing, unknown, not a live program key, disabled or retired |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | The key is tracking-only or its read tick is off |
+| 404 | [`not_found`](/docs/api-reference/brand-api#errors) | The program in the path is not the key's own program |
+| 500 | [`internal_error`](/docs/api-reference/brand-api#errors) | Retry with backoff; if it keeps failing, send us the `request_id` |
 
 ## Related
 

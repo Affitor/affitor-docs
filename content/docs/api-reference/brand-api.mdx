@@ -51,7 +51,21 @@ Every request with an accepted key gets the IETF `RateLimit` and `RateLimit-Poli
 
 ## Errors
 
-Every error has the same shape, an HTTP status and a `code`.
+Every error has the same shape, with an HTTP status:
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "limit must be an integer from 1 to 100.",
+    "param": "limit",
+    "doc_url": "https://affitor.com/docs/api/errors#invalid_request",
+    "request_id": "req_4Hq8sZkT2mN6pWc1xYv0Ab"
+  }
+}
+```
+
+`param` names the field when one is at fault. `retry_after_seconds` comes with `rate_limited` and `unavailable`. Send `request_id` when you contact us about a failed call.
 
 ## Endpoints
 
