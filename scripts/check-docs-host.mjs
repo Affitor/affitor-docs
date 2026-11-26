@@ -372,6 +372,7 @@ for (const status of ['301', '302']) {
     check(`${status}: /brand lands on the brand quickstart`, to('/brand', 'https://affitor.com/docs/brand/quickstart'));
     check(`${status}: /api-reference lands on the API overview`, to('/api-reference', 'https://affitor.com/docs/api-reference/overview'));
     check(`${status}: /errors in one hop`, to('/errors', 'https://affitor.com/docs/api-reference/errors'));
+    check(`${status}: Brand API doc_url /docs/api/errors in one hop`, to('/docs/api/errors', 'https://affitor.com/docs/api-reference/brand-api-errors'));
     check(`${status}: /getting-started/what-is-affitor in one hop`, to('/getting-started/what-is-affitor', 'https://affitor.com/docs'));
     check(`${status}: /getting-started in one hop`, to('/getting-started', 'https://affitor.com/docs'));
     check(`${status}: /getting-started/how-it-works keeps its path`, to('/getting-started/how-it-works', 'https://affitor.com/docs/getting-started/how-it-works'));
