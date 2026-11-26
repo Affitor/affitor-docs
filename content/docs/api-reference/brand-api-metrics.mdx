@@ -69,7 +69,7 @@ data = res.json()['data']`
 
 Body:
 
-| Field | Type | Always present | Notes |
+| Field | Type | Required | Notes |
 |---|---|---|---|
 | `metrics` | list of string | Yes | 1 to 20 metric names of one namespace, with their version, for example `funnel.sales@1`. |
 | `starts_at` | string | Yes | First day, `YYYY-MM-DD`. |
@@ -79,16 +79,54 @@ Body:
 | `compare` | string | No | One of `previous_period`. |
 | `limit` | integer | No | Most rows to answer, 1 to 1000. Default 1000. |
 
+## Metrics you can ask
+
+`count` is a number, `bps` a rate in basis points (10,000 = 100%), `minor` money in minor units. A range metric answers one total for the whole date range (`bucket` is `null`).
+
+| Metric | Unit | Shape |
+|---|---|---|
+| `traffic.clicks@1` | `count` | bucketed |
+| `traffic.visits@1` | `count` | bucketed |
+| `traffic.unique_visitors@1` | `count` | bucketed |
+| `funnel.leads@1` | `count` | bucketed |
+| `funnel.sales@1` | `count` | bucketed |
+| `funnel.click_to_lead_rate@1` | `bps` | bucketed |
+| `funnel.click_to_sale_rate@1` | `bps` | bucketed |
+| `funnel.lead_to_sale_rate@1` | `bps` | bucketed |
+| `revenue.gross_sales_amount@1` | `minor` | bucketed |
+| `revenue.net_sales_amount@1` | `minor` | bucketed |
+| `revenue.refunds_amount@1` | `minor` | bucketed |
+| `revenue.average_order_value@1` | `minor` | bucketed |
+| `revenue.revenue_per_click@1` | `minor` | bucketed |
+| `commissions.pending@1` | `minor` | bucketed |
+| `commissions.earned@1` | `minor` | bucketed |
+| `commissions.reversed@1` | `minor` | bucketed |
+| `commissions.count@1` | `count` | per currency |
+| `commissions.awaiting_brand@1` | `minor` | range |
+| `partners.applications@1` | `count` | bucketed |
+| `partners.new_partners@1` | `count` | bucketed |
+| `partners.active_partners@1` | `count` | range |
+
+## Request limits
+
+Each of these answers `400 invalid_request`, with `param` naming the field:
+- 1 to 20 metric names, none repeated, all of one namespace (`traffic`, `funnel`, `revenue`, `commissions` or `partners`);
+- range metrics asked apart from bucketed ones;
+- a date range of at most 92 days by day, 397 days by week, 36 months by month;
+- with `compare` and month buckets, `starts_at` and `ends_at` on the 1st of a month;
+- `filters` and `group_by`, which are not supported yet.
+
 ## Response
 
 ```json
 {
   "data": {
     "rows": [
-      { "bucket": "2026-11-02", "currency": "USD", "values": { "funnel.sales@1": 4 } }
+      { "bucket": "2026-10-26", "values": { "funnel.sales@1": 1 } },
+      { "bucket": "2026-11-02", "values": { "funnel.sales@1": 4 } }
     ],
     "previous_rows": [
-      { "bucket": "2026-10-05", "currency": "USD", "values": { "funnel.sales@1": 2 } }
+      { "bucket": "2026-10-05", "values": { "funnel.sales@1": 2 } }
     ],
     "truncated": false,
     "refreshed_at": "2026-11-26T09:00:00.000Z",
@@ -97,7 +135,7 @@ Body:
 }
 ```
 
-A metric in money (unit `minor`) answers a Money object in its row's currency instead of a number.
+Week buckets start on Monday, so the first row can begin before `starts_at`. A row has a `currency` only when a requested metric is counted per currency (the `minor` metrics and `commissions.count@1`); a metric in money answers a Money object in that currency instead of a number. The example shows the first two rows.
 
 ### Fields
 
@@ -119,12 +157,13 @@ Errors use one shape with a `code` and a `request_id`. The codes this endpoint c
 
 | Status | `code` | When |
 |---|---|---|
-| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` names it |
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | A parameter is unknown, repeated, malformed or out of range. `param` usually names it |
 | 401 | [`invalid_key`](/docs/api-reference/brand-api#errors), [`wrong_key_type`](/docs/api-reference/brand-api#errors), [`key_revoked`](/docs/api-reference/brand-api#errors) | The key is missing, unknown, not a live program key, disabled or retired |
 | 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | The key is tracking-only or its read tick is off |
 | 404 | [`not_found`](/docs/api-reference/brand-api#errors) | The program in the path is not the key's own program |
 | 500 | [`internal_error`](/docs/api-reference/brand-api#errors) | Retry with backoff; if it keeps failing, send us the `request_id` |
-| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | A metric this program scope cannot read, such as payout metrics |
+| 403 | [`insufficient_permission`](/docs/api-reference/brand-api#errors) | A metric your key may not ask (platform or partner-wallet metrics) |
+| 400 | [`invalid_request`](/docs/api-reference/brand-api#errors) | Also `payouts.paid_out@1` and `payouts.in_flight@1`, not available until payout allocation is recorded |
 | 429 | [`rate_limited`](/docs/api-reference/brand-api#errors) | More than 10 requests in one second for this key. Wait for `Retry-After` |
 | 503 | [`unavailable`](/docs/api-reference/brand-api#errors) | Analytics is busy. Retry after `Retry-After` (2 seconds) |
 
