@@ -24,7 +24,7 @@ export function publicHref(href: string, signedIn: boolean): string {
 }
 
 /** Icon names, the same in both twins; each header maps a name to its own icon. */
-export type NavIcon = 'store' | 'chart' | 'send' | 'grid' | 'gift' | 'bot' | 'code' | 'book' | 'help' | 'news';
+export type NavIcon = 'store' | 'chart' | 'send' | 'grid' | 'gift' | 'bot' | 'code' | 'book' | 'help' | 'news' | 'plug' | 'swap';
 export type MenuItem = SiteLink & { description: string; icon: NavIcon };
 export type MenuGroup = { title: string; items: MenuItem[] };
 export type MenuFeature = SiteLink & { description: string; image: string; imageAlt: string };
@@ -35,9 +35,9 @@ export const isHeaderMenu = (entry: HeaderEntry): entry is HeaderMenu => 'groups
 
 /**
  * The top bar, left to right (mock marketing-site N1–N3, P1; Sơn ok 17/10 14:1x), the same data as the
- * dashboard twin (dash#771). Only pages that exist today: Integrations, Switch and Compare join when
- * their pages ship, Solutions when the docs use-case pages ship (until then "How it works" stays on the
- * top bar), and AI agents points at the MCP guide until /agents exists. The Recommended image is the
+ * dashboard twin. Only pages that exist today: Compare joins when its page ships, Solutions when the
+ * docs use-case pages ship (until then "How it works" stays on the top bar). Integrations, AI agents and
+ * Switch point at the dashboard's /integrations, /agents and /switch. The Recommended image is the
  * dashboard's public file, so it loads from affitor.com on every host.
  */
 export const HEADER_NAV: HeaderEntry[] = [
@@ -62,7 +62,8 @@ export const HEADER_NAV: HeaderEntry[] = [
       {
         title: 'Build',
         items: [
-          { label: 'AI agents', description: 'Ask your AI app about your program', href: '/docs/api-reference/mcp', icon: 'bot' },
+          { label: 'Integrations', description: 'Stripe, frameworks, AI apps, payouts', href: `${SITE_URL}/integrations`, icon: 'plug' },
+          { label: 'AI agents', description: 'Ask your AI app about your program', href: `${SITE_URL}/agents`, icon: 'bot' },
           { label: 'API and SDK', description: 'Track clicks, signups and sales', href: '/docs/api-reference/overview', icon: 'code' },
         ],
       },
@@ -80,6 +81,10 @@ export const HEADER_NAV: HeaderEntry[] = [
           { label: 'Changelog', description: 'What shipped this week', href: '/changelog', icon: 'news' },
           { label: 'Blog', description: 'Guides and news', href: '/blog', icon: 'news' },
         ],
+      },
+      {
+        title: 'Switch',
+        items: [{ label: 'Switch to Affitor', description: 'Bring your partners over', href: `${SITE_URL}/switch`, icon: 'swap' }],
       },
     ],
     feature: {
@@ -110,6 +115,8 @@ export const FOOTER_COLUMNS: { title: string; links: SiteLink[] }[] = [
       { label: 'Marketplace', href: `${SITE_URL}/marketplace` },
       { label: 'Features', href: `${SITE_URL}/#features` },
       { label: 'Pricing', href: `${SITE_URL}/pricing` },
+      { label: 'Integrations', href: `${SITE_URL}/integrations` },
+      { label: 'AI agents', href: `${SITE_URL}/agents` },
       { label: 'How it works', href: `${SITE_URL}/#how-it-works` },
       { label: 'About', href: `${SITE_URL}/about` },
       { label: 'Affitor Refer Program', href: `${SITE_URL}/marketplace/referral-program` },
@@ -121,6 +128,7 @@ export const FOOTER_COLUMNS: { title: string; links: SiteLink[] }[] = [
       { label: 'Blog', href: '/blog' },
       { label: 'Changelog', href: '/changelog' },
       { label: 'Documentation', href: '/docs' },
+      { label: 'Switch to Affitor', href: `${SITE_URL}/switch` },
     ],
   },
   {
