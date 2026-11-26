@@ -1,0 +1,199 @@
+---
+title: Track a desktop app
+description: "Credit partners when your product is a desktop app people download: record the click on your website, carry it into the app once, send the lead at signup, then send every payment and refund from your server."
+kind: guide
+last_updated: 2026-11-21
+---
+
+A desktop app is tracked like a web product whose payments happen on your server. You record the partner click on your website, carry the click ID into the app once, tie it to the new account with a lead, and send every payment and refund to the Tracking API from your server.
+
+<PageMeta
+  items={[
+    { label: 'Who this is for', value: 'Brands whose product is a downloadable desktop app, paid on the web or inside the app' },
+    { label: 'Prerequisites', value: 'A program, its program API key, a website partners can link to, and a server that creates accounts and hears about payments' },
+    { label: 'Outcome', value: 'Signups, payments, renewals and refunds from the app credited to the partner who referred the customer' },
+  ]}
+/>
+
+## Quick reference
+
+1. Partners share a link to **your website** (`https://example.com/?aff=PARTNER_CODE`), not a direct download or store link.
+2. Your website records the click: the Affitor tracker, or your server calling `POST /api/v1/track/click` with `visitor_ip`.
+3. The click ID travels into the app once: web sign-in, a store link parameter, an app link, or a one-time code.
+4. At account creation your server sends `POST /api/v1/track/lead` with the `click_id` and your user ID as `customer_key`.
+5. Each payment and refund is sent by your server: `POST /api/v1/track/sale` with the same `customer_key`, and `POST /api/v1/track/refund`.
+
+## The flow at a glance
+
+<Flow>
+  <FlowStep caption="The partner's link points to a page on your site.">
+    **Partner link to your website**
+  </FlowStep>
+  <FlowStep caption="The tracker, or your server, records it and gets a click ID.">
+    **Click recorded**
+  </FlowStep>
+  <FlowStep caption="The visitor downloads the app and the click ID reaches the app once.">
+    **Download and handoff**
+  </FlowStep>
+  <FlowStep caption="Your server sends the click ID and your user ID.">
+    **Lead at signup**
+  </FlowStep>
+  <FlowStep caption="Your server sends each payment by user ID; commissions follow your hold period.">
+    **Sales, renewals, refunds**
+  </FlowStep>
+</Flow>
+
+Affitor has no desktop SDK. `@affitor/sdk` is for JavaScript in the browser, React and a Node server. Your app talks to your server, and your server talks to Affitor with your [program API key](/docs/brand/api-keys).
+
+## Step 1: Send partners to your website
+
+Partner links open a page on your website, where the click can be recorded. A store page or a direct file download runs none of your code, so a click that goes straight there is not recorded. See [Partner links](/docs/brand/partner-links) for the link format and the allowed pages.
+
+## Step 2: Record the click on your website
+
+Use one of two ways.
+
+**The Affitor tracker.** Load the tracker on your site as in [Click tracking](/docs/brand/tracking/click-tracking). It reads `?aff=` (or `?via=`), records the click, and keeps the click ID in the `affitor_click_id` cookie. Read it in the page with `window.affitor.getClickId()`.
+
+**Your server.** If you prefer not to load a script, your server can record the click for the visitor with [`POST /api/v1/track/click`](/docs/api-reference/track-click). Send the full URL the visitor opened as `affiliate_url`. Send the visitor's IP as `visitor_ip` together with your program API key: without the key, or with a value that is not an IP address, Affitor uses the IP of the request, which is your server's, for the click's location. Keep the returned `click_id` in a first-party cookie.
+
+```js
+// Your server, when a visitor opens https://example.com/?aff=PARTNER_CODE
+const AFFITOR = 'https://api.affitor.com/api/v1/track';
+const headers = {
+  Authorization: `Bearer ${process.env.AFFITOR_API_KEY}`, // your program API key
+  'Content-Type': 'application/json',
+};
+
+async function recordClick(req) {
+  const res = await fetch(`${AFFITOR}/click`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      affiliate_url: `https://example.com${req.originalUrl}`, // the URL with ?aff=
+      visitor_ip: req.ip, // the visitor's IP (behind a proxy, the client IP it forwards)
+      user_agent: req.get('user-agent'),
+      existing_click_id: req.cookies.affitor_click_id, // when this visitor already has one
+    }),
+  });
+  if (!res.ok) return null; // for example 400 (unknown link) or 410 (link turned off)
+  const { click_id } = await res.json();
+  return click_id; // store it in a first-party cookie
+}
+```
+
+## Step 3: Carry the click ID into the app
+
+The click ID lives in the visitor's browser. The app needs it once, before or at account creation. Pick the ways that fit how people get your app; you can offer more than one.
+
+| Way | How it works | Good to know |
+|---|---|---|
+| Sign up on the web | The account is created on your website, where the click ID is, and the app signs in to that account. | Needs no handoff into the app. |
+| Store link parameter | On a Windows app sold in the Microsoft Store, add the click ID (or a short reference your server maps to it) to the Store link as `?cid=`. Your app can read the campaign ID with the `StoreContext` class. | Microsoft returns it only when the customer gets the app from that Store page visit; if they leave and come back later, it is not returned. See Microsoft's [custom app promotion campaign](https://learn.microsoft.com/en-us/windows/apps/publish/create-a-custom-app-promotion-campaign) guide. |
+| App link | When the app is already installed, an **Open the app** button on your site opens a custom URL such as `exampleapp://welcome?click_id=...`. | Your app registers the scheme. On Windows: [Handle URI activation](https://learn.microsoft.com/en-us/windows/apps/develop/launch/handle-uri-activation). |
+| One-time code | Your website shows a short code that your server maps to the click ID; the person types it in the app before signing up. | The code is yours, not an Affitor partner code: your server looks up the click ID behind it. |
+
+Save the click ID on the user record when the account is created, so it is still there for the lead and for later payments.
+
+## Step 4: Send the lead at signup
+
+When your server creates the account, send [`POST /api/v1/track/lead`](/docs/api-reference/track-lead) with your program API key, the `click_id`, and your own user ID as `customer_key`. A lead sent from your server with the key settles: Affitor stores your `customer_key` on the customer and records the signup time. The attribution window is checked from the click to that signup, so a customer who signs up in time can pay later and still be credited (see [Attribution](/docs/api-reference/attribution)).
+
+```js
+// Your server, right after it creates the account
+async function onSignup(user) {
+  if (!user.affitorClickId) return; // not referred by a partner
+  await fetch(`${AFFITOR}/lead`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      click_id: user.affitorClickId,
+      customer_key: user.id, // your own user ID; use the same value on every sale
+    }),
+  });
+}
+```
+
+Send the lead once per account. More detail and the error answers: [Lead tracking](/docs/brand/tracking/lead-tracking-signup).
+
+## Step 5: Send payments, renewals and refunds from your server
+
+Whether people pay on your website or inside the app, your payment provider tells your server, and your server tells Affitor.
+
+- **Each payment** is one [`POST /api/v1/track/sale`](/docs/api-reference/track-sale) with a unique `transaction_id` and the `customer_key` you sent with the lead. Sending the `click_id` too lets Affitor find the customer by click when no customer has that key.
+- **Each renewal** is its own sale with its own `transaction_id`. Your [commission settings](/docs/brand/quickstart/define-commission) decide what a recurring payment earns.
+- **Each refund** is one [`POST /api/v1/track/refund`](/docs/api-reference/track-refund) with the sale's `transaction_id`.
+
+```js
+// Your server, when your payment provider confirms a payment (first payment or renewal)
+async function onPaymentConfirmed(payment, user) {
+  if (!user.affitorClickId) return; // not referred: Affitor would answer 400 no_attribution
+  await fetch(`${AFFITOR}/sale`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      transaction_id: payment.id, // unique per payment; resending it answers 409
+      customer_key: user.id, // the value you sent with the lead
+      click_id: user.affitorClickId, // fallback when no customer has that key
+      amount_cents: payment.amount, // minor units of the currency, tax included
+      tax_cents: payment.tax, // the tax inside amount_cents
+      currency: 'USD',
+      sale_type: 'subscription',
+      is_recurring: payment.isRenewal,
+    }),
+  });
+}
+
+// Your server, when a payment is refunded
+async function onRefund(refund) {
+  await fetch(`${AFFITOR}/refund`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      transaction_id: refund.paymentId, // the transaction_id of the sale
+      refund_amount_cents: refund.amount, // this refund's amount; leave it out to refund the rest
+      refund_id: refund.id, // makes retries safe
+    }),
+  });
+}
+```
+
+A `409 duplicate_transaction` with your `sale_id` means the sale is already recorded: treat it as success. Supported currencies, minor units and every answer are on [Track Sale](/docs/api-reference/track-sale).
+
+## Step 6: Commissions follow your hold period
+
+An attributed sale creates a commission that starts as pending. When your hold period ends it is approved, apart from the exceptions listed on the page below, and it reaches the partner's balance once approved. A full refund reverses the commission, and a refund you report while it is still pending takes nothing from the partner's balance. See [Commission approval and cash flow](/docs/brand/quickstart/commission-approval-cash-flow).
+
+## Worked example
+
+Example Notes is a desktop note-taking app sold by monthly subscription, with its website at `example.com`.
+
+1. Alex, a partner, shares `https://example.com/?aff=ALEX`.
+2. Sam opens it on a laptop. The tracker records the click and keeps the click ID in a cookie.
+3. Sam clicks **Get it from Microsoft Store**. The button's Store link carries the click ID as `?cid=`, and Sam installs from that page.
+4. On first run the app reads the campaign ID and sends it with the signup. Your server saves it on Sam's account (`usr_123`) and sends the lead with that `click_id` and `customer_key: "usr_123"`.
+5. A week later Sam subscribes inside the app. Your payment provider notifies your server, which sends a sale for `usr_123` with the payment's ID as `transaction_id`.
+6. Each month the renewal is sent as a new sale for `usr_123`.
+7. Sam is refunded one month's payment. Your server sends a refund with that payment's `transaction_id`. If that commission was still pending, nothing is taken from Alex's balance.
+8. Sam's other commissions are approved after the hold period and are added to Alex's balance.
+
+## Test before you share links
+
+Run the path once in [test mode](/docs/api-reference/test-mode) before partners share links: clicks, leads and sales accept `additional_data.test_mode`, and a sale also accepts `livemode: false`. A refund has no test mode: a refund sent with your program API key is processed as a real refund. [Testing your integration](/docs/brand/tracking/testing-integration) lists the checks.
+
+<CommonMistakes
+  items={[
+    "Sharing a direct store or download link: no code of yours runs there, so the click is not recorded. Link partners to your website.",
+    "Sending a sale with only customer_key before a lead was sent: Affitor stores your key when a server lead settles. Send the lead at signup, or include the click_id on every sale.",
+    "Sending the lead from the app with the program API key inside the app: the key belongs on your server. The app sends the click ID to your server, and your server calls Affitor.",
+    "Reusing one transaction_id for every renewal: each renewal needs its own, or Affitor answers 409 and records nothing new.",
+  ]}
+/>
+
+## Related
+
+- [Track a mobile app](/docs/brand/tracking/track-mobile-app): the same model when people buy in an app store.
+- [Lead tracking](/docs/brand/tracking/lead-tracking-signup): server leads and why browser-only leads stay provisional.
+- [Track Sale](/docs/api-reference/track-sale): fields, currencies and answers.
+- [Track Refund](/docs/api-reference/track-refund): partial refunds and retries.
+- [Attribution](/docs/api-reference/attribution): the window and who gets credit on a repeat click.

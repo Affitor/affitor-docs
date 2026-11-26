@@ -20,6 +20,8 @@
     "tracking/payment-tracking-stripe",
     "[Polar](/docs/api-reference/integrations/polar)",
     "[Any gateway (server-to-server, e.g. SePay)](/docs/api-reference/track-sale)",
+    "tracking/track-desktop-app",
+    "tracking/track-mobile-app",
     "---Test your setup---",
     "tracking/testing-integration",
     "---Integrations---",
