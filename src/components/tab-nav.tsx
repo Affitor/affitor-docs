@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useDocsLayout } from 'fumadocs-ui/layouts/docs';
+import { useSearchContext } from 'fumadocs-ui/contexts/search';
 
 // The tab row sits above Fumadocs' layout, outside its sidebar state, so the phone menu button
 // asks the layout to open its drawer through this event (NavDrawerBridge, inside the layout).
@@ -29,6 +30,7 @@ type Tab = { title: string; href: string; urls: string[] };
  * (affitor.com/changelog), so it is a plain link here.
  */
 export function TabNav({ tabs }: { tabs: Tab[] }) {
+  const { setOpenSearch } = useSearchContext();
   const pathname = (usePathname() || '/').replace(/(.)\/$/, '$1');
   const all = [...tabs, { title: 'Changelog', href: '/changelog', urls: [] }];
   const activeIdx = tabs.findIndex((tab) => tab.urls.includes(pathname));
@@ -48,7 +50,9 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
 
   return (
     <nav aria-label="Docs sections" className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
-      <div ref={row} className="flex items-center gap-6 px-5 h-11 max-w-[1536px] mx-auto overflow-x-auto">
+      {/* The docs row (CORE-1327 docs-out-b): the same 1152 px column as the site header, 48 px; tabs left, search right. */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center gap-4">
+      <div ref={row} className="flex min-w-0 flex-1 items-center gap-6 h-full overflow-x-auto">
       {/* Phones: the left nav lives in Fumadocs' drawer (it switches below 768 px). */}
       <button
         type="button"
@@ -79,6 +83,24 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
           </Link>
         );
       })}
+      </div>
+      {/* Search: 280 px with ⌘K on wide screens, an icon below 1024 px; opens the docs search as before. */}
+      <button
+        type="button"
+        onClick={() => setOpenSearch(true)}
+        aria-label="Search docs"
+        className="flex shrink-0 items-center justify-center gap-2 h-8 w-8 lg:w-[280px] lg:justify-start rounded-lg border border-fd-border bg-fd-muted/40 lg:px-3 text-[13px] text-fd-muted-foreground hover:border-fd-muted-foreground/30 transition-colors cursor-text"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden className="shrink-0 opacity-70">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <span className="hidden lg:inline opacity-70">Search docs</span>
+        <span className="ml-auto hidden lg:flex gap-0.5 text-[11px] opacity-50">
+          <kbd className="rounded border border-fd-border bg-fd-background px-1.5 py-0.5 font-sans">⌘</kbd>
+          <kbd className="rounded border border-fd-border bg-fd-background px-1.5 py-0.5 font-sans">K</kbd>
+        </span>
+      </button>
       </div>
     </nav>
   );

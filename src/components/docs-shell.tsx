@@ -2,7 +2,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
-import { DocsHeader } from '@/components/docs-header';
+import { BlogNav as SiteHeader } from '@/components/blog/blog-nav';
 import { NavDrawerBridge, TabNav } from '@/components/tab-nav';
 import { AudienceSwitch } from '@/components/audience-switch';
 import { SidebarGroup } from '@/components/sidebar-group';
@@ -28,9 +28,9 @@ export function DocsShell({ children }: { children: ReactNode }) {
   }));
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Full-width sticky top bar: header row + tab row (above the sidebar, under the phone nav drawer) */}
+      {/* The affitor.com header (the same one as every public page), then the docs row: tabs left, search right. */}
       <div className="sticky top-0 z-30">
-        <DocsHeader />
+        <SiteHeader />
         <TabNav tabs={tabs} />
       </div>
       <DocsLayout

@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DASHBOARD_LABEL, HEADER_NAV, publicHref, LOGIN_LINK, SIGNUP_LINK, isHeaderMenu, type HeaderMenu } from '@/config/site-nav';
 import { useDashboardHref } from '@/lib/signed-in';
 import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { NavIconSvg } from '@/components/blog/nav-icons';
 
 /**
@@ -294,7 +293,6 @@ export function BlogNav() {
 
             {/* Desktop: theme toggle, Log in, primary CTA */}
             <div className="hidden lg:flex items-center gap-2">
-              <ThemeToggle />
               {!dashboardHref && (
                 <a
                   href={LOGIN_LINK.href}
@@ -373,9 +371,6 @@ export function BlogNav() {
                 </a>
               ),
             )}
-            <div className="py-3">
-              <ThemeToggle label />
-            </div>
             <div className="mt-2 flex flex-col gap-2">
               <a
                 href={cta.href}
