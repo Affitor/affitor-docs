@@ -1,0 +1,39 @@
+---
+title: Affitor in ChatGPT, Launch listing rules, and Chat per role
+date: 2026-11-26
+type: digest
+audience:
+- brands
+- partners
+- developers
+surfaces:
+- dashboard
+- marketplace
+- mcp
+- sdk
+description: Affitor in the ChatGPT app directory, read-only ChatGPT connections, Launch rules for the default marketplace list, Chat switches per role, and SDK retries.
+context:
+  avoid:
+  - "Saying ChatGPT can change anything in Affitor: it only reads, also on a connection made earlier with Full access."
+  - "Saying Claude, Cursor or other AI tools became read-only: the cap is for ChatGPT only."
+  - "Naming a program outside the default list, or saying it was removed: it stays live under All programs as Pre-launch."
+  - "Saying every program below Launch left the default list today: programs we emailed about Launch keep their place until the date in that email."
+  - "Saying the SDK retries every call: only trackSale and trackRefund, and only on a 429."
+---
+
+### New
+
+- Affitor is now in the [ChatGPT app directory](https://chatgpt.com/plugins/plugin_asdk_app_6ae91052cc5c8191bbe5935e898cbeb4): install it and sign in with your Affitor account (brands pick the programs to share), and ChatGPT can read your data.
+
+### Improved
+
+- ChatGPT connections are now read-only, including ones made earlier with **Full access**: the Allow screen offers **Read account data**, and ChatGPT can't publish, review applications or change terms.
+- The marketplace now applies the [Launch level](https://affitor.com/docs/brand/marketplace-levels) requirements to its default list; programs still in their notice period keep their place until the date in their email.
+- Programs outside the default list stay live under **All programs** with a **Pre-launch** label, and rejoin it on their own once they qualify.
+- In the **Roles** tab of **Members**, each role's Chat line now has a switch that puts Admins, Members or Viewers in every chat with partners; Owners are always in.
+- Text boxes that aren't for signing in, such as search and the invite email, now ask password managers to leave them alone.
+- Opening a menu, a select or a dialog in the brand or partner dashboard keeps the page still instead of shifting it sideways.
+- By default, `@affitor/sdk` 2.1.5 retries `trackSale` and `trackRefund` on a 429 up to 3 times, honoring `Retry-After`; `maxRetries: 0` turns this off.
+- We tightened how dashboard requests reach our servers, including our internal admin tools. Nothing changes for you.
+
+<Media src="/docs/changelog/improvements-2026-11-26/roles-chat.png" alt="Members, Roles tab with the Admin panel open: permissions by group, and on the Chat line the switch In every chat with partners turned on" />
