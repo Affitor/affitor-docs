@@ -316,7 +316,7 @@ export function BlogNav() {
             <div className="flex lg:hidden items-center gap-2">
               <a
                 href={cta.href}
-                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
+                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] border border-transparent transition-colors duration-150"
               >
                 {cta.label}
               </a>
