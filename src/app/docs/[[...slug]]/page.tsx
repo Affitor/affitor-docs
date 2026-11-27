@@ -114,10 +114,10 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
           ? { enabled: false }
           : {
               single: true,
-              // The right rail: On this page, then the page actions (spec §7.1).
+              // The right rail: On this page, then Share feedback. Copy for LLM appears once, under the title,
+              // where readers use it most.
               footer: (
                 <div className="aff-rail-actions">
-                  <CopyForLLM href={md} className="aff-rail-action" />
                   <ShareFeedback title={page.data.title} className="aff-rail-action" />
                 </div>
               ),
