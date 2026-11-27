@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { MDXComponents } from 'mdx/types';
+import { ArticleFaq } from './article-faq';
 import { InlineCta } from './inline-cta';
 import { CostTable, FeatureMatrix } from './tables';
 
@@ -15,6 +16,7 @@ const FRAME = 'compare-frame not-prose my-8 overflow-x-auto border-y border-fd-b
 
 export const articleComponents: MDXComponents = {
   InlineCta,
+  Faq: ArticleFaq,
   CostTable: ({ children }: { children: ReactNode }) => (
     <div className={FRAME} tabIndex={0} role="region" aria-label="Cost comparison">
       <CostTable ranked={false}>{children}</CostTable>
