@@ -67,26 +67,18 @@ export function CopyForLLM({ href, className }: { href: string; className: strin
   );
 }
 
-/** The one feedback window on affitor.com (same name as the dashboard's): a second click focuses it. */
-const FEEDBACK_WINDOW = 'affitor-feedback';
-
 /**
- * "Share feedback": opens affitor.com's feedback form in one small window over the page, the same form the
- * dashboard uses, in a page that loads no third-party scripts. The page here never navigates and holds no copy of the text.
- * Phones open it as a tab. A blocked popup falls back to opening the form in this tab.
+ * "Share feedback": opens affitor.com's feedback form in a small window over the page, the same form the dashboard uses, in
+ * a page that loads no third-party scripts and isolates itself from its opener (Cross-Origin-Opener-Policy). The window opens
+ * noopener, so no script on this page gets a handle on it; null is then the normal return. Phones open it as a tab.
  */
 export function ShareFeedback({ className }: { className: string }) {
   function open() {
-    const href = `${SITE_URL}/feedback?${new URLSearchParams({ page: location.pathname })}`;
+    const href = `${SITE_URL}/feedback?${new URLSearchParams({ page: location.pathname, view: 'window' })}`;
     const phone = typeof matchMedia === 'function' && matchMedia('(max-width: 639px)').matches;
     const w = 480, h = 560;
     const left = Math.max(0, Math.round(screenX + (outerWidth - w) / 2)), top = Math.max(0, Math.round(screenY + (outerHeight - h) / 2));
-    const opened = window.open(href, FEEDBACK_WINDOW, phone ? undefined : `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
-    if (!opened) {
-      location.assign(href);
-      return;
-    }
-    opened.focus();
+    window.open(href, '_blank', `noopener,noreferrer${phone ? '' : `,popup=yes,width=${w},height=${h},left=${left},top=${top}`}`);
   }
 
   return (
