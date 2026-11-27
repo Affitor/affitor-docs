@@ -388,5 +388,11 @@
     "why": "Launch logo condition: a website logo stored for the program's own current site counts without a save step (CMS src/api/affiliate-program/services/marketplace-listing-facts.ts listingPage, from v3.16.236). An uploaded logo still counts and is shown first.",
     "since": "2026-11-23",
     "allow": []
+  },
+  {
+    "pattern": "credited retroactively|backpaid commissions",
+    "why": "Lengthening a program's default duration (since 2026-10-14) or a group's duration (since 2026-11-25) applies to new payments only; past $0 payments are not credited.",
+    "since": "2026-11-27",
+    "allow": []
   }
 ]
