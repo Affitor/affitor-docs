@@ -248,6 +248,8 @@ export function BlogNav() {
     <>
       <header
         ref={headerRef}
+        // affitor.com's body sets letter-spacing 0.01em; the same here keeps every link and the logo at the same x.
+        style={{ letterSpacing: '0.01em' }}
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
             ? 'bg-white/80 backdrop-blur-lg border-b border-[#E5E7EB] shadow-sm dark:bg-fd-background/80 dark:border-fd-border'
@@ -342,6 +344,7 @@ export function BlogNav() {
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
+          style={{ letterSpacing: '0.01em' }}
           className="fixed inset-0 z-[60] overflow-y-auto bg-white lg:hidden dark:bg-fd-background"
         >
           <div className="flex h-14 items-center justify-between border-b border-[#e3e8ee] px-4 dark:border-fd-border">

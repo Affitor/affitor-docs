@@ -50,7 +50,7 @@ export function TabNav({ tabs }: { tabs: Tab[] }) {
 
   return (
     <nav aria-label="Docs sections" className="border-b border-fd-border bg-fd-background/80 backdrop-blur-md">
-      {/* The docs row (CORE-1327 docs-out-b): the same 1152 px column as the site header, 48 px; tabs left, search right. */}
+      {/* The docs row: the same 1152 px column as the site header, 48 px; tabs left, search right. */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center gap-4">
       <div ref={row} className="flex min-w-0 flex-1 items-center gap-6 h-full overflow-x-auto">
       {/* Phones: the left nav lives in Fumadocs' drawer (it switches below 768 px). */}
