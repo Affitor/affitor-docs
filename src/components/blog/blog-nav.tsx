@@ -3,13 +3,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DASHBOARD_LABEL, HEADER_NAV, publicHref, LOGIN_LINK, SIGNUP_LINK, isHeaderMenu, type HeaderMenu } from '@/config/site-nav';
 import { useDashboardHref } from '@/lib/signed-in';
+import { AccountMenu } from '@/components/account-menu';
 import { Logo } from '@/components/logo';
 import { NavIconSvg } from '@/components/blog/nav-icons';
 
 /**
  * The affitor.com header (affiliate-dashboard LandingRedesign/Navbar, dash#771) for the blog and the
  * changelog: logo, Product and Resources menus between the plain links, Log in + Create free account
- * (Go to Dashboard when signed in), plus the theme switch. Below 1024 px: the call to action and a
+ * (Dashboard and the account menu when signed in). Below 1024 px: the call to action and a
  * drawer. Data lives in src/config/site-nav.ts. Behaviour matches the dashboard twin; keep them in step.
  */
 
@@ -310,6 +311,7 @@ export function BlogNav() {
               >
                 {cta.label}
               </a>
+              {signedIn && <AccountMenu />}
             </div>
 
             {/* Below lg: the CTA and the drawer button. Under 360 px only the drawer button, which holds the CTA too. */}
@@ -320,6 +322,7 @@ export function BlogNav() {
               >
                 {cta.label}
               </a>
+              {signedIn && <AccountMenu />}
               <button
                 ref={drawerButton}
                 type="button"
