@@ -315,7 +315,7 @@ article blockquote strong { color: var(--color-fd-foreground); font-weight: 600;
 article blockquote a { border-bottom-color: var(--aff-border-strong); }
 
 /* ── Layout ── */
-:root { --aff-topbar: 100px; } /* header 56 + tab row 44 */
+:root { --aff-topbar: 112px; } /* the affitor.com header 64 + the docs row 48 */
 /* The full-width top bar is 100px. Tell Fumadocs the sticky offset so its NATIVE
    grid-area:sidebar / grid-area:toc wrappers stick at the right place. Do NOT
    override #nd-sidebar/#nd-toc position — Fumadocs' wrapper is the sticky element
@@ -362,6 +362,10 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
   display: none;
 }
 #nd-sidebar > div:first-child { padding-bottom: 0; }
+/* One left edge with the header logo and the tabs: the Brands | Partners switch and the active row start at the column
+   edge (Fumadocs pads its banner and its scroll viewport by 16 px); the row's own 8 px keeps the text at ~x184. */
+#nd-sidebar > div:first-child { padding-inline: 0; }
+#nd-sidebar > div.overflow-hidden > div { padding-inline: 0 !important; }
 
 /* Brands | Partners: two segments (mock D1 / P2) */
 .aff-audience {
@@ -455,11 +459,15 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 }
 #toc-title svg { display: none; }
 
-/* ── Center the whole layout on wide screens (top bar content matches) ── */
+/* ── The docs body sits in the same 1152 px column as the site header, with the
+   header's own padding, so logo, tabs and sidebar share one left edge: sidebar 220 · article · toc 180. ── */
 #nd-docs-layout {
-  max-width: 1536px;
+  max-width: 1152px;
   margin-inline: auto;
+  padding-inline: 16px;
 }
+@media (min-width: 640px) { #nd-docs-layout { padding-inline: 24px; } }
+@media (min-width: 1024px) { #nd-docs-layout { padding-inline: 32px; } }
 
 /* ═══════════════════════════════════════════════════════
    Doc page frame (docs-skeleton spec §7.1, mock D1/D3, approved 17/10)
@@ -468,10 +476,10 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
    drawer below 768 px. The rail shows from 1024 px (Fumadocs: 1280); below that
    the page actions stay in the row under the title.
    ═══════════════════════════════════════════════════════ */
-/* 672 px of text + 24 px padding each side (16 px on phones) */
-#nd-page:not([data-full='true']) { max-width: 720px; }
+/* Variant B: 640 px of text + 24 px padding each side at 1440 (16 px on phones) */
+#nd-page:not([data-full='true']) { max-width: 688px; }
 @media (min-width: 768px) {
-  #nd-docs-layout { --fd-sidebar-width: 272px; }
+  #nd-docs-layout { --fd-sidebar-width: 220px; }
   #nd-page:not([data-full='true']) {
     padding-inline: 24px;
     padding-top: 40px;
@@ -480,11 +488,11 @@ article blockquote a { border-bottom-color: var(--aff-border-strong); }
 @media (min-width: 1024px) {
   /* 248 = the 224 rail + its 24 px right gutter, so the column centres between nav
      and rail: x 732 at 1440 (docs.x.ai: 736). */
-  #nd-docs-layout:has(#nd-toc) { --fd-toc-width: 248px; }
+  #nd-docs-layout:has(#nd-toc) { --fd-toc-width: 180px; }
   #nd-toc {
     display: flex;
     padding-top: 40px;
-    padding-inline-end: 24px;
+    padding-inline-end: 0;
   }
 }
 

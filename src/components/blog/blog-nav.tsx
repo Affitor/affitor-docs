@@ -3,14 +3,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DASHBOARD_LABEL, HEADER_NAV, publicHref, LOGIN_LINK, SIGNUP_LINK, isHeaderMenu, type HeaderMenu } from '@/config/site-nav';
 import { useDashboardHref } from '@/lib/signed-in';
+import { AccountMenu } from '@/components/account-menu';
 import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { NavIconSvg } from '@/components/blog/nav-icons';
 
 /**
  * The affitor.com header (affiliate-dashboard LandingRedesign/Navbar, dash#771) for the blog and the
  * changelog: logo, Product and Resources menus between the plain links, Log in + Create free account
- * (Go to Dashboard when signed in), plus the theme switch. Below 1024 px: the call to action and a
+ * (Dashboard and the account menu when signed in). Below 1024 px: the call to action and a
  * drawer. Data lives in src/config/site-nav.ts. Behaviour matches the dashboard twin; keep them in step.
  */
 
@@ -249,6 +249,9 @@ export function BlogNav() {
     <>
       <header
         ref={headerRef}
+        // affitor.com's body sets letter-spacing 0.01em and uses static Inter (text optical size); this app loads Inter with
+        // the opsz axis, so the header pins opsz 14 too. Both keep every link and the logo at affitor.com's x.
+        style={{ letterSpacing: '0.01em', fontVariationSettings: '"opsz" 14' }}
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
             ? 'bg-white/80 backdrop-blur-lg border-b border-[#E5E7EB] shadow-sm dark:bg-fd-background/80 dark:border-fd-border'
@@ -294,7 +297,6 @@ export function BlogNav() {
 
             {/* Desktop: theme toggle, Log in, primary CTA */}
             <div className="hidden lg:flex items-center gap-2">
-              <ThemeToggle />
               {!dashboardHref && (
                 <a
                   href={LOGIN_LINK.href}
@@ -309,16 +311,18 @@ export function BlogNav() {
               >
                 {cta.label}
               </a>
+              {signedIn && <AccountMenu />}
             </div>
 
             {/* Below lg: the CTA and the drawer button. Under 360 px only the drawer button, which holds the CTA too. */}
             <div className="flex lg:hidden items-center gap-2">
               <a
                 href={cta.href}
-                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] transition-colors duration-150"
+                className="max-[359px]:hidden flex h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-semibold text-white bg-[#155DFC] hover:bg-[#1047C9] border border-transparent transition-colors duration-150"
               >
                 {cta.label}
               </a>
+              {signedIn && <AccountMenu />}
               <button
                 ref={drawerButton}
                 type="button"
@@ -344,6 +348,7 @@ export function BlogNav() {
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
+          style={{ letterSpacing: '0.01em', fontVariationSettings: '"opsz" 14' }}
           className="fixed inset-0 z-[60] overflow-y-auto bg-white lg:hidden dark:bg-fd-background"
         >
           <div className="flex h-14 items-center justify-between border-b border-[#e3e8ee] px-4 dark:border-fd-border">
@@ -373,9 +378,6 @@ export function BlogNav() {
                 </a>
               ),
             )}
-            <div className="py-3">
-              <ThemeToggle label />
-            </div>
             <div className="mt-2 flex flex-col gap-2">
               <a
                 href={cta.href}
