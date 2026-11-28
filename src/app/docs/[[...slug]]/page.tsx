@@ -118,7 +118,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
               // where readers use it most.
               footer: (
                 <div className="aff-rail-actions">
-                  <ShareFeedback title={page.data.title} className="aff-rail-action" />
+                  <ShareFeedback className="aff-rail-action" />
                 </div>
               ),
             }
@@ -150,7 +150,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       </DocsBody>
       <footer className="aff-page-foot">
         <div className="aff-page-foot-row">
-          <ShareFeedback title={page.data.title} className="aff-btn aff-btn-secondary aff-btn-sm" />
+          <ShareFeedback className="aff-btn aff-btn-secondary aff-btn-sm" />
           {/* Terms pages state their own "Last updated" in the header line (checked to match). */}
           {page.data.kind !== 'terms' ? (
             <p className="aff-updated">Last updated {formatDay(page.data.last_updated)}</p>

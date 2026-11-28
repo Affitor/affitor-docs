@@ -1,9 +1,10 @@
 'use client';
 
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState } from 'react';
+import { SITE_URL } from '@/lib/site';
 
 // Page actions on every doc page (spec docs-skeleton §7.1, §8): Copy for LLM copies the
-// page's .md twin (the file "View as Markdown" opens); Share feedback sends a PostHog event.
+// page's .md twin (the file "View as Markdown" opens); Share feedback opens affitor.com's feedback window.
 
 const ICON = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
 
@@ -66,89 +67,24 @@ export function CopyForLLM({ href, className }: { href: string; className: strin
   );
 }
 
-type PostHog = { capture?: (event: string, properties: Record<string, unknown>) => void };
-
-/** "Share feedback" button and its dialog: Message (required) + Email (optional), as docs.x.ai. */
-export function ShareFeedback({ title, className }: { title: string; className: string }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [sent, setSent] = useState(false);
-  const id = useId();
-  const close = () => dialog.current?.close();
-
-  function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const message = String(form.get('message') ?? '').trim();
-    if (!message) return;
-    const email = String(form.get('email') ?? '').trim();
-    try {
-      (window as { posthog?: PostHog }).posthog?.capture?.('docs_feedback', {
-        page: location.pathname,
-        message,
-        email: email || undefined,
-      });
-    } catch {
-      // Blocked or broken analytics must not break the dialog.
-    }
-    event.currentTarget.reset();
-    setSent(true);
+/**
+ * "Share feedback": opens affitor.com's feedback form in a small window over the page, the same form the dashboard uses, in
+ * a page that loads no third-party scripts and isolates itself from its opener (Cross-Origin-Opener-Policy). The window opens
+ * noopener, so no script on this page gets a handle on it; null is then the normal return. Phones open it as a tab.
+ */
+export function ShareFeedback({ className }: { className: string }) {
+  function open() {
+    const href = `${SITE_URL}/feedback?${new URLSearchParams({ page: location.pathname, view: 'window' })}`;
+    const phone = typeof matchMedia === 'function' && matchMedia('(max-width: 639px)').matches;
+    const w = 480, h = 560;
+    const left = Math.max(0, Math.round(screenX + (outerWidth - w) / 2)), top = Math.max(0, Math.round(screenY + (outerHeight - h) / 2));
+    window.open(href, '_blank', `noopener,noreferrer${phone ? '' : `,popup=yes,width=${w},height=${h},left=${left},top=${top}`}`);
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className={className}
-        onClick={() => {
-          setSent(false);
-          dialog.current?.showModal();
-        }}
-      >
-        <MessageIcon />
-        Share feedback
-      </button>
-      {/* Native modal dialog: the page behind is inert, focus stays inside, Esc closes. */}
-      <dialog
-        ref={dialog}
-        className="aff-dialog"
-        aria-labelledby={`${id}-title`}
-        onClick={(event) => event.target === event.currentTarget && close()}
-      >
-        {sent ? (
-          <div className="aff-dialog-done">
-            <h2 id={`${id}-title`}>Thanks for your feedback</h2>
-            <p>It helps us improve this page.</p>
-            <div className="aff-dialog-foot">
-              <button type="button" className="aff-btn aff-btn-secondary" onClick={close} autoFocus>
-                Close
-              </button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={send}>
-            <div className="aff-dialog-head">
-              <h2 id={`${id}-title`}>Share feedback</h2>
-              <p>Tell us what is missing or unclear on &ldquo;{title}&rdquo;.</p>
-            </div>
-            <div className="aff-dialog-body">
-              <label htmlFor={`${id}-message`}>Message</label>
-              <textarea id={`${id}-message`} name="message" rows={4} required />
-              <label htmlFor={`${id}-email`}>
-                Email <span>optional, if you want a reply</span>
-              </label>
-              <input id={`${id}-email`} name="email" type="email" autoComplete="email" placeholder="you@company.com" />
-            </div>
-            <div className="aff-dialog-foot">
-              <button type="button" className="aff-btn aff-btn-secondary" onClick={close}>
-                Cancel
-              </button>
-              <button type="submit" className="aff-btn aff-btn-primary">
-                Send
-              </button>
-            </div>
-          </form>
-        )}
-      </dialog>
-    </>
+    <button type="button" className={className} onClick={open}>
+      <MessageIcon />
+      Share feedback
+    </button>
   );
 }
