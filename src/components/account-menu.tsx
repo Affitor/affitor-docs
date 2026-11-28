@@ -17,6 +17,7 @@ type IconName = Parameters<typeof NavIconSvg>[0]['name'];
  */
 
 type Me = {
+  id?: number | string | null;
   email?: string | null;
   first_name?: string | null;
   last_name?: string | null;
@@ -47,20 +48,39 @@ const roleOf = (me: Me) => (me?.affiliateRole || me?.affiliate_role || '').toLow
 const isPartner = (me: Me) => hasObject(me?.partner) || ['affiliate_partner', 'both'].includes(roleOf(me));
 const isBrand = (me: Me) => hasObject(me?.advertiser) || ['advertiser', 'both'].includes(roleOf(me));
 
-/** The side used last (the dashboard's session context), else the one side the account has. */
-function sideOf(me: Me): Side {
-  let best: { side: Side; at: number } = { side: null, at: 0 };
-  for (const [key, side] of [['advertiser_session_context', 'brand'], ['partner_session_context', 'partner']] as const) {
-    try {
-      const at = Number(JSON.parse(localStorage.getItem(key) ?? 'null')?.lastAccessed);
-      if (at > best.at && Date.now() - at < CONTEXT_MAX_AGE_MS) best = { side, at };
-    } catch {
-      // unreadable context: ignore it
-    }
+/** The dashboard's id normalisation for session contexts: a positive safe integer, as a string. */
+function contextUserId(value: unknown): string | null {
+  const id = typeof value === 'number' ? value : typeof value === 'string' && /^[1-9]\d*$/.test(value) ? Number(value) : NaN;
+  return Number.isSafeInteger(id) && id > 0 ? String(id) : null;
+}
+
+function storedContext(key: string): Record<string, unknown> | null {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(key) ?? 'null');
+    return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+  } catch {
+    return null; // unreadable context: ignore it
   }
-  if (best.side) return best.side;
-  const brand = isBrand(me), partner = isPartner(me);
-  return brand === partner ? null : brand ? 'brand' : 'partner';
+}
+
+const fresh = (row: Record<string, unknown> | null) =>
+  !!row && typeof row.lastAccessed === 'number' && Number.isFinite(row.lastAccessed) && Date.now() - row.lastAccessed < CONTEXT_MAX_AGE_MS;
+
+/**
+ * The side used last, by the dashboard's own rule (getMostRecentSessionContext): a brand context counts only when it
+ * belongs to this signed-in person (owner id, role, a /brand path); a partner context as the dashboard keeps it. With
+ * neither, the one side the account has.
+ */
+function sideOf(me: Me): Side {
+  const owner = contextUserId(me?.id);
+  const brandRow = storedContext('advertiser_session_context');
+  const brand = owner && fresh(brandRow) && brandRow!.role === 'advertiser' && contextUserId(brandRow!.userId) === owner
+    && typeof brandRow!.path === 'string' && /^\/brand/.test(brandRow!.path) ? (brandRow!.lastAccessed as number) : null;
+  const partnerRow = storedContext('partner_session_context');
+  const partner = fresh(partnerRow) ? (partnerRow!.lastAccessed as number) : null;
+  if (brand !== null || partner !== null) return partner !== null && (brand === null || partner > brand) ? 'partner' : 'brand';
+  const isB = isBrand(me), isP = isPartner(me);
+  return isB === isP ? null : isB ? 'brand' : 'partner';
 }
 
 function displayName(me: Me, email: string): string {
@@ -142,7 +162,12 @@ export function AccountMenu() {
   }
 
   // The site's one sign-out page runs the dashboard's own logout (session, stored side, analytics identity reset).
-  const logout = () => { close(); window.location.assign(at('/auth/sign-out')); };
+  const logout = () => {
+    close();
+    // As the dashboard does when sign-out starts: a back-forward restore of this page reloads instead of showing the old person.
+    window.addEventListener('pageshow', (event) => { if (event.persisted) window.location.reload(); });
+    window.location.assign(at('/auth/sign-out'));
+  };
 
   const item = (icon: IconName): ReactNode => <span className={menuIconClass}><NavIconSvg name={icon} /></span>;
 
