@@ -141,12 +141,8 @@ export function AccountMenu() {
     rows.push({ label: 'Switch to brand', href: at('/brand'), icon: 'refresh' });
   }
 
-  const logout = async () => {
-    close();
-    // Same-origin JSON POST, the dashboard's own logout; the login page follows either way.
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => undefined);
-    window.location.assign(at('/login'));
-  };
+  // The site's one sign-out page runs the dashboard's own logout (session, stored side, analytics identity reset).
+  const logout = () => { close(); window.location.assign(at('/auth/sign-out')); };
 
   const item = (icon: IconName): ReactNode => <span className={menuIconClass}><NavIconSvg name={icon} /></span>;
 
@@ -192,7 +188,7 @@ export function AccountMenu() {
             </button>
           </div>
           <div className="p-1">
-            <button type="button" onClick={() => { void logout(); }} className={menuItemClass}>Log out</button>
+            <button type="button" onClick={logout} className={menuItemClass}>Log out</button>
           </div>
         </div>
       )}
